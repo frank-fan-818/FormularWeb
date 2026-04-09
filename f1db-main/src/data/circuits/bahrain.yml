@@ -1,0 +1,23 @@
+id: bahrain
+name: Bahrain
+fullName: Bahrain International Circuit
+previousNames:
+type: RACE
+direction: CLOCKWISE
+placeName: Sakhir
+countryId: bahrain
+latitude: 26.0325
+longitude: 50.510556
+length: 5.412
+turns: 15
+layouts:
+  - id: bahrain-1
+    effective: true
+    length: 5.412
+    turns: 15
+  - id: bahrain-2 # Endurance Circuit (2010)
+    length: 6.299
+    turns: 23
+  - id: bahrain-3 # Outer Circuit (2020)
+    length: 3.543
+    turns: 11

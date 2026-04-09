@@ -1,0 +1,386 @@
+- entrantId: anglo-american-racers
+  countryId: united-states-of-america
+  constructors:
+    - constructorId: eagle
+      engineManufacturerId: climax
+      chassisId: eagle-mk-1
+      engineId: climax-fpf-28-l4
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: dan-gurney
+          rounds: 2-6,9
+        - driverId: phil-hill
+          rounds: 7
+        - driverId: bob-bondurant
+          rounds: 8
+    - constructorId: eagle
+      engineManufacturerId: weslake
+      chassisId: eagle-mk-1
+      engineId: weslake-58-30-v12
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: dan-gurney
+          rounds: 7-8
+        - driverId: bob-bondurant
+          rounds: 9
+- entrantId: anglo-suisse-racing-team
+  countryId: switzerland
+  constructors:
+    - constructorId: cooper
+      engineManufacturerId: maserati
+      chassisId: cooper-t81
+      engineId: maserati-9-f1-30-v12
+      tyreManufacturerId: firestone
+      driverId: jo-bonnier
+      rounds: 1-2,5-9
+    - constructorId: brabham
+      engineManufacturerId: climax
+      chassis:
+        - chassisId: brabham-bt22
+        - chassisId: brabham-bt7
+      engines:
+        - engineId: climax-fpf-28-l4
+        - engineId: climax-fwmv-15-v8
+      tyreManufacturerId: firestone
+      driverId: jo-bonnier
+      rounds: 3-4
+- entrantId: bernard-white-racing
+  countryId: united-kingdom
+  constructorId: brm
+  engineManufacturerId: brm
+  chassisId: brm-p261
+  engineId: brm-p60-19-v8
+  tyreManufacturerId: dunlop
+  driverId: innes-ireland
+  rounds: 8-9
+- entrantId: brabham-racing-organisation
+  countryId: united-kingdom
+  constructors:
+    - constructorId: brabham
+      engineManufacturerId: climax
+      chassisId: brabham-bt22
+      engineId: climax-fpf-28-l4
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: denny-hulme
+          rounds: 1-2
+        - driverId: chris-irwin
+          rounds: 4
+    - constructorId: brabham
+      engineManufacturerId: repco
+      chassis:
+        - chassisId: brabham-bt19
+        - chassisId: brabham-bt20
+      engineId: repco-620-30-v8
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: jack-brabham
+          rounds: 1-9
+        - driverId: denny-hulme
+          rounds: 3-9
+- entrantId: bruce-mclaren-motor-racing
+  countryId: united-kingdom
+  constructors:
+    - constructorId: mclaren
+      engineManufacturerId: ford
+      chassisId: mclaren-m2b
+      engineId: ford-406-30-v8
+      tyreManufacturerId: firestone
+      driverId: bruce-mclaren
+      rounds: 1,8-9
+    - constructorId: mclaren
+      engineManufacturerId: serenissima
+      chassisId: mclaren-m2b
+      engineId: serenissima-m166-30-v8
+      tyreManufacturerId: firestone
+      driverId: bruce-mclaren
+      rounds: 2,4-5
+- entrantId: caltex-racing-team
+  countryId: germany
+  constructorId: brabham
+  engineManufacturerId: ford
+  chassisId: brabham-bt18
+  engineId: ford-cosworth-sca-10-l4
+  tyreManufacturerId: dunlop
+  driverId: kurt-ahrens-jr
+  rounds: 6
+- entrantId: chris-amon-racing
+  countryId: new-zealand
+  constructorId: brabham
+  engineManufacturerId: brm
+  chassisId: brabham-bt11
+  engineId: brm-p60-19-v8
+  tyreManufacturerId: dunlop
+  driverId: chris-amon
+  rounds: 7
+- entrantId: cooper-car-company
+  countryId: united-kingdom
+  constructorId: cooper
+  engineManufacturerId: maserati
+  chassisId: cooper-t81
+  engineId: maserati-9-f1-30-v12
+  tyreManufacturerId: dunlop
+  drivers:
+    - driverId: jochen-rindt
+      rounds: 1-9
+    - driverId: richie-ginther
+      rounds: 1-2
+    - driverId: chris-amon
+      rounds: 3
+    - driverId: john-surtees
+      rounds: 3-9
+    - driverId: moises-solana
+      rounds: 9
+- entrantId: david-bridges
+  countryId: united-kingdom
+  constructorId: brabham
+  engineManufacturerId: brm
+  chassisId: brabham-bt11
+  engineId: brm-p60-20-v8
+  tyreManufacturerId: goodyear
+  driverId: john-taylor
+  rounds: 3-6
+- entrantId: dw-racing-enterprises
+  countryId: united-kingdom
+  constructorId: brabham
+  engineManufacturerId: climax
+  chassisId: brabham-bt11
+  engineId: climax-fpf-28-l4
+  tyreManufacturerId: firestone
+  driverId: bob-anderson
+  rounds: 1,3-7
+- entrantId: guy-ligier
+  countryId: france
+  constructorId: cooper
+  engineManufacturerId: maserati
+  chassisId: cooper-t81
+  engineId: maserati-9-f1-30-v12
+  tyreManufacturerId: dunlop
+  driverId: guy-ligier
+  rounds: 1-6
+- entrantId: honda-rd-company
+  countryId: japan
+  constructorId: honda
+  engineManufacturerId: honda
+  chassisId: honda-ra273
+  engineId: honda-ra273e-30-v12
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: richie-ginther
+      rounds: 7-9
+    - driverId: ronnie-bucknum
+      rounds: 8-9
+- entrantId: ja-pearce-engineering-ltd
+  countryId: united-kingdom
+  constructorId: cooper
+  engineManufacturerId: ferrari
+  chassisId: cooper-t73
+  engineId: ferrari-168-30-v12
+  tyreManufacturerId: dunlop
+  driverId: chris-lawrence
+  rounds: 4,6
+- entrantId: matra-sports
+  countryId: france
+  constructorId: matra
+  engineManufacturerId: ford
+  chassisId: matra-ms5
+  engineId: ford-cosworth-sca-10-l4
+  tyreManufacturerId: dunlop
+  drivers:
+    - driverId: jean-pierre-beltoise
+      rounds: 6
+    - driverId: jo-schlesser
+      rounds: 6
+- entrantId: owen-racing-organisation
+  countryId: united-kingdom
+  constructorId: brm
+  engineManufacturerId: brm
+  chassis:
+    - chassisId: brm-p261
+    - chassisId: brm-p83
+  engines:
+    - engineId: brm-p60-20-v8
+    - engineId: brm-p75-30-h16
+  tyreManufacturerId: dunlop
+  drivers:
+    - driverId: graham-hill
+      rounds: 1-9
+    - driverId: jackie-stewart
+      rounds: 1-2,4-9
+- entrantId: phil-hill
+  countryId: united-states-of-america
+  constructors:
+    - constructorId: lotus
+      engineManufacturerId: climax
+      chassisId: lotus-25
+      engineId: climax-fwmv-15-v8
+      tyreManufacturerId: firestone
+      driverId: phil-hill
+      rounds: 1
+    - constructorId: mclaren
+      engineManufacturerId: ford
+      chassisId: mclaren-m3a
+      engineId: ford-406-30-v8
+      tyreManufacturerId: firestone
+      driverId: phil-hill
+      rounds: 2
+- entrantId: reg-parnell-racing
+  countryId: united-kingdom
+  constructors:
+    - constructorId: lotus
+      engineManufacturerId: brm
+      chassisId: lotus-33
+      engineId: brm-p60-20-v8
+      tyreManufacturerId: firestone
+      driverId: mike-spence
+      rounds: 1-9
+    - constructorId: ferrari
+      engineManufacturerId: ferrari
+      chassisId: ferrari-246
+      engineId: ferrari-228-24-v6
+      tyreManufacturerId: firestone
+      driverId: giancarlo-baghetti
+      rounds: 7
+- entrantId: roy-winkelmann-racing
+  countryId: united-kingdom
+  constructorId: brabham
+  engineManufacturerId: ford
+  chassisId: brabham-bt18
+  engineId: ford-cosworth-sca-10-l4
+  tyreManufacturerId: dunlop
+  drivers:
+    - driverId: alan-rees
+      rounds: 6
+    - driverId: hans-herrmann
+      rounds: 6
+- entrantId: rrc-walker-racing-team
+  countryId: united-kingdom
+  constructors:
+    - constructorId: brabham
+      engineManufacturerId: brm
+      chassisId: brabham-bt11
+      engineId: brm-p60-20-v8
+      tyreManufacturerId: dunlop
+      driverId: jo-siffert
+      rounds: 1
+    - constructorId: cooper
+      engineManufacturerId: maserati
+      chassisId: cooper-t81
+      engineId: maserati-9-f1-30-v12
+      tyreManufacturerId: dunlop
+      driverId: jo-siffert
+      rounds: 2-5,7-9
+- entrantId: scuderia-ferrari-spa-sefac
+  countryId: italy
+  constructorId: ferrari
+  engineManufacturerId: ferrari
+  chassis:
+    - chassisId: ferrari-246
+    - chassisId: ferrari-312-66
+  engines:
+    - engineId: ferrari-228-24-v6
+    - engineId: ferrari-218-30-v12
+  tyreManufacturers:
+    - tyreManufacturerId: firestone
+    - tyreManufacturerId: dunlop
+  drivers:
+    - driverId: john-surtees
+      rounds: 1-2
+    - driverId: lorenzo-bandini
+      rounds: 1-3,5-8
+    - driverId: mike-parkes
+      rounds: 3,5-7
+    - driverId: ludovico-scarfiotti
+      rounds: 6-7
+- entrantId: shannon-racing-cars
+  countryId: united-kingdom
+  constructorId: shannon
+  engineManufacturerId: climax
+  chassisId: shannon-sh1
+  engineId: climax-fpe-30-v8
+  tyreManufacturerId: dunlop
+  driverId: trevor-taylor
+  rounds: 4
+- entrantId: silvio-moser
+  countryId: switzerland
+  constructorId: brabham
+  engineManufacturerId: ford
+  chassisId: brabham-bt16
+  engineId: ford-cosworth-sca-10-l4
+  tyreManufacturerId: dunlop
+  driverId: silvio-moser
+  rounds: 6
+- entrantId: team-chamaco-collect
+  countryId: united-kingdom
+  constructorId: brm
+  engineManufacturerId: brm
+  chassisId: brm-p261
+  engineId: brm-p60-20-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: bob-bondurant
+      rounds: 1-2,4,6-7
+    - driverId: vic-wilson
+      rounds: 2
+- entrantId: team-lotus
+  countryId: united-kingdom
+  constructors:
+    - constructorId: lotus
+      engineManufacturerId: climax
+      chassisId: lotus-33
+      engineId: climax-fwmv-20-v8
+      tyreManufacturerId: firestone
+      drivers:
+        - driverId: jim-clark
+          rounds: 1-6
+        - driverId: giacomo-russo
+          rounds: 7
+        - driverId: pedro-rodriguez
+          rounds: 3,9
+        - driverId: peter-arundell
+          rounds: 8
+    - constructorId: lotus
+      engineManufacturerId: brm
+      chassis:
+        - chassisId: lotus-43
+        - chassisId: lotus-33
+      engines:
+        - engineId: brm-p75-30-h16
+        - engineId: brm-p60-20-v8
+      tyreManufacturerId: firestone
+      drivers:
+        - driverId: peter-arundell
+          rounds: 2-7,9
+        - driverId: jim-clark
+          rounds: 7-9
+        - driverId: pedro-rodriguez
+          rounds: 8
+    - constructorId: lotus
+      engineManufacturerId: ford
+      chassisId: lotus-44
+      engineId: ford-cosworth-sca-10-l4
+      tyreManufacturerId: dunlop
+      drivers:
+        - driverId: gerhard-mitter
+          rounds: 6
+        - driverId: pedro-rodriguez
+          rounds: 6
+        - driverId: piers-courage
+          rounds: 6
+- entrantId: tyrrell-racing-organisation
+  countryId: united-kingdom
+  constructors:
+    - constructorId: matra
+      engineManufacturerId: brm
+      chassisId: matra-ms5
+      engineId: brm-p80-10-l4
+      tyreManufacturerId: dunlop
+      driverId: hubert-hahne
+      rounds: 6
+    - constructorId: matra
+      engineManufacturerId: ford
+      chassisId: matra-ms5
+      engineId: ford-cosworth-sca-10-l4
+      tyreManufacturerId: dunlop
+      driverId: jacky-ickx
+      rounds: 6

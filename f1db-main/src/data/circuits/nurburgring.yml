@@ -1,0 +1,25 @@
+id: nurburgring
+name: Nürburgring
+fullName: Nürburgring
+previousNames:
+type: RACE
+direction: CLOCKWISE
+placeName: Nürburg
+countryId: germany
+latitude: 50.335556
+longitude: 6.9475
+length: 5.148
+turns: 15
+layouts:
+  - id: nurburgring-1 # 1951-1958, 1961-1969, 1971-1976
+    length: 22.810
+    turns: 160
+  - id: nurburgring-2 # 1984-1985
+    length: 4.542
+    turns: 12
+  - id: nurburgring-3 # 1995-2001
+    length: 4.556
+    turns: 12
+  - id: nurburgring-4 # 2002-2007, 2009, 2011, 2013, 2020
+    length: 5.148
+    turns: 15

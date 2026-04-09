@@ -1,0 +1,228 @@
+- entrantId: broker-sauber-mercedes
+  countryId: switzerland
+  constructorId: sauber
+  engineManufacturerId: mercedes
+  chassisId: sauber-c13
+  engineId: mercedes-benz-2175b-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: heinz-harald-frentzen
+      rounds: 1-16
+    - driverId: karl-wendlinger
+      rounds: 1-4
+    - driverId: andrea-de-cesaris
+      rounds: 6-14
+    - driverId: jj-lehto
+      rounds: 15-16
+- entrantId: footwork-ford
+  countryId: united-kingdom
+  constructorId: footwork
+  engineManufacturerId: ford
+  chassisId: footwork-fa15
+  engineId: ford-hbe7-8-35-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: christian-fittipaldi
+      rounds: 1-16
+    - driverId: gianni-morbidelli
+      rounds: 1-16
+- entrantId: ligier-gitanes-blondes
+  countryId: france
+  constructorId: ligier
+  engineManufacturerId: renault
+  chassisId: ligier-js39b
+  engineId: renault-rs6-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: eric-bernard
+      rounds: 1-13
+    - driverId: olivier-panis
+      rounds: 1-16
+    - driverId: johnny-herbert
+      rounds: 14
+    - driverId: franck-lagorce
+      rounds: 15-16
+- entrantId: marlboro-mclaren-peugeot
+  countryId: united-kingdom
+  constructorId: mclaren
+  engineManufacturerId: peugeot
+  chassisId: mclaren-mp4-9
+  engineId: peugeot-a6-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: martin-brundle
+      rounds: 1-16
+    - driverId: mika-hakkinen
+      rounds: 1-9,11-16
+    - driverId: philippe-alliot
+      rounds: 10
+- entrantId: mild-seven-benetton-ford
+  countryId: united-kingdom
+  constructorId: benetton
+  engineManufacturerId: ford
+  chassisId: benetton-b194
+  engineId: ford-ec-zetec-r-35-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: jos-verstappen
+      rounds: 1-2,7-14
+    - driverId: michael-schumacher
+      rounds: 1-11,14-16
+    - driverId: jj-lehto
+      rounds: 3-6,12-13
+    - driverId: johnny-herbert
+      rounds: 15-16
+- entrantId: minardi-scuderia-italia
+  countryId: italy
+  constructorId: minardi
+  engineManufacturerId: ford
+  chassis:
+    - chassisId: minardi-m193b
+    - chassisId: minardi-m194
+  engineId: ford-hbc7-8-35-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: michele-alboreto
+      rounds: 1-16
+    - driverId: pierluigi-martini
+      rounds: 1-16
+- entrantId: mtv-simtek-ford
+  countryId: united-kingdom
+  constructorId: simtek
+  engineManufacturerId: ford
+  chassisId: simtek-s941
+  engineId: ford-hbd6-35-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: david-brabham
+      rounds: 1-16
+    - driverId: roland-ratzenberger
+      rounds: 1-3
+    - driverId: andrea-montermini
+      rounds: 5
+    - driverId: jean-marc-gounon
+      rounds: 7-13
+    - driverId: domenico-schiattarella
+      rounds: 14,16
+    - driverId: taki-inoue
+      rounds: 15
+- entrantId: pacific-grand-prix
+  countryId: united-kingdom
+  constructorId: pacific
+  engineManufacturerId: ilmor
+  chassisId: pacific-pr01
+  engineId: ilmor-2175a-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: bertrand-gachot
+      rounds: 1-16
+    - driverId: paul-belmondo
+      rounds: 1-16
+- entrantId: rothmans-williams-renault
+  countryId: united-kingdom
+  constructorId: williams
+  engineManufacturerId: renault
+  chassis:
+    - chassisId: williams-fw16
+    - chassisId: williams-fw16b
+  engineId: renault-rs6-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: ayrton-senna
+      rounds: 1-3
+    - driverId: damon-hill
+      rounds: 1-16
+    - driverId: david-coulthard
+      rounds: 5-6,8-13
+    - driverId: nigel-mansell
+      rounds: 7,14-16
+- entrantId: sasol-jordan
+  countryId: ireland
+  constructorId: jordan
+  engineManufacturerId: hart
+  chassisId: jordan-194
+  engineId: hart-1035-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: eddie-irvine
+      rounds: 1,5-16
+    - driverId: rubens-barrichello
+      rounds: 1-16
+    - driverId: aguri-suzuki
+      rounds: 2
+    - driverId: andrea-de-cesaris
+      rounds: 3-4
+- entrantId: scuderia-ferrari
+  countryId: italy
+  constructorId: ferrari
+  engineManufacturerId: ferrari
+  chassis:
+    - chassisId: ferrari-412t1
+    - chassisId: ferrari-412t1b
+  engines:
+    - engineId: ferrari-041-35-v12
+    - engineId: ferrari-043-35-v12
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: gerhard-berger
+      rounds: 1-16
+    - driverId: jean-alesi
+      rounds: 1,4-16
+    - driverId: nicola-larini
+      rounds: 2-3
+- entrantId: team-lotus
+  countryId: united-kingdom
+  constructorId: lotus
+  engineManufacturerId: mugen-honda
+  chassis:
+    - chassisId: lotus-107c
+    - chassisId: lotus-109
+  engines:
+    - engineId: mugen-honda-mf-351hc-35-v10
+    - engineId: mugen-honda-mf-351hd-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: johnny-herbert
+      rounds: 1-13
+    - driverId: pedro-lamy
+      rounds: 1-4
+    - driverId: alex-zanardi
+      rounds: 5-10,12,14-16
+    - driverId: philippe-adams
+      rounds: 11,13
+    - driverId: eric-bernard
+      rounds: 14
+    - driverId: mika-salo
+      rounds: 15-16
+- entrantId: tourtel-larrousse-f1
+  countryId: france
+  constructorId: larrousse
+  engineManufacturerId: ford
+  chassisId: larrousse-lh94
+  engineId: ford-hbf7-8-35-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: erik-comas
+      rounds: 1-15
+    - driverId: olivier-beretta
+      rounds: 1-10
+    - driverId: philippe-alliot
+      rounds: 11
+    - driverId: yannick-dalmas
+      rounds: 12-13
+    - driverId: hideki-noda
+      rounds: 14-16
+    - driverId: jean-denis-deletraz
+      rounds: 16
+- entrantId: tyrrell-racing-organisation
+  countryId: united-kingdom
+  constructorId: tyrrell
+  engineManufacturerId: yamaha
+  chassisId: tyrrell-022
+  engineId: yamaha-ox10b-35-v10
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: mark-blundell
+      rounds: 1-16
+    - driverId: ukyo-katayama
+      rounds: 1-16

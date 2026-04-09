@@ -1,0 +1,31 @@
+id: monaco
+name: Monaco
+fullName: Circuit de Monaco
+previousNames:
+type: STREET
+direction: CLOCKWISE
+placeName: Monte Carlo
+countryId: monaco
+latitude: 43.734722
+longitude: 7.420556
+length: 3.337
+turns: 19
+layouts:
+  - id: monaco-1 # 1950
+    length: 3.180
+    turns: 14
+  - id: monaco-2 # 1955-1972
+    length: 3.145
+    turns: 13
+  - id: monaco-3 # 1973-1975
+    length: 3.278
+    turns: 17
+  - id: monaco-4 # 1976-1985
+    length: 3.312
+    turns: 20
+  - id: monaco-5 # 1986-2002
+    length: 3.328
+    turns: 20
+  - id: monaco-6 # 2003-2019, 2021-present
+    length: 3.337
+    turns: 19

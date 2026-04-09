@@ -1,0 +1,262 @@
+- entrantId: arrows-racing-team
+  countryId: united-kingdom
+  constructorId: arrows
+  engineManufacturerId: ford
+  chassisId: arrows-a6
+  engineId: ford-cosworth-dfv-30-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: chico-serra
+      rounds: 1,3-5
+    - driverId: marc-surer
+      rounds: 1-15
+    - driverId: alan-jones
+      rounds: 2
+    - driverId: thierry-boutsen
+      rounds: 6-15
+- entrantId: benetton-tyrrell-team
+  countryId: united-kingdom
+  constructorId: tyrrell
+  engineManufacturerId: ford
+  chassis:
+    - chassisId: tyrrell-011b
+    - chassisId: tyrrell-012
+  engines:
+    - engineId: ford-cosworth-dfv-30-v8
+    - engineId: ford-cosworth-dfy-30-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: danny-sullivan
+      rounds: 1-15
+    - driverId: michele-alboreto
+      rounds: 1-15
+- entrantId: candy-toleman-motorsport
+  countryId: united-kingdom
+  constructorId: toleman
+  engineManufacturerId: hart
+  chassisId: toleman-tg183b
+  engineId: hart-415t-15-l4-t
+  tyreManufacturerId: pirelli
+  drivers:
+    - driverId: bruno-giacomelli
+      rounds: 1-15
+    - driverId: derek-warwick
+      rounds: 1-15
+- entrantId: equipe-ligier-gitanes
+  countryId: france
+  constructorId: ligier
+  engineManufacturerId: ford
+  chassisId: ligier-js21
+  engines:
+    - engineId: ford-cosworth-dfv-30-v8
+    - engineId: ford-cosworth-dfy-30-v8
+  tyreManufacturerId: michelin
+  drivers:
+    - driverId: jean-pierre-jarier
+      rounds: 1-15
+    - driverId: raul-boesel
+      rounds: 1-15
+- entrantId: equipe-renault-elf
+  countryId: france
+  constructorId: renault
+  engineManufacturerId: renault
+  chassis:
+    - chassisId: renault-re30c
+    - chassisId: renault-re40
+  engineId: renault-gordini-ef1-15-v6-t
+  tyreManufacturerId: michelin
+  drivers:
+    - driverId: alain-prost
+      rounds: 1-15
+    - driverId: eddie-cheever
+      rounds: 1-15
+- entrantId: fila-sport-brabham
+  countryId: united-kingdom
+  constructorId: brabham
+  engineManufacturerId: bmw
+  chassis:
+    - chassisId: brabham-bt52
+    - chassisId: brabham-bt52b
+  engineId: bmw-m12-13-15-l4-t
+  tyreManufacturerId: michelin
+  drivers:
+    - driverId: nelson-piquet
+      rounds: 1-15
+    - driverId: riccardo-patrese
+      rounds: 1-15
+- entrantId: john-player-special-team-lotus
+  countryId: united-kingdom
+  constructors:
+    - constructorId: lotus
+      engineManufacturerId: ford
+      chassisId: lotus-92
+      engines:
+        - engineId: ford-cosworth-dfv-30-v8
+        - engineId: ford-cosworth-dfy-30-v8
+      tyreManufacturerId: pirelli
+      drivers:
+        - driverId: elio-de-angelis
+          rounds: 1
+        - driverId: nigel-mansell
+          rounds: 1-8
+    - constructorId: lotus
+      engineManufacturerId: renault
+      chassis:
+        - chassisId: lotus-93t
+        - chassisId: lotus-94t
+      engineId: renault-gordini-ef1-15-v6-t
+      tyreManufacturerId: pirelli
+      drivers:
+        - driverId: elio-de-angelis
+          rounds: 2-15
+        - driverId: nigel-mansell
+          rounds: 9-15
+- entrantId: kelemata-osella
+  countryId: italy
+  constructors:
+    - constructorId: osella
+      engineManufacturerId: ford
+      chassisId: osella-fa1d
+      engineId: ford-cosworth-dfv-30-v8
+      tyreManufacturerId: michelin
+      drivers:
+        - driverId: corrado-fabi
+          rounds: 1-8
+        - driverId: piercarlo-ghinzani
+          rounds: 1-3
+    - constructorId: osella
+      engineManufacturerId: alfa-romeo
+      chassisId: osella-fa1e
+      engineId: alfa-romeo-1260-30-v12
+      tyreManufacturerId: michelin
+      drivers:
+        - driverId: piercarlo-ghinzani
+          rounds: 4-15
+        - driverId: corrado-fabi
+          rounds: 9-15
+- entrantId: marlboro-mclaren-international
+  countryId: united-kingdom
+  constructors:
+    - constructorId: mclaren
+      engineManufacturerId: ford
+      chassisId: mclaren-mp4-1c
+      engines:
+        - engineId: ford-cosworth-dfv-30-v8
+        - engineId: ford-cosworth-dfy-30-v8
+      tyreManufacturerId: michelin
+      drivers:
+        - driverId: john-watson
+          rounds: 1-12
+        - driverId: niki-lauda
+          rounds: 1-11
+    - constructorId: mclaren
+      engineManufacturerId: tag
+      chassisId: mclaren-mp4-1e
+      engineId: tag-tte-po1-15-v6-t
+      tyreManufacturerId: michelin
+      drivers:
+        - driverId: john-watson
+          rounds: 13-15
+        - driverId: niki-lauda
+          rounds: 12-15
+- entrantId: marlboro-team-alfa-romeo
+  countryId: italy
+  constructorId: alfa-romeo
+  engineManufacturerId: alfa-romeo
+  chassisId: alfa-romeo-183t
+  engineId: alfa-romeo-890t-15-v8-t
+  tyreManufacturerId: michelin
+  drivers:
+    - driverId: andrea-de-cesaris
+      rounds: 1-15
+    - driverId: mauro-baldi
+      rounds: 1-15
+- entrantId: ram-racing-team-march
+  countryId: united-kingdom
+  constructorId: ram
+  engineManufacturerId: ford
+  chassisId: ram-01
+  engines:
+    - engineId: ford-cosworth-dfv-30-v8
+    - engineId: ford-cosworth-dfy-30-v8
+  tyreManufacturerId: pirelli
+  drivers:
+    - driverId: eliseo-salazar
+      rounds: 1-6
+    - driverId: jean-louis-schlesser
+      rounds: 3
+    - driverId: jacques-villeneuve-sr
+      rounds: 8
+    - driverId: kenny-acheson
+      rounds: 9-15
+- entrantId: scuderia-ferrari-spa-sefac
+  countryId: italy
+  constructorId: ferrari
+  engineManufacturerId: ferrari
+  chassis:
+    - chassisId: ferrari-126c2b
+    - chassisId: ferrari-126c3
+  engineId: ferrari-021-15-v6-t
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: patrick-tambay
+      rounds: 1-15
+    - driverId: rene-arnoux
+      rounds: 1-15
+- entrantId: spirit-racing
+  countryId: united-kingdom
+  constructorId: spirit
+  engineManufacturerId: honda
+  chassis:
+    - chassisId: spirit-201
+    - chassisId: spirit-201c
+  engineId: honda-ra163e-15-v6-t
+  tyreManufacturerId: goodyear
+  driverId: stefan-johansson
+  rounds: 9-14
+- entrantId: tag-williams-team
+  countryId: united-kingdom
+  constructors:
+    - constructorId: williams
+      engineManufacturerId: ford
+      chassisId: williams-fw08c
+      engineId: ford-cosworth-dfv-30-v8
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: jacques-laffite
+          rounds: 1-14
+        - driverId: keke-rosberg
+          rounds: 1-14
+        - driverId: jonathan-palmer
+          rounds: 14
+    - constructorId: williams
+      engineManufacturerId: honda
+      chassisId: williams-fw09
+      engineId: honda-ra163e-15-v6-t
+      tyreManufacturerId: goodyear
+      drivers:
+        - driverId: jacques-laffite
+          rounds: 15
+        - driverId: keke-rosberg
+          rounds: 15
+- entrantId: team-ats
+  countryId: germany
+  constructorId: ats-wheels
+  engineManufacturerId: bmw
+  chassisId: ats-wheels-d6
+  engineId: bmw-m12-13-15-l4-t
+  tyreManufacturerId: goodyear
+  driverId: manfred-winkelhock
+  rounds: 1-15
+- entrantId: theodore-racing-team
+  countryId: hong-kong
+  constructorId: theodore
+  engineManufacturerId: ford
+  chassisId: theodore-n183
+  engineId: ford-cosworth-dfv-30-v8
+  tyreManufacturerId: goodyear
+  drivers:
+    - driverId: johnny-cecotto
+      rounds: 1-13
+    - driverId: roberto-guerrero
+      rounds: 1-14
