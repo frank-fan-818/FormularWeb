@@ -86,13 +86,14 @@ const Seasons = () => {
                         <span className="stat-item">
                           <TrophyOutlined /> {standing.wins} 胜
                         </span>
-                        <div style={{ marginTop: 8, width: '100%', maxWidth: 400 }}>
+                        <div style={{ marginTop: 8, width: '100%', maxWidth: 400 }} className="progress-wrapper">
                           <Progress
                             percent={percentage}
                             showInfo={false}
                             strokeColor={teamColor}
                             strokeWidth={8}
                             trailColor="#f0f0f0"
+                            className="animated-progress"
                           />
                         </div>
                       </div>
@@ -100,8 +101,8 @@ const Seasons = () => {
                   </div>
                   <div className="item-right">
                     <div className="stat-badge" style={{ background: teamColor }}>
-                      <span className="stat-value">{standing.points}</span>
-                      <span className="stat-label">积分</span>
+                      <span className="stat-value" style={{ color: '#ffffff' }}>{standing.points}</span>
+                      <span className="stat-label" style={{ color: '#ffffff' }}>积分</span>
                     </div>
                   </div>
                 </div>
@@ -157,13 +158,14 @@ const Seasons = () => {
                         <span className="stat-item">
                           <TrophyOutlined /> {standing.wins} 胜
                         </span>
-                        <div style={{ marginTop: 8, width: '100%', maxWidth: 400 }}>
+                        <div style={{ marginTop: 8, width: '100%', maxWidth: 400 }} className="progress-wrapper">
                           <Progress
                             percent={percentage}
                             showInfo={false}
                             strokeColor={teamColor}
                             strokeWidth={8}
                             trailColor="#f0f0f0"
+                            className="animated-progress"
                           />
                         </div>
                       </div>
@@ -171,8 +173,8 @@ const Seasons = () => {
                   </div>
                   <div className="item-right">
                     <div className="stat-badge" style={{ background: teamColor }}>
-                      <span className="stat-value">{standing.points}</span>
-                      <span className="stat-label">积分</span>
+                      <span className="stat-value" style={{ color: '#ffffff' }}>{standing.points}</span>
+                      <span className="stat-label" style={{ color: '#ffffff' }}>积分</span>
                     </div>
                   </div>
                 </div>

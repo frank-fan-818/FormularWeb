@@ -220,9 +220,9 @@ const Circuits = () => {
                 </div>
                 <div className="item-right">
                   {circuit.total_races && (
-                    <div className="stat-badge">
-                      <span className="stat-value">{circuit.total_races}</span>
-                      <span className="stat-label">举办场次</span>
+                    <div className="stat-badge" style={{ color: '#ffffff' }}>
+                      <span className="stat-value" style={{ color: '#ffffff' }}>{circuit.total_races}</span>
+                      <span className="stat-label" style={{ color: '#ffffff' }}>举办场次</span>
                     </div>
                   )}
                 </div>

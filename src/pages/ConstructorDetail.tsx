@@ -81,6 +81,9 @@ const ConstructorDetail = () => {
     loadData();
   }, [constructorId, currentSeason]);
 
+  // 获取车队主题色
+  const teamColor = constructorId ? getTeamColor(constructorId) : '#1890ff';
+
   const getPointsChartOption = () => {
     let cumulativePoints = 0;
     const raceNames: string[] = [];
@@ -133,63 +136,143 @@ const ConstructorDetail = () => {
     }
 
     return {
+      backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#f0f0f0',
+        borderWidth: 1,
+        textStyle: {
+          color: '#262626',
+          fontSize: 13
+        },
+        padding: [12, 16],
+        extraCssText: 'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px;',
         formatter: (params: any) => {
           const index = params[0].dataIndex;
           const round = seasonRaceResults[index]?.round;
           const sprintPoints = sprintPointsMap[round] || 0;
           const racePoints = singlePoints[index] - sprintPoints;
 
-          let result = params[0].name + '<br/>';
-          result += `正赛积分: ${racePoints}<br/>`;
+          let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>正赛积分:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
-            result += `冲刺赛积分: ${sprintPoints}<br/>`;
+            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>冲刺赛积分:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
-          result += `本站总积分: ${singlePoints[index]}<br/>`;
-          result += `${params[0].marker} ${params[0].seriesName}: ${params[0].value}<br/>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>本站总积分:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>累计积分:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
           return result;
         }
       },
       legend: {
         data: ['累计积分'],
-        top: 0
+        top: 0,
+        right: 0,
+        textStyle: {
+          color: '#595959',
+          fontSize: 13
+        }
       },
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        top: '60px',
+        left: '2%',
+        right: '3%',
+        bottom: '8%',
+        top: '50px',
         containLabel: true
       },
       xAxis: {
         type: 'category',
         boundaryGap: false,
         data: raceNames,
+        axisLine: {
+          lineStyle: {
+            color: '#e8e8e8'
+          }
+        },
+        axisTick: {
+          show: false
+        },
         axisLabel: {
           rotate: 45,
-          interval: 0
+          interval: 0,
+          color: '#8c8c8c',
+          fontSize: 11,
+          fontWeight: 500
         }
       },
       yAxis: {
         type: 'value',
         name: '累计积分',
-        max: Math.max(totalPoints, Math.max(...cumulativePointsArr)) * 1.1
+        nameTextStyle: {
+          color: '#8c8c8c',
+          fontSize: 12,
+          padding: [0, 0, 0, -30]
+        },
+        axisLine: {
+          show: false
+        },
+        axisTick: {
+          show: false
+        },
+        splitLine: {
+          lineStyle: {
+            color: '#f0f0f0',
+            type: 'dashed'
+          }
+        },
+        axisLabel: {
+          color: '#8c8c8c',
+          fontSize: 11
+        },
+        max: Math.max(totalPoints, Math.max(...cumulativePointsArr)) * 1.15 || 100
       },
       series: [
         {
           name: '累计积分',
           type: 'line',
           data: cumulativePointsArr,
-          smooth: true,
+          smooth: 0.4,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 4,
+            color: teamColor,
+            shadowColor: `${teamColor}40`,
+            shadowBlur: 10,
+            shadowOffsetY: 4
+          },
           itemStyle: {
-            color: '#1890ff'
+            color: teamColor,
+            borderWidth: 2,
+            borderColor: '#fff'
+          },
+          emphasis: {
+            scale: 1.5,
+            itemStyle: {
+              borderWidth: 3,
+              shadowBlur: 15,
+              shadowColor: teamColor
+            }
           },
           areaStyle: {
-            color: 'rgba(24, 144, 255, 0.2)'
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: `${teamColor}60` },
+                { offset: 0.5, color: `${teamColor}20` },
+                { offset: 1, color: `${teamColor}05` }
+              ]
+            }
           }
         }
-      ]
+      ],
+      animation: true,
+      animationDuration: 1500,
+      animationEasing: 'cubicOut'
     };
   };
 
@@ -211,8 +294,8 @@ const ConstructorDetail = () => {
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>
             {constructor.name}
-            <Tag color="red" style={{ marginLeft: 16, fontSize: 16 }}>{constructor.nationality}</Tag>
           </h1>
+          <p style={{ fontSize: 18, color: '#666' }}>{constructor.nationality}</p>
         </div>
 
         <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason}赛季数据</h3>
@@ -250,7 +333,16 @@ const ConstructorDetail = () => {
           </Col>
         </Row>
 
-        <Card title={`${currentSeason}赛季积分走势`} style={{ marginBottom: 24 }}>
+        <Card 
+          title={`${currentSeason}赛季积分走势`} 
+          style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
+          headStyle={{ 
+            background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
+            borderBottom: `2px solid ${teamColor}30`,
+            fontSize: 16,
+            fontWeight: 600
+          }}
+        >
           {seasonRaceResults.length > 0 ? (
             <ReactECharts option={getPointsChartOption()} style={{ height: 400 }} />
           ) : (
@@ -258,7 +350,7 @@ const ConstructorDetail = () => {
           )}
         </Card>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>生涯总数据</h3>
+        <h3 style={{ fontSize: 20, marginBottom: 16 }}>历史数据</h3>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12}>
             <Card>

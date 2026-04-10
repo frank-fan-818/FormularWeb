@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
-import { GlobalOutlined, TrophyOutlined } from '@ant-design/icons';
+import { GlobalOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import type { Constructor } from '@/types';
@@ -59,45 +59,49 @@ const Constructors = () => {
         </div>
       ) : (
         <div className="list-container">
-          {constructors.map((constructor) => (
-            <Card
-              key={constructor.constructorId}
-              className="list-item"
-              hoverable
-              style={{
-                animationDelay: `${constructor.index * 0.08}s`,
-                borderLeft: `4px solid ${getTeamColor(constructor.constructorId)}`
-              }}
-              onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
-            >
-              <div className="item-content">
-                <div className="item-left">
-                  <div className="item-info">
-                    <h3 className="item-title">
-                      {constructor.name}
-                    </h3>
-                    <div className="item-stats">
-                      <span className="stat-item"><GlobalOutlined /> {constructor.nationality}</span>
-                      {constructor.total_wins && (
-                        <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} 胜</span>
-                      )}
-                      {constructor.total_podiums && (
-                        <span className="stat-item">🥈 {constructor.total_podiums} 领奖台</span>
-                      )}
+          {constructors.map((constructor) => {
+            const teamColor = getTeamColor(constructor.constructorId);
+            return (
+              <Card
+                key={constructor.constructorId}
+                className="list-item"
+                hoverable
+                style={{ animationDelay: `${constructor.index * 0.05}s` }}
+                onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
+              >
+                <div className="team-color-bar" style={{ backgroundColor: teamColor }} />
+                <div className="item-content">
+                  <div className="item-left">
+                    <div className="item-info">
+                      <h3 className="item-title">
+                        {constructor.name}
+                      </h3>
+                      <div className="item-stats">
+                        <span className="stat-item"><GlobalOutlined /> {constructor.nationality}</span>
+                        {constructor.total_wins && (
+                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} 胜</span>
+                        )}
+                        {constructor.total_podiums && (
+                          <span className="stat-item"><CarOutlined /> {constructor.total_podiums} 领奖台</span>
+                        )}
+                        {constructor.total_pole_positions && (
+                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} 杆位</span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div className="item-right">
+                    {constructor.total_race_entries && (
+                      <div className="stat-badge" style={{ background: teamColor }}>
+                        <span className="stat-value" style={{ color: '#ffffff' }}>{constructor.total_race_entries}</span>
+                        <span className="stat-label" style={{ color: '#ffffff' }}>参赛场次</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="item-right">
-                  {constructor.total_race_entries && (
-                    <div className="stat-badge" style={{ background: getTeamColor(constructor.constructorId) }}>
-                      <span className="stat-value">{constructor.total_race_entries}</span>
-                      <span className="stat-label">参赛场次</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,1 +1,36 @@
 @import './Drivers.css';
+
+/* 进度条动画 */
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+/* Ant Design Progress 组件动画 - 使用自定义类名 */
+.animated-progress .ant-progress-bg {
+  animation: progressFill 1.5s ease-out forwards !important;
+  transform-origin: left !important;
+}
+
+/* 左侧颜色条动画 */
+.team-color-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  z-index: 1;
+  animation: colorBarFill 0.8s ease-out forwards;
+  transform-origin: top;
+}
+
+@keyframes colorBarFill {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}

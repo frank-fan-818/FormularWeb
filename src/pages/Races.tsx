@@ -36,7 +36,7 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
             </h3>
             <div className="item-meta">
               <span><EnvironmentOutlined /> {race.Circuit.circuitName}</span>
-              <span><CalendarOutlined /> {dayjs(race.date).format('YYYY年M月D日')}</span>
+              <span className="date-item"><CalendarOutlined /> {dayjs(race.date).format('YYYY年M月D日')}</span>
             </div>
           </div>
         </div>
