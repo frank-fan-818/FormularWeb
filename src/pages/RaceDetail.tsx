@@ -71,7 +71,7 @@ const RaceDetail = () => {
     {
       title: '车手',
       key: 'driver',
-      render: (_, record: QualifyingResult) => (
+      render: (_: unknown, record: QualifyingResult) => (
         <div>
           <div
             style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
@@ -86,7 +86,7 @@ const RaceDetail = () => {
     {
       title: '车队',
       key: 'constructor',
-      render: (_, record: QualifyingResult) => (
+      render: (_: unknown, record: QualifyingResult) => (
         <div
           style={{ color: '#1890ff', cursor: 'pointer' }}
           onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
@@ -114,82 +114,6 @@ const RaceDetail = () => {
       width: 100,
     },
   ];
-
-  // 练习赛/自由练习赛表格列
-  const getPracticeColumns = (data: Result[]) => {
-    // 找到最快圈速
-    let fastestTime = '';
-    let fastestSpeed = 0;
-    data.forEach(result => {
-      if (result.FastestLap?.Time?.time) {
-        if (!fastestTime || result.FastestLap.Time.time < fastestTime) {
-          fastestTime = result.FastestLap.Time.time;
-          fastestSpeed = parseFloat(result.FastestLap.AverageSpeed?.speed || '0');
-        }
-      }
-    });
-
-    return [
-      {
-        title: '排名',
-        dataIndex: 'position',
-        key: 'position',
-        width: 80,
-      },
-      {
-        title: '车手',
-        key: 'driver',
-        render: (_, record: Result) => (
-          <div>
-            <div
-              style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
-              onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-            >
-              {record.Driver.givenName} {record.Driver.familyName}
-            </div>
-            <div style={{ fontSize: 12, color: '#666' }}>{record.Driver.code}</div>
-          </div>
-        ),
-      },
-      {
-        title: '车队',
-        key: 'constructor',
-        render: (_, record: Result) => (
-          <div
-            style={{ color: '#1890ff', cursor: 'pointer' }}
-            onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
-          >
-            {record.Constructor.name}
-          </div>
-        ),
-      },
-      {
-        title: '最快圈速',
-        key: 'fastestLap',
-        render: (_, record: Result) => {
-          const time = record.FastestLap?.Time?.time;
-          if (!time) return '-';
-          return time === fastestTime ? (
-            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{time} ⚡</span>
-          ) : time;
-        },
-        width: 120,
-      },
-      {
-        title: '平均速度',
-        key: 'averageSpeed',
-        render: (_, record: Result) => {
-          if (!record.FastestLap?.AverageSpeed) return '-';
-          const speed = `${record.FastestLap.AverageSpeed.speed} ${record.FastestLap.AverageSpeed.units}`;
-          const currentSpeed = parseFloat(record.FastestLap.AverageSpeed.speed);
-          return currentSpeed === fastestSpeed ? (
-            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{speed}</span>
-          ) : speed;
-        },
-        width: 140,
-      },
-    ];
-  };
 
   // 正赛/冲刺赛表格列
   const getRaceColumns = (data: Result[]) => {
@@ -219,7 +143,7 @@ const RaceDetail = () => {
       {
         title: '车手',
         key: 'driver',
-        render: (_, record: Result) => (
+        render: (_: unknown, record: Result) => (
           <div>
             <div
               style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
@@ -234,7 +158,7 @@ const RaceDetail = () => {
       {
         title: '车队',
         key: 'constructor',
-        render: (_, record: Result) => (
+        render: (_: unknown, record: Result) => (
           <div
             style={{ color: '#1890ff', cursor: 'pointer' }}
             onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
@@ -252,12 +176,12 @@ const RaceDetail = () => {
       {
         title: '成绩',
         key: 'time',
-        render: (_, record: Result) => record.Time?.time || record.status,
+        render: (_: unknown, record: Result) => record.Time?.time || record.status,
       },
       {
         title: '最快圈',
         key: 'fastestLap',
-        render: (_, record: Result) => {
+        render: (_: unknown, record: Result) => {
           const time = record.FastestLap?.Time?.time;
           if (!time) return '-';
           return time === fastestLapTime ? (

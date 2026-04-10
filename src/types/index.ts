@@ -38,6 +38,7 @@ export interface Race {
   time?: string;
   Results?: Result[];
   QualifyingResults?: QualifyingResult[];
+  SprintResults?: Result[];
 }
 
 export interface Result {
@@ -99,7 +100,7 @@ export interface Season {
   url: string;
 }
 
-export interface ErgastResponse<T> {
+export interface ErgastResponse<_T> {
   MRData: {
     xmlns: string;
     series: string;

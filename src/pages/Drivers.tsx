@@ -4,7 +4,7 @@ import { Card, Spin } from 'antd';
 import { CarOutlined, CalendarOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-import type { Driver } from '@/types';
+
 import { getTeamColor } from '@/utils/teamColors';
 import dayjs from 'dayjs';
 import './Drivers.css';

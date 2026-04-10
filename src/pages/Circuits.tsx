@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Image, Spin, Tag } from 'antd';
-import { EnvironmentOutlined, GlobalOutlined, CarOutlined, FlagOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Image, Spin } from 'antd';
+import { EnvironmentOutlined, CarOutlined, FlagOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-import type { Circuit } from '@/types';
 import './Circuits.css';
 
 // 特殊赛道名称映射（全覆盖所有F1赛道）
@@ -84,11 +83,11 @@ const getCircuitImage = (circuitId: string) => {
     mappedId.replace('_circuit', ''),
     mappedId.split('_')[0],
     circuitId.split('_')[circuitId.split('_').length - 1],
- // 特殊处理拉斯维加斯和美洲赛道
-  circuitId === 'las_vegas' ? 'las-vegas-strip' : '',
-  circuitId === 'vegas' ? 'las-vegas-strip' : '',
-  circuitId === 'austin' ? 'circuit-of-the-americas' : '',
-  circuitId === 'americas' ? 'circuit-of-the-americas' : '',
+    // 特殊处理拉斯维加斯和美洲赛道
+    circuitId === 'las_vegas' ? 'las-vegas-strip' : '',
+    circuitId === 'vegas' ? 'las-vegas-strip' : '',
+    circuitId === 'austin' ? 'circuit-of-the-americas' : '',
+    circuitId === 'americas' ? 'circuit-of-the-americas' : '',
   ].filter(Boolean);
 
   const uniqueIds = [...new Set(idVariants)];
@@ -195,7 +194,7 @@ const Circuits = () => {
                       alt={circuit.circuitName}
                       width={100}
                       height={70}
-                      fallback={<div className="circuit-fallback">无图</div>}
+                      fallback="无图"
                       preview={false}
                     />
                   </div>

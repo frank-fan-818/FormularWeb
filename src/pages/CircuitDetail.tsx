@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Image, Spin, Tag } from 'antd';
-import { ArrowLeftOutlined, CarOutlined, FlagOutlined, CalendarOutlined, TrophyOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CarOutlined, FlagOutlined, CalendarOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import type { Circuit } from '@/types';
 import dayjs from 'dayjs';
 import './CircuitDetail.css';
 
-import lasVegasBlack from '@/assets/circuits/black/las-vegas-1.svg';
-import lasVegasOutline from '@/assets/circuits/black-outline/las-vegas-1.svg';
-import austinBlack from '@/assets/circuits/black/austin-1.svg';
-import austinOutline from '@/assets/circuits/black-outline/austin-1.svg';
+
 
 const circuitNameMap: Record<string, string> = {
   'albert_park': 'melbourne',
@@ -64,12 +61,6 @@ const circuitNameMap: Record<string, string> = {
 };
 
 const getCircuitImage = (circuitId: string, style: 'black-outline' | 'white-outline' | 'black' | 'white' = 'black-outline') => {
-  if (circuitId === 'vegas' || circuitId === 'las_vegas') {
-    return style === 'black' ? lasVegasBlack : lasVegasOutline;
-  }
-  if (circuitId === 'americas' || circuitId === 'austin') {
-    return style === 'black' ? austinBlack : austinOutline;
-  }
 
   const mappedId = circuitNameMap[circuitId] || circuitId;
   const idVariants = [
@@ -197,7 +188,7 @@ const CircuitDetail = () => {
               alt={circuit.circuitName}
               className="circuit-image"
               preview={false}
-              fallback={<div style={{ fontSize: 18, color: '#8c8c8c' }}>暂无赛道图</div>}
+              fallback="暂无赛道图"
             />
           </div>
         </Card>

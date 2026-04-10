@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Tag, Statistic, Row, Col } from 'antd';
+import { Card, Button, Statistic, Row, Col } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined, TeamOutlined, FlagOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import { useAppStore } from '@/store';

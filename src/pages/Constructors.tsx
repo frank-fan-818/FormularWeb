@@ -4,7 +4,7 @@ import { Card, Spin } from 'antd';
 import { GlobalOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-import type { Constructor } from '@/types';
+
 import { getTeamColor } from '@/utils/teamColors';
 import './Constructors.css';
 
