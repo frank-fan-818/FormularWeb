@@ -224,7 +224,16 @@ const ConstructorDetail = () => {
           color: '#8c8c8c',
           fontSize: 11
         },
-        max: Math.max(totalPoints, Math.max(...cumulativePointsArr)) * 1.15 || 100
+        min: 0,
+        max: (value: { max: number }) => {
+          const maxVal = Math.max(value.max, totalPoints) * 1.1;
+          return Math.ceil(maxVal / 10) * 10;
+        },
+        interval: (value: { max: number }) => {
+          const maxVal = Math.max(value.max, totalPoints) * 1.1;
+          const roundedMax = Math.ceil(maxVal / 10) * 10;
+          return Math.ceil(roundedMax / 5 / 10) * 10;
+        }
       },
       series: [
         {
@@ -333,10 +342,10 @@ const ConstructorDetail = () => {
           </Col>
         </Row>
 
-        <Card 
-          title={`${currentSeason}赛季积分走势`} 
+        <Card
+          title={`${currentSeason}赛季积分走势`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
-          headStyle={{ 
+          headStyle={{
             background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
             borderBottom: `2px solid ${teamColor}30`,
             fontSize: 16,

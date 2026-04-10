@@ -83,7 +83,7 @@ const DriverDetail = () => {
   }, [driverId, currentSeason]);
 
   // 获取车队主题色
-  const teamColor = currentStanding?.Constructors[0]?.constructorId 
+  const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
     : '#1890ff';
 
@@ -218,7 +218,16 @@ const DriverDetail = () => {
           color: '#8c8c8c',
           fontSize: 11
         },
-        max: Math.max(totalPoints, Math.max(...cumulativePointsArr)) * 1.15 || 100
+        min: 0,
+        max: (value: { max: number }) => {
+          const maxVal = Math.max(value.max, totalPoints) * 1.1;
+          return Math.ceil(maxVal / 10) * 10;
+        },
+        interval: (value: { max: number }) => {
+          const maxVal = Math.max(value.max, totalPoints) * 1.1;
+          const roundedMax = Math.ceil(maxVal / 10) * 10;
+          return Math.ceil(roundedMax / 5 / 10) * 10;
+        }
       },
       series: [
         {
@@ -328,10 +337,10 @@ const DriverDetail = () => {
           </Col>
         </Row>
 
-        <Card 
-          title={`${currentSeason}赛季积分走势`} 
+        <Card
+          title={`${currentSeason}赛季积分走势`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
-          headStyle={{ 
+          headStyle={{
             background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
             borderBottom: `2px solid ${teamColor}30`,
             fontSize: 16,
@@ -379,7 +388,6 @@ const DriverDetail = () => {
             </Col>
             <Col xs={24} sm={12}>
               <p><strong>出生日期：</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY年MM月DD日') : '-'}</p>
-              <p><strong>年龄：</strong>{driver?.dateOfBirth ? dayjs().diff(driver.dateOfBirth, 'year') : '-'} 岁</p>
               <p><strong>当前车队：</strong>{currentStanding?.Constructors[0].name || '-'}</p>
             </Col>
           </Row>
