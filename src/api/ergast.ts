@@ -11,8 +11,11 @@ import type {
   Constructor
 } from '@/types';
 
+// 根据环境选择 baseURL
+const baseURL = import.meta.env.DEV ? '/f1-api' : 'https://api.jolpi.ca/ergast/f1';
+
 const ergastApi = axios.create({
-  baseURL: '/f1-api',
+  baseURL,
   timeout: 15000,
 });
 
