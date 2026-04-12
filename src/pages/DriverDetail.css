@@ -100,6 +100,36 @@
   }
 }
 
+.chart-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #d9d9d9 transparent;
+}
+
+.chart-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+.chart-scroll-content {
+  min-width: 100%;
+}
+
 @media (max-width: 768px) {
   .driver-detail-container {
     padding: 16px;

@@ -33,10 +33,13 @@ const DriverDetail = () => {
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const updateChartHeight = () => {
-      setChartHeight(window.innerWidth <= 768 ? 300 : 400);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      setChartHeight(mobile ? 300 : 400);
     };
     updateChartHeight();
     window.addEventListener('resize', updateChartHeight);
@@ -357,9 +360,14 @@ const DriverDetail = () => {
             fontSize: 16,
             fontWeight: 600
           }}
+          bodyStyle={{ padding: isMobile ? 0 : 24 }}
         >
           {seasonRaceResults.length > 0 ? (
-            <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
+            <div className="chart-scroll-container">
+              <div className="chart-scroll-content" style={{ width: isMobile ? Math.max(seasonRaceResults.length * 70, window.innerWidth) : '100%' }}>
+                <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
+              </div>
+            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>暂无积分数据</div>
           )}
