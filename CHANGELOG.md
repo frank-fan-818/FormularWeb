@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-12
+
+### Fixed
+- 修复导航检查导致无法跳转其他页面的问题（使用 useRef 确保只执行一次）
+
 ## [0.1.0] - 2026-04-12
 
 ### Added

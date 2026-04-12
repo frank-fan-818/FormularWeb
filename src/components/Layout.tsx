@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Layout, Menu, Select, Button } from 'antd';
 import {
   HomeOutlined,
@@ -46,7 +46,12 @@ const LayoutComponent = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const initialCheckDone = useRef(false);
+
   useEffect(() => {
+    if (initialCheckDone.current) return;
+    initialCheckDone.current = true;
+
     const navigationEntries = performance.getEntriesByType('navigation');
     if (navigationEntries.length > 0) {
       const navType = (navigationEntries[0] as PerformanceNavigationTiming).type;
