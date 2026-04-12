@@ -413,7 +413,13 @@ const ConstructorDetail = () => {
                   transformOrigin: 'left center'
                 }}
               >
-                <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
+                <ReactECharts
+                  key={`${constructorId}-${currentSeason}-${seasonRaceResults.length}`}
+                  option={getPointsChartOption()}
+                  style={{ height: chartHeight }}
+                  notMerge={true}
+                  lazyUpdate={true}
+                />
               </div>
             </div>
           ) : (

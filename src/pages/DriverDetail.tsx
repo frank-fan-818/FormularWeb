@@ -408,7 +408,13 @@ const DriverDetail = () => {
                   transformOrigin: 'left center'
                 }}
               >
-                <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
+                <ReactECharts
+                  key={`${driverId}-${currentSeason}-${seasonRaceResults.length}`}
+                  option={getPointsChartOption()}
+                  style={{ height: chartHeight }}
+                  notMerge={true}
+                  lazyUpdate={true}
+                />
               </div>
             </div>
           ) : (
