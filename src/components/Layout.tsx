@@ -46,6 +46,16 @@ const LayoutComponent = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  useEffect(() => {
+    const navigationEntries = performance.getEntriesByType('navigation');
+    if (navigationEntries.length > 0) {
+      const navType = (navigationEntries[0] as PerformanceNavigationTiming).type;
+      if (navType === 'navigate' && location.pathname !== '/') {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [navigate, location.pathname]);
+
   const handleMenuClick = (key: string) => {
     navigate(key);
     if (isMobile) {
