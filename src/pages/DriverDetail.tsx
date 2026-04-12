@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Tag, Statistic, Row, Col } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
@@ -34,6 +34,36 @@ const DriverDetail = () => {
   const [loading, setLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
+  const [chartScale, setChartScale] = useState(1);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
+
+  const getTouchDistance = (touches: React.TouchList): number => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY
+    );
+  };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches);
+      touchStartRef.current = { distance, scale: chartScale };
+    }
+  }, [chartScale]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartRef.current) {
+      const currentDistance = getTouchDistance(e.touches);
+      const scaleRatio = currentDistance / touchStartRef.current.distance;
+      const newScale = Math.min(Math.max(touchStartRef.current.scale * scaleRatio, 0.5), 3);
+      setChartScale(newScale);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
 
   useEffect(() => {
     const updateChartHeight = () => {
@@ -363,8 +393,21 @@ const DriverDetail = () => {
           bodyStyle={{ padding: isMobile ? 0 : 24 }}
         >
           {seasonRaceResults.length > 0 ? (
-            <div className="chart-scroll-container">
-              <div className="chart-scroll-content" style={{ width: isMobile ? Math.max(seasonRaceResults.length * 70, window.innerWidth) : '100%' }}>
+            <div
+              className="chart-scroll-container"
+              ref={chartContainerRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div
+                className="chart-scroll-content"
+                style={{
+                  width: isMobile ? Math.max(seasonRaceResults.length * 70 * chartScale, window.innerWidth) : '100%',
+                  transform: isMobile ? `scaleX(1)` : 'none',
+                  transformOrigin: 'left center'
+                }}
+              >
                 <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
               </div>
             </div>
