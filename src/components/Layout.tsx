@@ -24,6 +24,8 @@ const LayoutComponent = () => {
   const location = useLocation();
   const { currentSeason, setCurrentSeason, sidebarCollapsed, toggleSidebar } = useAppStore();
   const [seasons, setSeasons] = useState<Season[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const loadSeasons = async () => {
@@ -32,6 +34,26 @@ const LayoutComponent = () => {
     };
     loadSeasons();
   }, []);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleMenuClick = (key: string) => {
+    navigate(key);
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+    }
+  };
+
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen(!mobileSidebarOpen);
+  };
 
   const menuItems = [
     {
@@ -68,30 +90,36 @@ const LayoutComponent = () => {
 
   return (
     <Layout className="app-layout">
+      {isMobile && (
+        <div
+          className={`sidebar-overlay ${mobileSidebarOpen ? 'visible' : ''}`}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
       <Sider
         trigger={null}
         collapsible
-        collapsed={sidebarCollapsed}
-        className="sidebar"
+        collapsed={isMobile ? false : sidebarCollapsed}
+        className={`sidebar ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
       >
         <div className="sidebar-logo">
-          {sidebarCollapsed ? 'F1' : 'F1 数据看板'}
+          {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
         </div>
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
-          onClick={({ key }) => navigate(key)}
+          onClick={({ key }) => handleMenuClick(key)}
           className="sidebar-menu"
         />
       </Sider>
-      <Layout className={`main-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <Layout className={`main-layout ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <Header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Button
               type="text"
-              icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={toggleSidebar}
+              icon={isMobile ? (mobileSidebarOpen ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />) : (sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
+              onClick={isMobile ? toggleMobileSidebar : toggleSidebar}
               size="large"
               className="menu-toggle-btn"
             />

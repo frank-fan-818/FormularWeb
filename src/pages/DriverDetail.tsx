@@ -8,6 +8,7 @@ import { seasonApi, driverApi } from '@/api/ergast';
 import type { DriverStanding } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import dayjs from 'dayjs';
+import './DriverDetail.css';
 
 const DriverDetail = () => {
   const { driverId } = useParams<{ driverId: string }>();
@@ -31,6 +32,16 @@ const DriverDetail = () => {
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [chartHeight, setChartHeight] = useState(400);
+
+  useEffect(() => {
+    const updateChartHeight = () => {
+      setChartHeight(window.innerWidth <= 768 ? 300 : 400);
+    };
+    updateChartHeight();
+    window.addEventListener('resize', updateChartHeight);
+    return () => window.removeEventListener('resize', updateChartHeight);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -348,7 +359,7 @@ const DriverDetail = () => {
           }}
         >
           {seasonRaceResults.length > 0 ? (
-            <ReactECharts option={getPointsChartOption()} style={{ height: 400 }} />
+            <ReactECharts option={getPointsChartOption()} style={{ height: chartHeight }} />
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>暂无积分数据</div>
           )}
