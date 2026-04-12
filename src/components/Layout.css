@@ -83,6 +83,10 @@
   margin-left: 80px;
 }
 
+.main-layout.sidebar-hidden {
+  margin-left: 0 !important;
+}
+
 .header {
   padding: 0 24px;
   background: linear-gradient(145deg, #ffffff 0%, #fafafa 100%);

@@ -26,6 +26,7 @@ const LayoutComponent = () => {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const loadSeasons = async () => {
@@ -41,6 +42,7 @@ const LayoutComponent = () => {
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    setMounted(true);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -90,30 +92,32 @@ const LayoutComponent = () => {
 
   return (
     <Layout className="app-layout">
-      {isMobile && (
+      {isMobile && mounted && (
         <div
           className={`sidebar-overlay ${mobileSidebarOpen ? 'visible' : ''}`}
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={isMobile ? false : sidebarCollapsed}
-        className={`sidebar ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
-      >
-        <div className="sidebar-logo">
-          {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
-        </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => handleMenuClick(key)}
-          className="sidebar-menu"
-        />
-      </Sider>
-      <Layout className={`main-layout ${!isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {mounted && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={isMobile ? false : sidebarCollapsed}
+          className={`sidebar ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
+        >
+          <div className="sidebar-logo">
+            {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
+          </div>
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={({ key }) => handleMenuClick(key)}
+            className="sidebar-menu"
+          />
+        </Sider>
+      )}
+      <Layout className={`main-layout ${!mounted ? 'sidebar-hidden' : ''} ${mounted && !isMobile && sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <Header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Button
