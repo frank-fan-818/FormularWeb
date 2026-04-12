@@ -103,7 +103,7 @@ const LayoutComponent = () => {
           trigger={null}
           collapsible
           collapsed={isMobile ? false : sidebarCollapsed}
-          className={`sidebar ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
+          className={`sidebar ${!isMobile ? 'desktop-mounted' : ''} ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
         >
           <div className="sidebar-logo">
             {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
