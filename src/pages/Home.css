@@ -6,9 +6,10 @@
 
 .page-title {
   font-size: 42px;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .page-title span {
@@ -82,9 +83,11 @@
 
 .section-title {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 600;
   margin: 40px 0 24px 0;
   color: #262626;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .standings-container {
@@ -146,9 +149,10 @@
 
 .standings-rank {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   width: 36px;
   text-align: center;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .standings-rank-1 {
@@ -169,11 +173,12 @@
 
 .standings-name {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   color: #262626;
   margin-bottom: 4px;
   cursor: pointer;
   transition: color 0.2s ease;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .standings-name:hover {
@@ -193,8 +198,9 @@
 
 .standings-points {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   color: #ff1801;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .ongoing-card {

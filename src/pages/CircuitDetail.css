@@ -11,10 +11,11 @@
 
 .page-title {
   font-size: 42px;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
   animation: slideUp 0.4s ease-out 0.05s backwards;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .page-title span {
@@ -94,10 +95,21 @@
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.stat-card:nth-child(1) { animation-delay: 0.2s; }
-.stat-card:nth-child(2) { animation-delay: 0.25s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stat-card:nth-child(4) { animation-delay: 0.35s; }
+.stat-card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.stat-card:nth-child(4) {
+  animation-delay: 0.35s;
+}
 
 .stat-card:hover {
   transform: translateY(-4px) scale(1.005);
@@ -112,16 +124,19 @@
 
 .stat-value {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   color: #262626;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .section-title {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 600;
   margin: 40px 0 24px 0;
   color: #262626;
   animation: slideUp 0.6s ease-out 0.4s backwards;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .race-info-card {
@@ -172,8 +187,9 @@
 
 .lap-record-time {
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 700;
   color: #d46b08;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .lap-record-info {

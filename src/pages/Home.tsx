@@ -31,7 +31,7 @@ const Home = () => {
         <Card className="stat-card">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <TrophyOutlined style={{ fontSize: 32, color: '#ff1801', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 800, color: '#ff1801' }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: '#ff1801', fontFamily: "'DM Sans', sans-serif" }}>
               {completedRaces.length}
             </div>
             <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
@@ -43,7 +43,7 @@ const Home = () => {
         <Card className="stat-card">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CarOutlined style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 800, color: '#1890ff' }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: '#1890ff', fontFamily: "'DM Sans', sans-serif" }}>
               {driverStandings.length}
             </div>
             <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
@@ -55,7 +55,7 @@ const Home = () => {
         <Card className="stat-card">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <TeamOutlined style={{ fontSize: 32, color: '#52c41a', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 800, color: '#52c41a' }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: '#52c41a', fontFamily: "'DM Sans', sans-serif" }}>
               {constructorStandings.length}
             </div>
             <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
@@ -67,7 +67,7 @@ const Home = () => {
         <Card className="stat-card">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <ClockCircleOutlined style={{ fontSize: 32, color: '#faad14', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 800, color: '#faad14' }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: '#faad14', fontFamily: "'DM Sans', sans-serif" }}>
               {nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '✓'}
             </div>
             <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
