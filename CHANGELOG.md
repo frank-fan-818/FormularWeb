@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-04-13
+
+### Changed
+- 积分榜车队名称、胜场数、进度条纵向对齐
+- 车手库信息横向排列，卡片更紧凑
+- 统一页面背景为白色
+- 积分徽章使用车队代表色（调暗版本）
+- 优化侧边栏和顶部导航视觉统一性
+
 ## [0.2.1] - 2026-04-13
 
 ### Changed

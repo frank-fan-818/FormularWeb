@@ -42,6 +42,28 @@
 .progress-wrapper {
   width: 100%;
   max-width: 400px;
+  flex: 1;
+}
+
+/* 积分榜信息行 - 纵向对齐 */
+.item-stats-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: nowrap;
+}
+
+/* 车队名固定宽度 */
+.item-stats-row .team-name {
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+/* 胜场徽章固定宽度 */
+.item-stats-row .wins-badge {
+  min-width: 60px;
+  flex-shrink: 0;
+  text-align: center;
 }
 
 /* 进度条动画 */

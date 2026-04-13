@@ -42,3 +42,28 @@ export function getTeamBackgroundColor(constructorId: string): React.CSSProperti
     color: getTeamColor(constructorId, true)
   };
 }
+
+// 将颜色调暗，用于积分徽章背景
+function darkenColor(hexColor: string, factor: number = 0.7): string {
+  // 移除 # 号
+  const hex = hexColor.replace('#', '');
+  
+  // 解析 RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // 调暗颜色
+  const newR = Math.floor(r * factor);
+  const newG = Math.floor(g * factor);
+  const newB = Math.floor(b * factor);
+  
+  // 转换回 hex
+  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+}
+
+// 获取调暗的车队颜色，用于积分徽章
+export function getTeamDarkColor(constructorId: string): string {
+  const baseColor = getTeamColor(constructorId);
+  return darkenColor(baseColor, 0.75);
+}

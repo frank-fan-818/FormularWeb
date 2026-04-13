@@ -4,7 +4,7 @@ import { Card, Tabs, Spin, Tag, Progress } from 'antd';
 import { TrophyOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { seasonApi } from '@/api/ergast';
-import { getTeamColor } from '@/utils/teamColors';
+import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
 import type { DriverStanding, ConstructorStanding } from '@/types';
 import './Seasons.css';
 
@@ -40,6 +40,7 @@ const Seasons = () => {
         <div className="list-container">
           {driverStandings.map((standing, index) => {
             const teamColor = getTeamColor(standing.Constructors[0].constructorId);
+            const darkTeamColor = getTeamDarkColor(standing.Constructors[0].constructorId);
             const points = parseFloat(standing.points);
             const percentage = maxDriverPoints > 0 ? Math.min(100, (points / maxDriverPoints) * 100) : 0;
             return (
@@ -96,7 +97,7 @@ const Seasons = () => {
                     </div>
                   </div>
                   <div className="item-right">
-                    <div className="points-badge">
+                    <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
                       <span className="points-value">{standing.points}</span>
                       <span className="points-label">积分</span>
                     </div>
@@ -115,6 +116,7 @@ const Seasons = () => {
         <div className="list-container">
           {constructorStandings.map((standing, index) => {
             const teamColor = getTeamColor(standing.Constructor.constructorId);
+            const darkTeamColor = getTeamDarkColor(standing.Constructor.constructorId);
             const points = parseFloat(standing.points);
             const percentage = maxConstructorPoints > 0 ? Math.min(100, (points / maxConstructorPoints) * 100) : 0;
             return (
@@ -164,7 +166,7 @@ const Seasons = () => {
                     </div>
                   </div>
                   <div className="item-right">
-                    <div className="points-badge">
+                    <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
                       <span className="points-value">{standing.points}</span>
                       <span className="points-label">积分</span>
                     </div>
