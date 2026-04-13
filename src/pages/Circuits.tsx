@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Image, Spin } from 'antd';
-import { EnvironmentOutlined, CarOutlined, FlagOutlined, CalendarOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, CarOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import './Circuits.css';
@@ -201,18 +201,11 @@ const Circuits = () => {
                   <div className="item-info">
                     <h3 className="item-title">
                       {circuit.circuitName}
-                      {circuit.race_laps && <span className="item-tag">{circuit.race_laps} 圈</span>}
                     </h3>
                     <div className="item-stats">
                       <span className="stat-item"><EnvironmentOutlined /> {circuit.Location.locality}, {circuit.Location.country}</span>
                       {circuit.length && (
                         <span className="stat-item"><CarOutlined /> {circuit.length} km</span>
-                      )}
-                      {circuit.turns && (
-                        <span className="stat-item"><FlagOutlined /> {circuit.turns} 个弯道</span>
-                      )}
-                      {circuit.first_race && (
-                        <span className="stat-item"><CalendarOutlined /> 首次举办 {circuit.first_race} 年</span>
                       )}
                     </div>
                   </div>

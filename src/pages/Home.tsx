@@ -14,7 +14,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="home-page-container">
+      <div className="page-container">
         <div className="loading-container">
           <Spin size="large" />
         </div>
@@ -22,142 +22,181 @@ const Home = () => {
     );
   }
 
+  const statCards = [
+    {
+      icon: <TrophyOutlined className="stat-icon" style={{ color: 'var(--f1-red)' }} />,
+      value: completedRaces.length,
+      label: `已完成分站赛 / ${races.length}`,
+      color: 'var(--f1-red)',
+      delay: 'stagger-1'
+    },
+    {
+      icon: <CarOutlined className="stat-icon" style={{ color: 'var(--accent-blue)' }} />,
+      value: driverStandings.length,
+      label: '参赛车手',
+      color: 'var(--accent-blue)',
+      delay: 'stagger-2'
+    },
+    {
+      icon: <TeamOutlined className="stat-icon" style={{ color: 'var(--accent-green)' }} />,
+      value: constructorStandings.length,
+      label: '参赛车队',
+      color: 'var(--accent-green)',
+      delay: 'stagger-3'
+    },
+    {
+      icon: <ClockCircleOutlined className="stat-icon" style={{ color: 'var(--accent-yellow)' }} />,
+      value: nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '✓',
+      label: nextRace ? '天后下一场比赛' : '赛季已结束',
+      color: 'var(--accent-yellow)',
+      delay: 'stagger-4'
+    }
+  ];
+
+  const getRankBadgeClass = (index: number) => {
+    if (index === 0) return 'rank-badge-1';
+    if (index === 1) return 'rank-badge-2';
+    if (index === 2) return 'rank-badge-3';
+    return 'rank-badge-other';
+  };
+
   return (
-    <div className="home-page-container">
-      <h1 className="page-title">🏎️ <span>{currentSeason}赛季 F1 概览</span></h1>
-      <p className="page-subtitle">欢迎来到F1数据看板，查看最新赛事数据和历史记录</p>
+    <div className="page-container">
+      {/* Hero Section - Ferrari Style */}
+      <section className="hero-section animate-slide-up">
+        <h1 className="hero-title">
+          <span className="hero-title-accent">{currentSeason}</span> 赛季 F1 概览
+        </h1>
+        <p className="hero-subtitle">
+          欢迎来到 F1 数据看板，追踪最新赛事动态、车手表现与车队排名
+        </p>
+      </section>
 
-      <div className="stats-container">
-        <Card className="stat-card">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <TrophyOutlined style={{ fontSize: 32, color: '#ff1801', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 700, color: '#ff1801', fontFamily: "'DM Sans', sans-serif" }}>
-              {completedRaces.length}
+      {/* Stats Grid - Vercel Style */}
+      <section className="stats-grid">
+        {statCards.map((card, index) => (
+          <div
+            key={index}
+            className={`stat-card-f1 animate-slide-up ${card.delay}`}
+          >
+            {card.icon}
+            <div className="stat-value" style={{ color: card.color }}>
+              {card.value}
             </div>
-            <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
-              已完成分站赛 / {races.length}
-            </div>
+            <div className="stat-label">{card.label}</div>
           </div>
-        </Card>
+        ))}
+      </section>
 
-        <Card className="stat-card">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <CarOutlined style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 700, color: '#1890ff', fontFamily: "'DM Sans', sans-serif" }}>
-              {driverStandings.length}
+      <div className="section-divider" />
+
+      {/* Standings Section - Vercel + Linear Style */}
+      <section className="standings-section">
+        <h2 className="section-title-f1 animate-slide-up stagger-5">
+          <TrophyOutlined style={{ marginRight: 12, color: 'var(--f1-red)' }} />
+          积分榜 TOP3
+        </h2>
+
+        <div className="standings-grid">
+          {/* Driver Standings */}
+          <div className="standings-card-f1 animate-slide-up stagger-5">
+            <div className="card-header">
+              <CarOutlined style={{ marginRight: 8 }} />
+              车手积分榜
             </div>
-            <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
-              参赛车手
-            </div>
+            <List
+              className="standings-list-f1"
+              dataSource={driverStandings.slice(0, 3)}
+              renderItem={(item, index) => (
+                <List.Item className="standings-item-f1">
+                  <div className={`rank-badge ${getRankBadgeClass(index)}`}>
+                    {index + 1}
+                  </div>
+                  <div className="standings-info-f1">
+                    <div
+                      className="standings-name-f1 clickable-f1"
+                      onClick={() => navigate(`/drivers/${item.Driver.driverId}`)}
+                    >
+                      {item.Driver.givenName} {item.Driver.familyName}
+                      <Tag className="driver-code-tag" style={{ marginLeft: 8 }}>
+                        {item.Driver.code}
+                      </Tag>
+                    </div>
+                    <div
+                      className="standings-team-f1 clickable-f1"
+                      onClick={() => navigate(`/constructors/${item.Constructors[0].constructorId}`)}
+                    >
+                      {item.Constructors[0].name}
+                    </div>
+                  </div>
+                  <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
+                    {item.points}
+                    <span className="points-unit">pts</span>
+                  </div>
+                </List.Item>
+              )}
+            />
           </div>
-        </Card>
 
-        <Card className="stat-card">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <TeamOutlined style={{ fontSize: 32, color: '#52c41a', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 700, color: '#52c41a', fontFamily: "'DM Sans', sans-serif" }}>
-              {constructorStandings.length}
+          {/* Constructor Standings */}
+          <div className="standings-card-f1 animate-slide-up stagger-6">
+            <div className="card-header">
+              <TeamOutlined style={{ marginRight: 8 }} />
+              车队积分榜
             </div>
-            <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
-              参赛车队
-            </div>
+            <List
+              className="standings-list-f1"
+              dataSource={constructorStandings.slice(0, 3)}
+              renderItem={(item, index) => (
+                <List.Item className="standings-item-f1">
+                  <div className={`rank-badge ${getRankBadgeClass(index)}`}>
+                    {index + 1}
+                  </div>
+                  <div className="standings-info-f1">
+                    <div
+                      className="standings-name-f1 clickable-f1"
+                      onClick={() => navigate(`/constructors/${item.Constructor.constructorId}`)}
+                    >
+                      {item.Constructor.name}
+                    </div>
+                    <div className="standings-team-f1">
+                      {item.Constructor.nationality}
+                    </div>
+                  </div>
+                  <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
+                    {item.points}
+                    <span className="points-unit">pts</span>
+                  </div>
+                </List.Item>
+              )}
+            />
           </div>
-        </Card>
+        </div>
+      </section>
 
-        <Card className="stat-card">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <ClockCircleOutlined style={{ fontSize: 32, color: '#faad14', marginBottom: 12 }} />
-            <div style={{ fontSize: 36, fontWeight: 700, color: '#faad14', fontFamily: "'DM Sans', sans-serif" }}>
-              {nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '✓'}
-            </div>
-            <div style={{ fontSize: 14, color: '#8c8c8c', marginTop: 4 }}>
-              {nextRace ? '天后下一场比赛' : '赛季已结束'}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <h2 className="section-title">🏆 积分榜 TOP3</h2>
-      <div className="standings-container">
-        <Card className="standings-card" title="车手积分榜">
-          <List
-            className="standings-list"
-            dataSource={driverStandings.slice(0, 3)}
-            renderItem={(item, index) => (
-              <List.Item className="standings-item">
-                <div className={`standings-rank standings-rank-${index + 1}`}>
-                  {index + 1}
-                </div>
-                <div className="standings-info">
-                  <div
-                    className="standings-name"
-                    onClick={() => navigate(`/drivers/${item.Driver.driverId}`)}
-                  >
-                    {item.Driver.givenName} {item.Driver.familyName}
-                    <Tag color="blue" style={{ marginLeft: 8, fontSize: 12 }}>
-                      {item.Driver.code}
-                    </Tag>
-                  </div>
-                  <div
-                    className="standings-sub"
-                    onClick={() => navigate(`/constructors/${item.Constructors[0].constructorId}`)}
-                  >
-                    {item.Constructors[0].name}
-                  </div>
-                </div>
-                <div className="standings-points">
-                  {item.points} pts
-                </div>
-              </List.Item>
-            )}
-          />
-        </Card>
-
-        <Card className="standings-card" title="车队积分榜">
-          <List
-            className="standings-list"
-            dataSource={constructorStandings.slice(0, 3)}
-            renderItem={(item, index) => (
-              <List.Item className="standings-item">
-                <div className={`standings-rank standings-rank-${index + 1}`}>
-                  {index + 1}
-                </div>
-                <div className="standings-info">
-                  <div
-                    className="standings-name"
-                    onClick={() => navigate(`/constructors/${item.Constructor.constructorId}`)}
-                  >
-                    {item.Constructor.name}
-                  </div>
-                  <div className="standings-sub">
-                    {item.Constructor.nationality}
-                  </div>
-                </div>
-                <div className="standings-points">
-                  {item.points} pts
-                </div>
-              </List.Item>
-            )}
-          />
-        </Card>
-      </div>
-
+      {/* Ongoing Race */}
       {ongoingRace && (
         <>
-          <h2 className="section-title">🔥 进行中比赛</h2>
-          <Card className="ongoing-card">
-            <div className="ongoing-content">
-              <div className="ongoing-info">
-                <h3>{ongoingRace.raceName}</h3>
-                <p>
-                  {ongoingRace.Circuit.circuitName} · {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
-                </p>
+          <div className="section-divider" />
+          <section className="ongoing-section animate-slide-up">
+            <h2 className="section-title-f1">
+              <FireOutlined style={{ marginRight: 12, color: 'var(--accent-orange)' }} />
+              进行中比赛
+            </h2>
+            <Card className="ongoing-card-f1">
+              <div className="ongoing-content-f1">
+                <div className="ongoing-info-f1">
+                  <h3>{ongoingRace.raceName}</h3>
+                  <p>
+                    {ongoingRace.Circuit.circuitName} · {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
+                  </p>
+                </div>
+                <Tag className="ongoing-tag">
+                  <FireOutlined /> 进行中
+                </Tag>
               </div>
-              <Tag color="orange" icon={<FireOutlined />} style={{ fontSize: 14, padding: '6px 16px', borderRadius: 20 }}>
-                进行中
-              </Tag>
-            </div>
-          </Card>
+            </Card>
+          </section>
         </>
       )}
     </div>

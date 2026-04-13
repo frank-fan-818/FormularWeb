@@ -1,149 +1,499 @@
+@import './styles/design-tokens.css';
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Airbnb-inspired Typography */
+/* ========================================
+   F1 Dashboard - Ferrari + Vercel + Linear
+   ======================================== */
+
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #222222;
+  background-color: var(--bg-primary);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
-/* Airbnb-style headings */
+/* ========================================
+   Typography System
+   ======================================== */
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #222222;
-  letter-spacing: -0.02em;
+  font-family: var(--font-family);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-tight);
 }
 
 h1 {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
 }
 
 h2 {
-  font-size: 26px;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
 }
 
 h3 {
-  font-size: 22px;
+  font-size: var(--text-2xl);
 }
 
 h4 {
-  font-size: 18px;
+  font-size: var(--text-xl);
 }
 
-/* Airbnb-style text */
+h5 {
+  font-size: var(--text-lg);
+}
+
+h6 {
+  font-size: var(--text-base);
+}
+
 p {
-  font-size: 16px;
-  line-height: 1.5;
-  color: #717171;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
 }
 
-/* Airbnb-style links */
+/* ========================================
+   Links
+   ======================================== */
+
 a {
-  color: #222222;
+  color: var(--text-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-medium);
+  transition: color var(--transition-fast);
 }
 
 a:hover {
-  text-decoration: underline;
+  color: var(--f1-red);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--font-mono);
 }
 
 #root {
   min-height: 100vh;
+  background-color: var(--bg-primary);
 }
 
-/* 全局交互优化 */
+/* ========================================
+   Ant Design Overrides - Warm Light Theme
+   ======================================== */
+
+.ant-layout {
+  background-color: var(--bg-primary);
+}
+
+.ant-layout-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.ant-layout-content {
+  background-color: var(--bg-primary);
+}
+
+/* Cards - Vercel Style with Dark Theme */
 .ant-card {
-  transition: all 0.3s ease;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-slow) var(--ease-spring);
 }
 
 .ant-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-dark);
+}
+
+.ant-card-head {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.ant-card-body {
+  color: var(--text-secondary);
+}
+
+/* Buttons - Ferrari Accent */
+.ant-btn {
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--f1-red) 0%, var(--f1-red-light) 100%);
+  border: none;
+  box-shadow: var(--shadow-glow);
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, var(--f1-red-light) 0%, var(--f1-red) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-strong);
+}
+
+.ant-btn-default {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.ant-btn-default:hover {
+  border-color: var(--f1-red);
+  color: var(--f1-red);
+}
+
+/* Tables */
+.ant-table {
+  background-color: transparent;
+}
+
+.ant-table-thead>tr>th {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: var(--font-semibold);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.ant-table-tbody>tr>td {
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.ant-table-tbody>tr:hover>td {
+  background-color: var(--bg-tertiary);
+}
+
+/* List */
+.ant-list {
+  background-color: transparent;
+}
+
+.ant-list-item {
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Tags */
+.ant-tag {
+  border-radius: var(--radius-full);
+  font-weight: var(--font-medium);
+}
+
+/* Input */
+.ant-input {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  border-radius: var(--radius-lg);
+}
+
+.ant-input:focus {
+  border-color: var(--f1-red);
+  box-shadow: 0 0 0 2px var(--f1-red-glow);
+}
+
+/* Select */
+.ant-select-selector {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Dropdown */
+.ant-dropdown-menu {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.ant-dropdown-menu-item {
+  color: var(--text-primary);
+}
+
+.ant-dropdown-menu-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Modal */
+.ant-modal-content {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+}
+
+.ant-modal-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.ant-modal-title {
+  color: var(--text-primary);
+}
+
+/* Spin */
+.ant-spin-dot-item {
+  background-color: var(--f1-red);
+}
+
+/* ========================================
+   Custom Components
+   ======================================== */
+
+/* Hero Section - Warm Light Theme */
+.hero-section {
+  position: relative;
+  padding: var(--space-6) var(--space-5);
+  background: transparent;
+  border-bottom: none;
+  overflow: hidden;
+}
+
+.hero-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.hero-title-accent {
+  background: linear-gradient(135deg, var(--f1-red) 0%, var(--f1-red-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  max-width: 600px;
+}
+
+/* Stat Cards - Clean Style */
+.stat-card-f1 {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-f1:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-primary);
   transform: translateY(-2px);
 }
 
-.ant-table-row {
-  transition: all 0.2s ease;
+.stat-card-f1 .stat-icon {
+  font-size: 24px;
+  margin-bottom: var(--space-2);
 }
 
-.ant-table-row:hover>td {
-  background: #f5f5f5 !important;
+.stat-card-f1 .stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  font-family: var(--font-family);
+  margin-bottom: var(--space-1);
 }
 
-.clickable-text {
-  transition: all 0.2s ease;
+.stat-card-f1 .stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-normal);
 }
 
-.clickable-text:hover {
-  filter: brightness(1.2);
-  text-decoration: underline;
+/* Standings Cards */
+.standings-card-f1 {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
-.ant-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.standings-card-f1 .card-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-secondary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  color: var(--text-primary);
 }
 
-/* 排名奖牌样式 */
-.rank-medal-1 {
-  color: #faad14 !important;
-  font-weight: bold;
+/* Rank Badges - Linear Style */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
 }
 
-.rank-medal-2 {
-  color: #8c8c8c !important;
-  font-weight: bold;
+.rank-badge-1 {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #000;
 }
 
-.rank-medal-3 {
-  color: #d48806 !important;
-  font-weight: bold;
+.rank-badge-2 {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+  color: #000;
 }
 
-/* 赛历状态行样式 */
-.race-completed>td {
-  background: rgba(82, 196, 26, 0.03) !important;
+.rank-badge-3 {
+  background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+  color: #FFF;
 }
 
-.race-ongoing>td {
-  background: rgba(250, 173, 20, 0.05) !important;
+.rank-badge-other {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-secondary);
 }
 
-.race-upcoming>td {
-  background: rgba(0, 0, 0, 0.01) !important;
+/* Clickable Items */
+.clickable-f1 {
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.race-completed:hover>td {
-  background: rgba(82, 196, 26, 0.06) !important;
+.clickable-f1:hover {
+  color: var(--f1-red);
 }
 
-.race-ongoing:hover>td {
-  background: rgba(250, 173, 20, 0.08) !important;
+/* Animations - Linear Style */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.race-upcoming:hover>td {
-  background: rgba(0, 0, 0, 0.03) !important;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px var(--f1-red-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 40px var(--f1-red-glow);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s var(--ease-out-expo) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-out-expo) forwards;
+}
+
+/* Stagger Animation Delays */
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+
+.stagger-5 {
+  animation-delay: 0.25s;
+}
+
+.stagger-6 {
+  animation-delay: 0.3s;
+}
+
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+}
+
+/* Section Divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border-primary) 50%, transparent 100%);
+  margin: var(--space-6) 0;
+}
+
+/* Page Container */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .page-container {
+    padding: var(--space-4);
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+  }
 }

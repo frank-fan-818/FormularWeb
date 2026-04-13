@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-13
+
+### Added
+- 全新设计系统 - 基于 Ferrari + Vercel + Linear 的设计语言
+- design-tokens.css - CSS 变量设计令牌系统
+- 温暖的米黄色主题背景 (#F7F7F5)
+- 统一的间距、圆角、阴影系统
+- 页面加载动画和交互动效
+
+### Changed
+- 重构首页 Hero 区域样式
+- 重构统计卡片组件
+- 重构积分榜组件
+- 更新赛道库页面样式
+- 更新赛道详情页样式
+- 更新车手详情页样式
+- 更新布局组件样式
+- 精简赛道库列表信息展示
+- 统一所有页面视觉风格
+
 ## [0.1.1] - 2026-04-12
 
 ### Fixed
