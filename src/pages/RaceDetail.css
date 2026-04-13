@@ -1,0 +1,229 @@
+.race-detail-page {
+  padding: 0;
+}
+
+.back-button {
+  margin-bottom: 16px;
+}
+
+.race-info-card {
+  margin-bottom: 16px;
+}
+
+.race-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.race-title {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.race-flag-icon {
+  color: #ff1801;
+}
+
+.race-circuit {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.race-date {
+  font-size: 14px;
+  padding: 4px 12px;
+}
+
+.sprint-tag {
+  font-size: 14px;
+  padding: 4px 12px;
+  margin-left: 8px;
+}
+
+.results-card {
+  overflow: hidden;
+}
+
+/* 车手和车队名称样式 */
+.driver-name {
+  font-weight: 500;
+  color: #1890ff;
+  cursor: pointer;
+}
+
+.driver-name:hover {
+  text-decoration: underline;
+}
+
+.driver-code {
+  font-size: 12px;
+  color: #666;
+}
+
+.constructor-name {
+  color: #1890ff;
+  cursor: pointer;
+}
+
+.constructor-name:hover {
+  text-decoration: underline;
+}
+
+.fastest-lap {
+  color: #faad14;
+  font-weight: bold;
+}
+
+.points {
+  font-weight: bold;
+  color: #ff1801;
+}
+
+/* 移动端滑动容器样式 */
+.mobile-slider-container {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.nav-button {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-indicators {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d9d9d9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-dot.active {
+  background-color: #1890ff;
+  width: 20px;
+  border-radius: 4px;
+}
+
+.current-tab-label {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1890ff;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: linear-gradient(135deg, #e6f7ff 0%, #f0f5ff 100%);
+  border-radius: 8px;
+}
+
+.slider-content {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.swipe-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-top: 12px;
+  padding: 8px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .race-detail-page {
+    padding: 0;
+  }
+
+  .back-button {
+    margin-bottom: 12px;
+  }
+
+  .race-title {
+    font-size: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .race-circuit {
+    font-size: 14px;
+  }
+
+  .race-date,
+  .sprint-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+  }
+
+  .sprint-tag {
+    margin-left: 4px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  /* 表格移动端优化 */
+  .slider-content .ant-table {
+    font-size: 12px;
+  }
+
+  .slider-content .ant-table-cell {
+    padding: 8px 4px !important;
+  }
+
+  .driver-name {
+    font-size: 13px;
+  }
+
+  .driver-code {
+    font-size: 10px;
+  }
+
+  .constructor-name {
+    font-size: 11px;
+  }
+}
+
+/* 小屏幕手机适配 */
+@media (max-width: 375px) {
+  .race-title {
+    font-size: 18px;
+  }
+
+  .tab-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .tab-dot.active {
+    width: 16px;
+  }
+
+  .current-tab-label {
+    font-size: 14px;
+    padding: 6px;
+  }
+}

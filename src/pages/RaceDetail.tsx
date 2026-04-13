@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Tabs, Table, Tag } from 'antd';
-import { ArrowLeftOutlined, FlagOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { seasonApi } from '@/api/ergast';
 import type { Race, Result, QualifyingResult } from '@/types';
 import dayjs from 'dayjs';
+import './RaceDetail.css';
 
 const RaceDetail = () => {
   const { round } = useParams<{ round: string }>();
@@ -20,13 +21,25 @@ const RaceDetail = () => {
   const [fp2Results, setFp2Results] = useState<Result[]>([]);
   const [fp3Results, setFp3Results] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('qualifying');
+  const [isMobile, setIsMobile] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
       if (!round) return;
       setLoading(true);
 
-      // 加载所有比赛环节数据
       const [
         raceData,
         qualifyingData,
@@ -62,24 +75,19 @@ const RaceDetail = () => {
   }, [round, currentSeason]);
 
   const qualifyingColumns = [
-    {
-      title: '排名',
-      dataIndex: 'position',
-      key: 'position',
-      width: 80,
-    },
+    { title: '排名', dataIndex: 'position', key: 'position', width: 60 },
     {
       title: '车手',
       key: 'driver',
       render: (_: unknown, record: QualifyingResult) => (
         <div>
           <div
-            style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
+            className="driver-name"
             onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
           >
             {record.Driver.givenName} {record.Driver.familyName}
           </div>
-          <div style={{ fontSize: 12, color: '#666' }}>{record.Driver.code}</div>
+          <div className="driver-code">{record.Driver.code}</div>
         </div>
       ),
     },
@@ -87,37 +95,20 @@ const RaceDetail = () => {
       title: '车队',
       key: 'constructor',
       render: (_: unknown, record: QualifyingResult) => (
-        <div
-          style={{ color: '#1890ff', cursor: 'pointer' }}
+        <span
+          className="constructor-name"
           onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
         >
           {record.Constructor.name}
-        </div>
+        </span>
       ),
     },
-    {
-      title: 'Q1',
-      dataIndex: 'Q1',
-      key: 'Q1',
-      width: 100,
-    },
-    {
-      title: 'Q2',
-      dataIndex: 'Q2',
-      key: 'Q2',
-      width: 100,
-    },
-    {
-      title: 'Q3',
-      dataIndex: 'Q3',
-      key: 'Q3',
-      width: 100,
-    },
+    { title: 'Q1', dataIndex: 'Q1', key: 'Q1', width: 80 },
+    { title: 'Q2', dataIndex: 'Q2', key: 'Q2', width: 80 },
+    { title: 'Q3', dataIndex: 'Q3', key: 'Q3', width: 80 },
   ];
 
-  // 正赛/冲刺赛表格列
   const getRaceColumns = (data: Result[]) => {
-    // 找到最快圈速
     let fastestLapTime = '';
     data.forEach(result => {
       if (result.FastestLap?.Time?.time) {
@@ -128,30 +119,20 @@ const RaceDetail = () => {
     });
 
     return [
-      {
-        title: '排名',
-        dataIndex: 'position',
-        key: 'position',
-        width: 80,
-      },
-      {
-        title: '发车位置',
-        dataIndex: 'grid',
-        key: 'grid',
-        width: 100,
-      },
+      { title: '排名', dataIndex: 'position', key: 'position', width: 60 },
+      { title: '发车', dataIndex: 'grid', key: 'grid', width: 60 },
       {
         title: '车手',
         key: 'driver',
         render: (_: unknown, record: Result) => (
           <div>
             <div
-              style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
+              className="driver-name"
               onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
             >
               {record.Driver.givenName} {record.Driver.familyName}
             </div>
-            <div style={{ fontSize: 12, color: '#666' }}>{record.Driver.code}</div>
+            <div className="driver-code">{record.Driver.code}</div>
           </div>
         ),
       },
@@ -159,25 +140,16 @@ const RaceDetail = () => {
         title: '车队',
         key: 'constructor',
         render: (_: unknown, record: Result) => (
-          <div
-            style={{ color: '#1890ff', cursor: 'pointer' }}
+          <span
+            className="constructor-name"
             onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
           >
             {record.Constructor.name}
-          </div>
+          </span>
         ),
       },
-      {
-        title: '圈数',
-        dataIndex: 'laps',
-        key: 'laps',
-        width: 80,
-      },
-      {
-        title: '成绩',
-        key: 'time',
-        render: (_: unknown, record: Result) => record.Time?.time || record.status,
-      },
+      { title: '圈数', dataIndex: 'laps', key: 'laps', width: 60 },
+      { title: '成绩', key: 'time', render: (_: unknown, record: Result) => record.Time?.time || record.status },
       {
         title: '最快圈',
         key: 'fastestLap',
@@ -185,7 +157,7 @@ const RaceDetail = () => {
           const time = record.FastestLap?.Time?.time;
           if (!time) return '-';
           return time === fastestLapTime ? (
-            <span style={{ color: '#faad14', fontWeight: 'bold' }}>{time} ⚡</span>
+            <span className="fastest-lap">{time} ⚡</span>
           ) : time;
         },
       },
@@ -193,8 +165,8 @@ const RaceDetail = () => {
         title: '积分',
         dataIndex: 'points',
         key: 'points',
-        width: 80,
-        render: (points: string) => <span style={{ fontWeight: 'bold', color: '#ff1801' }}>{points}</span>,
+        width: 60,
+        render: (points: string) => <span className="points">{points}</span>,
       },
     ];
   };
@@ -203,7 +175,6 @@ const RaceDetail = () => {
     return <div>加载中...</div>;
   }
 
-  // 判断各个环节是否有数据
   const hasFp1 = fp1Results.length > 0;
   const hasFp2 = fp2Results.length > 0;
   const hasFp3 = fp3Results.length > 0;
@@ -211,128 +182,83 @@ const RaceDetail = () => {
   const hasSprint = sprintResults.length > 0;
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
-  // 生成Tabs的items配置
   const tabItems = [
-    hasFp1 && {
-      key: 'fp1',
-      label: '练习赛1',
-      children: (
-        <Table
-          columns={getRaceColumns(fp1Results)}
-          dataSource={fp1Results}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    hasFp2 && {
-      key: 'fp2',
-      label: '练习赛2',
-      children: (
-        <Table
-          columns={getRaceColumns(fp2Results)}
-          dataSource={fp2Results}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    hasFp3 && {
-      key: 'fp3',
-      label: '练习赛3',
-      children: (
-        <Table
-          columns={getRaceColumns(fp3Results)}
-          dataSource={fp3Results}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    {
-      key: 'qualifying',
-      label: '排位赛',
-      children: (
-        <Table
-          columns={qualifyingColumns}
-          dataSource={qualifyingResults}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    hasSprintQualifying && {
-      key: 'sprintQualifying',
-      label: '冲刺排位赛',
-      children: (
-        <Table
-          columns={qualifyingColumns}
-          dataSource={sprintQualifyingResults}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    hasSprint && {
-      key: 'sprint',
-      label: '冲刺赛',
-      children: (
-        <Table
-          columns={getRaceColumns(sprintResults)}
-          dataSource={sprintResults}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
-    },
-    {
-      key: 'race',
-      label: '正赛',
-      children: (
-        <Table
-          columns={getRaceColumns(raceResults)}
-          dataSource={raceResults}
-          rowKey="position"
-          pagination={false}
-          loading={loading}
-        />
-      )
+    hasFp1 && { key: 'fp1', label: '练习赛1', data: fp1Results, columns: getRaceColumns(fp1Results) },
+    hasFp2 && { key: 'fp2', label: '练习赛2', data: fp2Results, columns: getRaceColumns(fp2Results) },
+    hasFp3 && { key: 'fp3', label: '练习赛3', data: fp3Results, columns: getRaceColumns(fp3Results) },
+    { key: 'qualifying', label: '排位赛', data: qualifyingResults, columns: qualifyingColumns },
+    hasSprintQualifying && { key: 'sprintQualifying', label: '冲刺排位赛', data: sprintQualifyingResults, columns: qualifyingColumns },
+    hasSprint && { key: 'sprint', label: '冲刺赛', data: sprintResults, columns: getRaceColumns(sprintResults) },
+    { key: 'race', label: '正赛', data: raceResults, columns: getRaceColumns(raceResults) },
+  ].filter(Boolean) as { key: string; label: string; data: any[]; columns: any[] }[];
+
+  const currentTabIndex = tabItems.findIndex(item => item.key === activeTab);
+
+  const handlePrevTab = () => {
+    if (currentTabIndex > 0) {
+      setActiveTab(tabItems[currentTabIndex - 1].key);
     }
-  ].filter(Boolean) as any[];
+  };
+
+  const handleNextTab = () => {
+    if (currentTabIndex < tabItems.length - 1) {
+      setActiveTab(tabItems[currentTabIndex + 1].key);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diff) > minSwipeDistance) {
+      if (diff > 0) {
+        handleNextTab();
+      } else {
+        handlePrevTab();
+      }
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  const currentItem = tabItems.find(item => item.key === activeTab);
 
   return (
-    <div>
+    <div className="race-detail-page">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}
-        style={{ marginBottom: 24 }}
+        className="back-button"
       >
         返回赛历
       </Button>
 
-      <Card loading={loading} style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Card loading={loading} className="race-info-card">
+        <div className="race-header">
           <div>
-            <h1 style={{ fontSize: 32, marginBottom: 8 }}>
-              <FlagOutlined style={{ marginRight: 12, color: '#ff1801' }} />
+            <h1 className="race-title">
+              <FlagOutlined className="race-flag-icon" />
               {raceInfo?.raceName || '加载中...'}
             </h1>
             {raceInfo && (
               <>
-                <p style={{ fontSize: 18, color: '#666', marginBottom: 16 }}>
+                <p className="race-circuit">
                   {raceInfo.Circuit.circuitName} · {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}
                 </p>
-                <Tag color="blue" style={{ fontSize: 16, padding: '4px 12px' }}>
+                <Tag color="blue" className="race-date">
                   {dayjs(raceInfo.date).format('YYYY年MM月DD日')}
                 </Tag>
                 {isSprintWeekend && (
-                  <Tag color="orange" style={{ fontSize: 16, padding: '4px 12px', marginLeft: 8 }}>
+                  <Tag color="orange" className="sprint-tag">
                     冲刺赛周末
                   </Tag>
                 )}
@@ -342,8 +268,69 @@ const RaceDetail = () => {
         </div>
       </Card>
 
-      <Card>
-        <Tabs defaultActiveKey="qualifying" items={tabItems} />
+      <Card className="results-card">
+        {isMobile ? (
+          <div
+            className="mobile-slider-container"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="slider-header">
+              <Button
+                icon={<LeftOutlined />}
+                onClick={handlePrevTab}
+                disabled={currentTabIndex === 0}
+                className="nav-button"
+              />
+              <div className="tab-indicators">
+                {tabItems.map((item, index) => (
+                  <span
+                    key={item.key}
+                    className={`tab-dot ${index === currentTabIndex ? 'active' : ''}`}
+                    onClick={() => setActiveTab(item.key)}
+                  />
+                ))}
+              </div>
+              <Button
+                icon={<RightOutlined />}
+                onClick={handleNextTab}
+                disabled={currentTabIndex === tabItems.length - 1}
+                className="nav-button"
+              />
+            </div>
+            <div className="current-tab-label">{currentItem?.label}</div>
+            <div className="slider-content">
+              <Table
+                columns={currentItem?.columns}
+                dataSource={currentItem?.data}
+                rowKey="position"
+                pagination={false}
+                loading={loading}
+                scroll={{ x: 'max-content' }}
+                size="small"
+              />
+            </div>
+            <div className="swipe-hint">← 左右滑动切换 →</div>
+          </div>
+        ) : (
+          <Tabs
+            defaultActiveKey="qualifying"
+            items={tabItems.map(item => ({
+              key: item.key,
+              label: item.label,
+              children: (
+                <Table
+                  columns={item.columns}
+                  dataSource={item.data}
+                  rowKey="position"
+                  pagination={false}
+                  loading={loading}
+                />
+              ),
+            }))}
+          />
+        )}
       </Card>
     </div>
   );
