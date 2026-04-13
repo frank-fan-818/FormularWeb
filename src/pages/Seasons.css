@@ -1,5 +1,37 @@
 @import './Drivers.css';
 
+/* 赛季中心特有样式 */
+
+/* 车手名字样式 */
+.driver-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.driver-name:hover {
+  color: var(--f1-red);
+}
+
+/* 车队名样式 */
+.team-name {
+  font-weight: 500;
+}
+
+/* 胜利次数徽章 */
+.wins-badge {
+  background: var(--bg-tertiary);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+/* 进度条容器 */
+.progress-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
 /* 进度条动画 */
 @keyframes progressFill {
   from {
@@ -19,7 +51,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 4px;
   z-index: 1;
   animation: colorBarFill 0.8s ease-out forwards;
   transform-origin: top;
@@ -32,5 +64,52 @@
 
   to {
     transform: scaleY(1);
+  }
+}
+
+/* 车队积分榜特有样式 */
+.constructor-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.constructor-wins {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.constructor-wins-badge {
+  background: var(--bg-tertiary);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Tabs 样式优化 */
+:global(.ant-tabs-nav) {
+  margin-bottom: var(--space-4) !important;
+}
+
+:global(.ant-tabs-tab) {
+  font-size: var(--text-base) !important;
+  font-weight: var(--font-medium) !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .progress-wrapper {
+    max-width: 100% !important;
+  }
+
+  .item-stats-row {
+    gap: var(--space-3);
   }
 }
