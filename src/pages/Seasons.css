@@ -6,9 +6,21 @@
 .driver-name {
   font-weight: 500;
   color: var(--text-primary);
+  font-size: 1.125rem;
 }
 
 .driver-name:hover {
+  color: var(--f1-red);
+}
+
+/* 车队名字样式 */
+.constructor-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+}
+
+.constructor-name:hover {
   color: var(--f1-red);
 }
 

@@ -96,9 +96,9 @@ const Seasons = () => {
                     </div>
                   </div>
                   <div className="item-right">
-                    <div className="stat-badge" style={{ background: teamColor }}>
-                      <span className="stat-value" style={{ color: '#ffffff' }}>{standing.points}</span>
-                      <span className="stat-label" style={{ color: '#ffffff' }}>积分</span>
+                    <div className="points-badge">
+                      <span className="points-value">{standing.points}</span>
+                      <span className="points-label">积分</span>
                     </div>
                   </div>
                 </div>
@@ -129,38 +129,34 @@ const Seasons = () => {
                   <div className="item-left">
                     <div className="item-info">
                       <h3 className="item-title">
-                        <span style={{
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          color: index === 0 ? '#faad14' : index === 1 ? '#8c8c8c' : '#d48806',
-                          marginRight: 12,
-                          minWidth: 30,
-                          display: 'inline-block'
-                        }}>
+                        <span className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}>
                           P{standing.position}
                         </span>
                         <span
-                          className="clickable-text"
-                          style={{ fontWeight: 500, color: '#1890ff', cursor: 'pointer' }}
+                          className="clickable-text constructor-name"
                           onClick={() => navigate(`/constructors/${standing.Constructor.constructorId}`)}
                         >
                           {standing.Constructor.name}
                         </span>
                       </h3>
                       <div className="item-stats">
-                        <span className="stat-item">
-                          🌍 {standing.Constructor.nationality}
-                        </span>
-                        <span className="stat-item">
-                          <TrophyOutlined /> {standing.wins} 胜
-                        </span>
-                        <div style={{ marginTop: 8, width: '100%', maxWidth: 400 }} className="progress-wrapper">
+                        <div className="item-stats-row">
+                          <span className="stat-item nationality">
+                            🌍 {standing.Constructor.nationality}
+                          </span>
+                          {parseInt(standing.wins) > 0 && (
+                            <span className="stat-item wins-badge">
+                              <TrophyOutlined /> {standing.wins} 胜
+                            </span>
+                          )}
+                        </div>
+                        <div className="progress-wrapper">
                           <Progress
                             percent={percentage}
                             showInfo={false}
                             strokeColor={teamColor}
-                            strokeWidth={8}
-                            trailColor="#f0f0f0"
+                            strokeWidth={6}
+                            trailColor="var(--bg-tertiary)"
                             className="animated-progress"
                           />
                         </div>
@@ -168,9 +164,9 @@ const Seasons = () => {
                     </div>
                   </div>
                   <div className="item-right">
-                    <div className="stat-badge" style={{ background: teamColor }}>
-                      <span className="stat-value" style={{ color: '#ffffff' }}>{standing.points}</span>
-                      <span className="stat-label" style={{ color: '#ffffff' }}>积分</span>
+                    <div className="points-badge">
+                      <span className="points-value">{standing.points}</span>
+                      <span className="points-label">积分</span>
                     </div>
                   </div>
                 </div>

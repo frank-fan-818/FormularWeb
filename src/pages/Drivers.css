@@ -5,11 +5,12 @@
 }
 
 .page-title {
-  font-size: var(--text-4xl);
+  font-size: 2.75rem;
   font-weight: var(--font-bold);
   margin-bottom: var(--space-6);
   color: var(--text-primary);
   font-family: var(--font-family);
+  letter-spacing: -0.02em;
 }
 
 .page-title span {
@@ -74,7 +75,7 @@
 }
 
 .item-title {
-  font-size: var(--text-lg);
+  font-size: 1.25rem;
   font-weight: var(--font-semibold);
   color: var(--text-primary);
   margin: 0 0 var(--space-2) 0;
@@ -83,6 +84,7 @@
   gap: var(--space-3);
   font-family: var(--font-family);
   flex-wrap: wrap;
+  letter-spacing: -0.01em;
 }
 
 .position-badge {
@@ -149,11 +151,12 @@
 
 .points-badge {
   text-align: center;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #ffffff;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   min-width: 100px;
+  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
 }
 
 .points-value {
@@ -167,7 +170,7 @@
 .points-label {
   display: block;
   font-size: var(--text-xs);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: var(--font-medium);
   margin-top: var(--space-1);
 }

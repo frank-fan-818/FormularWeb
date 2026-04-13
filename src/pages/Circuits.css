@@ -5,11 +5,12 @@
 }
 
 .page-title {
-  font-size: var(--text-4xl);
+  font-size: 2.75rem;
   font-weight: var(--font-bold);
   margin-bottom: var(--space-6);
   color: var(--text-primary);
   font-family: var(--font-family);
+  letter-spacing: -0.02em;
 }
 
 .page-title span {
@@ -80,11 +81,12 @@
 }
 
 .item-title {
-  font-size: var(--text-lg);
+  font-size: 1.25rem;
   font-weight: var(--font-semibold);
   color: var(--text-primary);
   margin: 0 0 var(--space-1) 0;
   font-family: var(--font-family);
+  letter-spacing: -0.01em;
 }
 
 .item-stats {
@@ -107,11 +109,12 @@
 
 .stat-badge {
   text-align: center;
-  background: var(--f1-red);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: var(--bg-card);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   min-width: 100px;
+  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
 }
 
 .stat-value {
@@ -120,12 +123,13 @@
   font-weight: var(--font-bold);
   line-height: 1;
   font-family: var(--font-family);
+  color: #ffffff;
 }
 
 .stat-label {
   display: block;
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: var(--font-medium);
   margin-top: var(--space-1);
 }

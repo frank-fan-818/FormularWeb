@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-04-13
+
+### Changed
+- 优化赛道库列表页和详情页的图片尺寸
+- 调整赛道图显示比例，提升视觉效果
+
 ## [0.2.0] - 2026-04-13
 
 ### Added

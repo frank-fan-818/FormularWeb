@@ -20,50 +20,47 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--f1-red);
-  color: var(--bg-card);
+  background: transparent;
+  color: var(--text-primary);
   font-weight: var(--font-bold);
   font-size: var(--text-lg);
-  letter-spacing: 1px;
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--border-secondary);
   position: relative;
-  overflow: hidden;
 }
 
-.sidebar-logo::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.sidebar-logo:hover::before {
-  left: 100%;
+.sidebar-logo-icon {
+  font-size: 24px;
+  margin-right: var(--space-2);
 }
 
 .sidebar-menu {
   border-right: 0;
   background: transparent;
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
+  padding: 0 var(--space-2);
 }
 
 .sidebar-menu .ant-menu-item {
   color: var(--text-secondary);
   font-weight: var(--font-medium);
-  margin: var(--space-1) var(--space-3);
-  border-radius: var(--radius-md);
-  height: 48px;
-  line-height: 48px;
+  margin: var(--space-1) 0;
+  border-radius: var(--radius-lg);
+  height: 44px;
+  line-height: 44px;
   transition: all var(--transition-base);
+  padding-left: var(--space-4) !important;
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
 }
 
 .sidebar-menu .ant-menu-item-selected {
-  color: var(--f1-red) !important;
+  color: var(--text-primary) !important;
   font-weight: var(--font-semibold) !important;
-  background: rgba(255, 24, 1, 0.08) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
   border-right: none !important;
 }
 
@@ -72,7 +69,8 @@
 }
 
 .sidebar-menu .ant-menu-item .anticon {
-  font-size: 18px;
+  font-size: 20px;
+  margin-right: var(--space-3);
 }
 
 .main-layout {
