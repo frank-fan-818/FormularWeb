@@ -54,7 +54,7 @@ const Drivers = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title">🏎️ <span>车手库</span></h1>
+      <h1 className="page-title"><span>车手库</span></h1>
 
       {loading ? (
         <div className="loading-container">
@@ -84,7 +84,7 @@ const Drivers = () => {
                       <div className="item-stats">
                         <span className="stat-item"><GlobalOutlined /> {driver.nationality}</span>
                         <span className="stat-item"><CalendarOutlined /> {dayjs(driver.dateOfBirth).format('YYYY-MM-DD')}</span>
-                        <span className="stat-item">🏎️ {driver.constructorName}</span>
+                        <span className="stat-item">{driver.constructorName}</span>
                         {driver.total_wins && (
                           <span className="stat-item"><CarOutlined /> {driver.total_wins} 胜</span>
                         )}

@@ -31,7 +31,8 @@ const Circuits = () => {
           'monaco_circuit': 'monaco',
           'losail': 'lusail',
           'vegas': 'las_vegas',
-          'americas': 'austin'
+          'americas': 'austin',
+          'paul_ricard': 'paul_ricard'
         };
 
         const circuitMap = new Map(supabaseCircuits.map(c => [c.circuit_id, c]));
@@ -70,7 +71,7 @@ const Circuits = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title">🏁 <span>赛道库</span></h1>
+      <h1 className="page-title"><span>赛道库</span></h1>
 
       {loading ? (
         <div className="loading-container">

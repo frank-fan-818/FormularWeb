@@ -192,7 +192,7 @@ const CircuitDetail = () => {
         返回
       </Button>
 
-      <h1 className="page-title">🏁 <span>{circuit.circuitName}</span></h1>
+      <h1 className="page-title"><span>{circuit.circuitName}</span></h1>
       <p className="page-subtitle">{circuit.Location.locality}, {circuit.Location.country}</p>
 
       <div className="content-grid">
@@ -270,7 +270,7 @@ const CircuitDetail = () => {
 
       {circuitRaces.length > 0 && (
         <>
-          <h2 className="section-title">📅 本赛季比赛</h2>
+          <h2 className="section-title">本赛季比赛</h2>
           <Card className="race-info-card">
             <div className="race-info-item">
               <span className="race-info-label">比赛时间</span>

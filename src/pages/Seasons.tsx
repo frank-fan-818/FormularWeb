@@ -186,7 +186,7 @@ const Seasons = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title">🏆 <span>{currentSeason}赛季积分榜</span></h1>
+      <h1 className="page-title"><span>{currentSeason}赛季积分榜</span></h1>
 
       {loading ? (
         <div className="loading-container">

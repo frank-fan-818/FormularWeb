@@ -482,7 +482,8 @@ code {
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
+    white-space: nowrap;
   }
 
   .page-container {

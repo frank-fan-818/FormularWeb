@@ -67,9 +67,6 @@ const Home = () => {
         <h1 className="hero-title">
           <span className="hero-title-accent">{currentSeason}</span> 赛季 F1 概览
         </h1>
-        <p className="hero-subtitle">
-          欢迎来到 F1 数据看板，追踪最新赛事动态、车手表现与车队排名
-        </p>
       </section>
 
       {/* Stats Grid - Vercel Style */}

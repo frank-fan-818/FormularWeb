@@ -66,7 +66,7 @@ const Races = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title">📅 <span>{currentSeason}赛季赛历</span></h1>
+      <h1 className="page-title"><span>{currentSeason}赛季赛历</span></h1>
 
       {loading ? (
         <div className="loading-container">

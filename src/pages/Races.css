@@ -13,11 +13,16 @@
 
 @media (max-width: 768px) {
   .list-page-container {
-    padding: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-4);
   }
 
   .list-container {
-    gap: 2px;
+    gap: var(--space-2);
   }
 
   .list-item {
@@ -25,34 +30,37 @@
   }
 
   .item-content {
-    flex-direction: row;
-    align-items: center;
-    padding: 6px 10px;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-3);
+    gap: var(--space-2);
   }
 
   .item-left {
     gap: 0;
-    flex: 1;
+    width: 100%;
     min-width: 0;
   }
 
   .item-info {
     min-width: 0;
+    width: 100%;
   }
 
   .item-title {
-    font-size: 0.85rem;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.95rem;
+    margin: 0 0 var(--space-1) 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.4;
   }
 
   .item-meta {
-    gap: 8px;
-    font-size: 11px;
-    margin-top: 2px;
+    gap: var(--space-2);
+    font-size: 12px;
+    margin-top: var(--space-1);
+    flex-wrap: wrap;
   }
 
   .date-item {
@@ -60,8 +68,8 @@
   }
 
   .item-right {
-    margin-left: 4px;
-    flex-shrink: 0;
+    margin-left: 0;
+    align-self: flex-start;
   }
 
   .team-color-bar {
