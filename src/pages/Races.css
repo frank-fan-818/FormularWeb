@@ -10,3 +10,61 @@
 .date-item {
   margin-left: 16px;
 }
+
+@media (max-width: 768px) {
+  .list-page-container {
+    padding: var(--space-2);
+  }
+
+  .list-container {
+    gap: 2px;
+  }
+
+  .list-item {
+    border-radius: var(--radius-md);
+  }
+
+  .item-content {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .item-left {
+    gap: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item-info {
+    min-width: 0;
+  }
+
+  .item-title {
+    font-size: 0.85rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .item-meta {
+    gap: 8px;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .date-item {
+    margin-left: 0;
+  }
+
+  .item-right {
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  .team-color-bar {
+    width: 3px;
+  }
+}

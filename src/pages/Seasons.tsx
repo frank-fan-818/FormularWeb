@@ -17,6 +17,15 @@ const Seasons = () => {
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -73,6 +82,11 @@ const Seasons = () => {
                         >
                           {standing.Constructors[0].name}
                         </span>
+                        {isMobile && (
+                          <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
+                            {standing.points} pts
+                          </span>
+                        )}
                         <div className="progress-wrapper">
                           <Progress
                             percent={percentage}
@@ -86,12 +100,14 @@ const Seasons = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="item-right">
-                    <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
-                      <span className="points-value">{standing.points}</span>
-                      <span className="points-label">积分</span>
+                  {!isMobile && (
+                    <div className="item-right">
+                      <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
+                        <span className="points-value">{standing.points}</span>
+                        <span className="points-label">积分</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </Card>
             );
@@ -133,6 +149,11 @@ const Seasons = () => {
                         <span className="item-tag">🌍 {standing.Constructor.nationality}</span>
                       </h3>
                       <div className="item-stats">
+                        {isMobile && (
+                          <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
+                            {standing.points} pts
+                          </span>
+                        )}
                         <div className="progress-wrapper">
                           <Progress
                             percent={percentage}
@@ -146,12 +167,14 @@ const Seasons = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="item-right">
-                    <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
-                      <span className="points-value">{standing.points}</span>
-                      <span className="points-label">积分</span>
+                  {!isMobile && (
+                    <div className="item-right">
+                      <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
+                        <span className="points-value">{standing.points}</span>
+                        <span className="points-label">积分</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </Card>
             );

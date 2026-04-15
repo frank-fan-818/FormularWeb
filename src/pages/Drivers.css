@@ -229,24 +229,67 @@
 
 @media (max-width: 768px) {
   .list-page-container {
-    padding: var(--space-3);
+    padding: var(--space-2);
     max-width: 100%;
   }
 
   .page-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .list-container {
+    gap: 4px;
+  }
+
+  .list-item {
+    border-radius: var(--radius-md);
   }
 
   .item-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .item-left {
+    gap: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item-info {
+    min-width: 0;
+  }
+
+  .item-title {
+    font-size: 0.85rem;
+    margin: 0;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .item-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    min-width: auto;
+    flex-shrink: 0;
+  }
+
+  .item-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px 8px;
+    font-size: 11px;
+    margin-top: 2px;
   }
 
   .item-right {
-    margin-left: 0;
-    align-self: flex-end;
+    margin-left: 4px;
+    flex-shrink: 0;
+    align-self: center;
   }
 
   .points-badge {
@@ -261,26 +304,21 @@
     max-width: 100% !important;
   }
 
-  .item-title {
-    font-size: 0.95rem;
-  }
-
-  .item-stats {
-    grid-template-columns: 1fr;
-    gap: var(--space-1);
-    font-size: var(--text-xs);
-  }
-
   .stat-badge {
-    min-width: 70px;
-    padding: var(--space-1) var(--space-2);
+    min-width: 50px;
+    padding: 3px 6px;
+    border-radius: var(--radius-md);
   }
 
   .stat-value {
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
   }
 
   .stat-label {
-    font-size: 10px;
+    font-size: 9px;
+  }
+
+  .team-color-bar {
+    width: 3px;
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Tabs, Table, Tag } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -23,8 +23,6 @@ const RaceDetail = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('qualifying');
   const [isMobile, setIsMobile] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -206,30 +204,6 @@ const RaceDetail = () => {
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX.current === null || touchEndX.current === null) return;
-    const diff = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-
-    if (Math.abs(diff) > minSwipeDistance) {
-      if (diff > 0) {
-        handleNextTab();
-      } else {
-        handlePrevTab();
-      }
-    }
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
-
   const currentItem = tabItems.find(item => item.key === activeTab);
 
   return (
@@ -270,12 +244,7 @@ const RaceDetail = () => {
 
       <Card className="results-card">
         {isMobile ? (
-          <div
-            className="mobile-slider-container"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
+          <div className="mobile-slider-container">
             <div className="slider-header">
               <Button
                 icon={<LeftOutlined />}
@@ -311,7 +280,7 @@ const RaceDetail = () => {
                 size="small"
               />
             </div>
-            <div className="swipe-hint">← 左右滑动切换 →</div>
+            <div className="swipe-hint">Tap the dots above to switch</div>
           </div>
         ) : (
           <Tabs

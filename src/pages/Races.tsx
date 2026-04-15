@@ -12,6 +12,7 @@ import './Races.css';
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
   const navigate = useNavigate();
   const { status, text, color, antdColor } = useRaceStatus(race);
+  const isMobile = window.innerWidth <= 768;
 
   const icons = {
     ongoing: <ClockCircleOutlined />,
@@ -35,7 +36,7 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
               Round {race.round}: {race.raceName}
             </h3>
             <div className="item-meta">
-              <span><EnvironmentOutlined /> {race.Circuit.circuitName}</span>
+              {!isMobile && <span><EnvironmentOutlined /> {race.Circuit.circuitName}</span>}
               <span className="date-item"><CalendarOutlined /> {dayjs(race.date).format('YYYY-MM-DD')}</span>
             </div>
           </div>

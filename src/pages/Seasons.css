@@ -116,8 +116,69 @@
 
 /* 响应式调整 */
 @media (max-width: 768px) {
+  .list-page-container {
+    padding: var(--space-2);
+  }
+
+  .page-title {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .list-container {
+    gap: 4px;
+  }
+
+  .list-item {
+    border-radius: var(--radius-md);
+  }
+
+  .item-content {
+    padding: 6px 10px;
+  }
+
+  .item-title {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  .position-badge {
+    font-size: var(--text-sm);
+    min-width: 28px;
+  }
+
+  .driver-name,
+  .constructor-name {
+    font-size: 0.9rem;
+  }
+
+  .item-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .team-name {
+    min-width: auto;
+    font-size: 11px;
+  }
+
+  .mobile-points-inline {
+    font-size: 12px;
+    font-weight: var(--font-bold);
+    font-family: var(--font-family);
+  }
+
+  .item-stats {
+    gap: 2px 8px;
+    font-size: 11px;
+  }
+
   .progress-wrapper {
     max-width: 100% !important;
+  }
+
+  .team-color-bar {
+    width: 3px;
   }
 
   .item-stats-row {
