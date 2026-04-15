@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Tabs, Spin, Tag, Progress } from 'antd';
-import { TrophyOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { seasonApi } from '@/api/ergast';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
@@ -67,22 +66,13 @@ const Seasons = () => {
                         <Tag color="blue" style={{ marginLeft: 8 }}>{standing.Driver.code}</Tag>
                       </h3>
                       <div className="item-stats">
-                        <div className="item-stats-row">
-                          <span className="stat-item team-name">
-                            <span
-                              className="clickable-text"
-                              style={{ color: teamColor }}
-                              onClick={() => navigate(`/constructors/${standing.Constructors[0].constructorId}`)}
-                            >
-                              {standing.Constructors[0].name}
-                            </span>
-                          </span>
-                          {parseInt(standing.wins) > 0 && (
-                            <span className="stat-item wins-badge">
-                              <TrophyOutlined /> {standing.wins} 胜
-                            </span>
-                          )}
-                        </div>
+                        <span
+                          className="stat-item team-name clickable-text"
+                          style={{ color: teamColor }}
+                          onClick={() => navigate(`/constructors/${standing.Constructors[0].constructorId}`)}
+                        >
+                          {standing.Constructors[0].name}
+                        </span>
                         <div className="progress-wrapper">
                           <Progress
                             percent={percentage}
@@ -142,16 +132,9 @@ const Seasons = () => {
                         </span>
                       </h3>
                       <div className="item-stats">
-                        <div className="item-stats-row">
-                          <span className="stat-item nationality">
-                            🌍 {standing.Constructor.nationality}
-                          </span>
-                          {parseInt(standing.wins) > 0 && (
-                            <span className="stat-item wins-badge">
-                              <TrophyOutlined /> {standing.wins} 胜
-                            </span>
-                          )}
-                        </div>
+                        <span className="stat-item nationality">
+                          🌍 {standing.Constructor.nationality}
+                        </span>
                         <div className="progress-wrapper">
                           <Progress
                             percent={percentage}

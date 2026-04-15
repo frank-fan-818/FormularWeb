@@ -121,12 +121,11 @@
 }
 
 .item-stats {
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   color: var(--text-secondary);
-  flex-wrap: wrap;
 }
 
 .item-stats-row {
@@ -225,17 +224,18 @@
 
 @media (max-width: 768px) {
   .list-page-container {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
 
   .page-title {
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
   }
 
   .item-content {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
+    padding: var(--space-3);
   }
 
   .item-right {
@@ -253,5 +253,24 @@
 
   .progress-wrapper {
     max-width: 100% !important;
+  }
+
+  .item-title {
+    font-size: 1rem;
+  }
+
+  .item-stats {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+  }
+
+  .stat-badge {
+    min-width: 80px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .stat-value {
+    font-size: var(--text-xl);
   }
 }
