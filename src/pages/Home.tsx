@@ -174,6 +174,46 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Next Race Preview */}
+      {nextRace && (
+        <>
+          <div className="section-divider" />
+          <section className="next-race-section animate-slide-up">
+            <h2 className="section-title-f1">
+              <ClockCircleOutlined style={{ marginRight: 12, color: 'var(--accent-yellow)' }} />
+              下一场比赛
+            </h2>
+            <Card
+              className="next-race-card-f1"
+              hoverable
+              onClick={() => navigate(`/circuits/${nextRace.Circuit.circuitId}`)}
+            >
+              <div className="next-race-content-f1">
+                <div className="next-race-info-f1">
+                  <h3>{nextRace.raceName}</h3>
+                  <p className="next-race-circuit">
+                    {nextRace.Circuit.circuitName}
+                  </p>
+                  <p className="next-race-location">
+                    {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
+                  </p>
+                  <div className="next-race-date">
+                    <ClockCircleOutlined style={{ marginRight: 6 }} />
+                    {dayjs(nextRace.date).format('YYYY年MM月DD日')}
+                    <span className="countdown">
+                      （{dayjs(nextRace.date).diff(dayjs(), 'day')} 天后）
+                    </span>
+                  </div>
+                </div>
+                <Tag className="next-race-tag" color="gold">
+                  即将开赛
+                </Tag>
+              </div>
+            </Card>
+          </section>
+        </>
+      )}
+
       {/* Ongoing Race */}
       {ongoingRace && (
         <>

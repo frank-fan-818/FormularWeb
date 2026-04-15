@@ -174,6 +174,78 @@
   color: var(--text-tertiary);
 }
 
+/* Next Race Section */
+.next-race-section {
+  margin-bottom: var(--space-6);
+}
+
+.next-race-card-f1 {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-slow) var(--ease-spring);
+  cursor: pointer;
+}
+
+.next-race-card-f1:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-yellow);
+}
+
+.next-race-card-f1 .ant-card-body {
+  padding: var(--space-5);
+}
+
+.next-race-content-f1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.next-race-info-f1 h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.next-race-circuit {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.next-race-location {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-2);
+}
+
+.next-race-date {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.next-race-date .countdown {
+  color: var(--accent-yellow);
+  font-weight: var(--font-semibold);
+}
+
+.next-race-tag {
+  font-weight: var(--font-semibold);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+}
+
 /* Ongoing Section */
 .ongoing-section {
   margin-bottom: var(--space-6);
@@ -233,6 +305,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .next-race-content-f1 {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .ongoing-content-f1 {
     flex-direction: column;
     align-items: flex-start;

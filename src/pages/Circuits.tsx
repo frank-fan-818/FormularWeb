@@ -1,110 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Image, Spin } from 'antd';
+import { Card, Spin } from 'antd';
 import { EnvironmentOutlined, CarOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import './Circuits.css';
-
-// 特殊赛道名称映射（全覆盖所有F1赛道）
-const circuitNameMap: Record<string, string> = {
-  // 2025赛季赛道
-  'albert_park': 'melbourne',
-  'bahrain': 'bahrain',
-  'jeddah_corniche': 'jeddah',
-  'suzuka': 'suzuka',
-  'shanghai': 'shanghai',
-  'miami': 'miami',
-  'imola': 'imola',
-  'monaco': 'monaco',
-  'catalunya': 'catalunya',
-  'villeneuve': 'montreal',
-  'red_bull_ring': 'spielberg',
-  'silverstone': 'silverstone',
-  'hungaroring': 'hungaroring',
-  'spa': 'spa-francorchamps',
-  'spa_francorchamps': 'spa-francorchamps',
-  'zandvoort': 'zandvoort',
-  'monza': 'monza',
-  'baku': 'baku',
-  'marina_bay': 'marina-bay',
-  'austin': 'austin',
-  'rodriguez': 'mexico-city',
-  'interlagos': 'interlagos',
-  'las_vegas': 'las-vegas',
-  'vegas': 'las-vegas-strip',
-  'americas': 'circuit-of-the-americas',
-  'losail': 'lusail',
-  'yas_marina': 'yas-marina',
-
-  // 历史赛道
-  'sepang': 'sepang',
-  'yeongam': 'yeongam',
-  'buddh': 'buddh',
-  'magny_cours': 'magny-cours',
-  'paul_ricard': 'paul-ricard',
-  'estoril': 'estoril',
-  'istanbul_park': 'istanbul',
-  'valencia_street': 'valencia',
-  'nurburgring': 'nurburgring',
-  'hockenheim': 'hockenheimring',
-  'indianapolis': 'indianapolis',
-  'watkins_glen': 'watkins-glen',
-  'long_beach': 'long-beach',
-  'adelaide': 'adelaide',
-  'brands_hatch': 'brands-hatch',
-  'donington': 'donington',
-  'kyalami': 'kyalami',
-  'mugello': 'mugello',
-  'portimao': 'portimao',
-  'sochi': 'sochi',
-  'zolder': 'zolder',
-  'zeltweg': 'zeltweg',
-};
-
-// 获取赛道图片
-const getCircuitImage = (circuitId: string) => {
-  // 硬编码特殊处理拉斯维加斯和美洲赛道
-  if (circuitId === 'vegas' || circuitId === 'las_vegas') {
-    return new URL(`../assets/circuits/black-outline/las-vegas-1.svg`, import.meta.url).href;
-  }
-  if (circuitId === 'americas' || circuitId === 'austin') {
-    return new URL(`../assets/circuits/black-outline/austin-1.svg`, import.meta.url).href;
-  }
-
-  const mappedId = circuitNameMap[circuitId] || circuitId;
-
-  const idVariants = [
-    mappedId.replace(/_/g, '-'),
-    mappedId,
-    circuitId.replace(/_/g, '-'),
-    circuitId,
-    mappedId.replace('circuit', ''),
-    mappedId.replace('_circuit', ''),
-    mappedId.split('_')[0],
-    circuitId.split('_')[circuitId.split('_').length - 1],
-    // 特殊处理拉斯维加斯和美洲赛道
-    circuitId === 'las_vegas' ? 'las-vegas-strip' : '',
-    circuitId === 'vegas' ? 'las-vegas-strip' : '',
-    circuitId === 'austin' ? 'circuit-of-the-americas' : '',
-    circuitId === 'americas' ? 'circuit-of-the-americas' : '',
-  ].filter(Boolean);
-
-  const uniqueIds = [...new Set(idVariants)];
-  const versions = ['-1', '-2', '-3', '-4', ''];
-
-  for (const id of uniqueIds) {
-    for (const version of versions) {
-      try {
-        return new URL(`../assets/circuits/black-outline/${id}${version}.svg`, import.meta.url).href;
-      } catch (error) {
-        continue;
-      }
-    }
-  }
-
-  return '';
-};
 
 const Circuits = () => {
   const navigate = useNavigate();
@@ -188,16 +88,6 @@ const Circuits = () => {
             >
               <div className="item-content">
                 <div className="item-left">
-                  <div className="circuit-image-wrapper">
-                    <Image
-                      src={getCircuitImage(circuit.circuitId)}
-                      alt={circuit.circuitName}
-                      width={100}
-                      height={70}
-                      fallback="无图"
-                      preview={false}
-                    />
-                  </div>
                   <div className="item-info">
                     <h3 className="item-title">
                       {circuit.circuitName}
