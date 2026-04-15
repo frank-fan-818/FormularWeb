@@ -129,12 +129,27 @@ const CircuitDetail = () => {
             'monaco_circuit': 'monaco',
             'losail': 'lusail',
             'vegas': 'las_vegas',
-            'americas': 'austin'
+            'americas': 'austin',
+            'paul_ricard': 'paul_ricard'
           };
 
           const supabaseId = idMapping[circuitId] || circuitId;
           const supabaseCircuit = await supabaseApi.circuits.getById(supabaseId);
           setCircuitDetails(supabaseCircuit);
+
+          // 如果当前赛季没有该赛道，从 Supabase 获取基本信息
+          if (!matchedRace && supabaseCircuit) {
+            setCircuit({
+              circuitId: circuitId,
+              circuitName: supabaseCircuit.name,
+              Location: {
+                locality: supabaseCircuit.location || '',
+                country: supabaseCircuit.country || '',
+                lat: supabaseCircuit.lat || '',
+                long: supabaseCircuit.lng || ''
+              }
+            } as Circuit);
+          }
         } catch (e) {
           console.log('Supabase详情获取失败');
         }
