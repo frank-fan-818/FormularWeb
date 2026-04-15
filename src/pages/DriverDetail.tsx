@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Tag, Statistic, Row, Col } from 'antd';
+import { Card, Button, Tag, Row, Col } from 'antd';
 import { ArrowLeftOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import { useAppStore } from '@/store';
@@ -346,37 +346,36 @@ const DriverDetail = () => {
           <p style={{ fontSize: 18, color: '#666' }}>{driver.nationality}</p>
         </div>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason}赛季数据</h3>
+        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} Season Stats</h3>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="赛季排名"
-                value={currentStanding?.position || '-'}
-                prefix={<TrophyOutlined />}
-                valueStyle={{ color: '#faad14' }}
-              />
+            <Card className="stat-card">
+              <div className="stat-label">
+                <TrophyOutlined /> Season Rank
+              </div>
+              <div className="stat-value" style={{ color: '#faad14' }}>
+                {currentStanding?.position || '-'}
+              </div>
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="赛季积分"
-                value={currentStanding?.points || '0'}
-                prefix={<CarOutlined />}
-                suffix="pts"
-                valueStyle={{ color: '#ff1801' }}
-              />
+            <Card className="stat-card">
+              <div className="stat-label">
+                <CarOutlined /> Season Points
+              </div>
+              <div className="stat-value" style={{ color: '#ff1801' }}>
+                {currentStanding?.points || '0'} pts
+              </div>
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="赛季胜场"
-                value={currentStanding?.wins || '0'}
-                prefix={<TrophyOutlined />}
-                valueStyle={{ color: '#52c41a' }}
-              />
+            <Card className="stat-card">
+              <div className="stat-label">
+                <TrophyOutlined /> Season Wins
+              </div>
+              <div className="stat-value" style={{ color: '#52c41a' }}>
+                {currentStanding?.wins || '0'}
+              </div>
             </Card>
           </Col>
         </Row>
@@ -422,26 +421,26 @@ const DriverDetail = () => {
           )}
         </Card>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>生涯总数据</h3>
+        <h3 style={{ fontSize: 20, marginBottom: 16 }}>Career Stats</h3>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12}>
-            <Card>
-              <Statistic
-                title="参赛场数"
-                value={careerStats.raceCount}
-                prefix={<FlagOutlined />}
-                valueStyle={{ color: '#1890ff' }}
-              />
+            <Card className="stat-card">
+              <div className="stat-label">
+                <FlagOutlined /> Race Entries
+              </div>
+              <div className="stat-value" style={{ color: '#1890ff' }}>
+                {careerStats.raceCount}
+              </div>
             </Card>
           </Col>
           <Col xs={24} sm={12}>
-            <Card>
-              <Statistic
-                title="分冠数"
-                value={careerStats.winCount}
-                prefix={<TrophyOutlined />}
-                valueStyle={{ color: '#fa8c16' }}
-              />
+            <Card className="stat-card">
+              <div className="stat-label">
+                <TrophyOutlined /> Race Wins
+              </div>
+              <div className="stat-value" style={{ color: '#fa8c16' }}>
+                {careerStats.winCount}
+              </div>
             </Card>
           </Col>
         </Row>
@@ -455,7 +454,7 @@ const DriverDetail = () => {
               <p><strong>国籍：</strong>{driver?.nationality}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>出生日期：</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY年MM月DD日') : '-'}</p>
+              <p><strong>出生日期：</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
               <p><strong>当前车队：</strong>{currentStanding?.Constructors[0].name || '-'}</p>
             </Col>
           </Row>

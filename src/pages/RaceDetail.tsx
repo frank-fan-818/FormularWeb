@@ -255,7 +255,7 @@ const RaceDetail = () => {
                   {raceInfo.Circuit.circuitName} · {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}
                 </p>
                 <Tag color="blue" className="race-date">
-                  {dayjs(raceInfo.date).format('YYYY年MM月DD日')}
+                  {dayjs(raceInfo.date).format('YYYY-MM-DD')}
                 </Tag>
                 {isSprintWeekend && (
                   <Tag color="orange" className="sprint-tag">

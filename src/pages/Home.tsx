@@ -47,7 +47,7 @@ const Home = () => {
     {
       icon: <ClockCircleOutlined className="stat-icon" style={{ color: 'var(--accent-yellow)' }} />,
       value: nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '✓',
-      label: nextRace ? '天后下一场比赛' : '赛季已结束',
+      label: nextRace ? 'days until next race' : 'Season ended',
       color: 'var(--accent-yellow)',
       delay: 'stagger-4'
     }
@@ -199,9 +199,9 @@ const Home = () => {
                   </p>
                   <div className="next-race-date">
                     <ClockCircleOutlined style={{ marginRight: 6 }} />
-                    {dayjs(nextRace.date).format('YYYY年MM月DD日')}
+                    {dayjs(nextRace.date).format('YYYY-MM-DD')}
                     <span className="countdown">
-                      （{dayjs(nextRace.date).diff(dayjs(), 'day')} 天后）
+                      ({dayjs(nextRace.date).diff(dayjs(), 'day')} days away)
                     </span>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 .list-page-container {
   padding: var(--space-5);
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -118,6 +118,11 @@
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-weight: var(--font-medium);
+  min-width: 60px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .item-stats {
@@ -225,6 +230,7 @@
 @media (max-width: 768px) {
   .list-page-container {
     padding: var(--space-3);
+    max-width: 100%;
   }
 
   .page-title {
@@ -235,16 +241,16 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
   }
 
   .item-right {
     margin-left: 0;
-    width: 100%;
+    align-self: flex-end;
   }
 
   .points-badge {
-    width: 100%;
+    width: auto;
   }
 
   .item-stats-row {
@@ -256,7 +262,7 @@
   }
 
   .item-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .item-stats {
@@ -266,11 +272,15 @@
   }
 
   .stat-badge {
-    min-width: 80px;
-    padding: var(--space-2) var(--space-3);
+    min-width: 70px;
+    padding: var(--space-1) var(--space-2);
   }
 
   .stat-value {
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
+  }
+
+  .stat-label {
+    font-size: 10px;
   }
 }

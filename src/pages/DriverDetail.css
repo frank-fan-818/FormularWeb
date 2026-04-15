@@ -76,6 +76,19 @@
   border-color: var(--border-primary);
 }
 
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+}
+
 .section-title {
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);

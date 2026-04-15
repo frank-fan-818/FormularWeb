@@ -130,11 +130,9 @@ const Seasons = () => {
                         >
                           {standing.Constructor.name}
                         </span>
+                        <span className="item-tag">🌍 {standing.Constructor.nationality}</span>
                       </h3>
                       <div className="item-stats">
-                        <span className="stat-item nationality">
-                          🌍 {standing.Constructor.nationality}
-                        </span>
                         <div className="progress-wrapper">
                           <Progress
                             percent={percentage}

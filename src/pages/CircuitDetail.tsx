@@ -260,7 +260,7 @@ const CircuitDetail = () => {
             <div className="race-info-item">
               <span className="race-info-label">比赛时间</span>
               <span className="race-info-value">
-                {dayjs(circuitRaces[0].date).format('YYYY年MM月DD日')}
+                {dayjs(circuitRaces[0].date).format('YYYY-MM-DD')}
               </span>
             </div>
             {circuitRaces[0].is_sprint_weekend && (
