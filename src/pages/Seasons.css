@@ -121,12 +121,12 @@
   }
 
   .page-title {
-    font-size: var(--text-xl);
-    margin-bottom: var(--space-3);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
   }
 
   .list-container {
-    gap: 4px;
+    gap: 3px;
   }
 
   .list-item {
@@ -134,12 +134,14 @@
   }
 
   .item-content {
-    padding: 6px 10px;
+    padding: 6px 8px 6px 10px;
+    gap: 6px;
   }
 
   .item-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     margin: 0;
+    gap: 4px;
   }
 
   .position-badge {
@@ -149,32 +151,45 @@
 
   .driver-name,
   .constructor-name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .item-tag {
-    font-size: 10px;
-    padding: 1px 6px;
+    font-size: 9px;
+    padding: 1px 4px;
   }
 
   .team-name {
     min-width: auto;
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .nationality {
+    min-width: auto;
+    font-size: 10px;
   }
 
   .mobile-points-inline {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: var(--font-bold);
     font-family: var(--font-family);
   }
 
   .item-stats {
-    gap: 2px 8px;
-    font-size: 11px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 10px;
+    align-items: center;
+  }
+
+  .stat-item {
+    white-space: nowrap;
   }
 
   .progress-wrapper {
     max-width: 100% !important;
+    margin-top: 1px;
   }
 
   .team-color-bar {
@@ -183,5 +198,18 @@
 
   .item-stats-row {
     gap: var(--space-3);
+  }
+
+  .stat-badge {
+    min-width: 40px;
+    padding: 2px 5px;
+  }
+
+  .stat-value {
+    font-size: 11px;
+  }
+
+  .stat-label {
+    font-size: 8px;
   }
 }

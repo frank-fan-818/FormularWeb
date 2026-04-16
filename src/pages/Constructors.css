@@ -6,19 +6,95 @@
 
 @media (max-width: 768px) {
   .list-page-container {
+    padding: var(--space-2);
     max-width: 100%;
   }
 
+  .page-title {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  .list-container {
+    gap: 3px;
+  }
+
+  .list-item {
+    border-radius: var(--radius-md);
+  }
+
+  .item-content {
+    padding: 6px 8px 6px 10px;
+    gap: 6px;
+  }
+
+  .item-title {
+    font-size: 0.8rem;
+    margin: 0;
+    gap: 4px;
+  }
+
+  .position-badge {
+    font-size: var(--text-sm);
+    min-width: 28px;
+  }
+
+  .driver-name,
+  .constructor-name {
+    font-size: 0.85rem;
+  }
+
+  .item-tag {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  .team-name {
+    min-width: auto;
+    font-size: 10px;
+  }
+
+  .mobile-points-inline {
+    font-size: 11px;
+    font-weight: var(--font-bold);
+    font-family: var(--font-family);
+  }
+
+  .item-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 10px;
+    align-items: center;
+  }
+
+  .stat-item {
+    white-space: nowrap;
+  }
+
+  .progress-wrapper {
+    max-width: 100% !important;
+    margin-top: 1px;
+  }
+
+  .team-color-bar {
+    width: 3px;
+  }
+
+  .item-stats-row {
+    gap: var(--space-3);
+  }
+
   .stat-badge {
-    min-width: 50px;
-    padding: 3px 6px;
+    min-width: 40px;
+    padding: 2px 5px;
   }
 
   .stat-value {
-    font-size: var(--text-base);
+    font-size: 11px;
   }
 
   .stat-label {
-    font-size: 9px;
+    font-size: 8px;
   }
 }

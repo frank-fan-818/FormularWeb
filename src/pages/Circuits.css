@@ -156,38 +156,57 @@
 
 @media (max-width: 768px) {
   .list-page-container {
-    padding: var(--space-3);
+    padding: var(--space-2);
   }
 
   .page-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  .list-container {
+    gap: 3px;
   }
 
   .item-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-3);
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 10px;
   }
 
   .item-right {
-    align-self: flex-end;
+    align-self: center;
   }
 
   .item-title {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
 
   .item-stats {
-    font-size: var(--text-xs);
+    font-size: 10px;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .stat-item {
+    white-space: nowrap;
   }
 
   .stat-badge {
-    min-width: 80px;
-    padding: var(--space-2) var(--space-3);
+    min-width: 40px;
+    padding: 2px 5px;
   }
 
   .stat-value {
-    font-size: var(--text-xl);
+    font-size: 11px;
+  }
+
+  .stat-label {
+    font-size: 8px;
+  }
+
+  .circuit-image-wrapper {
+    display: none;
   }
 }

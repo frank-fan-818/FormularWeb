@@ -13,16 +13,16 @@
 
 @media (max-width: 768px) {
   .list-page-container {
-    padding: var(--space-3);
+    padding: var(--space-2);
   }
 
   .page-title {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-4);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
   }
 
   .list-container {
-    gap: var(--space-2);
+    gap: 3px;
   }
 
   .list-item {
@@ -30,15 +30,15 @@
   }
 
   .item-content {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: var(--space-3);
-    gap: var(--space-2);
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 8px 6px 10px;
+    gap: 6px;
   }
 
   .item-left {
     gap: 0;
-    width: 100%;
+    flex: 1;
     min-width: 0;
   }
 
@@ -48,19 +48,21 @@
   }
 
   .item-title {
-    font-size: 0.95rem;
-    margin: 0 0 var(--space-1) 0;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-    line-height: 1.4;
+    font-size: 0.8rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    gap: 4px;
   }
 
   .item-meta {
-    gap: var(--space-2);
-    font-size: 12px;
-    margin-top: var(--space-1);
+    gap: 4px 8px;
+    font-size: 10px;
+    margin-top: 2px;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .date-item {
@@ -68,8 +70,9 @@
   }
 
   .item-right {
-    margin-left: 0;
-    align-self: flex-start;
+    margin-left: 4px;
+    align-self: center;
+    flex-shrink: 0;
   }
 
   .team-color-bar {

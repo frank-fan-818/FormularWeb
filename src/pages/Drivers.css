@@ -234,12 +234,12 @@
   }
 
   .page-title {
-    font-size: var(--text-xl);
-    margin-bottom: var(--space-3);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
   }
 
   .list-container {
-    gap: 4px;
+    gap: 3px;
   }
 
   .list-item {
@@ -249,8 +249,8 @@
   .item-content {
     flex-direction: row;
     align-items: center;
-    padding: 6px 10px;
-    gap: 8px;
+    padding: 6px 8px 6px 10px;
+    gap: 6px;
   }
 
   .item-left {
@@ -264,26 +264,33 @@
   }
 
   .item-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     margin: 0;
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    gap: 4px;
   }
 
   .item-tag {
-    font-size: 10px;
-    padding: 1px 6px;
+    font-size: 9px;
+    padding: 1px 4px;
     min-width: auto;
     flex-shrink: 0;
   }
 
   .item-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px 8px;
-    font-size: 11px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 10px;
     margin-top: 2px;
+    align-items: center;
+  }
+
+  .stat-item {
+    white-space: nowrap;
   }
 
   .item-right {
@@ -294,6 +301,7 @@
 
   .points-badge {
     width: auto;
+    padding: 2px 6px;
   }
 
   .item-stats-row {
@@ -302,20 +310,21 @@
 
   .progress-wrapper {
     max-width: 100% !important;
+    margin-top: 1px;
   }
 
   .stat-badge {
-    min-width: 50px;
-    padding: 3px 6px;
+    min-width: 40px;
+    padding: 2px 5px;
     border-radius: var(--radius-md);
   }
 
   .stat-value {
-    font-size: var(--text-base);
+    font-size: 11px;
   }
 
   .stat-label {
-    font-size: 9px;
+    font-size: 8px;
   }
 
   .team-color-bar {
