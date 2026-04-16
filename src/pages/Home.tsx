@@ -62,12 +62,7 @@ const Home = () => {
 
   return (
     <div className="page-container">
-      {/* Hero Section */}
-      <section className="hero-section animate-slide-up">
-        <h1 className="hero-title">
-          {currentSeason} 赛季 F1 概览
-        </h1>
-      </section>
+
 
       {/* Next Race Preview - First */}
       {nextRace && (
