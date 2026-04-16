@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
-import { CarOutlined, CalendarOutlined, GlobalOutlined } from '@ant-design/icons';
+import { CarOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 
 import { getTeamColor } from '@/utils/teamColors';
-import dayjs from 'dayjs';
 import './Drivers.css';
 
 const Drivers = () => {
