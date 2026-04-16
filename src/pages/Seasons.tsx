@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Tabs, Spin, Tag, Progress } from 'antd';
+import { Card, Tabs, Spin, Progress } from 'antd';
 import { useAppStore } from '@/store';
 import { seasonApi } from '@/api/ergast';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
