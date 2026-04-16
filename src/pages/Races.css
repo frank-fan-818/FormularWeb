@@ -11,6 +11,27 @@
   margin-left: 16px;
 }
 
+/* Status dot styles */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-upcoming {
+  background-color: #52c41a;
+}
+
+.status-ongoing {
+  background-color: #fa8c16;
+}
+
+.status-completed {
+  background-color: #8c8c8c;
+}
+
 @media (max-width: 768px) {
   .list-page-container {
     padding: var(--space-2);
@@ -80,5 +101,11 @@
 
   .team-color-bar {
     width: 3px;
+  }
+
+  /* Mobile status dot */
+  .status-dot {
+    width: 8px;
+    height: 8px;
   }
 }

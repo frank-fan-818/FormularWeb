@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Tag, Spin } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Card, Spin } from 'antd';
+import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { seasonApi } from '@/api/ergast';
 import { useRaceStatus } from '@/hooks';
@@ -11,14 +11,8 @@ import './Races.css';
 
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
   const navigate = useNavigate();
-  const { status, text, color, antdColor } = useRaceStatus(race);
+  const { status, color } = useRaceStatus(race);
   const isMobile = window.innerWidth <= 768;
-
-  const icons = {
-    ongoing: <ClockCircleOutlined />,
-    completed: <CheckCircleOutlined />,
-    upcoming: <ClockCircleOutlined />,
-  };
 
   return (
     <Card
@@ -42,7 +36,7 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
           </div>
         </div>
         <div className="item-right">
-          <Tag color={antdColor} icon={icons[status]}>{text}</Tag>
+          <span className={`status-dot status-${status}`} />
         </div>
       </div>
     </Card>
