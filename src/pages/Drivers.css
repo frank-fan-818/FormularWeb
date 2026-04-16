@@ -264,27 +264,28 @@
   }
 
   .item-title {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     margin: 0;
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    gap: 4px;
+    gap: 6px;
   }
 
   .item-tag {
-    font-size: 9px;
-    padding: 1px 4px;
+    font-size: 10px;
+    padding: 1px 6px;
     min-width: auto;
     flex-shrink: 0;
+    margin-left: auto;
   }
 
   .item-stats {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    font-size: 10px;
+    flex-wrap: nowrap;
+    gap: 6px 10px;
+    font-size: 11px;
     margin-top: 2px;
     align-items: center;
   }

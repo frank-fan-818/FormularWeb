@@ -62,32 +62,76 @@ const Home = () => {
 
   return (
     <div className="page-container">
-      {/* Hero Section - Ferrari Style */}
+      {/* Hero Section */}
       <section className="hero-section animate-slide-up">
         <h1 className="hero-title">
           <span className="hero-title-accent">{currentSeason}</span> 赛季 F1 概览
         </h1>
       </section>
 
-      {/* Stats Grid - Vercel Style */}
-      <section className="stats-grid">
-        {statCards.map((card, index) => (
-          <div
-            key={index}
-            className={`stat-card-f1 animate-slide-up ${card.delay}`}
+      {/* Next Race Preview - First */}
+      {nextRace && (
+        <section className="next-race-section animate-slide-up">
+          <h2 className="section-title-f1">
+            <ClockCircleOutlined style={{ marginRight: 12, color: 'var(--accent-yellow)' }} />
+            下一场比赛
+          </h2>
+          <Card
+            className="next-race-card-f1"
+            hoverable
+            onClick={() => navigate(`/races/${nextRace.round}`)}
           >
-            {card.icon}
-            <div className="stat-value" style={{ color: card.color }}>
-              {card.value}
+            <div className="next-race-content-f1">
+              <div className="next-race-info-f1">
+                <h3>{nextRace.raceName}</h3>
+                <p className="next-race-circuit">
+                  {nextRace.Circuit.circuitName}
+                </p>
+                <p className="next-race-location">
+                  {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
+                </p>
+                <div className="next-race-date">
+                  <ClockCircleOutlined style={{ marginRight: 6 }} />
+                  {dayjs(nextRace.date).format('YYYY-MM-DD')}
+                  <span className="countdown">
+                    ({dayjs(nextRace.date).diff(dayjs(), 'day')} days away)
+                  </span>
+                </div>
+              </div>
+              <Tag className="next-race-tag" color="gold">
+                即将开赛
+              </Tag>
             </div>
-            <div className="stat-label">{card.label}</div>
-          </div>
-        ))}
-      </section>
+          </Card>
+        </section>
+      )}
+
+      {/* Ongoing Race */}
+      {ongoingRace && (
+        <section className="ongoing-section animate-slide-up">
+          <h2 className="section-title-f1">
+            <FireOutlined style={{ marginRight: 12, color: 'var(--accent-orange)' }} />
+            进行中比赛
+          </h2>
+          <Card className="ongoing-card-f1">
+            <div className="ongoing-content-f1">
+              <div className="ongoing-info-f1">
+                <h3>{ongoingRace.raceName}</h3>
+                <p>
+                  {ongoingRace.Circuit.circuitName} · {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
+                </p>
+              </div>
+              <Tag className="ongoing-tag">
+                <FireOutlined /> 进行中
+              </Tag>
+            </div>
+          </Card>
+        </section>
+      )}
 
       <div className="section-divider" />
 
-      {/* Standings Section - Vercel + Linear Style */}
+      {/* Standings Section - Second */}
       <section className="standings-section">
         <h2 className="section-title-f1 animate-slide-up stagger-5">
           <TrophyOutlined style={{ marginRight: 12, color: 'var(--f1-red)' }} />
@@ -115,9 +159,6 @@ const Home = () => {
                       onClick={() => navigate(`/drivers/${item.Driver.driverId}`)}
                     >
                       {item.Driver.givenName} {item.Driver.familyName}
-                      <Tag className="driver-code-tag" style={{ marginLeft: 8 }}>
-                        {item.Driver.code}
-                      </Tag>
                     </div>
                     <div
                       className="standings-team-f1 clickable-f1"
@@ -171,71 +212,23 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Next Race Preview */}
-      {nextRace && (
-        <>
-          <div className="section-divider" />
-          <section className="next-race-section animate-slide-up">
-            <h2 className="section-title-f1">
-              <ClockCircleOutlined style={{ marginRight: 12, color: 'var(--accent-yellow)' }} />
-              下一场比赛
-            </h2>
-            <Card
-              className="next-race-card-f1"
-              hoverable
-              onClick={() => navigate(`/circuits/${nextRace.Circuit.circuitId}`)}
-            >
-              <div className="next-race-content-f1">
-                <div className="next-race-info-f1">
-                  <h3>{nextRace.raceName}</h3>
-                  <p className="next-race-circuit">
-                    {nextRace.Circuit.circuitName}
-                  </p>
-                  <p className="next-race-location">
-                    {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
-                  </p>
-                  <div className="next-race-date">
-                    <ClockCircleOutlined style={{ marginRight: 6 }} />
-                    {dayjs(nextRace.date).format('YYYY-MM-DD')}
-                    <span className="countdown">
-                      ({dayjs(nextRace.date).diff(dayjs(), 'day')} days away)
-                    </span>
-                  </div>
-                </div>
-                <Tag className="next-race-tag" color="gold">
-                  即将开赛
-                </Tag>
-              </div>
-            </Card>
-          </section>
-        </>
-      )}
+      <div className="section-divider" />
 
-      {/* Ongoing Race */}
-      {ongoingRace && (
-        <>
-          <div className="section-divider" />
-          <section className="ongoing-section animate-slide-up">
-            <h2 className="section-title-f1">
-              <FireOutlined style={{ marginRight: 12, color: 'var(--accent-orange)' }} />
-              进行中比赛
-            </h2>
-            <Card className="ongoing-card-f1">
-              <div className="ongoing-content-f1">
-                <div className="ongoing-info-f1">
-                  <h3>{ongoingRace.raceName}</h3>
-                  <p>
-                    {ongoingRace.Circuit.circuitName} · {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
-                  </p>
-                </div>
-                <Tag className="ongoing-tag">
-                  <FireOutlined /> 进行中
-                </Tag>
-              </div>
-            </Card>
-          </section>
-        </>
-      )}
+      {/* Stats Grid - Last */}
+      <section className="stats-grid">
+        {statCards.map((card, index) => (
+          <div
+            key={index}
+            className={`stat-card-f1 animate-slide-up ${card.delay}`}
+          >
+            {card.icon}
+            <div className="stat-value" style={{ color: card.color }}>
+              {card.value}
+            </div>
+            <div className="stat-label">{card.label}</div>
+          </div>
+        ))}
+      </section>
     </div>
   );
 };

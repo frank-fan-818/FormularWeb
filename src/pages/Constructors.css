@@ -29,9 +29,9 @@
   }
 
   .item-title {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     margin: 0;
-    gap: 4px;
+    gap: 6px;
   }
 
   .position-badge {
@@ -41,30 +41,32 @@
 
   .driver-name,
   .constructor-name {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
   .item-tag {
-    font-size: 9px;
-    padding: 1px 4px;
+    font-size: 10px;
+    padding: 1px 6px;
+    margin-left: auto;
   }
 
   .team-name {
     min-width: auto;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .mobile-points-inline {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: var(--font-bold);
     font-family: var(--font-family);
+    margin-left: 8px;
   }
 
   .item-stats {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    font-size: 10px;
+    flex-wrap: nowrap;
+    gap: 6px 10px;
+    font-size: 11px;
     align-items: center;
   }
 

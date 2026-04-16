@@ -27,6 +27,8 @@ const LayoutComponent = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
 
   useEffect(() => {
     const loadSeasons = async () => {
@@ -70,6 +72,23 @@ const LayoutComponent = () => {
 
   const toggleMobileSidebar = () => {
     setMobileSidebarOpen(!mobileSidebarOpen);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    const swipeThreshold = 100;
+    if (touchEndX < touchStartX - swipeThreshold && mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+    }
+    setTouchStartX(0);
+    setTouchEndX(0);
   };
 
   const menuItems = [
@@ -119,6 +138,9 @@ const LayoutComponent = () => {
           collapsible
           collapsed={isMobile ? false : sidebarCollapsed}
           className={`sidebar ${!isMobile ? 'desktop-mounted' : ''} ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div className="sidebar-logo">
             {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
