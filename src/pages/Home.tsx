@@ -65,7 +65,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero-section animate-slide-up">
         <h1 className="hero-title">
-          <span className="hero-title-accent">{currentSeason}</span> 赛季 F1 概览
+          {currentSeason} 赛季 F1 概览
         </h1>
       </section>
 

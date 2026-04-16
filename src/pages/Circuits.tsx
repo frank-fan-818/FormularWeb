@@ -95,9 +95,6 @@ const Circuits = () => {
                     </h3>
                     <div className="item-stats">
                       <span className="stat-item"><EnvironmentOutlined /> {circuit.Location.locality}, {circuit.Location.country}</span>
-                      {circuit.length && (
-                        <span className="stat-item"><CarOutlined /> {circuit.length} km</span>
-                      )}
                     </div>
                   </div>
                 </div>

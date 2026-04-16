@@ -82,8 +82,6 @@ const Drivers = () => {
                         {driver.code && <span className="item-tag">#{driver.permanentNumber} {driver.code}</span>}
                       </h3>
                       <div className="item-stats">
-                        <span className="stat-item"><GlobalOutlined /> {driver.nationality}</span>
-                        <span className="stat-item"><CalendarOutlined /> {dayjs(driver.dateOfBirth).format('YYYY-MM-DD')}</span>
                         <span className="stat-item">{driver.constructorName}</span>
                         {driver.total_wins && (
                           <span className="stat-item"><CarOutlined /> {driver.total_wins} 胜</span>
