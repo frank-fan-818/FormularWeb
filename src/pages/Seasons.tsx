@@ -72,7 +72,6 @@ const Seasons = () => {
                         >
                           {standing.Driver.givenName} {standing.Driver.familyName}
                         </span>
-                        <Tag color="blue" style={{ marginLeft: 8 }}>{standing.Driver.code}</Tag>
                       </h3>
                       <div className="item-stats">
                         <span
@@ -193,9 +192,7 @@ const Seasons = () => {
           <Spin size="large" />
         </div>
       ) : (
-        <Card style={{ marginBottom: 24 }}>
-          <Tabs defaultActiveKey="drivers" items={tabItems} />
-        </Card>
+        <Tabs defaultActiveKey="drivers" items={tabItems} />
       )}
     </div>
   );

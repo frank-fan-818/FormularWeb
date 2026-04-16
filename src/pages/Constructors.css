@@ -53,6 +53,22 @@
     margin-left: auto;
   }
 
+  .item-right {
+    margin-left: auto;
+    align-self: center;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .nationality-item {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
   .team-name {
     min-width: auto;
     font-size: 11px;

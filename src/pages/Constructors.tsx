@@ -77,7 +77,6 @@ const Constructors = () => {
                         {constructor.name}
                       </h3>
                       <div className="item-stats">
-                        <span className="stat-item"><GlobalOutlined /> {constructor.nationality}</span>
                         {constructor.total_wins && (
                           <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} 胜</span>
                         )}
@@ -91,6 +90,7 @@ const Constructors = () => {
                     </div>
                   </div>
                   <div className="item-right">
+                    <span className="stat-item nationality-item"><GlobalOutlined /> {constructor.nationality}</span>
                     {constructor.total_race_entries && (
                       <div className="stat-badge" style={{ background: teamColor }}>
                         <span className="stat-value" style={{ color: '#ffffff' }}>{constructor.total_race_entries}</span>
