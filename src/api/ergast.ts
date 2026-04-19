@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabaseApi } from '@/api/supabase';
 import { supabase } from '@/utils/supabase';
 import type {
   ErgastResponse,
@@ -8,7 +9,12 @@ import type {
   Race,
   Circuit,
   Driver,
-  Constructor
+  Constructor,
+  DriverHistoryProfile,
+  DriverSeasonHistoryItem,
+  ConstructorHistoryProfile,
+  ConstructorSeasonHistoryItem,
+  HistoryCareerSummary,
 } from '@/types';
 
 // 根据环境选择 baseURL
@@ -81,6 +87,240 @@ export const seasonApi = {
   },
 };
 
+let allSeasonIdsPromise: Promise<string[]> | null = null;
+const driverStandingsBySeasonCache = new Map<string, Promise<DriverStanding[]>>();
+const constructorStandingsBySeasonCache = new Map<string, Promise<ConstructorStanding[]>>();
+const driverCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>>>();
+const constructorCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>>>();
+const STANDINGS_BATCH_SIZE = 6;
+const RATE_LIMIT_RETRY_DELAYS_MS = [250, 600, 1200, 2400];
+const BETWEEN_BATCH_DELAY_MS = 180;
+
+async function getAllSeasonIds(): Promise<string[]> {
+  if (!allSeasonIdsPromise) {
+    allSeasonIdsPromise = seasonApi.getAllSeasons(100).then((seasons) => seasons.map((season) => season.season));
+  }
+
+  return allSeasonIdsPromise;
+}
+
+function getCachedDriverStandingsBySeason(season: string): Promise<DriverStanding[]> {
+  if (!driverStandingsBySeasonCache.has(season)) {
+    driverStandingsBySeasonCache.set(season, getStandingsWithRetry(() => seasonApi.getDriverStandings(season)));
+  }
+
+  return driverStandingsBySeasonCache.get(season)!;
+}
+
+function getCachedConstructorStandingsBySeason(season: string): Promise<ConstructorStanding[]> {
+  if (!constructorStandingsBySeasonCache.has(season)) {
+    constructorStandingsBySeasonCache.set(season, getStandingsWithRetry(() => seasonApi.getConstructorStandings(season)));
+  }
+
+  return constructorStandingsBySeasonCache.get(season)!;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function isRateLimitError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+
+  const maybeAxiosError = error as { response?: { status?: number }; message?: string };
+  return maybeAxiosError.response?.status === 429
+    || (maybeAxiosError.message || '').includes('429');
+}
+
+async function getStandingsWithRetry<T>(loader: () => Promise<T>): Promise<T> {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= RATE_LIMIT_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      return await loader();
+    } catch (error) {
+      lastError = error;
+      if (!isRateLimitError(error) || attempt === RATE_LIMIT_RETRY_DELAYS_MS.length) {
+        throw error;
+      }
+
+      await sleep(RATE_LIMIT_RETRY_DELAYS_MS[attempt]);
+    }
+  }
+
+  throw lastError;
+}
+
+async function mapSeasonsInBatches<T>(
+  seasons: string[],
+  mapper: (season: string) => Promise<T | null>,
+): Promise<T[]> {
+  const results: T[] = [];
+
+  for (let start = 0; start < seasons.length; start += STANDINGS_BATCH_SIZE) {
+    const batch = seasons.slice(start, start + STANDINGS_BATCH_SIZE);
+    const batchResults = await Promise.allSettled(batch.map((season) => mapper(season)));
+
+    batchResults.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value !== null) {
+        results.push(result.value);
+      }
+    });
+
+    if (start + STANDINGS_BATCH_SIZE < seasons.length) {
+      await sleep(BETWEEN_BATCH_DELAY_MS);
+    }
+  }
+
+  return results;
+}
+
+function normalizeNameToken(value: string | null | undefined): string {
+  return (value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeIdentifierToken(value: string | null | undefined): string {
+  return normalizeNameToken(value).replace(/\s+/g, '_');
+}
+
+function getDriverIdCandidates(
+  driverId: string,
+  identity?: { givenName?: string; familyName?: string },
+): string[] {
+  const candidates = [driverId];
+  const parts = driverId.split('_').filter(Boolean);
+
+  if (parts.length > 1) {
+    candidates.push(parts[parts.length - 1]);
+    candidates.push(parts.slice(1).join('_'));
+  }
+
+  if (identity?.familyName) {
+    const normalizedFamily = normalizeIdentifierToken(identity.familyName);
+    if (normalizedFamily) {
+      candidates.push(normalizedFamily);
+
+      const familyParts = normalizedFamily.split('_').filter(Boolean);
+      if (familyParts.length > 1) {
+        candidates.push(familyParts[familyParts.length - 1]);
+      }
+
+      if (familyParts[familyParts.length - 1] === 'jr' && familyParts.length > 1) {
+        candidates.push(familyParts.slice(0, -1).join('_'));
+        candidates.push(familyParts[familyParts.length - 2]);
+      }
+    }
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function findDriverStandingMatch(
+  standings: DriverStanding[],
+  params: { driverId: string; givenName?: string; familyName?: string },
+): DriverStanding | null {
+  const candidates = getDriverIdCandidates(params.driverId, params);
+  const normalizedGivenName = normalizeNameToken(params.givenName);
+  const normalizedFamilyName = normalizeNameToken(params.familyName);
+
+  return standings.find((standing) => {
+    if (candidates.includes(standing.Driver.driverId)) {
+      return true;
+    }
+
+    if (!normalizedGivenName || !normalizedFamilyName) {
+      return false;
+    }
+
+    return normalizeNameToken(standing.Driver.givenName) === normalizedGivenName
+      && normalizeNameToken(standing.Driver.familyName) === normalizedFamilyName;
+  }) || null;
+}
+
+async function getDriverCareerStandings(
+  params: { driverId: string; givenName?: string; familyName?: string },
+): Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>> {
+  const cacheKey = [
+    normalizeIdentifierToken(params.driverId),
+    normalizeIdentifierToken(params.givenName),
+    normalizeIdentifierToken(params.familyName),
+  ].join('|');
+
+  if (!driverCareerStandingsCache.has(cacheKey)) {
+    driverCareerStandingsCache.set(cacheKey, loadDriverCareerStandings(params));
+  }
+
+  return driverCareerStandingsCache.get(cacheKey)!;
+}
+
+async function loadDriverCareerStandings(
+  params: { driverId: string; givenName?: string; familyName?: string },
+): Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>> {
+  const seasonIds = await getAllSeasonIds();
+  const matches = await mapSeasonsInBatches(seasonIds, async (season) => {
+    const standings = await getCachedDriverStandingsBySeason(season);
+    const matchedStanding = findDriverStandingMatch(standings, params);
+
+    if (!matchedStanding) {
+      return null;
+    }
+
+      return {
+        season,
+        round: '',
+        DriverStandings: [matchedStanding],
+        ConstructorStandings: [],
+    };
+  });
+
+  return sortSeasonsDescending(matches);
+}
+
+async function getConstructorCareerStandings(
+  constructorId: string,
+): Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>> {
+  const cacheKey = normalizeIdentifierToken(constructorId);
+
+  if (!constructorCareerStandingsCache.has(cacheKey)) {
+    constructorCareerStandingsCache.set(cacheKey, loadConstructorCareerStandings(constructorId));
+  }
+
+  return constructorCareerStandingsCache.get(cacheKey)!;
+}
+
+async function loadConstructorCareerStandings(
+  constructorId: string,
+): Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>> {
+  const seasonIds = await getAllSeasonIds();
+  const matches = await mapSeasonsInBatches(seasonIds, async (season) => {
+    const standings = await getCachedConstructorStandingsBySeason(season);
+    const matchedStanding = standings.find((standing) => standing.Constructor.constructorId === constructorId) || null;
+
+    if (!matchedStanding) {
+      return null;
+    }
+
+    return {
+      season,
+      round: '',
+      DriverStandings: [],
+      ConstructorStandings: [matchedStanding],
+    };
+  });
+
+  return sortSeasonsDescending(matches);
+}
+
 export const circuitApi = {
   getAllCircuits: async (limit = 100): Promise<Circuit[]> => {
     const { data } = await supabase
@@ -129,9 +369,15 @@ export const driverApi = {
     return response.MRData.RaceTable?.Races || [];
   },
 
-  getDriverCareer: async (driverId: string): Promise<any> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/drivers/${driverId}/driverStandings.json`);
-    return response.MRData.StandingsTable?.StandingsLists || [];
+  getDriverCareer: async (
+    driverId: string,
+    identity?: { givenName?: string; familyName?: string },
+  ): Promise<any[]> => {
+    return getDriverCareerStandings({
+      driverId,
+      givenName: identity?.givenName,
+      familyName: identity?.familyName,
+    });
   },
 
   // 获取车手总参赛场数
@@ -152,16 +398,30 @@ export const driverApi = {
     return parseInt(response.MRData.total || '0', 10);
   },
 
+  getDriverPodiumCount: async (driverId: string): Promise<number> => {
+    const [wins, secondPlaces, thirdPlaces] = await Promise.all([
+      ergastApi.get(`/drivers/${driverId}/results/1.json?limit=1000`) as Promise<ErgastResponse<never>>,
+      ergastApi.get(`/drivers/${driverId}/results/2.json?limit=1000`) as Promise<ErgastResponse<never>>,
+      ergastApi.get(`/drivers/${driverId}/results/3.json?limit=1000`) as Promise<ErgastResponse<never>>,
+    ]);
+
+    return [wins, secondPlaces, thirdPlaces]
+      .map((response) => parseInt(response.MRData.total || '0', 10))
+      .reduce((total, value) => total + value, 0);
+  },
+
   // 获取车手世界冠军数
   getDriverChampionshipCount: async (driverId: string): Promise<number> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/drivers/${driverId}/driverStandings/1.json?limit=1000`);
-    return parseInt(response.MRData.total || '0', 10);
+    const standings = await driverApi.getDriverCareer(driverId);
+    return standings.filter((standing) => standing.DriverStandings?.[0]?.position === '1').length;
   },
 
   // 获取车手生涯总积分
   getDriverTotalPoints: async (driverId: string): Promise<number> => {
     const standings = await driverApi.getDriverCareer(driverId);
-    return standings.reduce((total: number, s: any) => total + parseFloat(s.points || 0), 0);
+    return standings.reduce((total: number, standingList: any) => {
+      return total + toNumericValue(standingList.DriverStandings?.[0]?.points);
+    }, 0);
   },
 };
 
@@ -207,17 +467,177 @@ export const constructorApi = {
 
   // 获取车队世界冠军数
   getConstructorChampionshipCount: async (constructorId: string): Promise<number> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/constructors/${constructorId}/constructorStandings/1.json?limit=1000`);
-    return parseInt(response.MRData.total || '0', 10);
+    const standings = await getConstructorCareerStandings(constructorId);
+    return standings.filter((standing) => standing.ConstructorStandings?.[0]?.position === '1').length;
   },
 
   // 获取车队生涯总积分
   getConstructorTotalPoints: async (constructorId: string): Promise<number> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/constructors/${constructorId}/constructorStandings.json?limit=1000`);
-    const standings = response.MRData.StandingsTable?.StandingsLists || [];
-    return standings.reduce((total: number, s: any) => total + parseFloat(s.points || 0), 0);
+    const standings = await getConstructorCareerStandings(constructorId);
+    return standings.reduce((total: number, standingList: any) => {
+      return total + toNumericValue(standingList.ConstructorStandings?.[0]?.points);
+    }, 0);
   },
 };
+
+function toNumericValue(value: string | number | null | undefined): number {
+  const parsed = typeof value === 'number' ? value : parseFloat(value || '0');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortSeasonsDescending<T extends { season: string }>(items: T[]): T[] {
+  return [...items].sort((left, right) => parseInt(right.season, 10) - parseInt(left.season, 10));
+}
+
+function mapDriverSeasonHistory(standingsLists: any[]): DriverSeasonHistoryItem[] {
+  const seasons = standingsLists
+    .map((standingList) => {
+      const standing = standingList.DriverStandings?.[0];
+      const constructor = standing?.Constructors?.[0];
+
+      if (!standing || !standingList.season) {
+        return null;
+      }
+
+      return {
+        season: String(standingList.season),
+        position: standing.position || '-',
+        points: toNumericValue(standing.points),
+        wins: parseInt(standing.wins || '0', 10) || 0,
+        constructorName: constructor?.name || '',
+        constructorId: constructor?.constructorId || '',
+      };
+    })
+    .filter((item): item is DriverSeasonHistoryItem => item !== null);
+
+  return sortSeasonsDescending(seasons);
+}
+
+function mapConstructorSeasonHistory(standingsLists: any[]): ConstructorSeasonHistoryItem[] {
+  const seasons = standingsLists
+    .map((standingList) => {
+      const standing = standingList.ConstructorStandings?.[0];
+
+      if (!standing || !standingList.season) {
+        return null;
+      }
+
+      return {
+        season: String(standingList.season),
+        position: standing.position || '-',
+        points: toNumericValue(standing.points),
+        wins: parseInt(standing.wins || '0', 10) || 0,
+      };
+    })
+    .filter((item): item is ConstructorSeasonHistoryItem => item !== null);
+
+  return sortSeasonsDescending(seasons);
+}
+
+function buildCareerSummary(params: {
+  raceCount: number;
+  poleCount: number;
+  podiumCount: number;
+  seasons: Array<{ position: string; points: number; wins: number }>;
+  winCount?: number;
+  championshipCount?: number;
+  totalPoints?: number;
+}): HistoryCareerSummary {
+  const championshipCount = params.championshipCount ?? params.seasons.filter((season) => season.position === '1').length;
+  const totalPoints = params.totalPoints ?? params.seasons.reduce((total, season) => total + season.points, 0);
+  const winCount = params.winCount ?? params.seasons.reduce((total, season) => total + season.wins, 0);
+
+  return {
+    raceCount: params.raceCount,
+    poleCount: params.poleCount,
+    podiumCount: params.podiumCount,
+    championshipCount,
+    totalPoints,
+    winCount,
+  };
+}
+
+function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<DriverHistoryProfile, 'careerSummary' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
+  return {
+    driverId: driver.driver_id,
+    permanentNumber: driver.permanent_number || '',
+    code: driver.code || '',
+    url: '#',
+    givenName: driver.first_name || '',
+    familyName: driver.last_name || '',
+    dateOfBirth: driver.date_of_birth || '',
+    nationality: driver.nationality || '',
+  };
+}
+
+function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>): Omit<ConstructorHistoryProfile, 'careerSummary' | 'seasons'> {
+  return {
+    constructorId: constructor.constructor_id,
+    url: '#',
+    name: constructor.name || '',
+    nationality: constructor.nationality || '',
+  };
+}
+
+function buildDriverFallbackProfile(driverId: string, standingsLists: any[]): Omit<DriverHistoryProfile, 'careerSummary' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> | null {
+  const latestStanding = sortSeasonsDescending(standingsLists).find((standingList) => standingList.DriverStandings?.[0]);
+  const driver = latestStanding?.DriverStandings?.[0]?.Driver;
+
+  if (!driver) {
+    return null;
+  }
+
+  return {
+    driverId: driver.driverId || driverId,
+    permanentNumber: driver.permanentNumber || '',
+    code: driver.code || '',
+    url: driver.url || '#',
+    givenName: driver.givenName || '',
+    familyName: driver.familyName || '',
+    dateOfBirth: driver.dateOfBirth || '',
+    nationality: driver.nationality || '',
+  };
+}
+
+async function resolveDriverHistoryIdentity(
+  driverId: string,
+  identity?: { givenName?: string; familyName?: string },
+): Promise<{
+  resolvedDriverId: string;
+  standingsLists: any[];
+}> {
+  const standingsLists = await driverApi.getDriverCareer(driverId, identity);
+  const latestStandingDriverId = standingsLists.find((standingList) => standingList.DriverStandings?.[0])
+    ?.DriverStandings?.[0]?.Driver?.driverId;
+
+  if (latestStandingDriverId) {
+    return {
+      resolvedDriverId: latestStandingDriverId,
+      standingsLists,
+    };
+  }
+
+  const candidates = getDriverIdCandidates(driverId, identity);
+
+  for (const candidate of candidates) {
+    try {
+      const raceCount = await driverApi.getDriverRaceCount(candidate);
+      if (raceCount > 0) {
+        return {
+          resolvedDriverId: candidate,
+          standingsLists: [],
+        };
+      }
+    } catch {
+      // Same fallback logic as above: keep scanning candidates.
+    }
+  }
+
+  return {
+    resolvedDriverId: driverId,
+    standingsLists: [],
+  };
+}
 
 export const historyApi = {
   getMostDriverChampionships: async (): Promise<any> => {
@@ -273,6 +693,129 @@ export const historyApi = {
   getMostConstructorWins: async (): Promise<any> => {
     const response: ErgastResponse<never> = await ergastApi.get('/results/1.json?limit=1');
     return response.MRData.RaceTable?.Races?.[0]?.Results?.[0]?.Constructor || null;
+  },
+
+  getDriverHistoryProfile: async (driverId: string): Promise<DriverHistoryProfile | null> => {
+    const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId);
+    const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
+      ? {
+        givenName: exactSupabaseDriver.first_name,
+        familyName: exactSupabaseDriver.last_name,
+      }
+      : undefined);
+
+    const seasons = mapDriverSeasonHistory(standingsLists);
+    const latestSeason = seasons[0];
+
+    let baseProfile = exactSupabaseDriver
+      ? mapSupabaseDriverHistoryProfile(exactSupabaseDriver)
+      : null;
+
+    if (!baseProfile && resolvedDriverId !== driverId) {
+      const resolvedSupabaseDriver = await supabaseApi.drivers.getById(resolvedDriverId);
+      if (resolvedSupabaseDriver) {
+        baseProfile = mapSupabaseDriverHistoryProfile(resolvedSupabaseDriver);
+      }
+    }
+
+    if (!baseProfile && standingsLists.length > 0) {
+      const allDrivers = await supabaseApi.drivers.getAll();
+      const latestStandingDriver = standingsLists
+        .slice()
+        .reverse()
+        .find((standingList) => standingList.DriverStandings?.[0])
+        ?.DriverStandings?.[0]?.Driver;
+
+      const matchedDriver = latestStandingDriver
+        ? allDrivers.find((driver) =>
+          driver.first_name === latestStandingDriver.givenName
+          && driver.last_name === latestStandingDriver.familyName)
+        : null;
+
+      if (matchedDriver) {
+        baseProfile = mapSupabaseDriverHistoryProfile(matchedDriver);
+      }
+    }
+
+    baseProfile = baseProfile || buildDriverFallbackProfile(driverId, standingsLists);
+
+    if (!baseProfile) {
+      return null;
+    }
+
+    const [raceCountResult, poleCountResult, podiumCountResult, winCountResult, championshipCountResult, totalPointsResult] = await Promise.allSettled([
+      driverApi.getDriverRaceCount(resolvedDriverId),
+      driverApi.getDriverPoleCount(resolvedDriverId),
+      driverApi.getDriverPodiumCount(resolvedDriverId),
+      driverApi.getDriverWinCount(resolvedDriverId),
+      driverApi.getDriverChampionshipCount(resolvedDriverId),
+      driverApi.getDriverTotalPoints(resolvedDriverId),
+    ]);
+
+    const fallbackPodiumCount = exactSupabaseDriver?.total_podiums || 0;
+    const fallbackRaceCount = exactSupabaseDriver?.total_race_starts || 0;
+    const fallbackPoleCount = exactSupabaseDriver?.total_pole_positions || 0;
+
+    return {
+      ...baseProfile,
+      recentConstructorName: latestSeason?.constructorName || '',
+      recentConstructorId: latestSeason?.constructorId || '',
+      careerSummary: buildCareerSummary({
+        raceCount: raceCountResult.status === 'fulfilled' ? raceCountResult.value : fallbackRaceCount,
+        poleCount: poleCountResult.status === 'fulfilled' ? poleCountResult.value : fallbackPoleCount,
+        podiumCount: podiumCountResult.status === 'fulfilled' ? podiumCountResult.value : fallbackPodiumCount,
+        seasons,
+        winCount: winCountResult.status === 'fulfilled' ? winCountResult.value : undefined,
+        championshipCount: championshipCountResult.status === 'fulfilled' ? championshipCountResult.value : undefined,
+        totalPoints: totalPointsResult.status === 'fulfilled' ? totalPointsResult.value : undefined,
+      }),
+      seasons,
+    };
+  },
+
+  getConstructorHistoryProfile: async (constructorId: string): Promise<ConstructorHistoryProfile | null> => {
+    const constructorInfo = await supabaseApi.constructors.getById(constructorId);
+    const standingsLists = await getConstructorCareerStandings(constructorId);
+    const seasons = mapConstructorSeasonHistory(standingsLists);
+
+    const baseProfile = constructorInfo
+      ? mapSupabaseConstructorHistoryProfile(constructorInfo)
+      : {
+        constructorId,
+        url: '#',
+        name: standingsLists[0]?.ConstructorStandings?.[0]?.Constructor?.name || constructorId,
+        nationality: standingsLists[0]?.ConstructorStandings?.[0]?.Constructor?.nationality || '',
+      };
+
+    if (!baseProfile.name && seasons.length === 0) {
+      return null;
+    }
+
+    const [raceCountResult, poleCountResult, winCountResult, championshipCountResult, totalPointsResult] = await Promise.allSettled([
+      constructorApi.getConstructorRaceCount(constructorId),
+      constructorApi.getConstructorPoleCount(constructorId),
+      constructorApi.getConstructorWinCount(constructorId),
+      constructorApi.getConstructorChampionshipCount(constructorId),
+      constructorApi.getConstructorTotalPoints(constructorId),
+    ]);
+
+    return {
+      ...baseProfile,
+      careerSummary: buildCareerSummary({
+        raceCount: raceCountResult.status === 'fulfilled'
+          ? raceCountResult.value
+          : (constructorInfo?.total_race_entries || 0),
+        poleCount: poleCountResult.status === 'fulfilled'
+          ? poleCountResult.value
+          : (constructorInfo?.total_pole_positions || 0),
+        podiumCount: constructorInfo?.total_podiums || 0,
+        seasons,
+        winCount: winCountResult.status === 'fulfilled' ? winCountResult.value : undefined,
+        championshipCount: championshipCountResult.status === 'fulfilled' ? championshipCountResult.value : undefined,
+        totalPoints: totalPointsResult.status === 'fulfilled' ? totalPointsResult.value : undefined,
+      }),
+      seasons,
+    };
   },
 };
 

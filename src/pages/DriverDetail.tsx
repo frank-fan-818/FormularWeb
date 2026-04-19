@@ -1,28 +1,116 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Tag, Row, Col } from 'antd';
-import { ArrowLeftOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, Col, Row, Tag } from 'antd';
+import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
+import dayjs from 'dayjs';
+import { driverApi, seasonApi } from '@/api/ergast';
+import { supabaseApi } from '@/api/supabase';
 import { useAppStore } from '@/store';
-import { seasonApi, driverApi } from '@/api/ergast';
 import type { DriverStanding } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
-import dayjs from 'dayjs';
 import './DriverDetail.css';
+
+interface DriverProfile {
+  driverId: string;
+  permanentNumber: string;
+  code: string;
+  url: string;
+  givenName: string;
+  familyName: string;
+  dateOfBirth: string;
+  nationality: string;
+  totalWins: number;
+  totalPodiums: number;
+  totalPolePositions: number;
+  totalFastestLaps: number;
+  totalRaceStarts: number;
+}
+
+function mapSupabaseDriver(driver: Record<string, any>): DriverProfile {
+  return {
+    driverId: driver.driver_id,
+    permanentNumber: driver.permanent_number || '',
+    code: driver.code || '',
+    url: '#',
+    givenName: driver.first_name || '',
+    familyName: driver.last_name || '',
+    dateOfBirth: driver.date_of_birth || '',
+    nationality: driver.nationality || '',
+    totalWins: driver.total_wins || 0,
+    totalPodiums: driver.total_podiums || 0,
+    totalPolePositions: driver.total_pole_positions || 0,
+    totalFastestLaps: driver.total_fastest_laps || 0,
+    totalRaceStarts: driver.total_race_starts || 0,
+  };
+}
+
+function getDriverIdCandidates(driverId: string): string[] {
+  const candidates = [driverId];
+  if (driverId.includes('_')) {
+    const parts = driverId.split('_');
+    const tail = parts[parts.length - 1];
+    if (tail) {
+      candidates.push(tail);
+    }
+  }
+  return [...new Set(candidates)];
+}
+
+function findStandingByDriverId(standings: DriverStanding[], driverId: string): DriverStanding | null {
+  const candidates = getDriverIdCandidates(driverId);
+  return standings.find((item) => candidates.includes(item.Driver.driverId)) || null;
+}
+
+async function resolveSupabaseDriverProfile(driverId: string, standing: DriverStanding | null): Promise<DriverProfile | null> {
+  const exact = await supabaseApi.drivers.getById(driverId);
+  if (exact) {
+    return mapSupabaseDriver(exact);
+  }
+
+  if (!standing) {
+    return null;
+  }
+
+  const allDrivers = await supabaseApi.drivers.getAll();
+  const matched = allDrivers.find((item) =>
+    item.first_name === standing.Driver.givenName
+    && item.last_name === standing.Driver.familyName,
+  );
+
+  return matched ? mapSupabaseDriver(matched) : null;
+}
+
+async function resolveErgastDriverIdentity(driverId: string, standing: DriverStanding | null): Promise<{ driverId: string; raceCount: number }> {
+  if (standing) {
+    const raceCount = await driverApi.getDriverRaceCount(standing.Driver.driverId);
+    return {
+      driverId: standing.Driver.driverId,
+      raceCount,
+    };
+  }
+
+  const candidates = getDriverIdCandidates(driverId);
+  for (const candidate of candidates) {
+    const raceCount = await driverApi.getDriverRaceCount(candidate);
+    if (raceCount > 0) {
+      return { driverId: candidate, raceCount };
+    }
+  }
+
+  return {
+    driverId,
+    raceCount: 0,
+  };
+}
 
 const DriverDetail = () => {
   const { driverId } = useParams<{ driverId: string }>();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const [driver, setDriver] = useState<any>(null);
+  const [driver, setDriver] = useState<DriverProfile | null>(null);
   const [currentStanding, setCurrentStanding] = useState<DriverStanding | null>(null);
-  const [careerStats, setCareerStats] = useState<{
-    raceCount: number;
-    poleCount: number;
-    winCount: number;
-    championshipCount: number;
-    totalPoints: number;
-  }>({
+  const [careerStats, setCareerStats] = useState({
     raceCount: 0,
     poleCount: 0,
     winCount: 0,
@@ -35,26 +123,27 @@ const DriverDetail = () => {
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
   const [chartScale, setChartScale] = useState(1);
+  const [resolvedDriverId, setResolvedDriverId] = useState<string | null>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
       touches[0].clientX - touches[1].clientX,
-      touches[0].clientY - touches[1].clientY
+      touches[0].clientY - touches[1].clientY,
     );
   };
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      const distance = getTouchDistance(e.touches);
+  const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    if (event.touches.length === 2) {
+      const distance = getTouchDistance(event.touches);
       touchStartRef.current = { distance, scale: chartScale };
     }
   }, [chartScale]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchStartRef.current) {
-      const currentDistance = getTouchDistance(e.touches);
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    if (event.touches.length === 2 && touchStartRef.current) {
+      const currentDistance = getTouchDistance(event.touches);
       const scaleRatio = currentDistance / touchStartRef.current.distance;
       const newScale = Math.min(Math.max(touchStartRef.current.scale * scaleRatio, 0.5), 3);
       setChartScale(newScale);
@@ -71,6 +160,7 @@ const DriverDetail = () => {
       setIsMobile(mobile);
       setChartHeight(mobile ? 300 : 400);
     };
+
     updateChartHeight();
     window.addEventListener('resize', updateChartHeight);
     return () => window.removeEventListener('resize', updateChartHeight);
@@ -78,55 +168,82 @@ const DriverDetail = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!driverId) return;
+      if (!driverId) {
+        return;
+      }
+
       setLoading(true);
 
-      // 并行加载所有数据
-      const [standings, raceCount, poleCount, winCount, championshipCount, totalPoints, raceResults, sprintResults] = await Promise.allSettled([
+      const [standings, sprintResults] = await Promise.allSettled([
         seasonApi.getDriverStandings(currentSeason),
-        driverApi.getDriverRaceCount(driverId),
-        driverApi.getDriverPoleCount(driverId),
-        driverApi.getDriverWinCount(driverId),
-        driverApi.getDriverChampionshipCount(driverId),
-        driverApi.getDriverTotalPoints(driverId),
-        driverApi.getDriverSeasonRaceResults(driverId, currentSeason),
         seasonApi.getSeasonSprintResults(currentSeason),
       ]);
 
-      // 处理当前赛季数据
-      if (standings.status === 'fulfilled') {
-        const standing = standings.value.find(s => s.Driver.driverId === driverId);
-        if (standing) {
-          setDriver(standing.Driver);
-          setCurrentStanding(standing);
-        }
+      const standing = standings.status === 'fulfilled'
+        ? findStandingByDriverId(standings.value, driverId)
+        : null;
+
+      setCurrentStanding(standing);
+
+      const baseDriver = await resolveSupabaseDriverProfile(driverId, standing);
+      const resolvedErgast = await resolveErgastDriverIdentity(driverId, standing);
+      setResolvedDriverId(resolvedErgast.driverId);
+
+      const [poleCount, winCount, podiumCount, championshipCount, totalPoints, raceResults] = await Promise.allSettled([
+        driverApi.getDriverPoleCount(resolvedErgast.driverId),
+        driverApi.getDriverWinCount(resolvedErgast.driverId),
+        driverApi.getDriverPodiumCount(resolvedErgast.driverId),
+        driverApi.getDriverChampionshipCount(resolvedErgast.driverId),
+        driverApi.getDriverTotalPoints(resolvedErgast.driverId),
+        driverApi.getDriverSeasonRaceResults(resolvedErgast.driverId, currentSeason),
+      ]);
+
+      const mergedDriver = standing ? {
+        ...standing.Driver,
+        ...baseDriver,
+        totalWins: baseDriver?.totalWins ?? 0,
+        totalPodiums: baseDriver?.totalPodiums ?? 0,
+        totalPolePositions: baseDriver?.totalPolePositions ?? 0,
+        totalFastestLaps: baseDriver?.totalFastestLaps ?? 0,
+        totalRaceStarts: baseDriver?.totalRaceStarts ?? 0,
+      } : baseDriver;
+
+      if (mergedDriver) {
+        mergedDriver.totalPodiums = podiumCount.status === 'fulfilled'
+          ? podiumCount.value
+          : (mergedDriver.totalPodiums || 0);
       }
 
-      // 处理赛季比赛结果数据
+      setDriver(mergedDriver);
+
       if (raceResults.status === 'fulfilled') {
-        setSeasonRaceResults(raceResults.value.sort((a, b) => parseInt(a.round) - parseInt(b.round)));
+        setSeasonRaceResults(
+          raceResults.value.sort((left, right) => parseInt(left.round, 10) - parseInt(right.round, 10)),
+        );
+      } else {
+        setSeasonRaceResults([]);
       }
 
-      // 处理赛季冲刺赛结果数据
       if (sprintResults.status === 'fulfilled') {
         setSeasonSprintResults(sprintResults.value);
+      } else {
+        setSeasonSprintResults([]);
       }
 
-      // 处理生涯统计数据
       setCareerStats({
-        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : Math.floor(Math.random() * 100) + 50,
-        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : Math.floor(Math.random() * 20) + 5,
-        winCount: winCount.status === 'fulfilled' ? winCount.value : Math.floor(Math.random() * 15) + 2,
-        championshipCount: championshipCount.status === 'fulfilled' ? championshipCount.value : Math.floor(Math.random() * 4),
-        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : Math.floor(Math.random() * 1500) + 500,
+        raceCount: resolvedErgast.raceCount || (mergedDriver?.totalRaceStarts || 0),
+        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : (mergedDriver?.totalPolePositions || 0),
+        winCount: winCount.status === 'fulfilled' ? winCount.value : (mergedDriver?.totalWins || 0),
+        championshipCount: championshipCount.status === 'fulfilled' ? championshipCount.value : 0,
+        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : 0,
       });
 
       setLoading(false);
     };
-    loadData();
+
+    void loadData();
   }, [driverId, currentSeason]);
 
-  // 获取车队主题色
   const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
     : '#1890ff';
@@ -138,27 +255,24 @@ const DriverDetail = () => {
     const cumulativePointsArr: number[] = [];
     const totalPoints = currentStanding ? parseFloat(currentStanding.points) : 0;
 
-    // 创建冲刺赛积分映射表
     const sprintPointsMap: Record<string, number> = {};
-    seasonSprintResults.forEach(sprintRace => {
+    seasonSprintResults.forEach((sprintRace) => {
       if (sprintRace.SprintResults && sprintRace.SprintResults.length > 0) {
-        const driverResult = sprintRace.SprintResults.find((result: any) => result.Driver.driverId === driverId);
+        const driverResult = sprintRace.SprintResults.find((result: any) => result.Driver.driverId === resolvedDriverId);
         if (driverResult) {
           sprintPointsMap[sprintRace.round] = parseFloat(driverResult.points);
         }
       }
     });
 
-    seasonRaceResults.forEach(race => {
+    seasonRaceResults.forEach((race) => {
       raceNames.push(race.raceName.replace(' Grand Prix', ''));
       let raceTotalPoints = 0;
 
-      // 正赛积分
       if (race.Results && race.Results.length > 0) {
         raceTotalPoints += parseFloat(race.Results[0].points);
       }
 
-      // 冲刺赛积分（如果有）
       if (sprintPointsMap[race.round]) {
         raceTotalPoints += sprintPointsMap[race.round];
       }
@@ -168,7 +282,6 @@ const DriverDetail = () => {
       cumulativePointsArr.push(cumulativePoints);
     });
 
-    // 修正最后一个点的积分，确保和总积分一致
     if (cumulativePointsArr.length > 0 && totalPoints > 0) {
       cumulativePointsArr[cumulativePointsArr.length - 1] = totalPoints;
     }
@@ -182,7 +295,7 @@ const DriverDetail = () => {
         borderWidth: 1,
         textStyle: {
           color: '#262626',
-          fontSize: 13
+          fontSize: 13,
         },
         padding: [12, 16],
         extraCssText: 'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px;',
@@ -193,30 +306,30 @@ const DriverDetail = () => {
           const racePoints = singlePoints[index] - sprintPoints;
 
           let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>正赛积分:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Race points:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
-            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>冲刺赛积分:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
+            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Sprint points:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>本站总积分:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>累计积分:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>Round total:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>Cumulative points:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
           return result;
-        }
+        },
       },
       legend: {
-        data: ['累计积分'],
+        data: ['Cumulative Points'],
         top: 0,
         right: 0,
         textStyle: {
           color: '#595959',
-          fontSize: 13
-        }
+          fontSize: 13,
+        },
       },
       grid: {
         left: '2%',
         right: '3%',
         bottom: '8%',
         top: '50px',
-        containLabel: true
+        containLabel: true,
       },
       xAxis: {
         type: 'category',
@@ -224,43 +337,43 @@ const DriverDetail = () => {
         data: raceNames,
         axisLine: {
           lineStyle: {
-            color: '#e8e8e8'
-          }
+            color: '#e8e8e8',
+          },
         },
         axisTick: {
-          show: false
+          show: false,
         },
         axisLabel: {
           rotate: 45,
           interval: 0,
           color: '#8c8c8c',
           fontSize: 11,
-          fontWeight: 500
-        }
+          fontWeight: 500,
+        },
       },
       yAxis: {
         type: 'value',
-        name: '累计积分',
+        name: 'Cumulative Points',
         nameTextStyle: {
           color: '#8c8c8c',
           fontSize: 12,
-          padding: [0, 0, 0, -30]
+          padding: [0, 0, 0, -30],
         },
         axisLine: {
-          show: false
+          show: false,
         },
         axisTick: {
-          show: false
+          show: false,
         },
         splitLine: {
           lineStyle: {
             color: '#f0f0f0',
-            type: 'dashed'
-          }
+            type: 'dashed',
+          },
         },
         axisLabel: {
           color: '#8c8c8c',
-          fontSize: 11
+          fontSize: 11,
         },
         min: 0,
         max: (value: { max: number }) => {
@@ -271,11 +384,11 @@ const DriverDetail = () => {
           const maxVal = Math.max(value.max, totalPoints) * 1.1;
           const roundedMax = Math.ceil(maxVal / 10) * 10;
           return Math.ceil(roundedMax / 5 / 10) * 10;
-        }
+        },
       },
       series: [
         {
-          name: '累计积分',
+          name: 'Cumulative Points',
           type: 'line',
           data: cumulativePointsArr,
           smooth: 0.4,
@@ -286,20 +399,20 @@ const DriverDetail = () => {
             color: teamColor,
             shadowColor: `${teamColor}40`,
             shadowBlur: 10,
-            shadowOffsetY: 4
+            shadowOffsetY: 4,
           },
           itemStyle: {
             color: teamColor,
             borderWidth: 2,
-            borderColor: '#fff'
+            borderColor: '#fff',
           },
           emphasis: {
             scale: 1.5,
             itemStyle: {
               borderWidth: 3,
               shadowBlur: 15,
-              shadowColor: teamColor
-            }
+              shadowColor: teamColor,
+            },
           },
           areaStyle: {
             color: {
@@ -311,39 +424,48 @@ const DriverDetail = () => {
               colorStops: [
                 { offset: 0, color: `${teamColor}60` },
                 { offset: 0.5, color: `${teamColor}20` },
-                { offset: 1, color: `${teamColor}05` }
-              ]
-            }
-          }
-        }
+                { offset: 1, color: `${teamColor}05` },
+              ],
+            },
+          },
+        },
       ],
       animation: true,
       animationDuration: 1500,
-      animationEasing: 'cubicOut'
+      animationEasing: 'cubicOut',
     };
   };
 
-  if (!driver) {
-    return <div>加载中...</div>;
+  if (!driver && !loading) {
+    return (
+      <div className="driver-detail-container">
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
+          Back
+        </Button>
+        <Card>
+          <p>Driver details are unavailable.</p>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate(-1)}
-        style={{ marginBottom: 24 }}
-      >
-        返回
+    <div className="driver-detail-container">
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
+        Back
       </Button>
 
       <Card loading={loading}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>
-            {driver.givenName} {driver.familyName}
-            <Tag color={teamColor} style={{ marginLeft: 16, fontSize: 16 }}>{driver.code}</Tag>
+            {driver?.givenName} {driver?.familyName}
+            {driver?.code ? (
+              <Tag color={teamColor} style={{ marginLeft: 16, fontSize: 16 }}>
+                {driver.code}
+              </Tag>
+            ) : null}
           </h1>
-          <p style={{ fontSize: 18, color: '#666' }}>{driver.nationality}</p>
+          <p style={{ fontSize: 18, color: '#666' }}>{driver?.nationality || '-'}</p>
         </div>
 
         <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} Season Stats</h3>
@@ -381,13 +503,13 @@ const DriverDetail = () => {
         </Row>
 
         <Card
-          title={`${currentSeason}赛季积分走势`}
+          title={`${currentSeason} Season Points Trend`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
           headStyle={{
             background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
             borderBottom: `2px solid ${teamColor}30`,
             fontSize: 16,
-            fontWeight: 600
+            fontWeight: 600,
           }}
           bodyStyle={{ padding: isMobile ? 0 : 24 }}
         >
@@ -403,21 +525,21 @@ const DriverDetail = () => {
                 className="chart-scroll-content"
                 style={{
                   width: isMobile ? Math.max(seasonRaceResults.length * 70 * chartScale, window.innerWidth) : '100%',
-                  transform: isMobile ? `scaleX(1)` : 'none',
-                  transformOrigin: 'left center'
+                  transform: isMobile ? 'scaleX(1)' : 'none',
+                  transformOrigin: 'left center',
                 }}
               >
                 <ReactECharts
-                  key={`${driverId}-${currentSeason}-${seasonRaceResults.length}`}
+                  key={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}`}
                   option={getPointsChartOption()}
                   style={{ height: chartHeight }}
-                  notMerge={true}
-                  lazyUpdate={true}
+                  notMerge
+                  lazyUpdate
                 />
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>暂无积分数据</div>
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>No season points data.</div>
           )}
         </Card>
 
@@ -443,19 +565,39 @@ const DriverDetail = () => {
               </div>
             </Card>
           </Col>
+          <Col xs={24} sm={12}>
+            <Card className="stat-card">
+              <div className="stat-label">
+                <TrophyOutlined /> Podiums
+              </div>
+              <div className="stat-value" style={{ color: '#722ed1' }}>
+                {driver?.totalPodiums || 0}
+              </div>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Card className="stat-card">
+              <div className="stat-label">
+                <FlagOutlined /> Pole Positions
+              </div>
+              <div className="stat-value" style={{ color: '#13c2c2' }}>
+                {careerStats.poleCount}
+              </div>
+            </Card>
+          </Col>
         </Row>
 
-        <Card title="个人信息">
+        <Card title="Driver Info">
           <Row gutter={[24, 16]}>
             <Col xs={24} sm={12}>
-              <p><strong>全名：</strong>{driver?.givenName} {driver?.familyName}</p>
-              <p><strong>车手代码：</strong>{driver?.code || '-'}</p>
-              <p><strong>车号：</strong>{driver?.permanentNumber || '-'}</p>
-              <p><strong>国籍：</strong>{driver?.nationality}</p>
+              <p><strong>Full Name:</strong> {driver?.givenName} {driver?.familyName}</p>
+              <p><strong>Code:</strong> {driver?.code || '-'}</p>
+              <p><strong>Number:</strong> {driver?.permanentNumber || '-'}</p>
+              <p><strong>Nationality:</strong> {driver?.nationality || '-'}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>出生日期：</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
-              <p><strong>当前车队：</strong>{currentStanding?.Constructors[0].name || '-'}</p>
+              <p><strong>Date of Birth:</strong> {driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
+              <p><strong>Current Team:</strong> {currentStanding?.Constructors[0]?.name || '-'}</p>
             </Col>
           </Row>
         </Card>

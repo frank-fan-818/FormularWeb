@@ -25,13 +25,6 @@
   font-weight: var(--font-bold);
   font-size: var(--text-lg);
   letter-spacing: -0.02em;
-  border-bottom: none;
-  position: relative;
-}
-
-.sidebar-logo-icon {
-  font-size: 24px;
-  margin-right: var(--space-2);
 }
 
 .sidebar-menu {
@@ -73,6 +66,21 @@
   margin-right: var(--space-3);
 }
 
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+  z-index: 90;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .main-layout {
   margin-left: 200px;
   transition: all var(--transition-base);
@@ -91,12 +99,35 @@
   background: var(--bg-primary);
   box-shadow: none;
   border-bottom: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 99;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 72px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.season-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .menu-toggle-btn {
@@ -113,12 +144,90 @@
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .season-select {
   width: 120px;
   border-radius: var(--radius-md);
   font-weight: var(--font-medium);
+}
+
+.header-search-slot {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-mobile-search {
+  display: none;
+}
+
+.global-search {
+  width: min(420px, 100%);
+}
+
+.global-search .ant-input-affix-wrapper {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  border-radius: var(--radius-lg);
+  min-height: 44px;
+}
+
+.global-search .ant-input-affix-wrapper:hover,
+.global-search .ant-input-affix-wrapper-focused {
+  border-color: var(--f1-red);
+  box-shadow: 0 0 0 2px var(--f1-red-glow);
+}
+
+.global-search .ant-input {
+  background: transparent;
+}
+
+.global-search-dropdown .ant-select-dropdown {
+  padding: var(--space-2);
+}
+
+.search-group-label {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.global-search-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-1) 0;
+}
+
+.global-search-option-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.global-search-option-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.global-search-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.global-search-feedback.error {
+  color: var(--f1-red);
 }
 
 .content {
@@ -144,7 +253,6 @@
   }
 }
 
-/* 平板横屏及以上 */
 @media (min-width: 769px) and (max-width: 1024px) {
   .main-layout {
     margin-left: 80px;
@@ -159,7 +267,6 @@
   }
 }
 
-/* 平板竖屏及手机 */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
@@ -173,26 +280,53 @@
     transform: translateX(0);
   }
 
-  .main-layout {
-    margin-left: 0 !important;
-  }
-
+  .main-layout,
   .main-layout.sidebar-collapsed {
     margin-left: 0 !important;
   }
 
   .header {
-    padding: 0 var(--space-4);
-    height: 56px !important;
-    line-height: 56px !important;
+    padding: var(--space-3) var(--space-4);
+    min-height: auto;
+  }
+
+  .header-main {
+    min-height: auto;
+  }
+
+  .header.mobile-header {
+    gap: var(--space-3);
+  }
+
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .season-switcher {
+    gap: var(--space-2);
+  }
+
+  .season-label {
+    font-size: var(--text-sm);
   }
 
   .menu-toggle-btn {
     padding: 4px 8px !important;
   }
 
-  .season-label {
-    font-size: var(--text-sm);
+  .header-search-slot {
+    display: none;
+  }
+
+  .header-mobile-search {
+    display: block;
+    width: 100%;
+  }
+
+  .global-search {
+    width: 100%;
   }
 
   .content {
@@ -205,10 +339,23 @@
   }
 }
 
-/* 小屏手机 */
 @media (max-width: 480px) {
   .header {
-    padding: 0 var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .header-left {
+    align-items: flex-start;
+  }
+
+  .season-switcher {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  .season-select {
+    width: 100px;
   }
 
   .content {
@@ -217,9 +364,5 @@
 
   .content-inner {
     padding: var(--space-2);
-  }
-
-  .season-select {
-    width: 100px;
   }
 }

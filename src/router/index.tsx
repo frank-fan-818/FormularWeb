@@ -6,8 +6,10 @@ import Races from '@/pages/Races';
 import RaceDetail from '@/pages/RaceDetail';
 import Drivers from '@/pages/Drivers';
 import DriverDetail from '@/pages/DriverDetail';
+import DriverHistoryDetail from '@/pages/DriverHistoryDetail';
 import Constructors from '@/pages/Constructors';
 import ConstructorDetail from '@/pages/ConstructorDetail';
+import ConstructorHistoryDetail from '@/pages/ConstructorHistoryDetail';
 import Circuits from '@/pages/Circuits';
 import CircuitDetail from '@/pages/CircuitDetail';
 
@@ -41,12 +43,20 @@ const router = createBrowserRouter([
         element: <DriverDetail />,
       },
       {
+        path: '/history/drivers/:driverId',
+        element: <DriverHistoryDetail />,
+      },
+      {
         path: '/constructors',
         element: <Constructors />,
       },
       {
         path: '/constructors/:constructorId',
         element: <ConstructorDetail />,
+      },
+      {
+        path: '/history/constructors/:constructorId',
+        element: <ConstructorHistoryDetail />,
       },
       {
         path: '/circuits',

@@ -136,3 +136,70 @@ export interface ErgastResponse<_T> {
     };
   };
 }
+
+export type SearchEntityType = 'driver' | 'constructor' | 'circuit';
+
+export interface SearchIndexEntry {
+  type: SearchEntityType;
+  id: string;
+  title: string;
+  subtitle: string;
+  route: string;
+  keywords: string[];
+  score?: number;
+}
+
+export interface SearchResultGroup {
+  type: SearchEntityType;
+  label: string;
+  items: SearchIndexEntry[];
+}
+
+export interface HistoryCareerSummary {
+  raceCount: number;
+  poleCount: number;
+  winCount: number;
+  podiumCount: number;
+  championshipCount: number;
+  totalPoints: number;
+}
+
+export interface DriverSeasonHistoryItem {
+  season: string;
+  position: string;
+  points: number;
+  wins: number;
+  constructorName: string;
+  constructorId: string;
+}
+
+export interface ConstructorSeasonHistoryItem {
+  season: string;
+  position: string;
+  points: number;
+  wins: number;
+}
+
+export interface DriverHistoryProfile {
+  driverId: string;
+  permanentNumber: string;
+  code: string;
+  url: string;
+  givenName: string;
+  familyName: string;
+  dateOfBirth: string;
+  nationality: string;
+  recentConstructorName: string;
+  recentConstructorId: string;
+  careerSummary: HistoryCareerSummary;
+  seasons: DriverSeasonHistoryItem[];
+}
+
+export interface ConstructorHistoryProfile {
+  constructorId: string;
+  url: string;
+  name: string;
+  nationality: string;
+  careerSummary: HistoryCareerSummary;
+  seasons: ConstructorSeasonHistoryItem[];
+}
