@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
-import { AutoComplete, Button, Input, Layout, Menu, Select, Spin } from 'antd';
-import type { DefaultOptionType } from 'antd/es/select';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Button, Layout, Menu, Select } from 'antd';
 import {
   CalendarOutlined,
   CarOutlined,
@@ -15,32 +13,27 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useGlobalSearch, useSeasons } from '@/hooks';
+import { useSeasons } from '@/hooks';
 import { useAppStore } from '@/store';
 import './Layout.css';
 
 const { Content, Header, Sider } = Layout;
 const { Option } = Select;
+const GlobalSearchBox = lazy(() => import('@/components/GlobalSearchBox'));
 
 const TEXT = {
-  home: '首页',
-  seasonStandings: '赛季积分榜',
-  races: '分站赛事',
-  drivers: '车手',
-  constructors: '车队',
-  circuits: '赛道',
-  databaseAudit: '数据库审计',
-  searching: '搜索中...',
-  searchUnavailable: '搜索暂时不可用。',
-  noSearchResults: '没有找到匹配的车手、车队或赛道。',
-  searchPlaceholder: '搜索车手、车队、赛道',
-  appName: 'F1 数据中心',
-  currentSeason: '当前赛季',
+  home: '\u9996\u9875',
+  seasonStandings: '\u8d5b\u5b63\u79ef\u5206',
+  races: '\u5206\u7ad9\u8d5b\u4e8b',
+  drivers: '\u8f66\u624b',
+  constructors: '\u8f66\u961f',
+  circuits: '\u8d5b\u9053',
+  databaseAudit: '\u6570\u636e\u5e93\u5ba1\u8ba1',
+  searching: '\u52a0\u8f7d\u641c\u7d22\u4e2d...',
+  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
+  appName: 'F1 \u6570\u636e\u4e2d\u5fc3',
+  currentSeason: '\u5f53\u524d\u8d5b\u5b63',
 };
-
-interface SearchOption extends DefaultOptionType {
-  route?: string;
-}
 
 const menuItems = [
   { key: '/', icon: <HomeOutlined />, label: TEXT.home },
@@ -61,15 +54,7 @@ const LayoutComponent = () => {
   const [mounted, setMounted] = useState(false);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
-  const [searchValue, setSearchValue] = useState('');
-  const {
-    groups,
-    loading: searchLoading,
-    error: searchError,
-    ensureLoaded,
-    runSearch,
-    reset,
-  } = useGlobalSearch();
+  const [searchActivated, setSearchActivated] = useState(false);
   const { seasons } = useSeasons();
   const initialCheckDone = useRef(false);
 
@@ -117,69 +102,26 @@ const LayoutComponent = () => {
     setTouchEndX(0);
   };
 
-  const searchOptions: SearchOption[] = groups.map((group) => ({
-    label: <span className="search-group-label">{group.label}</span>,
-    options: group.items.map((item) => ({
-      value: `${item.type}:${item.id}`,
-      route: item.route,
-      label: (
-        <div className="global-search-option">
-          <div className="global-search-option-title">{item.title}</div>
-          {item.subtitle ? (
-            <div className="global-search-option-subtitle">{item.subtitle}</div>
-          ) : null}
-        </div>
-      ),
-    })),
-  }));
+  const activateSearch = () => {
+    setSearchActivated(true);
+  };
 
-  const notFoundContent: ReactNode = searchLoading ? (
-    <div className="global-search-feedback">
-      <Spin size="small" />
-      <span>{TEXT.searching}</span>
-    </div>
-  ) : searchError ? (
-    <div className="global-search-feedback error">{TEXT.searchUnavailable}</div>
-  ) : searchValue.trim() ? (
-    <div className="global-search-feedback">{TEXT.noSearchResults}</div>
-  ) : null;
-
-  const searchBox = (
-    <AutoComplete
-      className="global-search"
-      value={searchValue}
-      options={searchOptions}
-      onSearch={(value) => {
-        setSearchValue(value);
-        void runSearch(value);
-      }}
-      onChange={(value) => {
-        setSearchValue(value);
-        if (!value) {
-          reset();
-        }
-      }}
-      onSelect={(_value, option: SearchOption) => {
-        if (option.route) {
-          navigate(option.route);
-        }
-        setSearchValue('');
-        reset();
-      }}
-      onFocus={() => {
-        void ensureLoaded();
-      }}
-      notFoundContent={notFoundContent}
-      popupClassName="global-search-dropdown"
+  const searchBox = searchActivated ? (
+    <Suspense fallback={<div className="search-loading-shell">{TEXT.searching}</div>}>
+      <GlobalSearchBox autoFocus />
+    </Suspense>
+  ) : (
+    <button
+      type="button"
+      className="search-trigger"
+      onClick={activateSearch}
+      onFocus={activateSearch}
+      onMouseEnter={() => void import('@/components/GlobalSearchBox')}
+      aria-label={TEXT.searchPlaceholder}
     >
-      <Input
-        allowClear
-        size="large"
-        prefix={<SearchOutlined />}
-        placeholder={TEXT.searchPlaceholder}
-        status={searchError ? 'error' : undefined}
-      />
-    </AutoComplete>
+      <SearchOutlined />
+      <span className="search-trigger-text">{TEXT.searchPlaceholder}</span>
+    </button>
   );
 
   return (

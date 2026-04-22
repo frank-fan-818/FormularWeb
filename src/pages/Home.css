@@ -1,13 +1,7 @@
 /* ========================================
-   Home Page - Ferrari + Vercel + Linear
+   Home Page - Lightweight Hero
    ======================================== */
 
-/* Hero Section */
-.hero-section {
-  margin-bottom: var(--space-6);
-}
-
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -27,13 +21,21 @@
   }
 }
 
-/* Stat Card Overrides */
 .stat-card-f1 {
   text-align: center;
 }
 
-.stat-card-f1 .stat-icon {
-  font-size: 32px;
+.stat-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 52px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
   margin-bottom: var(--space-3);
 }
 
@@ -50,7 +52,6 @@
   font-weight: var(--font-medium);
 }
 
-/* Section Title */
 .section-title-f1 {
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
@@ -58,9 +59,30 @@
   margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
+  gap: var(--space-3);
 }
 
-/* Standings Section */
+.section-title-accent {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.section-title-accent-primary {
+  background: var(--f1-red);
+}
+
+.section-title-accent-warning {
+  background: var(--accent-yellow);
+}
+
+.section-title-accent-live {
+  background: var(--accent-orange);
+  box-shadow: 0 0 0 6px rgba(251, 146, 60, 0.16);
+}
+
 .standings-section {
   margin-bottom: var(--space-6);
 }
@@ -77,7 +99,6 @@
   }
 }
 
-/* Standings Card */
 .standings-card-f1 {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
@@ -99,11 +120,8 @@
   font-weight: var(--font-semibold);
   font-size: var(--text-lg);
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
 }
 
-/* Standings List */
 .standings-list-f1 {
   padding: var(--space-2);
 }
@@ -112,7 +130,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) !important;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-secondary);
   transition: all var(--transition-fast);
 }
@@ -125,7 +143,6 @@
   background-color: var(--bg-tertiary);
 }
 
-/* Standings Info */
 .standings-info-f1 {
   flex: 1;
   min-width: 0;
@@ -142,23 +159,18 @@
   gap: var(--space-2);
 }
 
+.standings-link-f1 {
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
 .standings-team-f1 {
   font-size: var(--text-sm);
   color: var(--text-tertiary);
 }
 
-/* Driver Code Tag */
-.driver-code-tag {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-secondary);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  font-size: var(--text-xs);
-}
-
-/* Standings Points */
 .standings-points-f1 {
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
@@ -174,7 +186,6 @@
   color: var(--text-tertiary);
 }
 
-/* Next Race Section */
 .next-race-section {
   margin-bottom: var(--space-6);
 }
@@ -187,16 +198,15 @@
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-slow) var(--ease-spring);
   cursor: pointer;
+  width: 100%;
+  padding: var(--space-5);
+  text-align: left;
 }
 
 .next-race-card-f1:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: var(--accent-yellow);
-}
-
-.next-race-card-f1 .ant-card-body {
-  padding: var(--space-5);
 }
 
 .next-race-content-f1 {
@@ -206,7 +216,7 @@
   gap: var(--space-4);
 }
 
-.next-race-info-f1 h3 {
+.next-race-title {
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
   color: var(--text-primary);
@@ -231,7 +241,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .next-race-date .countdown {
@@ -240,13 +250,19 @@
 }
 
 .next-race-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(251, 191, 36, 0.16);
+  color: #a16207;
+  border: 1px solid rgba(251, 191, 36, 0.28);
   font-weight: var(--font-semibold);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
-/* Ongoing Section */
 .ongoing-section {
   margin-bottom: var(--space-6);
 }
@@ -257,9 +273,6 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-}
-
-.ongoing-card-f1 .ant-card-body {
   padding: var(--space-4);
 }
 
@@ -270,7 +283,7 @@
   gap: var(--space-4);
 }
 
-.ongoing-info-f1 h3 {
+.ongoing-race-title {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--text-primary);
@@ -290,20 +303,40 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  justify-content: center;
 }
 
-/* Loading Container */
-.loading-container {
+.page-loader {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: var(--space-3);
   min-height: 400px;
+  color: var(--text-secondary);
 }
 
-/* Responsive */
+.page-loader-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 3px solid rgba(229, 231, 235, 0.9);
+  border-top-color: var(--f1-red);
+  animation: homeSpin 0.8s linear infinite;
+}
+
+@keyframes homeSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .next-race-content-f1 {
     flex-direction: column;

@@ -1,8 +1,9 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Spin, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import CircuitImage from '@/components/circuits/CircuitImage';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
@@ -10,13 +11,9 @@ import type { Circuit } from '@/types';
 import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitIds';
 import './CircuitDetail.css';
 
-const LazyCircuitImage = lazy(() => import('@/components/circuits/CircuitImage'));
-
 const TEXT = {
   unavailable: '\u8d5b\u9053\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
   back: '\u8fd4\u56de',
-  imageLoading: '\u6b63\u5728\u52a0\u8f7d\u8d5b\u9053\u56fe...',
-  imageUnavailable: '\u8d5b\u9053\u56fe\u6682\u4e0d\u53ef\u7528',
   length: '\u8d5b\u9053\u957f\u5ea6',
   turns: '\u5f2f\u9053\u6570\u91cf',
   raceCount: '\u4e3e\u529e\u6b21\u6570',
@@ -157,29 +154,11 @@ const CircuitDetail = () => {
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">
-            <Suspense
-              fallback={(
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: 240,
-                    gap: 12,
-                  }}
-                >
-                  <Spin size="large" />
-                  <span>{TEXT.imageLoading}</span>
-                </div>
-              )}
-            >
-              <LazyCircuitImage
-                alt={circuit.circuitName}
-                circuitId={circuit.circuitId}
-                className="circuit-image"
-              />
-            </Suspense>
+            <CircuitImage
+              alt={circuit.circuitName}
+              circuitId={circuit.circuitId}
+              className="circuit-image"
+            />
           </div>
         </Card>
 

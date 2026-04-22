@@ -1,30 +1,26 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, List, Spin, Tag } from 'antd';
-import {
-  TrophyOutlined,
-  CarOutlined,
-  TeamOutlined,
-  ClockCircleOutlined,
-  FireOutlined,
-} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useSeasonData, useRacesByStatus } from '@/hooks';
 import { useAppStore } from '@/store';
 import './Home.css';
 
 const TEXT = {
-  completedRaces: '已完成分站赛',
-  activeDrivers: '参赛车手',
-  activeConstructors: '参赛车队',
-  daysUntilNextRace: '距离下一站',
-  seasonEnded: '赛季已结束',
-  nextRace: '下一场比赛',
-  upcoming: '即将开赛',
-  ongoingRace: '进行中比赛',
-  live: '进行中',
-  standingsTopThree: '积分榜 TOP3',
-  driverStandings: '车手积分榜',
-  constructorStandings: '车队积分榜',
+  completedRaces: '\u5df2\u5b8c\u6210\u5206\u7ad9',
+  activeDrivers: '\u6d3b\u8dc3\u8f66\u624b',
+  activeConstructors: '\u6d3b\u8dc3\u8f66\u961f',
+  daysUntilNextRace: '\u8ddd\u79bb\u4e0b\u4e00\u7ad9',
+  seasonEnded: '\u8d5b\u5b63\u5df2\u7ed3\u675f',
+  nextRace: '\u4e0b\u4e00\u573a\u6bd4\u8d5b',
+  upcoming: '\u5373\u5c06\u5f00\u59cb',
+  ongoingRace: '\u8fdb\u884c\u4e2d\u7684\u6bd4\u8d5b',
+  live: '\u76f4\u64ad\u4e2d',
+  standingsTopThree: '\u79ef\u5206\u699c TOP 3',
+  driverStandings: '\u8f66\u624b\u79ef\u5206\u699c',
+  constructorStandings: '\u8f66\u961f\u79ef\u5206\u699c',
+  raceCircuit: '\u8d5b\u9053',
+  raceLocation: '\u5730\u70b9',
+  today: '\u4eca\u5929',
+  loading: '\u6b63\u5728\u52a0\u8f7d\u9996\u9875\u6570\u636e...',
 };
 
 const Home = () => {
@@ -32,12 +28,16 @@ const Home = () => {
   const { currentSeason } = useAppStore();
   const { driverStandings, constructorStandings, races, loading } = useSeasonData(currentSeason);
   const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
+  const daysUntilNextRace = nextRace
+    ? Math.max(0, dayjs(nextRace.date).startOf('day').diff(dayjs().startOf('day'), 'day'))
+    : null;
 
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading-container">
-          <Spin size="large" />
+        <div className="page-loader">
+          <div className="page-loader-spinner" />
+          <span>{TEXT.loading}</span>
         </div>
       </div>
     );
@@ -45,29 +45,29 @@ const Home = () => {
 
   const statCards = [
     {
-      icon: <TrophyOutlined className="stat-icon" style={{ color: 'var(--f1-red)' }} />,
+      marker: 'GP',
       value: completedRaces.length,
       label: `${TEXT.completedRaces} / ${races.length}`,
       color: 'var(--f1-red)',
       delay: 'stagger-1',
     },
     {
-      icon: <CarOutlined className="stat-icon" style={{ color: 'var(--accent-blue)' }} />,
+      marker: 'DR',
       value: driverStandings.length,
       label: TEXT.activeDrivers,
       color: 'var(--accent-blue)',
       delay: 'stagger-2',
     },
     {
-      icon: <TeamOutlined className="stat-icon" style={{ color: 'var(--accent-green)' }} />,
+      marker: 'TM',
       value: constructorStandings.length,
       label: TEXT.activeConstructors,
       color: 'var(--accent-green)',
       delay: 'stagger-3',
     },
     {
-      icon: <ClockCircleOutlined className="stat-icon" style={{ color: 'var(--accent-yellow)' }} />,
-      value: nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '--',
+      marker: 'D',
+      value: daysUntilNextRace ?? '--',
       label: nextRace ? TEXT.daysUntilNextRace : TEXT.seasonEnded,
       color: 'var(--accent-yellow)',
       delay: 'stagger-4',
@@ -86,58 +86,53 @@ const Home = () => {
       {nextRace ? (
         <section className="next-race-section animate-slide-up">
           <h2 className="section-title-f1">
-            <ClockCircleOutlined style={{ marginRight: 12, color: 'var(--accent-yellow)' }} />
+            <span className="section-title-accent section-title-accent-warning" />
             {TEXT.nextRace}
           </h2>
-          <Card
+          <button
+            type="button"
             className="next-race-card-f1"
-            hoverable
             onClick={() => navigate(`/races/${nextRace.round}`)}
           >
             <div className="next-race-content-f1">
               <div className="next-race-info-f1">
-                <h3>{nextRace.raceName}</h3>
+                <div className="next-race-title">{nextRace.raceName}</div>
                 <p className="next-race-circuit">
-                  {nextRace.Circuit.circuitName}
+                  {TEXT.raceCircuit}: {nextRace.Circuit.circuitName}
                 </p>
                 <p className="next-race-location">
-                  {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
+                  {TEXT.raceLocation}: {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
                 </p>
                 <div className="next-race-date">
-                  <ClockCircleOutlined style={{ marginRight: 6 }} />
                   {dayjs(nextRace.date).format('YYYY-MM-DD')}
                   <span className="countdown">
-                    ({dayjs(nextRace.date).diff(dayjs(), 'day')} days away)
+                    {daysUntilNextRace === 0 ? TEXT.today : `\u8fd8\u6709 ${daysUntilNextRace} \u5929`}
                   </span>
                 </div>
               </div>
-              <Tag className="next-race-tag" color="gold">
-                {TEXT.upcoming}
-              </Tag>
+              <span className="next-race-tag">{TEXT.upcoming}</span>
             </div>
-          </Card>
+          </button>
         </section>
       ) : null}
 
       {ongoingRace ? (
         <section className="ongoing-section animate-slide-up">
           <h2 className="section-title-f1">
-            <FireOutlined style={{ marginRight: 12, color: 'var(--accent-orange)' }} />
+            <span className="section-title-accent section-title-accent-live" />
             {TEXT.ongoingRace}
           </h2>
-          <Card className="ongoing-card-f1">
+          <div className="ongoing-card-f1">
             <div className="ongoing-content-f1">
               <div className="ongoing-info-f1">
-                <h3>{ongoingRace.raceName}</h3>
+                <div className="ongoing-race-title">{ongoingRace.raceName}</div>
                 <p>
-                  {ongoingRace.Circuit.circuitName} · {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
+                  {ongoingRace.Circuit.circuitName}, {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
                 </p>
               </div>
-              <Tag className="ongoing-tag">
-                <FireOutlined /> {TEXT.live}
-              </Tag>
+              <span className="ongoing-tag">{TEXT.live}</span>
             </div>
-          </Card>
+          </div>
         </section>
       ) : null}
 
@@ -145,67 +140,60 @@ const Home = () => {
 
       <section className="standings-section">
         <h2 className="section-title-f1 animate-slide-up stagger-5">
-          <TrophyOutlined style={{ marginRight: 12, color: 'var(--f1-red)' }} />
+          <span className="section-title-accent section-title-accent-primary" />
           {TEXT.standingsTopThree}
         </h2>
 
         <div className="standings-grid">
           <div className="standings-card-f1 animate-slide-up stagger-5">
-            <div className="card-header">
-              <CarOutlined style={{ marginRight: 8 }} />
-              {TEXT.driverStandings}
-            </div>
-            <List
-              className="standings-list-f1"
-              dataSource={driverStandings.slice(0, 3)}
-              renderItem={(item, index) => (
-                <List.Item className="standings-item-f1">
+            <div className="card-header">{TEXT.driverStandings}</div>
+            <div className="standings-list-f1">
+              {driverStandings.slice(0, 3).map((item, index) => (
+                <div key={item.Driver.driverId} className="standings-item-f1">
                   <div className={`rank-badge ${getRankBadgeClass(index)}`}>
                     {index + 1}
                   </div>
                   <div className="standings-info-f1">
-                    <div
-                      className="standings-name-f1 clickable-f1"
+                    <button
+                      type="button"
+                      className="standings-link-f1 standings-name-f1 clickable-f1"
                       onClick={() => navigate(`/drivers/${item.Driver.driverId}`)}
                     >
                       {item.Driver.givenName} {item.Driver.familyName}
-                    </div>
-                    <div
-                      className="standings-team-f1 clickable-f1"
+                    </button>
+                    <button
+                      type="button"
+                      className="standings-link-f1 standings-team-f1 clickable-f1"
                       onClick={() => navigate(`/constructors/${item.Constructors[0].constructorId}`)}
                     >
                       {item.Constructors[0].name}
-                    </div>
+                    </button>
                   </div>
                   <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>
-                </List.Item>
-              )}
-            />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="standings-card-f1 animate-slide-up stagger-6">
-            <div className="card-header">
-              <TeamOutlined style={{ marginRight: 8 }} />
-              {TEXT.constructorStandings}
-            </div>
-            <List
-              className="standings-list-f1"
-              dataSource={constructorStandings.slice(0, 3)}
-              renderItem={(item, index) => (
-                <List.Item className="standings-item-f1">
+            <div className="card-header">{TEXT.constructorStandings}</div>
+            <div className="standings-list-f1">
+              {constructorStandings.slice(0, 3).map((item, index) => (
+                <div key={item.Constructor.constructorId} className="standings-item-f1">
                   <div className={`rank-badge ${getRankBadgeClass(index)}`}>
                     {index + 1}
                   </div>
                   <div className="standings-info-f1">
-                    <div
-                      className="standings-name-f1 clickable-f1"
+                    <button
+                      type="button"
+                      className="standings-link-f1 standings-name-f1 clickable-f1"
                       onClick={() => navigate(`/constructors/${item.Constructor.constructorId}`)}
                     >
                       {item.Constructor.name}
-                    </div>
+                    </button>
                     <div className="standings-team-f1">
                       {item.Constructor.nationality}
                     </div>
@@ -214,9 +202,9 @@ const Home = () => {
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>
-                </List.Item>
-              )}
-            />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -229,7 +217,9 @@ const Home = () => {
             key={index}
             className={`stat-card-f1 animate-slide-up ${card.delay}`}
           >
-            {card.icon}
+            <span className="stat-marker" style={{ color: card.color }}>
+              {card.marker}
+            </span>
             <div className="stat-value" style={{ color: card.color }}>
               {card.value}
             </div>

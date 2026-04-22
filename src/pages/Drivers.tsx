@@ -5,9 +5,15 @@ import { CarOutlined } from '@ant-design/icons';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-
 import { getTeamColor } from '@/utils/teamColors';
 import './Drivers.css';
+
+const TEXT = {
+  title: '\u8f66\u624b',
+  loadError: '\u52a0\u8f7d\u8f66\u624b\u5217\u8868\u5931\u8d25:',
+  wins: '\u80dc',
+  podiums: '\u9886\u5956\u53f0',
+};
 
 const Drivers = () => {
   const navigate = useNavigate();
@@ -54,7 +60,7 @@ const Drivers = () => {
           setDrivers(formattedDrivers);
         }
       } catch (error) {
-        console.error('加载车手列表失败:', error);
+        console.error(TEXT.loadError, error);
         if (!cancelled) {
           setDrivers([]);
         }
@@ -76,7 +82,7 @@ const Drivers = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>车手</span></h1>
+      <h1 className="page-title"><span>{TEXT.title}</span></h1>
 
       {loading ? (
         <div className="loading-container">
@@ -100,23 +106,23 @@ const Drivers = () => {
                     <div className="item-info">
                       <h3 className="item-title">
                         {driver.givenName} {driver.familyName}
-                        {driver.code && <span className="item-tag">#{driver.permanentNumber} {driver.code}</span>}
+                        {driver.code ? <span className="item-tag">#{driver.permanentNumber} {driver.code}</span> : null}
                       </h3>
                       <div className="item-stats">
                         <span className="stat-item">{driver.constructorName}</span>
-                        {driver.total_wins && (
-                          <span className="stat-item"><CarOutlined /> {driver.total_wins} wins</span>
-                        )}
+                        {driver.total_wins ? (
+                          <span className="stat-item"><CarOutlined /> {driver.total_wins} {TEXT.wins}</span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
                   <div className="item-right">
-                    {driver.total_podiums && (
+                    {driver.total_podiums ? (
                       <div className="stat-badge" style={{ background: teamColor }}>
                         <span className="stat-value">{driver.total_podiums}</span>
-                        <span className="stat-label">Podiums</span>
+                        <span className="stat-label">{TEXT.podiums}</span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </Card>

@@ -8,6 +8,15 @@ import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
 import './Constructors.css';
 
+const TEXT = {
+  title: '\u8f66\u961f',
+  loadError: '\u52a0\u8f7d\u8f66\u961f\u5217\u8868\u5931\u8d25:',
+  wins: '\u80dc',
+  podiums: '\u6b21\u9886\u5956\u53f0',
+  poles: '\u6746\u4f4d',
+  entries: '\u53c2\u8d5b\u573a\u6b21',
+};
+
 const Constructors = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
@@ -51,7 +60,7 @@ const Constructors = () => {
           setConstructors(formattedConstructors);
         }
       } catch (error) {
-        console.error('加载车队列表失败:', error);
+        console.error(TEXT.loadError, error);
         if (!cancelled) {
           setConstructors([]);
         }
@@ -73,7 +82,7 @@ const Constructors = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>车队</span></h1>
+      <h1 className="page-title"><span>{TEXT.title}</span></h1>
 
       {loading ? (
         <div className="loading-container">
@@ -99,26 +108,26 @@ const Constructors = () => {
                         {constructor.name}
                       </h3>
                       <div className="item-stats">
-                        {constructor.total_wins && (
-                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} wins</span>
-                        )}
-                        {constructor.total_podiums && (
-                          <span className="stat-item"><CarOutlined /> {constructor.total_podiums} podiums</span>
-                        )}
-                        {constructor.total_pole_positions && (
-                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} poles</span>
-                        )}
+                        {constructor.total_wins ? (
+                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} {TEXT.wins}</span>
+                        ) : null}
+                        {constructor.total_podiums ? (
+                          <span className="stat-item"><CarOutlined /> {constructor.total_podiums} {TEXT.podiums}</span>
+                        ) : null}
+                        {constructor.total_pole_positions ? (
+                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} {TEXT.poles}</span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
                   <div className="item-right">
                     <span className="stat-item nationality-item"><GlobalOutlined /> {constructor.nationality}</span>
-                    {constructor.total_race_entries && (
+                    {constructor.total_race_entries ? (
                       <div className="stat-badge" style={{ background: teamColor }}>
                         <span className="stat-value" style={{ color: '#ffffff' }}>{constructor.total_race_entries}</span>
-                        <span className="stat-label" style={{ color: '#ffffff' }}>参赛场次</span>
+                        <span className="stat-label" style={{ color: '#ffffff' }}>{TEXT.entries}</span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </Card>

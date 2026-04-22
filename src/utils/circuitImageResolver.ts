@@ -1,104 +1,169 @@
-import { getSupabaseCircuitId } from './circuitIds';
+import { getSupabaseCircuitId, normalizeCircuitId } from './circuitIds';
 
 export type CircuitImageStyle = 'black-outline' | 'white-outline' | 'black' | 'white';
 
-const circuitNameMap: Record<string, string> = {
-  albert_park: 'melbourne',
-  bahrain: 'bahrain',
-  jeddah_corniche: 'jeddah',
-  suzuka: 'suzuka',
-  shanghai: 'shanghai',
-  miami: 'miami',
-  imola: 'imola',
-  monaco: 'monaco',
-  catalunya: 'catalunya',
-  villeneuve: 'montreal',
-  red_bull_ring: 'spielberg',
-  silverstone: 'silverstone',
-  hungaroring: 'hungaroring',
-  spa: 'spa-francorchamps',
-  spa_francorchamps: 'spa-francorchamps',
-  zandvoort: 'zandvoort',
-  monza: 'monza',
-  baku: 'baku',
-  marina_bay: 'marina-bay',
-  austin: 'austin',
-  rodriguez: 'mexico-city',
-  interlagos: 'interlagos',
-  las_vegas: 'las-vegas',
+const preferredAssetKeys = [
+  'adelaide',
+  'aida',
+  'ain-diab',
+  'aintree',
+  'anderstorp',
+  'austin',
+  'avus',
+  'bahrain',
+  'baku',
+  'brands-hatch',
+  'bremgarten',
+  'buddh',
+  'buenos-aires',
+  'bugatti',
+  'caesars-palace',
+  'catalunya',
+  'clermont-ferrand',
+  'dallas',
+  'detroit',
+  'dijon',
+  'donington',
+  'east-london',
+  'estoril',
+  'fuji',
+  'hockenheimring',
+  'hungaroring',
+  'imola',
+  'indianapolis',
+  'interlagos',
+  'istanbul',
+  'jacarepagua',
+  'jarama',
+  'jeddah',
+  'jerez',
+  'kyalami',
+  'las-vegas',
+  'long-beach',
+  'lusail',
+  'madring',
+  'magny-cours',
+  'marina-bay',
+  'melbourne',
+  'mexico-city',
+  'miami',
+  'monaco',
+  'monsanto',
+  'mont-tremblant',
+  'montjuic',
+  'montreal',
+  'monza',
+  'mosport',
+  'mugello',
+  'nivelles',
+  'nurburgring',
+  'paul-ricard',
+  'pedralbes',
+  'pescara',
+  'phoenix',
+  'portimao',
+  'porto',
+  'reims',
+  'riverside',
+  'rouen',
+  'sebring',
+  'sepang',
+  'shanghai',
+  'silverstone',
+  'sochi',
+  'spa-francorchamps',
+  'spielberg',
+  'suzuka',
+  'valencia',
+  'watkins-glen',
+  'yas-marina',
+  'yeongam',
+  'zandvoort',
+  'zeltweg',
+  'zolder',
+] as const;
+
+const circuitKeyAliases: Record<string, string> = {
+  'albert-park': 'melbourne',
+  'bahrain-international': 'bahrain',
+  'circuit-of-the-americas': 'austin',
+  cota: 'austin',
+  'jeddah-corniche': 'jeddah',
+  'las-vegas-strip': 'las-vegas',
   losail: 'lusail',
-  yas_marina: 'yas-marina',
-  sepang: 'sepang',
-  yeongam: 'yeongam',
-  buddh: 'buddh',
-  magny_cours: 'magny-cours',
-  paul_ricard: 'paul-ricard',
-  estoril: 'estoril',
-  istanbul_park: 'istanbul',
-  valencia_street: 'valencia',
-  nurburgring: 'nurburgring',
-  hockenheim: 'hockenheimring',
-  indianapolis: 'indianapolis',
-  watkins_glen: 'watkins-glen',
-  long_beach: 'long-beach',
-  adelaide: 'adelaide',
-  brands_hatch: 'brands-hatch',
-  donington: 'donington',
-  kyalami: 'kyalami',
-  mugello: 'mugello',
-  portimao: 'portimao',
-  sochi: 'sochi',
-  zolder: 'zolder',
-  zeltweg: 'zeltweg',
+  'marina-bay-street': 'marina-bay',
+  'mexico-city': 'mexico-city',
+  'monaco-circuit': 'monaco',
+  'red-bull-ring': 'spielberg',
+  ricard: 'paul-ricard',
+  rodriguez: 'mexico-city',
+  spa: 'spa-francorchamps',
+  'spa-francorchamps': 'spa-francorchamps',
+  villeneuve: 'montreal',
+  vegas: 'las-vegas',
+  'yas-marina-circuit': 'yas-marina',
 };
 
-const circuitImageModules = import.meta.glob('../assets/circuits/*/*.svg', {
-  query: '?url',
+const blackOutlineCircuitModules = import.meta.glob('../assets/circuits/black-outline/*.svg', {
+  eager: true,
   import: 'default',
-});
+  query: '?url',
+}) as Record<string, string>;
 
-function buildCircuitIdCandidates(circuitId: string): string[] {
-  const normalizedId = getSupabaseCircuitId(circuitId);
-  const mappedId = circuitNameMap[normalizedId] || circuitNameMap[circuitId] || normalizedId || circuitId;
+function toAssetKey(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s_]+/g, '-').replace(/-+/g, '-');
+}
 
+function buildStyleMap(_style: CircuitImageStyle) {
+  return Object.fromEntries(
+    preferredAssetKeys.flatMap((key) => {
+      const assetPath = `../assets/circuits/black-outline/${key}-1.svg`;
+      const assetUrl = blackOutlineCircuitModules[assetPath];
+
+      return assetUrl ? [[key, assetUrl]] : [];
+    }),
+  );
+}
+
+const circuitImageMap: Record<CircuitImageStyle, Record<string, string>> = {
+  'black-outline': buildStyleMap('black-outline'),
+  'white-outline': buildStyleMap('white-outline'),
+  black: buildStyleMap('black'),
+  white: buildStyleMap('white'),
+};
+
+function buildCircuitKeyCandidates(circuitId: string): string[] {
+  const normalizedOriginal = toAssetKey(normalizeCircuitId(circuitId));
+  const normalizedSupabase = toAssetKey(getSupabaseCircuitId(circuitId));
   const candidates = [
-    mappedId.replace(/_/g, '-'),
-    mappedId,
-    normalizedId.replace(/_/g, '-'),
-    normalizedId,
-    circuitId.replace(/_/g, '-'),
-    circuitId,
-    mappedId.replace('circuit', ''),
-    mappedId.replace('_circuit', ''),
-    mappedId.split('_')[0],
-    circuitId.split('_')[circuitId.split('_').length - 1],
-    normalizedId === 'las_vegas' ? 'las-vegas-strip' : '',
-    normalizedId === 'austin' ? 'circuit-of-the-americas' : '',
-  ].filter(Boolean);
+    normalizedSupabase,
+    normalizedOriginal,
+    circuitKeyAliases[normalizedSupabase],
+    circuitKeyAliases[normalizedOriginal],
+  ].filter(Boolean) as string[];
 
   return [...new Set(candidates)];
 }
 
-export async function resolveCircuitImageUrl(
+export function getCircuitImageUrl(
   circuitId: string,
   style: CircuitImageStyle = 'black-outline',
-): Promise<string> {
-  const versions = ['-1', '-2', '-3', '-4', ''];
-  const candidates = buildCircuitIdCandidates(circuitId);
+): string {
+  const candidates = buildCircuitKeyCandidates(circuitId);
 
-  for (const id of candidates) {
-    for (const version of versions) {
-      const key = `../assets/circuits/${style}/${id}${version}.svg`;
-      const loader = circuitImageModules[key];
-
-      if (!loader) {
-        continue;
-      }
-
-      const resolvedUrl = await loader();
-      return typeof resolvedUrl === 'string' ? resolvedUrl : '';
+  for (const key of candidates) {
+    const matchedUrl = circuitImageMap[style][key];
+    if (matchedUrl) {
+      return matchedUrl;
     }
   }
 
   return '';
+}
+
+export function resolveCircuitImageUrl(
+  circuitId: string,
+  style: CircuitImageStyle = 'black-outline',
+): Promise<string> {
+  return Promise.resolve(getCircuitImageUrl(circuitId, style));
 }

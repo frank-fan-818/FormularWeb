@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Spin } from 'antd';
-import { resolveCircuitImageUrl } from '@/utils/circuitImageResolver';
+import { getCircuitImageUrl } from '@/utils/circuitImageResolver';
 
 interface CircuitImageProps {
   alt: string;
@@ -9,59 +8,16 @@ interface CircuitImageProps {
 }
 
 const TEXT = {
-  loading: '\u6b63\u5728\u52a0\u8f7d\u8d5b\u9053\u56fe...',
   unavailable: '\u8d5b\u9053\u56fe\u6682\u4e0d\u53ef\u7528',
 };
 
 const CircuitImage = ({ alt, circuitId, className }: CircuitImageProps) => {
-  const [imageUrl, setImageUrl] = useState('');
-  const [resolving, setResolving] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageUrl = getCircuitImageUrl(circuitId, 'black-outline');
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    setResolving(true);
-    setImageUrl('');
-    setImageLoaded(false);
     setImageFailed(false);
-
-    const loadImage = async () => {
-      const nextImageUrl = await resolveCircuitImageUrl(circuitId, 'black-outline');
-
-      if (cancelled) {
-        return;
-      }
-
-      setImageUrl(nextImageUrl);
-      setResolving(false);
-    };
-
-    void loadImage();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [circuitId]);
-
-  if (resolving) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 12,
-          minHeight: 240,
-        }}
-      >
-        <Spin size="large" />
-        <span>{TEXT.loading}</span>
-      </div>
-    );
-  }
+  }, [imageUrl]);
 
   if (!imageUrl || imageFailed) {
     return (
@@ -88,29 +44,13 @@ const CircuitImage = ({ alt, circuitId, className }: CircuitImageProps) => {
         justifyContent: 'center',
       }}
     >
-      {!imageLoaded ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            minHeight: 240,
-          }}
-        >
-          <Spin size="large" />
-          <span>{TEXT.loading}</span>
-        </div>
-      ) : null}
       <img
         src={imageUrl}
         alt={alt}
         className={className}
-        loading="lazy"
-        onLoad={() => setImageLoaded(true)}
+        fetchPriority="high"
+        decoding="async"
         onError={() => setImageFailed(true)}
-        style={{ display: imageLoaded ? 'block' : 'none' }}
       />
     </div>
   );

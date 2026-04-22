@@ -8,6 +8,11 @@ import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import './Circuits.css';
 
+const TEXT = {
+  title: '\u8d5b\u9053',
+  loadError: '\u52a0\u8f7d\u8d5b\u9053\u5217\u8868\u5931\u8d25:',
+};
+
 const Circuits = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
@@ -59,7 +64,7 @@ const Circuits = () => {
           setCircuits(formattedCircuits);
         }
       } catch (error) {
-        console.error('加载赛道列表失败:', error);
+        console.error(TEXT.loadError, error);
         if (!cancelled) {
           setCircuits([]);
         }
@@ -81,7 +86,7 @@ const Circuits = () => {
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>赛道</span></h1>
+      <h1 className="page-title"><span>{TEXT.title}</span></h1>
 
       {loading ? (
         <div className="loading-container">
