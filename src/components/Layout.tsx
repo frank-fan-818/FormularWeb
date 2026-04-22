@@ -1,37 +1,61 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Layout, Menu, Select, Button, AutoComplete, Input, Spin } from 'antd';
+import { AutoComplete, Button, Input, Layout, Menu, Select, Spin } from 'antd';
 import type { DefaultOptionType } from 'antd/es/select';
 import {
-  HomeOutlined,
   CalendarOutlined,
-  TrophyOutlined,
   CarOutlined,
-  TeamOutlined,
+  DatabaseOutlined,
   FlagOutlined,
+  HomeOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SearchOutlined,
+  TeamOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useGlobalSearch, useSeasons } from '@/hooks';
 import { useAppStore } from '@/store';
-import { seasonApi } from '@/api/ergast';
-import { useGlobalSearch } from '@/hooks';
-import type { Season } from '@/types';
 import './Layout.css';
 
-const { Sider, Header, Content } = Layout;
+const { Content, Header, Sider } = Layout;
 const { Option } = Select;
+
+const TEXT = {
+  home: '首页',
+  seasonStandings: '赛季积分榜',
+  races: '分站赛事',
+  drivers: '车手',
+  constructors: '车队',
+  circuits: '赛道',
+  databaseAudit: '数据库审计',
+  searching: '搜索中...',
+  searchUnavailable: '搜索暂时不可用。',
+  noSearchResults: '没有找到匹配的车手、车队或赛道。',
+  searchPlaceholder: '搜索车手、车队、赛道',
+  appName: 'F1 数据中心',
+  currentSeason: '当前赛季',
+};
 
 interface SearchOption extends DefaultOptionType {
   route?: string;
 }
 
+const menuItems = [
+  { key: '/', icon: <HomeOutlined />, label: TEXT.home },
+  { key: '/seasons', icon: <CalendarOutlined />, label: TEXT.seasonStandings },
+  { key: '/races', icon: <TrophyOutlined />, label: TEXT.races },
+  { key: '/drivers', icon: <CarOutlined />, label: TEXT.drivers },
+  { key: '/constructors', icon: <TeamOutlined />, label: TEXT.constructors },
+  { key: '/circuits', icon: <FlagOutlined />, label: TEXT.circuits },
+  { key: '/database', icon: <DatabaseOutlined />, label: TEXT.databaseAudit },
+];
+
 const LayoutComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentSeason, setCurrentSeason, sidebarCollapsed, toggleSidebar } = useAppStore();
-  const [seasons, setSeasons] = useState<Season[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,14 +70,8 @@ const LayoutComponent = () => {
     runSearch,
     reset,
   } = useGlobalSearch();
-
-  useEffect(() => {
-    const loadSeasons = async () => {
-      const data = await seasonApi.getAllSeasons();
-      setSeasons(data.reverse());
-    };
-    void loadSeasons();
-  }, []);
+  const { seasons } = useSeasons();
+  const initialCheckDone = useRef(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -66,8 +84,6 @@ const LayoutComponent = () => {
 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const initialCheckDone = useRef(false);
 
   useEffect(() => {
     if (initialCheckDone.current) {
@@ -83,25 +99,13 @@ const LayoutComponent = () => {
         navigate('/', { replace: true });
       }
     }
-  }, [navigate, location.pathname]);
+  }, [location.pathname, navigate]);
 
   const handleMenuClick = (key: string) => {
     navigate(key);
     if (isMobile) {
       setMobileSidebarOpen(false);
     }
-  };
-
-  const toggleMobileSidebar = () => {
-    setMobileSidebarOpen((previous) => !previous);
-  };
-
-  const handleTouchStart = (event: React.TouchEvent) => {
-    setTouchStartX(event.touches[0].clientX);
-  };
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    setTouchEndX(event.touches[0].clientX);
   };
 
   const handleTouchEnd = () => {
@@ -112,39 +116,6 @@ const LayoutComponent = () => {
     setTouchStartX(0);
     setTouchEndX(0);
   };
-
-  const menuItems = [
-    {
-      key: '/',
-      icon: <HomeOutlined />,
-      label: '首页',
-    },
-    {
-      key: '/seasons',
-      icon: <CalendarOutlined />,
-      label: '赛季中心',
-    },
-    {
-      key: '/races',
-      icon: <TrophyOutlined />,
-      label: '分站赛事',
-    },
-    {
-      key: '/drivers',
-      icon: <CarOutlined />,
-      label: '车手库',
-    },
-    {
-      key: '/constructors',
-      icon: <TeamOutlined />,
-      label: '车队库',
-    },
-    {
-      key: '/circuits',
-      icon: <FlagOutlined />,
-      label: '赛道库',
-    },
-  ];
 
   const searchOptions: SearchOption[] = groups.map((group) => ({
     label: <span className="search-group-label">{group.label}</span>,
@@ -162,35 +133,15 @@ const LayoutComponent = () => {
     })),
   }));
 
-  const handleSearch = (value: string) => {
-    setSearchValue(value);
-    void runSearch(value);
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    if (!value) {
-      reset();
-    }
-  };
-
-  const handleSearchSelect = (_value: string, option: SearchOption) => {
-    if (option.route) {
-      navigate(option.route);
-    }
-    setSearchValue('');
-    reset();
-  };
-
   const notFoundContent: ReactNode = searchLoading ? (
     <div className="global-search-feedback">
       <Spin size="small" />
-      <span>Searching...</span>
+      <span>{TEXT.searching}</span>
     </div>
   ) : searchError ? (
-    <div className="global-search-feedback error">Search is temporarily unavailable.</div>
+    <div className="global-search-feedback error">{TEXT.searchUnavailable}</div>
   ) : searchValue.trim() ? (
-    <div className="global-search-feedback">No matching drivers, teams, or circuits.</div>
+    <div className="global-search-feedback">{TEXT.noSearchResults}</div>
   ) : null;
 
   const searchBox = (
@@ -198,9 +149,23 @@ const LayoutComponent = () => {
       className="global-search"
       value={searchValue}
       options={searchOptions}
-      onSearch={handleSearch}
-      onChange={handleSearchChange}
-      onSelect={handleSearchSelect}
+      onSearch={(value) => {
+        setSearchValue(value);
+        void runSearch(value);
+      }}
+      onChange={(value) => {
+        setSearchValue(value);
+        if (!value) {
+          reset();
+        }
+      }}
+      onSelect={(_value, option: SearchOption) => {
+        if (option.route) {
+          navigate(option.route);
+        }
+        setSearchValue('');
+        reset();
+      }}
       onFocus={() => {
         void ensureLoaded();
       }}
@@ -211,7 +176,7 @@ const LayoutComponent = () => {
         allowClear
         size="large"
         prefix={<SearchOutlined />}
-        placeholder="Search drivers, teams, circuits"
+        placeholder={TEXT.searchPlaceholder}
         status={searchError ? 'error' : undefined}
       />
     </AutoComplete>
@@ -232,13 +197,14 @@ const LayoutComponent = () => {
           collapsible
           collapsed={isMobile ? false : sidebarCollapsed}
           className={`sidebar ${!isMobile ? 'desktop-mounted' : ''} ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
+          onTouchStart={(event) => setTouchStartX(event.touches[0].clientX)}
+          onTouchMove={(event) => setTouchEndX(event.touches[0].clientX)}
           onTouchEnd={handleTouchEnd}
         >
           <div className="sidebar-logo">
-            {isMobile ? 'F1 数据看板' : (sidebarCollapsed ? 'F1' : 'F1 数据看板')}
+            {isMobile ? TEXT.appName : (sidebarCollapsed ? 'F1' : TEXT.appName)}
           </div>
+
           <Menu
             mode="inline"
             selectedKeys={[location.pathname]}
@@ -260,12 +226,13 @@ const LayoutComponent = () => {
                 icon={isMobile
                   ? (mobileSidebarOpen ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />)
                   : (sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
-                onClick={isMobile ? toggleMobileSidebar : toggleSidebar}
+                onClick={isMobile ? () => setMobileSidebarOpen((previous) => !previous) : toggleSidebar}
                 size="large"
                 className="menu-toggle-btn"
               />
+
               <div className="season-switcher">
-                <span className="season-label">当前赛季</span>
+                <span className="season-label">{TEXT.currentSeason}</span>
                 <Select
                   value={currentSeason}
                   onChange={setCurrentSeason}

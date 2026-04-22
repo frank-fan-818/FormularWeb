@@ -9,6 +9,41 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  build: {
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, '/')
+
+          if (!normalizedId.includes('node_modules')) {
+            return undefined
+          }
+
+          if (
+            normalizedId.includes('/echarts/core')
+            || normalizedId.includes('/echarts/charts/')
+            || normalizedId.includes('/echarts/components/')
+            || normalizedId.includes('/echarts/renderers/')
+            || normalizedId.includes('/zrender/')
+          ) {
+            return 'chart-vendor'
+          }
+
+          if (
+            normalizedId.includes('/@supabase/')
+            || normalizedId.includes('/@capacitor/')
+            || normalizedId.includes('/axios/')
+            || normalizedId.includes('/zustand/')
+          ) {
+            return 'data-vendor'
+          }
+
+          return undefined
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     open: true,
@@ -20,5 +55,9 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/f1-api/, '/ergast/f1'),
       }
     }
+  },
+  test: {
+    environment: 'node',
+    globals: true,
   }
 })

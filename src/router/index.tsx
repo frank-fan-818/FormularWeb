@@ -1,17 +1,35 @@
+import { Suspense, lazy } from 'react';
+import { Spin } from 'antd';
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
-import Seasons from '@/pages/Seasons';
-import Races from '@/pages/Races';
-import RaceDetail from '@/pages/RaceDetail';
-import Drivers from '@/pages/Drivers';
-import DriverDetail from '@/pages/DriverDetail';
-import DriverHistoryDetail from '@/pages/DriverHistoryDetail';
-import Constructors from '@/pages/Constructors';
-import ConstructorDetail from '@/pages/ConstructorDetail';
-import ConstructorHistoryDetail from '@/pages/ConstructorHistoryDetail';
-import Circuits from '@/pages/Circuits';
-import CircuitDetail from '@/pages/CircuitDetail';
+
+const Seasons = lazy(() => import('@/pages/Seasons'));
+const Races = lazy(() => import('@/pages/Races'));
+const RaceDetail = lazy(() => import('@/pages/RaceDetail'));
+const Drivers = lazy(() => import('@/pages/Drivers'));
+const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
+const DriverHistoryDetail = lazy(() => import('@/pages/DriverHistoryDetail'));
+const Constructors = lazy(() => import('@/pages/Constructors'));
+const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
+const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
+const Circuits = lazy(() => import('@/pages/Circuits'));
+const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
+const DatabaseAudit = lazy(() => import('@/pages/DatabaseAudit'));
+
+function withSuspense(element: JSX.Element) {
+  return (
+    <Suspense
+      fallback={(
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 24px' }}>
+          <Spin size="large" />
+        </div>
+      )}
+    >
+      {element}
+    </Suspense>
+  );
+}
 
 const router = createBrowserRouter([
   {
@@ -24,47 +42,51 @@ const router = createBrowserRouter([
       },
       {
         path: '/seasons',
-        element: <Seasons />,
+        element: withSuspense(<Seasons />),
       },
       {
         path: '/races',
-        element: <Races />,
+        element: withSuspense(<Races />),
       },
       {
         path: '/races/:round',
-        element: <RaceDetail />,
+        element: withSuspense(<RaceDetail />),
       },
       {
         path: '/drivers',
-        element: <Drivers />,
+        element: withSuspense(<Drivers />),
       },
       {
         path: '/drivers/:driverId',
-        element: <DriverDetail />,
+        element: withSuspense(<DriverDetail />),
       },
       {
         path: '/history/drivers/:driverId',
-        element: <DriverHistoryDetail />,
+        element: withSuspense(<DriverHistoryDetail />),
       },
       {
         path: '/constructors',
-        element: <Constructors />,
+        element: withSuspense(<Constructors />),
       },
       {
         path: '/constructors/:constructorId',
-        element: <ConstructorDetail />,
+        element: withSuspense(<ConstructorDetail />),
       },
       {
         path: '/history/constructors/:constructorId',
-        element: <ConstructorHistoryDetail />,
+        element: withSuspense(<ConstructorHistoryDetail />),
       },
       {
         path: '/circuits',
-        element: <Circuits />,
+        element: withSuspense(<Circuits />),
       },
       {
         path: '/circuits/:circuitId',
-        element: <CircuitDetail />,
+        element: withSuspense(<CircuitDetail />),
+      },
+      {
+        path: '/database',
+        element: withSuspense(<DatabaseAudit />),
       },
     ],
   },

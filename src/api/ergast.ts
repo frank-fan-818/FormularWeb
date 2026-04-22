@@ -1,4 +1,8 @@
 import axios from 'axios';
+import {
+  mapConstructorHistorySummary,
+  mapDriverHistorySummary,
+} from '@/api/historySummaries';
 import { supabaseApi } from '@/api/supabase';
 import { supabase } from '@/utils/supabase';
 import type {
@@ -15,6 +19,7 @@ import type {
   ConstructorHistoryProfile,
   ConstructorSeasonHistoryItem,
   HistoryCareerSummary,
+  BestFinishSummary,
 } from '@/types';
 
 // 根据环境选择 baseURL
@@ -92,7 +97,10 @@ const driverStandingsBySeasonCache = new Map<string, Promise<DriverStanding[]>>(
 const constructorStandingsBySeasonCache = new Map<string, Promise<ConstructorStanding[]>>();
 const driverCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>>>();
 const constructorCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>>>();
+const driverCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
+const constructorCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
 const STANDINGS_BATCH_SIZE = 6;
+const RESULTS_PAGE_LIMIT = 100;
 const RATE_LIMIT_RETRY_DELAYS_MS = [250, 600, 1200, 2400];
 const BETWEEN_BATCH_DELAY_MS = 180;
 
@@ -172,6 +180,25 @@ async function mapSeasonsInBatches<T>(
     });
 
     if (start + STANDINGS_BATCH_SIZE < seasons.length) {
+      await sleep(BETWEEN_BATCH_DELAY_MS);
+    }
+  }
+
+  return results;
+}
+
+async function mapValuesInBatches<TValue, TResult>(
+  values: TValue[],
+  mapper: (value: TValue) => Promise<TResult>,
+): Promise<TResult[]> {
+  const results: TResult[] = [];
+
+  for (let start = 0; start < values.length; start += STANDINGS_BATCH_SIZE) {
+    const batch = values.slice(start, start + STANDINGS_BATCH_SIZE);
+    const batchResults = await Promise.all(batch.map((value) => mapper(value)));
+    results.push(...batchResults);
+
+    if (start + STANDINGS_BATCH_SIZE < values.length) {
       await sleep(BETWEEN_BATCH_DELAY_MS);
     }
   }
@@ -485,8 +512,94 @@ function toNumericValue(value: string | number | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function getResultPositionValue(value: string | null | undefined): number {
+  const parsed = parseInt(value || '', 10);
+  return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+}
+
 function sortSeasonsDescending<T extends { season: string }>(items: T[]): T[] {
   return [...items].sort((left, right) => parseInt(right.season, 10) - parseInt(left.season, 10));
+}
+
+async function loadPaginatedRaceResults(path: string): Promise<Race[]> {
+  const firstResponse = await getStandingsWithRetry(() => (
+    ergastApi.get(`${path}?limit=${RESULTS_PAGE_LIMIT}&offset=0`) as Promise<ErgastResponse<never>>
+  ));
+  const firstPageRaces = firstResponse.MRData.RaceTable?.Races || [];
+  const total = parseInt(firstResponse.MRData.total || '0', 10);
+
+  if (total <= RESULTS_PAGE_LIMIT) {
+    return firstPageRaces;
+  }
+
+  const offsets: number[] = [];
+  for (let offset = RESULTS_PAGE_LIMIT; offset < total; offset += RESULTS_PAGE_LIMIT) {
+    offsets.push(offset);
+  }
+
+  const remainingPages = await mapValuesInBatches(offsets, async (offset) => {
+    const response = await getStandingsWithRetry(() => (
+      ergastApi.get(`${path}?limit=${RESULTS_PAGE_LIMIT}&offset=${offset}`) as Promise<ErgastResponse<never>>
+    ));
+    return response.MRData.RaceTable?.Races || [];
+  });
+
+  return [...firstPageRaces, ...remainingPages.flat()];
+}
+
+function extractBestFinishSummary(races: Race[]): BestFinishSummary | null {
+  let bestPosition = Number.POSITIVE_INFINITY;
+  const seasons = new Set<string>();
+
+  races.forEach((race) => {
+    const raceBestPosition = (race.Results || []).reduce((best, result) => {
+      return Math.min(best, getResultPositionValue(result.position));
+    }, Number.POSITIVE_INFINITY);
+
+    if (!Number.isFinite(raceBestPosition)) {
+      return;
+    }
+
+    if (raceBestPosition < bestPosition) {
+      bestPosition = raceBestPosition;
+      seasons.clear();
+      seasons.add(String(race.season));
+      return;
+    }
+
+    if (raceBestPosition === bestPosition) {
+      seasons.add(String(race.season));
+    }
+  });
+
+  if (!Number.isFinite(bestPosition)) {
+    return null;
+  }
+
+  return {
+    position: String(bestPosition),
+    seasons: [...seasons].sort((left, right) => parseInt(left, 10) - parseInt(right, 10)),
+  };
+}
+
+async function getDriverCareerRaceResults(driverId: string): Promise<Race[]> {
+  const cacheKey = normalizeIdentifierToken(driverId);
+
+  if (!driverCareerRaceResultsCache.has(cacheKey)) {
+    driverCareerRaceResultsCache.set(cacheKey, loadPaginatedRaceResults(`/drivers/${driverId}/results.json`));
+  }
+
+  return driverCareerRaceResultsCache.get(cacheKey)!;
+}
+
+async function getConstructorCareerRaceResults(constructorId: string): Promise<Race[]> {
+  const cacheKey = normalizeIdentifierToken(constructorId);
+
+  if (!constructorCareerRaceResultsCache.has(cacheKey)) {
+    constructorCareerRaceResultsCache.set(cacheKey, loadPaginatedRaceResults(`/constructors/${constructorId}/results.json`));
+  }
+
+  return constructorCareerRaceResultsCache.get(cacheKey)!;
 }
 
 function mapDriverSeasonHistory(standingsLists: any[]): DriverSeasonHistoryItem[] {
@@ -557,7 +670,7 @@ function buildCareerSummary(params: {
   };
 }
 
-function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<DriverHistoryProfile, 'careerSummary' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
+function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
   return {
     driverId: driver.driver_id,
     permanentNumber: driver.permanent_number || '',
@@ -570,7 +683,7 @@ function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<Driv
   };
 }
 
-function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>): Omit<ConstructorHistoryProfile, 'careerSummary' | 'seasons'> {
+function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>): Omit<ConstructorHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons'> {
   return {
     constructorId: constructor.constructor_id,
     url: '#',
@@ -579,7 +692,7 @@ function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>):
   };
 }
 
-function buildDriverFallbackProfile(driverId: string, standingsLists: any[]): Omit<DriverHistoryProfile, 'careerSummary' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> | null {
+function buildDriverFallbackProfile(driverId: string, standingsLists: any[]): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> | null {
   const latestStanding = sortSeasonsDescending(standingsLists).find((standingList) => standingList.DriverStandings?.[0]);
   const driver = latestStanding?.DriverStandings?.[0]?.Driver;
 
@@ -639,6 +752,16 @@ async function resolveDriverHistoryIdentity(
   };
 }
 
+async function getDriverHistorySummaryProfile(driverId: string): Promise<DriverHistoryProfile | null> {
+  const summary = await supabaseApi.driverHistorySummaries.getById(driverId);
+  return mapDriverHistorySummary(summary);
+}
+
+async function getConstructorHistorySummaryProfile(constructorId: string): Promise<ConstructorHistoryProfile | null> {
+  const summary = await supabaseApi.constructorHistorySummaries.getById(constructorId);
+  return mapConstructorHistorySummary(summary);
+}
+
 export const historyApi = {
   getMostDriverChampionships: async (): Promise<any> => {
     const response: ErgastResponse<never> = await ergastApi.get('/driverStandings/1.json?limit=100');
@@ -696,6 +819,11 @@ export const historyApi = {
   },
 
   getDriverHistoryProfile: async (driverId: string): Promise<DriverHistoryProfile | null> => {
+    const directSummaryProfile = await getDriverHistorySummaryProfile(driverId);
+    if (directSummaryProfile) {
+      return directSummaryProfile;
+    }
+
     const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId);
     const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
       ? {
@@ -703,6 +831,13 @@ export const historyApi = {
         familyName: exactSupabaseDriver.last_name,
       }
       : undefined);
+
+    if (resolvedDriverId !== driverId) {
+      const resolvedSummaryProfile = await getDriverHistorySummaryProfile(resolvedDriverId);
+      if (resolvedSummaryProfile) {
+        return resolvedSummaryProfile;
+      }
+    }
 
     const seasons = mapDriverSeasonHistory(standingsLists);
     const latestSeason = seasons[0];
@@ -743,13 +878,14 @@ export const historyApi = {
       return null;
     }
 
-    const [raceCountResult, poleCountResult, podiumCountResult, winCountResult, championshipCountResult, totalPointsResult] = await Promise.allSettled([
+    const [raceCountResult, poleCountResult, podiumCountResult, winCountResult, championshipCountResult, totalPointsResult, bestFinishResult] = await Promise.allSettled([
       driverApi.getDriverRaceCount(resolvedDriverId),
       driverApi.getDriverPoleCount(resolvedDriverId),
       driverApi.getDriverPodiumCount(resolvedDriverId),
       driverApi.getDriverWinCount(resolvedDriverId),
       driverApi.getDriverChampionshipCount(resolvedDriverId),
       driverApi.getDriverTotalPoints(resolvedDriverId),
+      getDriverCareerRaceResults(resolvedDriverId).then(extractBestFinishSummary),
     ]);
 
     const fallbackPodiumCount = exactSupabaseDriver?.total_podiums || 0;
@@ -769,11 +905,17 @@ export const historyApi = {
         championshipCount: championshipCountResult.status === 'fulfilled' ? championshipCountResult.value : undefined,
         totalPoints: totalPointsResult.status === 'fulfilled' ? totalPointsResult.value : undefined,
       }),
+      bestRaceFinish: bestFinishResult.status === 'fulfilled' ? bestFinishResult.value : null,
       seasons,
     };
   },
 
   getConstructorHistoryProfile: async (constructorId: string): Promise<ConstructorHistoryProfile | null> => {
+    const summaryProfile = await getConstructorHistorySummaryProfile(constructorId);
+    if (summaryProfile) {
+      return summaryProfile;
+    }
+
     const constructorInfo = await supabaseApi.constructors.getById(constructorId);
     const standingsLists = await getConstructorCareerStandings(constructorId);
     const seasons = mapConstructorSeasonHistory(standingsLists);
@@ -791,12 +933,13 @@ export const historyApi = {
       return null;
     }
 
-    const [raceCountResult, poleCountResult, winCountResult, championshipCountResult, totalPointsResult] = await Promise.allSettled([
+    const [raceCountResult, poleCountResult, winCountResult, championshipCountResult, totalPointsResult, bestFinishResult] = await Promise.allSettled([
       constructorApi.getConstructorRaceCount(constructorId),
       constructorApi.getConstructorPoleCount(constructorId),
       constructorApi.getConstructorWinCount(constructorId),
       constructorApi.getConstructorChampionshipCount(constructorId),
       constructorApi.getConstructorTotalPoints(constructorId),
+      getConstructorCareerRaceResults(constructorId).then(extractBestFinishSummary),
     ]);
 
     return {
@@ -814,6 +957,7 @@ export const historyApi = {
         championshipCount: championshipCountResult.status === 'fulfilled' ? championshipCountResult.value : undefined,
         totalPoints: totalPointsResult.status === 'fulfilled' ? totalPointsResult.value : undefined,
       }),
+      bestRaceFinish: bestFinishResult.status === 'fulfilled' ? bestFinishResult.value : null,
       seasons,
     };
   },

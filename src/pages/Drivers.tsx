@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CarOutlined } from '@ant-design/icons';
+import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 
@@ -11,49 +12,71 @@ import './Drivers.css';
 const Drivers = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { driverStandings, loading: seasonLoading } = useSeasonData(currentSeason);
   const [drivers, setDrivers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
-      setLoading(true);
+      if (seasonLoading) {
+        return;
+      }
+
+      if (driverStandings.length === 0) {
+        setDrivers([]);
+        return;
+      }
+
+      setPageLoading(true);
 
       try {
-        const { seasonApi } = await import('@/api/ergast');
-        const standings = await seasonApi.getDriverStandings(currentSeason);
-
         const supabaseDrivers = await supabaseApi.drivers.getAll();
-        const driverMap = new Map(supabaseDrivers.map(d => [d.driver_id, d]));
+        const driverMap = new Map(supabaseDrivers.map((driver) => [driver.driver_id, driver]));
 
-        const formattedDrivers = standings.map((s, index) => {
-          const dbDriver = driverMap.get(s.Driver.driverId);
+        const formattedDrivers = driverStandings.map((standing, index) => {
+          const dbDriver = driverMap.get(standing.Driver.driverId);
           return {
-            ...s.Driver,
+            ...standing.Driver,
             total_wins: dbDriver?.total_wins || null,
             total_podiums: dbDriver?.total_podiums || null,
             total_pole_positions: dbDriver?.total_pole_positions || null,
             total_fastest_laps: dbDriver?.total_fastest_laps || null,
             total_race_starts: dbDriver?.total_race_starts || null,
-            constructorId: s.Constructors[0].constructorId,
-            constructorName: s.Constructors[0].name,
+            constructorId: standing.Constructors[0].constructorId,
+            constructorName: standing.Constructors[0].name,
             index,
           };
         });
 
-        setDrivers(formattedDrivers);
+        if (!cancelled) {
+          setDrivers(formattedDrivers);
+        }
       } catch (error) {
-        console.error('加载车手失败:', error);
-        setDrivers([]);
+        console.error('加载车手列表失败:', error);
+        if (!cancelled) {
+          setDrivers([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setPageLoading(false);
+        }
       }
-
-      setLoading(false);
     };
-    loadData();
-  }, [currentSeason]);
+
+    void loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [driverStandings, seasonLoading]);
+
+  const loading = seasonLoading || pageLoading;
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>车手库</span></h1>
+      <h1 className="page-title"><span>车手</span></h1>
 
       {loading ? (
         <div className="loading-container">
@@ -63,7 +86,6 @@ const Drivers = () => {
         <div className="list-container">
           {drivers.map((driver) => {
             const teamColor = getTeamColor(driver.constructorId);
-            console.log('Driver:', driver.driverId, 'Constructor:', driver.constructorId, 'Color:', teamColor);
             return (
               <Card
                 key={driver.driverId}
@@ -83,7 +105,7 @@ const Drivers = () => {
                       <div className="item-stats">
                         <span className="stat-item">{driver.constructorName}</span>
                         {driver.total_wins && (
-                          <span className="stat-item"><CarOutlined /> {driver.total_wins} 胜</span>
+                          <span className="stat-item"><CarOutlined /> {driver.total_wins} wins</span>
                         )}
                       </div>
                     </div>
@@ -92,7 +114,7 @@ const Drivers = () => {
                     {driver.total_podiums && (
                       <div className="stat-badge" style={{ background: teamColor }}>
                         <span className="stat-value">{driver.total_podiums}</span>
-                        <span className="stat-label">领奖台</span>
+                        <span className="stat-label">Podiums</span>
                       </div>
                     )}
                   </div>

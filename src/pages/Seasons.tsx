@@ -1,19 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Tabs, Spin, Progress } from 'antd';
+import { Card, Spin, Tabs } from 'antd';
+import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import { seasonApi } from '@/api/ergast';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
-import type { DriverStanding, ConstructorStanding } from '@/types';
 import './Seasons.css';
+
+const TEXT = {
+  drivers: '车手',
+  constructors: '车队',
+  points: '积分',
+  nationality: '国籍',
+  seasonStandings: '赛季积分榜',
+};
+
+interface ProgressBarProps {
+  color: string;
+  percentage: number;
+}
+
+const SeasonProgressBar = ({ color, percentage }: ProgressBarProps) => (
+  <div className="season-progress" aria-hidden="true">
+    <div
+      className="season-progress-bar"
+      style={{
+        width: `${percentage}%`,
+        backgroundColor: color,
+      }}
+    />
+  </div>
+);
 
 const Seasons = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const [driverStandings, setDriverStandings] = useState<DriverStanding[]>([]);
-  const [constructorStandings, setConstructorStandings] = useState<ConstructorStanding[]>([]);
-  const [loading, setLoading] = useState(false);
-  // 计算榜首积分，用于进度条比例
+  const { driverStandings, constructorStandings, loading } = useSeasonData(currentSeason);
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
 
@@ -26,24 +47,10 @@ const Seasons = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const [drivers, constructors] = await Promise.all([
-        seasonApi.getDriverStandings(currentSeason),
-        seasonApi.getConstructorStandings(currentSeason),
-      ]);
-      setDriverStandings(drivers);
-      setConstructorStandings(constructors);
-      setLoading(false);
-    };
-    loadData();
-  }, [currentSeason]);
-
   const tabItems = [
     {
       key: 'drivers',
-      label: '车手积分榜',
+      label: TEXT.drivers,
       children: (
         <div className="list-container">
           {driverStandings.map((standing, index) => {
@@ -51,6 +58,7 @@ const Seasons = () => {
             const darkTeamColor = getTeamDarkColor(standing.Constructors[0].constructorId);
             const points = parseFloat(standing.points);
             const percentage = maxDriverPoints > 0 ? Math.min(100, (points / maxDriverPoints) * 100) : 0;
+
             return (
               <Card
                 key={standing.Driver.driverId}
@@ -63,7 +71,9 @@ const Seasons = () => {
                   <div className="item-left">
                     <div className="item-info">
                       <h3 className="item-title">
-                        <span className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}>
+                        <span
+                          className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}
+                        >
                           P{standing.position}
                         </span>
                         <span
@@ -81,42 +91,41 @@ const Seasons = () => {
                         >
                           {standing.Constructors[0].name}
                         </span>
-                        {isMobile && (
+                        {isMobile ? (
                           <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
                             {standing.points} pts
                           </span>
-                        )}
+                        ) : null}
                         <div className="progress-wrapper">
-                          <Progress
-                            percent={percentage}
-                            showInfo={false}
-                            strokeColor={teamColor}
-                            strokeWidth={6}
-                            trailColor="var(--bg-tertiary)"
-                            className="animated-progress"
-                          />
+                          <SeasonProgressBar color={teamColor} percentage={percentage} />
                         </div>
                       </div>
                     </div>
                   </div>
-                  {!isMobile && (
+                  {!isMobile ? (
                     <div className="item-right">
-                      <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
+                      <div
+                        className="points-badge"
+                        style={{
+                          background: darkTeamColor,
+                          boxShadow: `0 4px 15px ${darkTeamColor}40`,
+                        }}
+                      >
                         <span className="points-value">{standing.points}</span>
-                        <span className="points-label">积分</span>
+                        <span className="points-label">{TEXT.points}</span>
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </Card>
             );
           })}
         </div>
-      )
+      ),
     },
     {
       key: 'constructors',
-      label: '车队积分榜',
+      label: TEXT.constructors,
       children: (
         <div className="list-container">
           {constructorStandings.map((standing, index) => {
@@ -124,6 +133,7 @@ const Seasons = () => {
             const darkTeamColor = getTeamDarkColor(standing.Constructor.constructorId);
             const points = parseFloat(standing.points);
             const percentage = maxConstructorPoints > 0 ? Math.min(100, (points / maxConstructorPoints) * 100) : 0;
+
             return (
               <Card
                 key={standing.Constructor.constructorId}
@@ -136,7 +146,9 @@ const Seasons = () => {
                   <div className="item-left">
                     <div className="item-info">
                       <h3 className="item-title">
-                        <span className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}>
+                        <span
+                          className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}
+                        >
                           P{standing.position}
                         </span>
                         <span
@@ -145,47 +157,46 @@ const Seasons = () => {
                         >
                           {standing.Constructor.name}
                         </span>
-                        <span className="item-tag">🌍 {standing.Constructor.nationality}</span>
+                        <span className="item-tag">{TEXT.nationality} {standing.Constructor.nationality}</span>
                       </h3>
                       <div className="item-stats">
-                        {isMobile && (
+                        {isMobile ? (
                           <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
                             {standing.points} pts
                           </span>
-                        )}
+                        ) : null}
                         <div className="progress-wrapper">
-                          <Progress
-                            percent={percentage}
-                            showInfo={false}
-                            strokeColor={teamColor}
-                            strokeWidth={6}
-                            trailColor="var(--bg-tertiary)"
-                            className="animated-progress"
-                          />
+                          <SeasonProgressBar color={teamColor} percentage={percentage} />
                         </div>
                       </div>
                     </div>
                   </div>
-                  {!isMobile && (
+                  {!isMobile ? (
                     <div className="item-right">
-                      <div className="points-badge" style={{ background: darkTeamColor, boxShadow: `0 4px 15px ${darkTeamColor}40` }}>
+                      <div
+                        className="points-badge"
+                        style={{
+                          background: darkTeamColor,
+                          boxShadow: `0 4px 15px ${darkTeamColor}40`,
+                        }}
+                      >
                         <span className="points-value">{standing.points}</span>
-                        <span className="points-label">积分</span>
+                        <span className="points-label">{TEXT.points}</span>
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </Card>
             );
           })}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>{currentSeason}赛季积分榜</span></h1>
+      <h1 className="page-title"><span>{currentSeason} {TEXT.seasonStandings}</span></h1>
 
       {loading ? (
         <div className="loading-container">

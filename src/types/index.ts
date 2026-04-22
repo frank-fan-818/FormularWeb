@@ -180,6 +180,11 @@ export interface ConstructorSeasonHistoryItem {
   wins: number;
 }
 
+export interface BestFinishSummary {
+  position: string;
+  seasons: string[];
+}
+
 export interface DriverHistoryProfile {
   driverId: string;
   permanentNumber: string;
@@ -192,6 +197,7 @@ export interface DriverHistoryProfile {
   recentConstructorName: string;
   recentConstructorId: string;
   careerSummary: HistoryCareerSummary;
+  bestRaceFinish: BestFinishSummary | null;
   seasons: DriverSeasonHistoryItem[];
 }
 
@@ -201,5 +207,34 @@ export interface ConstructorHistoryProfile {
   name: string;
   nationality: string;
   careerSummary: HistoryCareerSummary;
+  bestRaceFinish: BestFinishSummary | null;
   seasons: ConstructorSeasonHistoryItem[];
+}
+
+export interface DriverHistorySummaryRecord {
+  driver_id: string;
+  permanent_number: string | null;
+  code: string | null;
+  url: string | null;
+  given_name: string | null;
+  family_name: string | null;
+  date_of_birth: string | null;
+  nationality: string | null;
+  recent_constructor_name: string | null;
+  recent_constructor_id: string | null;
+  career_summary: unknown;
+  best_race_finish: unknown;
+  seasons: unknown;
+  updated_at?: string | null;
+}
+
+export interface ConstructorHistorySummaryRecord {
+  constructor_id: string;
+  url: string | null;
+  name: string | null;
+  nationality: string | null;
+  career_summary: unknown;
+  best_race_finish: unknown;
+  seasons: unknown;
+  updated_at?: string | null;
 }

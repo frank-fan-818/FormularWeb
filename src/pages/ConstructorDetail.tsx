@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
-import ReactECharts from 'echarts-for-react';
 import { constructorApi, seasonApi } from '@/api/ergast';
 import { supabaseApi } from '@/api/supabase';
+import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { ConstructorStanding } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './ConstructorDetail.css';
 
@@ -21,6 +20,35 @@ interface ConstructorProfile {
   totalFastestLaps: number;
   totalRaceEntries: number;
 }
+
+const TEXT = {
+  cumulativePoints: '\u7d2f\u8ba1\u79ef\u5206',
+  racePoints: '\u6b63\u8d5b\u79ef\u5206',
+  sprintPoints: '\u51b2\u523a\u79ef\u5206',
+  roundTotal: '\u5355\u7ad9\u603b\u5206',
+  back: '\u8fd4\u56de\u8f66\u961f\u5217\u8868',
+  unavailable: '\u6682\u65f6\u65e0\u6cd5\u83b7\u53d6\u8be5\u8f66\u961f\u4fe1\u606f\u3002',
+  seasonKeyStats: '\u8d5b\u5b63\u5173\u952e\u6570\u636e',
+  seasonRank: '\u8d5b\u5b63\u6392\u540d',
+  seasonPoints: '\u8d5b\u5b63\u79ef\u5206',
+  seasonWins: '\u8d5b\u5b63\u80dc\u573a',
+  pointsTrend: '\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf',
+  noTrendData: '\u6682\u65e0\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf\u6570\u636e\u3002',
+  historicalStats: '\u5386\u53f2\u7edf\u8ba1',
+  loadingHistoricalStats: '\u6b63\u5728\u8865\u5145\u5386\u53f2\u7edf\u8ba1...',
+  loadedHistoricalStats: '\u5386\u53f2\u7edf\u8ba1\u5df2\u5b8c\u6210\u52a0\u8f7d\u3002',
+  raceEntries: '\u53c2\u8d5b\u573a\u6b21',
+  raceWins: '\u5206\u7ad9\u51a0\u519b',
+  podiums: '\u767b\u4e0a\u9886\u5956\u53f0',
+  poles: '\u6746\u4f4d\u6b21\u6570',
+  constructorInfo: '\u8f66\u961f\u4fe1\u606f',
+  name: '\u540d\u79f0\uff1a',
+  nationality: '\u56fd\u7c4d\uff1a',
+  pointsUnit: '\u5206',
+  chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
+};
+
+const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
 function mapSupabaseConstructor(constructor: Record<string, any>): ConstructorProfile {
   return {
@@ -40,8 +68,9 @@ const ConstructorDetail = () => {
   const { constructorId } = useParams<{ constructorId: string }>();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
-  const [currentStanding, setCurrentStanding] = useState<ConstructorStanding | null>(null);
   const [careerStats, setCareerStats] = useState({
     raceCount: 0,
     poleCount: 0,
@@ -52,11 +81,16 @@ const ConstructorDetail = () => {
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [careerStatsLoading, setCareerStatsLoading] = useState(false);
+  const [careerStatsEnabled, setCareerStatsEnabled] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
   const [chartScale, setChartScale] = useState(1);
+  const [chartEnabled, setChartEnabled] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
+
+  const currentStanding = constructorStandings.find((item) => item.Constructor.constructorId === constructorId) || null;
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -86,6 +120,19 @@ const ConstructorDetail = () => {
   }, []);
 
   useEffect(() => {
+    if (seasonRaceResults.length === 0) {
+      setChartEnabled(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setChartEnabled(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [seasonRaceResults.length]);
+
+  useEffect(() => {
     const updateChartHeight = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
@@ -98,63 +145,55 @@ const ConstructorDetail = () => {
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!constructorId) {
-        return;
-      }
+    if (!constructorId || seasonLoading) {
+      return;
+    }
 
-      setLoading(true);
+    let cancelled = false;
 
-      const [
-        constructorInfo,
-        standings,
-        raceCount,
-        poleCount,
-        winCount,
-        championshipCount,
-        totalPoints,
-        raceResults,
-        sprintResults,
-      ] = await Promise.allSettled([
+    setLoading(true);
+    setCareerStatsLoading(false);
+    setCareerStatsEnabled(false);
+    setSeasonRaceResults([]);
+    setSeasonSprintResults([]);
+
+    const loadPrimaryData = async () => {
+      const [constructorInfo, sprintResults] = await Promise.allSettled([
         supabaseApi.constructors.getById(constructorId),
-        seasonApi.getConstructorStandings(currentSeason),
-        constructorApi.getConstructorRaceCount(constructorId),
-        constructorApi.getConstructorPoleCount(constructorId),
-        constructorApi.getConstructorWinCount(constructorId),
-        constructorApi.getConstructorChampionshipCount(constructorId),
-        constructorApi.getConstructorTotalPoints(constructorId),
-        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
         seasonApi.getSeasonSprintResults(currentSeason),
       ]);
+
+      const raceResults = await Promise.allSettled([
+        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
 
       let baseConstructor = constructorInfo.status === 'fulfilled' && constructorInfo.value
         ? mapSupabaseConstructor(constructorInfo.value)
         : null;
 
-      if (standings.status === 'fulfilled') {
-        const standing = standings.value.find((item) => item.Constructor.constructorId === constructorId) || null;
-        setCurrentStanding(standing);
-
-        if (standing) {
-          baseConstructor = {
-            ...standing.Constructor,
-            ...baseConstructor,
-            totalWins: baseConstructor?.totalWins ?? 0,
-            totalPodiums: baseConstructor?.totalPodiums ?? 0,
-            totalPolePositions: baseConstructor?.totalPolePositions ?? 0,
-            totalFastestLaps: baseConstructor?.totalFastestLaps ?? 0,
-            totalRaceEntries: baseConstructor?.totalRaceEntries ?? 0,
-          };
-        }
-      } else {
-        setCurrentStanding(null);
+      if (currentStanding) {
+        baseConstructor = {
+          ...currentStanding.Constructor,
+          ...baseConstructor,
+          totalWins: baseConstructor?.totalWins ?? 0,
+          totalPodiums: baseConstructor?.totalPodiums ?? 0,
+          totalPolePositions: baseConstructor?.totalPolePositions ?? 0,
+          totalFastestLaps: baseConstructor?.totalFastestLaps ?? 0,
+          totalRaceEntries: baseConstructor?.totalRaceEntries ?? 0,
+        };
       }
 
       setConstructor(baseConstructor);
 
-      if (raceResults.status === 'fulfilled') {
+      if (raceResults[0].status === 'fulfilled') {
         setSeasonRaceResults(
-          raceResults.value.sort((left, right) => parseInt(left.round, 10) - parseInt(right.round, 10)),
+          raceResults[0].value.sort(
+            (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+          ),
         );
       } else {
         setSeasonRaceResults([]);
@@ -167,18 +206,71 @@ const ConstructorDetail = () => {
       }
 
       setCareerStats({
-        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : (baseConstructor?.totalRaceEntries || 0),
-        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : (baseConstructor?.totalPolePositions || 0),
-        winCount: winCount.status === 'fulfilled' ? winCount.value : (baseConstructor?.totalWins || 0),
-        championshipCount: championshipCount.status === 'fulfilled' ? championshipCount.value : 0,
-        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : 0,
+        raceCount: baseConstructor?.totalRaceEntries || 0,
+        poleCount: baseConstructor?.totalPolePositions || 0,
+        winCount: baseConstructor?.totalWins || 0,
+        championshipCount: 0,
+        totalPoints: 0,
       });
 
       setLoading(false);
+      setCareerStatsEnabled(true);
     };
 
-    void loadData();
-  }, [constructorId, currentSeason]);
+    void loadPrimaryData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [constructorId, currentSeason, currentStanding, seasonLoading]);
+
+  useEffect(() => {
+    if (!constructorId || !careerStatsEnabled) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setCareerStatsLoading(true);
+
+    const loadCareerStats = async () => {
+      const [
+        raceCount,
+        poleCount,
+        winCount,
+        championshipCount,
+        totalPoints,
+      ] = await Promise.allSettled([
+        constructorApi.getConstructorRaceCount(constructorId),
+        constructorApi.getConstructorPoleCount(constructorId),
+        constructorApi.getConstructorWinCount(constructorId),
+        constructorApi.getConstructorChampionshipCount(constructorId),
+        constructorApi.getConstructorTotalPoints(constructorId),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setCareerStats((previous) => ({
+        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : previous.raceCount,
+        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : previous.poleCount,
+        winCount: winCount.status === 'fulfilled' ? winCount.value : previous.winCount,
+        championshipCount: championshipCount.status === 'fulfilled'
+          ? championshipCount.value
+          : previous.championshipCount,
+        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : previous.totalPoints,
+      }));
+
+      setCareerStatsLoading(false);
+    };
+
+    void loadCareerStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [careerStatsEnabled, constructorId, currentSeason]);
 
   const teamColor = constructorId ? getTeamColor(constructorId) : '#1890ff';
 
@@ -249,17 +341,17 @@ const ConstructorDetail = () => {
           const racePoints = singlePoints[index] - sprintPoints;
 
           let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Race points:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.racePoints}:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
-            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Sprint points:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
+            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.sprintPoints}:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>Round total:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>Cumulative points:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>${TEXT.roundTotal}:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
           return result;
         },
       },
       legend: {
-        data: ['Cumulative Points'],
+        data: [TEXT.cumulativePoints],
         top: 0,
         right: 0,
         textStyle: {
@@ -296,7 +388,7 @@ const ConstructorDetail = () => {
       },
       yAxis: {
         type: 'value',
-        name: 'Cumulative Points',
+        name: TEXT.cumulativePoints,
         nameTextStyle: {
           color: '#8c8c8c',
           fontSize: 12,
@@ -331,7 +423,7 @@ const ConstructorDetail = () => {
       },
       series: [
         {
-          name: 'Cumulative Points',
+          name: TEXT.cumulativePoints,
           type: 'line',
           data: cumulativePointsArr,
           smooth: 0.4,
@@ -379,14 +471,14 @@ const ConstructorDetail = () => {
     };
   };
 
-  if (!constructor && !loading) {
+  if (!constructor && !loading && !seasonLoading) {
     return (
       <div className="constructor-detail-container">
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
-          Back
+          {TEXT.back}
         </Button>
         <Card>
-          <p>Constructor details are unavailable.</p>
+          <p>{TEXT.unavailable}</p>
         </Card>
       </div>
     );
@@ -395,10 +487,10 @@ const ConstructorDetail = () => {
   return (
     <div className="constructor-detail-container">
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
-        Back
+        {TEXT.back}
       </Button>
 
-      <Card loading={loading}>
+      <Card loading={seasonLoading || loading}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>
             {constructor?.name}
@@ -406,12 +498,12 @@ const ConstructorDetail = () => {
           <p style={{ fontSize: 18, color: '#666' }}>{constructor?.nationality || '-'}</p>
         </div>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} Season Stats</h3>
+        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} {TEXT.seasonKeyStats}</h3>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Season Rank
+                <TrophyOutlined /> {TEXT.seasonRank}
               </div>
               <div className="stat-value" style={{ color: '#faad14' }}>
                 {currentStanding?.position || '-'}
@@ -421,17 +513,17 @@ const ConstructorDetail = () => {
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TeamOutlined /> Season Points
+                <TeamOutlined /> {TEXT.seasonPoints}
               </div>
               <div className="stat-value" style={{ color: '#ff1801' }}>
-                {currentStanding?.points || '0'} pts
+                {currentStanding?.points || '0'} {TEXT.pointsUnit}
               </div>
             </Card>
           </Col>
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Season Wins
+                <TrophyOutlined /> {TEXT.seasonWins}
               </div>
               <div className="stat-value" style={{ color: '#52c41a' }}>
                 {currentStanding?.wins || '0'}
@@ -441,7 +533,7 @@ const ConstructorDetail = () => {
         </Row>
 
         <Card
-          title={`${currentSeason} Season Points Trend`}
+          title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
           headStyle={{
             background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
@@ -467,26 +559,43 @@ const ConstructorDetail = () => {
                   transformOrigin: 'left center',
                 }}
               >
-                <ReactECharts
-                  key={`${constructorId}-${currentSeason}-${seasonRaceResults.length}`}
-                  option={getPointsChartOption()}
-                  style={{ height: chartHeight }}
-                  notMerge
-                  lazyUpdate
-                />
+                {chartEnabled ? (
+                  <Suspense
+                    fallback={(
+                      <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+                        {TEXT.chartLoading}
+                      </div>
+                    )}
+                  >
+                    <LazyEChartsPanel
+                      chartKey={`${constructorId}-${currentSeason}-${seasonRaceResults.length}`}
+                      option={getPointsChartOption()}
+                      height={chartHeight}
+                    />
+                  </Suspense>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+                    {TEXT.chartLoading}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>No season points data.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>
           )}
         </Card>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>Historical Stats</h3>
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.historicalStats}</h3>
+          <div style={{ color: '#8c8c8c', fontSize: 13 }}>
+            {careerStatsLoading ? TEXT.loadingHistoricalStats : TEXT.loadedHistoricalStats}
+          </div>
+        </div>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <FlagOutlined /> Race Entries
+                <FlagOutlined /> {TEXT.raceEntries}
               </div>
               <div className="stat-value" style={{ color: '#1890ff' }}>
                 {careerStats.raceCount}
@@ -496,7 +605,7 @@ const ConstructorDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Race Wins
+                <TrophyOutlined /> {TEXT.raceWins}
               </div>
               <div className="stat-value" style={{ color: '#fa8c16' }}>
                 {careerStats.winCount}
@@ -506,7 +615,7 @@ const ConstructorDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Podiums
+                <TrophyOutlined /> {TEXT.podiums}
               </div>
               <div className="stat-value" style={{ color: '#722ed1' }}>
                 {constructor?.totalPodiums || 0}
@@ -516,7 +625,7 @@ const ConstructorDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <FlagOutlined /> Pole Positions
+                <FlagOutlined /> {TEXT.poles}
               </div>
               <div className="stat-value" style={{ color: '#13c2c2' }}>
                 {careerStats.poleCount}
@@ -525,11 +634,11 @@ const ConstructorDetail = () => {
           </Col>
         </Row>
 
-        <Card title="Constructor Info">
+        <Card title={TEXT.constructorInfo}>
           <Row gutter={[24, 16]}>
             <Col xs={24} sm={12}>
-              <p><strong>Name:</strong> {constructor?.name || '-'}</p>
-              <p><strong>Nationality:</strong> {constructor?.nationality || '-'}</p>
+              <p><strong>{TEXT.name}</strong>{constructor?.name || '-'}</p>
+              <p><strong>{TEXT.nationality}</strong>{constructor?.nationality || '-'}</p>
             </Col>
           </Row>
         </Card>

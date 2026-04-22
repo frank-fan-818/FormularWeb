@@ -1,45 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
-import { useAppStore } from '@/store';
+import { useSeasonData } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
+import { useAppStore } from '@/store';
+import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import './Circuits.css';
 
 const Circuits = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { races, loading: seasonLoading } = useSeasonData(currentSeason);
   const [circuits, setCircuits] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
-      setLoading(true);
+      if (seasonLoading) {
+        return;
+      }
+
+      if (races.length === 0) {
+        setCircuits([]);
+        return;
+      }
+
+      setPageLoading(true);
 
       try {
-        const { seasonApi } = await import('@/api/ergast');
-        const races = await seasonApi.getSeasonRaces(currentSeason);
-
         const supabaseCircuits = await supabaseApi.circuits.getAll();
-
-        const idMapping: Record<string, string> = {
-          'albert_park': 'melbourne',
-          'red_bull_ring': 'spielberg',
-          'spa': 'spa_francorchamps',
-          'villeneuve': 'montreal',
-          'rodriguez': 'mexico_city',
-          'monaco_circuit': 'monaco',
-          'losail': 'lusail',
-          'vegas': 'las_vegas',
-          'americas': 'austin',
-          'paul_ricard': 'paul_ricard'
-        };
-
-        const circuitMap = new Map(supabaseCircuits.map(c => [c.circuit_id, c]));
+        const circuitMap = new Map(supabaseCircuits.map((circuit) => [circuit.circuit_id, circuit]));
 
         const formattedCircuits = races.map((race, index) => {
           const ergastId = race.Circuit.circuitId;
-          const supabaseId = idMapping[ergastId] || ergastId;
+          const supabaseId = getSupabaseCircuitId(ergastId);
           const dbCircuit = circuitMap.get(supabaseId);
 
           return {
@@ -58,20 +55,33 @@ const Circuits = () => {
           };
         });
 
-        setCircuits(formattedCircuits);
+        if (!cancelled) {
+          setCircuits(formattedCircuits);
+        }
       } catch (error) {
-        console.error('加载赛道失败:', error);
-        setCircuits([]);
+        console.error('加载赛道列表失败:', error);
+        if (!cancelled) {
+          setCircuits([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setPageLoading(false);
+        }
       }
-
-      setLoading(false);
     };
-    loadData();
-  }, [currentSeason]);
+
+    void loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [races, seasonLoading]);
+
+  const loading = seasonLoading || pageLoading;
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>赛道库</span></h1>
+      <h1 className="page-title"><span>赛道</span></h1>
 
       {loading ? (
         <div className="loading-container">

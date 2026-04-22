@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { seasonApi } from '@/api/ergast';
 import { useCachedData } from './useCachedData';
-import type { DriverStanding, ConstructorStanding, Race } from '@/types';
+import type { ConstructorStanding, DriverStanding, Race, Season } from '@/types';
 
 interface SeasonData {
   driverStandings: DriverStanding[];
@@ -13,6 +13,14 @@ interface UseSeasonDataCachedReturn {
   driverStandings: DriverStanding[];
   constructorStandings: ConstructorStanding[];
   races: Race[];
+  loading: boolean;
+  error: Error | null;
+  isOffline: boolean;
+  refetch: () => void;
+}
+
+interface UseSeasonsCachedReturn {
+  seasons: Season[];
   loading: boolean;
   error: Error | null;
   isOffline: boolean;
@@ -43,6 +51,26 @@ export function useSeasonDataCached(season: string): UseSeasonDataCachedReturn {
     driverStandings: data?.driverStandings ?? [],
     constructorStandings: data?.constructorStandings ?? [],
     races: data?.races ?? [],
+    loading,
+    error,
+    isOffline,
+    refetch,
+  };
+}
+
+export function useSeasonsCached(limit = 100): UseSeasonsCachedReturn {
+  const fetchData = useCallback(async (): Promise<Season[]> => {
+    const seasons = await seasonApi.getAllSeasons(limit);
+    return [...seasons].reverse();
+  }, [limit]);
+
+  const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
+    cacheKey: `season-list-${limit}`,
+    cacheDuration: 60 * 60 * 1000,
+  });
+
+  return {
+    seasons: data ?? [],
     loading,
     error,
     isOffline,

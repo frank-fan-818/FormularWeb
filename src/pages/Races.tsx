@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import { seasonApi } from '@/api/ergast';
-import { useRaceStatus } from '@/hooks';
 import type { Race } from '@/types';
 import dayjs from 'dayjs';
 import './Races.css';
@@ -45,22 +43,11 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
 
 const Races = () => {
   const { currentSeason } = useAppStore();
-  const [races, setRaces] = useState<Race[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const data = await seasonApi.getSeasonRaces(currentSeason);
-      setRaces(data);
-      setLoading(false);
-    };
-    loadData();
-  }, [currentSeason]);
+  const { races, loading } = useSeasonData(currentSeason);
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title"><span>{currentSeason}赛季赛历</span></h1>
+      <h1 className="page-title"><span>{currentSeason} 赛季赛历</span></h1>
 
       {loading ? (
         <div className="loading-container">

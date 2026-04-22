@@ -1,8 +1,8 @@
 @import './Drivers.css';
 
-/* 赛季中心特有样式 */
+/* 赛季页专属样式 */
 
-/* 车手名字样式 */
+/* 车手名称 */
 .driver-name {
   font-weight: 500;
   color: var(--text-primary);
@@ -13,7 +13,7 @@
   color: var(--f1-red);
 }
 
-/* 车队名字样式 */
+/* 车队名称 */
 .constructor-name {
   font-weight: 500;
   color: var(--text-primary);
@@ -24,36 +24,44 @@
   color: var(--f1-red);
 }
 
-/* 车队名样式 */
+/* 车队标签 */
 .team-name {
   font-weight: 500;
   min-width: 120px;
   flex-shrink: 0;
 }
 
-/* 国籍样式 */
+/* 国籍标签 */
 .nationality {
   min-width: 120px;
   flex-shrink: 0;
 }
 
-/* 进度条容器 */
+/* 轻量进度条 */
 .progress-wrapper {
   flex: 1;
   min-width: 0;
 }
 
-/* 进度条动画 */
+.season-progress {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.season-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  animation: progressFill 1.2s ease-out forwards;
+  transform-origin: left;
+}
+
 @keyframes progressFill {
   from {
     width: 0%;
   }
-}
-
-/* Ant Design Progress 组件动画 - 使用自定义类名 */
-.animated-progress .ant-progress-bg {
-  animation: progressFill 1.5s ease-out forwards !important;
-  transform-origin: left !important;
 }
 
 /* 左侧颜色条动画 */
@@ -78,7 +86,7 @@
   }
 }
 
-/* 车队积分榜特有样式 */
+/* 车队积分榜扩展样式 */
 .constructor-stats {
   display: flex;
   flex-direction: column;

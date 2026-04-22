@@ -1,172 +1,133 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Image, Spin, Tag } from 'antd';
-import { ArrowLeftOutlined, CarOutlined, FlagOutlined, CalendarOutlined, TrophyOutlined } from '@ant-design/icons';
-import { useAppStore } from '@/store';
-import { supabaseApi } from '@/api/supabase';
-import type { Circuit } from '@/types';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, Spin, Tag } from 'antd';
+import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { supabaseApi } from '@/api/supabase';
+import { useSeasonData } from '@/hooks';
+import { useAppStore } from '@/store';
+import type { Circuit } from '@/types';
+import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitIds';
 import './CircuitDetail.css';
 
+const LazyCircuitImage = lazy(() => import('@/components/circuits/CircuitImage'));
 
-
-const circuitNameMap: Record<string, string> = {
-  'albert_park': 'melbourne',
-  'bahrain': 'bahrain',
-  'jeddah_corniche': 'jeddah',
-  'suzuka': 'suzuka',
-  'shanghai': 'shanghai',
-  'miami': 'miami',
-  'imola': 'imola',
-  'monaco': 'monaco',
-  'catalunya': 'catalunya',
-  'villeneuve': 'montreal',
-  'red_bull_ring': 'spielberg',
-  'silverstone': 'silverstone',
-  'hungaroring': 'hungaroring',
-  'spa': 'spa-francorchamps',
-  'spa_francorchamps': 'spa-francorchamps',
-  'zandvoort': 'zandvoort',
-  'monza': 'monza',
-  'baku': 'baku',
-  'marina_bay': 'marina-bay',
-  'austin': 'austin',
-  'rodriguez': 'mexico-city',
-  'interlagos': 'interlagos',
-  'las_vegas': 'las-vegas',
-  'losail': 'lusail',
-  'yas_marina': 'yas-marina',
-  'sepang': 'sepang',
-  'yeongam': 'yeongam',
-  'buddh': 'buddh',
-  'magny_cours': 'magny-cours',
-  'paul_ricard': 'paul-ricard',
-  'estoril': 'estoril',
-  'istanbul_park': 'istanbul',
-  'valencia_street': 'valencia',
-  'nurburgring': 'nurburgring',
-  'hockenheim': 'hockenheimring',
-  'indianapolis': 'indianapolis',
-  'watkins_glen': 'watkins-glen',
-  'long_beach': 'long-beach',
-  'adelaide': 'adelaide',
-  'brands_hatch': 'brands-hatch',
-  'donington': 'donington',
-  'kyalami': 'kyalami',
-  'mugello': 'mugello',
-  'portimao': 'portimao',
-  'sochi': 'sochi',
-  'zolder': 'zolder',
-  'zeltweg': 'zeltweg',
-};
-
-const getCircuitImage = (circuitId: string, style: 'black-outline' | 'white-outline' | 'black' | 'white' = 'black-outline') => {
-
-  const mappedId = circuitNameMap[circuitId] || circuitId;
-  const idVariants = [
-    mappedId.replace(/_/g, '-'),
-    mappedId,
-    circuitId.replace(/_/g, '-'),
-    circuitId,
-    mappedId.replace('circuit', ''),
-    mappedId.replace('_circuit', ''),
-    mappedId.split('_')[0],
-    circuitId.split('_')[circuitId.split('_').length - 1],
-    circuitId === 'las_vegas' ? 'las-vegas-strip' : '',
-    circuitId === 'vegas' ? 'las-vegas-strip' : '',
-    circuitId === 'austin' ? 'circuit-of-the-americas' : '',
-    circuitId === 'americas' ? 'circuit-of-the-americas' : '',
-  ].filter(Boolean);
-
-  const uniqueIds = [...new Set(idVariants)];
-  const versions = ['-1', '-2', '-3', '-4', ''];
-
-  for (const id of uniqueIds) {
-    for (const version of versions) {
-      try {
-        const url = new URL(`../assets/circuits/${style}/${id}${version}.svg`, import.meta.url).href;
-        return url;
-      } catch (error) {
-        continue;
-      }
-    }
-  }
-
-  return '';
+const TEXT = {
+  unavailable: '\u8d5b\u9053\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
+  back: '\u8fd4\u56de',
+  imageLoading: '\u6b63\u5728\u52a0\u8f7d\u8d5b\u9053\u56fe...',
+  imageUnavailable: '\u8d5b\u9053\u56fe\u6682\u4e0d\u53ef\u7528',
+  length: '\u8d5b\u9053\u957f\u5ea6',
+  turns: '\u5f2f\u9053\u6570\u91cf',
+  raceCount: '\u4e3e\u529e\u6b21\u6570',
+  firstRace: '\u9996\u6b21\u529e\u8d5b',
+  lapRecord: '\u6b63\u8d5b\u6700\u5feb\u5355\u5708',
+  unknown: '\u672a\u77e5',
+  seasonRace: '\u672c\u8d5b\u5b63\u6bd4\u8d5b',
+  raceDate: '\u6bd4\u8d5b\u65f6\u95f4',
+  raceType: '\u8d5b\u4e8b\u7c7b\u578b',
+  sprintWeekend: '\u51b2\u523a\u8d5b\u5468\u672b',
+  loading: '\u52a0\u8f7d\u4e2d...',
+  error: '\u52a0\u8f7d\u8d5b\u9053\u8be6\u60c5\u5931\u8d25:',
 };
 
 const CircuitDetail = () => {
   const { circuitId } = useParams<{ circuitId: string }>();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { races, loading: seasonLoading } = useSeasonData(currentSeason);
+
   const [circuit, setCircuit] = useState<Circuit | null>(null);
   const [circuitDetails, setCircuitDetails] = useState<any>(null);
   const [circuitRaces, setCircuitRaces] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!circuitId) return;
-      setLoading(true);
+    if (!circuitId) {
+      setCircuit(null);
+      setCircuitDetails(null);
+      setCircuitRaces([]);
+      setLoading(false);
+      setDetailsLoading(false);
+      return;
+    }
 
+    if (seasonLoading) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const matchedCircuitRaces = races.filter((race) => areCircuitIdsEquivalent(race.Circuit.circuitId, circuitId));
+    const matchedRace = matchedCircuitRaces[0] || null;
+
+    setCircuit(matchedRace ? matchedRace.Circuit : null);
+    setCircuitRaces(matchedCircuitRaces);
+    setCircuitDetails(null);
+    setLoading(!matchedRace);
+    setDetailsLoading(true);
+
+    const loadCircuitDetails = async () => {
       try {
-        const { seasonApi } = await import('@/api/ergast');
-        const races = await seasonApi.getSeasonRaces(currentSeason);
-        const matchedRace = races.find(race => race.Circuit.circuitId === circuitId);
+        const supabaseId = getSupabaseCircuitId(circuitId);
+        const supabaseCircuit = await supabaseApi.circuits.getById(supabaseId);
 
-        if (matchedRace) {
-          setCircuit(matchedRace.Circuit);
-          setCircuitRaces(races.filter(race => race.Circuit.circuitId === circuitId));
+        if (cancelled) {
+          return;
         }
 
-        try {
-          const idMapping: Record<string, string> = {
-            'albert_park': 'melbourne',
-            'red_bull_ring': 'spielberg',
-            'spa': 'spa_francorchamps',
-            'villeneuve': 'montreal',
-            'rodriguez': 'mexico_city',
-            'monaco_circuit': 'monaco',
-            'losail': 'lusail',
-            'vegas': 'las_vegas',
-            'americas': 'austin',
-            'paul_ricard': 'paul_ricard'
-          };
+        setCircuitDetails(supabaseCircuit);
 
-          const supabaseId = idMapping[circuitId] || circuitId;
-          const supabaseCircuit = await supabaseApi.circuits.getById(supabaseId);
-          setCircuitDetails(supabaseCircuit);
+        if (!matchedRace && supabaseCircuit) {
+          setCircuit({
+            circuitId: supabaseCircuit.circuit_id || supabaseId,
+            url: '#',
+            circuitName: supabaseCircuit.name,
+            Location: {
+              locality: supabaseCircuit.locality || supabaseCircuit.location || '',
+              country: supabaseCircuit.country || '',
+              lat: String(supabaseCircuit.lat || ''),
+              long: String(supabaseCircuit.long || supabaseCircuit.lng || ''),
+            },
+          });
+        }
 
-          // 如果当前赛季没有该赛道，从 Supabase 获取基本信息
-          if (!matchedRace && supabaseCircuit) {
-            setCircuit({
-              circuitId: circuitId,
-              circuitName: supabaseCircuit.name,
-              Location: {
-                locality: supabaseCircuit.location || '',
-                country: supabaseCircuit.country || '',
-                lat: supabaseCircuit.lat || '',
-                long: supabaseCircuit.lng || ''
-              }
-            } as Circuit);
-          }
-        } catch (e) {
-          console.log('Supabase详情获取失败');
+        if (!matchedRace && !supabaseCircuit) {
+          setCircuit(null);
         }
       } catch (error) {
-        console.error('加载赛道详情失败:', error);
+        console.error(TEXT.error, error);
+
+        if (cancelled) {
+          return;
+        }
+
+        setCircuitDetails(null);
+        if (!matchedRace) {
+          setCircuit(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+          setDetailsLoading(false);
+        }
       }
-
-      setLoading(false);
     };
-    loadData();
-  }, [circuitId, currentSeason]);
 
-  if (loading) {
+    void loadCircuitDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [circuitId, races, seasonLoading]);
+
+  if (seasonLoading || (loading && !circuit)) {
     return (
       <div className="circuit-detail-container">
         <div className="loading-container">
           <Spin size="large" />
+          <div style={{ marginTop: 12 }}>{TEXT.loading}</div>
         </div>
       </div>
     );
@@ -175,9 +136,7 @@ const CircuitDetail = () => {
   if (!circuit) {
     return (
       <div className="circuit-detail-container">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <div className="loading-container">{TEXT.unavailable}</div>
       </div>
     );
   }
@@ -189,7 +148,7 @@ const CircuitDetail = () => {
         onClick={() => navigate(-1)}
         className="back-button"
       >
-        返回
+        {TEXT.back}
       </Button>
 
       <h1 className="page-title"><span>{circuit.circuitName}</span></h1>
@@ -198,58 +157,74 @@ const CircuitDetail = () => {
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">
-            <Image
-              src={getCircuitImage(circuit.circuitId, 'black-outline')}
-              alt={circuit.circuitName}
-              className="circuit-image"
-              preview={false}
-              fallback="暂无赛道图"
-            />
+            <Suspense
+              fallback={(
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 240,
+                    gap: 12,
+                  }}
+                >
+                  <Spin size="large" />
+                  <span>{TEXT.imageLoading}</span>
+                </div>
+              )}
+            >
+              <LazyCircuitImage
+                alt={circuit.circuitName}
+                circuitId={circuit.circuitId}
+                className="circuit-image"
+              />
+            </Suspense>
           </div>
         </Card>
 
         <div className="stats-grid">
-          <Card className="stat-card">
+          <Card className="stat-card" loading={detailsLoading}>
             <div className="stat-label">
-              <CarOutlined /> 赛道长度
+              <CarOutlined /> {TEXT.length}
             </div>
             <div className="stat-value">
               {circuitDetails?.length || '-'} km
             </div>
           </Card>
 
-          <Card className="stat-card">
+          <Card className="stat-card" loading={detailsLoading}>
             <div className="stat-label">
-              <FlagOutlined /> 弯道数量
+              <FlagOutlined /> {TEXT.turns}
             </div>
             <div className="stat-value">
-              {circuitDetails?.turns || '-'} 个
+              {circuitDetails?.turns || '-'}
             </div>
           </Card>
 
-          <Card className="stat-card">
+          <Card className="stat-card" loading={detailsLoading}>
             <div className="stat-label">
-              <TrophyOutlined /> 总举办场次
+              <TrophyOutlined /> {TEXT.raceCount}
             </div>
             <div className="stat-value">
-              {circuitDetails?.total_races || '-'} 场
+              {circuitDetails?.total_races || '-'}
             </div>
           </Card>
 
-          <Card className="stat-card">
+          <Card className="stat-card" loading={detailsLoading}>
             <div className="stat-label">
-              <CalendarOutlined /> 首次办赛
+              <CalendarOutlined /> {TEXT.firstRace}
             </div>
             <div className="stat-value">
-              {circuitDetails?.first_race || '-'} 年
+              {circuitDetails?.first_race || '-'}
             </div>
           </Card>
         </div>
       </div>
 
-      {circuitDetails?.lap_record && (
+      {circuitDetails?.lap_record ? (
         <>
-          <h2 className="section-title">⏱️ 正赛最快单圈纪录</h2>
+          <h2 className="section-title">{TEXT.lapRecord}</h2>
           <Card className="lap-record-card">
             <div className="lap-record-content">
               <div className="lap-record-time">
@@ -257,38 +232,38 @@ const CircuitDetail = () => {
               </div>
               <div className="lap-record-info">
                 <div className="lap-record-driver">
-                  <TrophyOutlined /> {circuitDetails.lap_record_driver || '未知'}
+                  <TrophyOutlined /> {circuitDetails.lap_record_driver || TEXT.unknown}
                 </div>
                 <div className="lap-record-year">
-                  <CalendarOutlined /> {circuitDetails.lap_record_year || '未知'} 年
+                  <CalendarOutlined /> {circuitDetails.lap_record_year || TEXT.unknown}
                 </div>
               </div>
             </div>
           </Card>
         </>
-      )}
+      ) : null}
 
-      {circuitRaces.length > 0 && (
+      {circuitRaces.length > 0 ? (
         <>
-          <h2 className="section-title">本赛季比赛</h2>
+          <h2 className="section-title">{TEXT.seasonRace}</h2>
           <Card className="race-info-card">
             <div className="race-info-item">
-              <span className="race-info-label">比赛时间</span>
+              <span className="race-info-label">{TEXT.raceDate}</span>
               <span className="race-info-value">
                 {dayjs(circuitRaces[0].date).format('YYYY-MM-DD')}
               </span>
             </div>
-            {circuitRaces[0].is_sprint_weekend && (
+            {circuitRaces[0].is_sprint_weekend ? (
               <div className="race-info-item">
-                <span className="race-info-label">赛事类型</span>
+                <span className="race-info-label">{TEXT.raceType}</span>
                 <span className="race-info-value">
-                  <Tag color="orange">冲刺赛周末</Tag>
+                  <Tag color="orange">{TEXT.sprintWeekend}</Tag>
                 </span>
               </div>
-            )}
+            ) : null}
           </Card>
         </>
-      )}
+      ) : null}
     </div>
   );
 };

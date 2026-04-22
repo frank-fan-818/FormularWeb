@@ -1,34 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
-import { GlobalOutlined, TrophyOutlined, CarOutlined, FlagOutlined } from '@ant-design/icons';
+import { GlobalOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
+import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-
 import { getTeamColor } from '@/utils/teamColors';
 import './Constructors.css';
 
 const Constructors = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
   const [constructors, setConstructors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
-      setLoading(true);
+      if (seasonLoading) {
+        return;
+      }
+
+      if (constructorStandings.length === 0) {
+        setConstructors([]);
+        return;
+      }
+
+      setPageLoading(true);
 
       try {
-        const { seasonApi } = await import('@/api/ergast');
-        const standings = await seasonApi.getConstructorStandings(currentSeason);
-
         const supabaseConstructors = await supabaseApi.constructors.getAll();
-        const constructorMap = new Map(supabaseConstructors.map(c => [c.constructor_id, c]));
+        const constructorMap = new Map(supabaseConstructors.map((constructor) => [constructor.constructor_id, constructor]));
 
-        const formattedConstructors = standings.map((s, index) => {
-          const dbConstructor = constructorMap.get(s.Constructor.constructorId);
+        const formattedConstructors = constructorStandings.map((standing, index) => {
+          const dbConstructor = constructorMap.get(standing.Constructor.constructorId);
           return {
-            ...s.Constructor,
+            ...standing.Constructor,
             total_wins: dbConstructor?.total_wins || null,
             total_podiums: dbConstructor?.total_podiums || null,
             total_pole_positions: dbConstructor?.total_pole_positions || null,
@@ -38,20 +47,33 @@ const Constructors = () => {
           };
         });
 
-        setConstructors(formattedConstructors);
+        if (!cancelled) {
+          setConstructors(formattedConstructors);
+        }
       } catch (error) {
-        console.error('加载车队失败:', error);
-        setConstructors([]);
+        console.error('加载车队列表失败:', error);
+        if (!cancelled) {
+          setConstructors([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setPageLoading(false);
+        }
       }
-
-      setLoading(false);
     };
-    loadData();
-  }, [currentSeason]);
+
+    void loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [constructorStandings, seasonLoading]);
+
+  const loading = seasonLoading || pageLoading;
 
   return (
     <div className="list-page-container">
-      <h1 className="page-title">🏭 <span>车队库</span></h1>
+      <h1 className="page-title"><span>车队</span></h1>
 
       {loading ? (
         <div className="loading-container">
@@ -78,13 +100,13 @@ const Constructors = () => {
                       </h3>
                       <div className="item-stats">
                         {constructor.total_wins && (
-                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} 胜</span>
+                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} wins</span>
                         )}
                         {constructor.total_podiums && (
-                          <span className="stat-item"><CarOutlined /> {constructor.total_podiums} 领奖台</span>
+                          <span className="stat-item"><CarOutlined /> {constructor.total_podiums} podiums</span>
                         )}
                         {constructor.total_pole_positions && (
-                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} 杆位</span>
+                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} poles</span>
                         )}
                       </div>
                     </div>

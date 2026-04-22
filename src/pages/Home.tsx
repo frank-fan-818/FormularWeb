@@ -1,10 +1,31 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin, List, Tag } from 'antd';
-import { TrophyOutlined, CarOutlined, TeamOutlined, ClockCircleOutlined, FireOutlined } from '@ant-design/icons';
-import { useAppStore } from '@/store';
-import { useSeasonData, useRacesByStatus } from '@/hooks';
+import { Card, List, Spin, Tag } from 'antd';
+import {
+  TrophyOutlined,
+  CarOutlined,
+  TeamOutlined,
+  ClockCircleOutlined,
+  FireOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useSeasonData, useRacesByStatus } from '@/hooks';
+import { useAppStore } from '@/store';
 import './Home.css';
+
+const TEXT = {
+  completedRaces: '已完成分站赛',
+  activeDrivers: '参赛车手',
+  activeConstructors: '参赛车队',
+  daysUntilNextRace: '距离下一站',
+  seasonEnded: '赛季已结束',
+  nextRace: '下一场比赛',
+  upcoming: '即将开赛',
+  ongoingRace: '进行中比赛',
+  live: '进行中',
+  standingsTopThree: '积分榜 TOP3',
+  driverStandings: '车手积分榜',
+  constructorStandings: '车队积分榜',
+};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -26,31 +47,31 @@ const Home = () => {
     {
       icon: <TrophyOutlined className="stat-icon" style={{ color: 'var(--f1-red)' }} />,
       value: completedRaces.length,
-      label: `已完成分站赛 / ${races.length}`,
+      label: `${TEXT.completedRaces} / ${races.length}`,
       color: 'var(--f1-red)',
-      delay: 'stagger-1'
+      delay: 'stagger-1',
     },
     {
       icon: <CarOutlined className="stat-icon" style={{ color: 'var(--accent-blue)' }} />,
       value: driverStandings.length,
-      label: '参赛车手',
+      label: TEXT.activeDrivers,
       color: 'var(--accent-blue)',
-      delay: 'stagger-2'
+      delay: 'stagger-2',
     },
     {
       icon: <TeamOutlined className="stat-icon" style={{ color: 'var(--accent-green)' }} />,
       value: constructorStandings.length,
-      label: '参赛车队',
+      label: TEXT.activeConstructors,
       color: 'var(--accent-green)',
-      delay: 'stagger-3'
+      delay: 'stagger-3',
     },
     {
       icon: <ClockCircleOutlined className="stat-icon" style={{ color: 'var(--accent-yellow)' }} />,
-      value: nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '✓',
-      label: nextRace ? 'days until next race' : 'Season ended',
+      value: nextRace ? dayjs(nextRace.date).diff(dayjs(), 'day') : '--',
+      label: nextRace ? TEXT.daysUntilNextRace : TEXT.seasonEnded,
       color: 'var(--accent-yellow)',
-      delay: 'stagger-4'
-    }
+      delay: 'stagger-4',
+    },
   ];
 
   const getRankBadgeClass = (index: number) => {
@@ -62,14 +83,11 @@ const Home = () => {
 
   return (
     <div className="page-container">
-
-
-      {/* Next Race Preview - First */}
-      {nextRace && (
+      {nextRace ? (
         <section className="next-race-section animate-slide-up">
           <h2 className="section-title-f1">
             <ClockCircleOutlined style={{ marginRight: 12, color: 'var(--accent-yellow)' }} />
-            下一场比赛
+            {TEXT.nextRace}
           </h2>
           <Card
             className="next-race-card-f1"
@@ -94,19 +112,18 @@ const Home = () => {
                 </div>
               </div>
               <Tag className="next-race-tag" color="gold">
-                即将开赛
+                {TEXT.upcoming}
               </Tag>
             </div>
           </Card>
         </section>
-      )}
+      ) : null}
 
-      {/* Ongoing Race */}
-      {ongoingRace && (
+      {ongoingRace ? (
         <section className="ongoing-section animate-slide-up">
           <h2 className="section-title-f1">
             <FireOutlined style={{ marginRight: 12, color: 'var(--accent-orange)' }} />
-            进行中比赛
+            {TEXT.ongoingRace}
           </h2>
           <Card className="ongoing-card-f1">
             <div className="ongoing-content-f1">
@@ -117,28 +134,26 @@ const Home = () => {
                 </p>
               </div>
               <Tag className="ongoing-tag">
-                <FireOutlined /> 进行中
+                <FireOutlined /> {TEXT.live}
               </Tag>
             </div>
           </Card>
         </section>
-      )}
+      ) : null}
 
       <div className="section-divider" />
 
-      {/* Standings Section - Second */}
       <section className="standings-section">
         <h2 className="section-title-f1 animate-slide-up stagger-5">
           <TrophyOutlined style={{ marginRight: 12, color: 'var(--f1-red)' }} />
-          积分榜 TOP3
+          {TEXT.standingsTopThree}
         </h2>
 
         <div className="standings-grid">
-          {/* Driver Standings */}
           <div className="standings-card-f1 animate-slide-up stagger-5">
             <div className="card-header">
               <CarOutlined style={{ marginRight: 8 }} />
-              车手积分榜
+              {TEXT.driverStandings}
             </div>
             <List
               className="standings-list-f1"
@@ -171,11 +186,10 @@ const Home = () => {
             />
           </div>
 
-          {/* Constructor Standings */}
           <div className="standings-card-f1 animate-slide-up stagger-6">
             <div className="card-header">
               <TeamOutlined style={{ marginRight: 8 }} />
-              车队积分榜
+              {TEXT.constructorStandings}
             </div>
             <List
               className="standings-list-f1"
@@ -209,7 +223,6 @@ const Home = () => {
 
       <div className="section-divider" />
 
-      {/* Stats Grid - Last */}
       <section className="stats-grid">
         {statCards.map((card, index) => (
           <div

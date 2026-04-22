@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { historyApi } from '@/api/ergast';
-import type { DriverHistoryProfile, DriverSeasonHistoryItem } from '@/types';
+import type { BestFinishSummary, DriverHistoryProfile } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './HistoryDetail.css';
 
@@ -21,32 +21,7 @@ function formatPoints(points: number): string {
   }).format(points);
 }
 
-function getSeasonPositionValue(position: string): number {
-  const value = parseInt(position, 10);
-  return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
-}
-
-function getBestFinishSummary(seasons: DriverSeasonHistoryItem[]): {
-  position: string;
-  seasons: string[];
-} | null {
-  if (seasons.length === 0) {
-    return null;
-  }
-
-  const bestPositionValue = seasons.reduce((best, current) => {
-    return Math.min(best, getSeasonPositionValue(current.position));
-  }, Number.POSITIVE_INFINITY);
-
-  return {
-    position: seasons.find((season) => getSeasonPositionValue(season.position) === bestPositionValue)?.position || '-',
-    seasons: seasons
-      .filter((season) => getSeasonPositionValue(season.position) === bestPositionValue)
-      .map((season) => season.season),
-  };
-}
-
-function formatBestFinish(summary: { position: string; seasons: string[] } | null): string {
+function formatBestFinish(summary: BestFinishSummary | null | undefined): string {
   if (!summary) {
     return '-';
   }
@@ -102,7 +77,7 @@ const DriverHistoryDetail = () => {
   const seasons = driver?.seasons || [];
   const firstSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
   const latestSeason = seasons[0] || null;
-  const bestFinish = getBestFinishSummary(seasons);
+  const bestFinish = driver?.bestRaceFinish;
   const championshipSeasons = seasons.filter((season) => season.position === '1');
   const accentColor = driver?.recentConstructorId ? getTeamColor(driver.recentConstructorId) : '#FF1801';
   const accentStyle = { ['--history-accent' as string]: accentColor };
@@ -226,7 +201,7 @@ const DriverHistoryDetail = () => {
             </Card>
             <Card className="history-meta-card">
               <div className="history-summary-card">
-                <div className="history-meta-label">Best Finish</div>
+                <div className="history-meta-label">Best Race Finish</div>
                 <div className="history-meta-value">{formatBestFinish(bestFinish)}</div>
               </div>
             </Card>

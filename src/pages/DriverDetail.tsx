@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Col, Row, Tag } from 'antd';
+import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import ReactECharts from 'echarts-for-react';
 import dayjs from 'dayjs';
 import { driverApi, seasonApi } from '@/api/ergast';
 import { supabaseApi } from '@/api/supabase';
+import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { DriverStanding } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
@@ -26,6 +26,39 @@ interface DriverProfile {
   totalFastestLaps: number;
   totalRaceStarts: number;
 }
+
+const TEXT = {
+  cumulativePoints: '\u7d2f\u8ba1\u79ef\u5206',
+  racePoints: '\u6b63\u8d5b\u79ef\u5206',
+  sprintPoints: '\u51b2\u523a\u79ef\u5206',
+  roundTotal: '\u5355\u7ad9\u603b\u5206',
+  back: '\u8fd4\u56de\u8f66\u624b\u5217\u8868',
+  unavailable: '\u6682\u65f6\u65e0\u6cd5\u83b7\u53d6\u8be5\u8f66\u624b\u4fe1\u606f\u3002',
+  seasonKeyStats: '\u8d5b\u5b63\u5173\u952e\u6570\u636e',
+  seasonRank: '\u8d5b\u5b63\u6392\u540d',
+  seasonPoints: '\u8d5b\u5b63\u79ef\u5206',
+  seasonWins: '\u8d5b\u5b63\u80dc\u573a',
+  pointsTrend: '\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf',
+  noTrendData: '\u6682\u65e0\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf\u6570\u636e\u3002',
+  careerStats: '\u804c\u4e1a\u751f\u6daf\u7edf\u8ba1',
+  loadingCareerStats: '\u6b63\u5728\u8865\u5145\u5386\u53f2\u7edf\u8ba1...',
+  loadedCareerStats: '\u5386\u53f2\u7edf\u8ba1\u5df2\u5b8c\u6210\u52a0\u8f7d\u3002',
+  raceEntries: '\u53c2\u8d5b\u573a\u6b21',
+  raceWins: '\u5206\u7ad9\u51a0\u519b',
+  podiums: '\u767b\u4e0a\u9886\u5956\u53f0',
+  poles: '\u6746\u4f4d\u6b21\u6570',
+  driverInfo: '\u8f66\u624b\u4fe1\u606f',
+  name: '\u59d3\u540d\uff1a',
+  code: '\u7b80\u79f0\uff1a',
+  number: '\u53f7\u7801\uff1a',
+  nationality: '\u56fd\u7c4d\uff1a',
+  birthDate: '\u51fa\u751f\u65e5\u671f\uff1a',
+  currentTeam: '\u5f53\u524d\u8f66\u961f\uff1a',
+  pointsUnit: '\u5206',
+  chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
+};
+
+const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
 function mapSupabaseDriver(driver: Record<string, any>): DriverProfile {
   return {
@@ -62,7 +95,10 @@ function findStandingByDriverId(standings: DriverStanding[], driverId: string): 
   return standings.find((item) => candidates.includes(item.Driver.driverId)) || null;
 }
 
-async function resolveSupabaseDriverProfile(driverId: string, standing: DriverStanding | null): Promise<DriverProfile | null> {
+async function resolveSupabaseDriverProfile(
+  driverId: string,
+  standing: DriverStanding | null,
+): Promise<DriverProfile | null> {
   const exact = await supabaseApi.drivers.getById(driverId);
   if (exact) {
     return mapSupabaseDriver(exact);
@@ -81,35 +117,37 @@ async function resolveSupabaseDriverProfile(driverId: string, standing: DriverSt
   return matched ? mapSupabaseDriver(matched) : null;
 }
 
-async function resolveErgastDriverIdentity(driverId: string, standing: DriverStanding | null): Promise<{ driverId: string; raceCount: number }> {
+async function resolveErgastDriverId(
+  driverId: string,
+  season: string,
+  standing: DriverStanding | null,
+): Promise<string> {
   if (standing) {
-    const raceCount = await driverApi.getDriverRaceCount(standing.Driver.driverId);
-    return {
-      driverId: standing.Driver.driverId,
-      raceCount,
-    };
+    return standing.Driver.driverId;
   }
 
   const candidates = getDriverIdCandidates(driverId);
   for (const candidate of candidates) {
-    const raceCount = await driverApi.getDriverRaceCount(candidate);
-    if (raceCount > 0) {
-      return { driverId: candidate, raceCount };
+    try {
+      const seasonResults = await driverApi.getDriverSeasonRaceResults(candidate, season);
+      if (seasonResults.length > 0) {
+        return candidate;
+      }
+    } catch {
+      // Ignore and continue checking other candidates.
     }
   }
 
-  return {
-    driverId,
-    raceCount: 0,
-  };
+  return driverId;
 }
 
 const DriverDetail = () => {
   const { driverId } = useParams<{ driverId: string }>();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
+  const { driverStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+
   const [driver, setDriver] = useState<DriverProfile | null>(null);
-  const [currentStanding, setCurrentStanding] = useState<DriverStanding | null>(null);
   const [careerStats, setCareerStats] = useState({
     raceCount: 0,
     poleCount: 0,
@@ -120,12 +158,16 @@ const DriverDetail = () => {
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [careerStatsLoading, setCareerStatsLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
   const [chartScale, setChartScale] = useState(1);
+  const [chartEnabled, setChartEnabled] = useState(false);
   const [resolvedDriverId, setResolvedDriverId] = useState<string | null>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
+
+  const currentStanding = driverId ? findStandingByDriverId(driverStandings, driverId) : null;
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -167,39 +209,53 @@ const DriverDetail = () => {
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!driverId) {
-        return;
-      }
+    if (seasonRaceResults.length === 0) {
+      setChartEnabled(false);
+      return;
+    }
 
-      setLoading(true);
+    const timer = window.setTimeout(() => {
+      setChartEnabled(true);
+    }, 0);
 
-      const [standings, sprintResults] = await Promise.allSettled([
-        seasonApi.getDriverStandings(currentSeason),
+    return () => window.clearTimeout(timer);
+  }, [seasonRaceResults.length]);
+
+  useEffect(() => {
+    if (!driverId || seasonLoading) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setLoading(true);
+    setCareerStatsLoading(false);
+    setResolvedDriverId(null);
+    setSeasonRaceResults([]);
+    setSeasonSprintResults([]);
+
+    const loadPrimaryData = async () => {
+      const [baseDriverResult, resolvedDriverIdResult, sprintResultsResult] = await Promise.allSettled([
+        resolveSupabaseDriverProfile(driverId, currentStanding),
+        resolveErgastDriverId(driverId, currentSeason, currentStanding),
         seasonApi.getSeasonSprintResults(currentSeason),
       ]);
 
-      const standing = standings.status === 'fulfilled'
-        ? findStandingByDriverId(standings.value, driverId)
-        : null;
+      const baseDriver = baseDriverResult.status === 'fulfilled' ? baseDriverResult.value : null;
+      const nextResolvedDriverId = resolvedDriverIdResult.status === 'fulfilled'
+        ? resolvedDriverIdResult.value
+        : driverId;
 
-      setCurrentStanding(standing);
-
-      const baseDriver = await resolveSupabaseDriverProfile(driverId, standing);
-      const resolvedErgast = await resolveErgastDriverIdentity(driverId, standing);
-      setResolvedDriverId(resolvedErgast.driverId);
-
-      const [poleCount, winCount, podiumCount, championshipCount, totalPoints, raceResults] = await Promise.allSettled([
-        driverApi.getDriverPoleCount(resolvedErgast.driverId),
-        driverApi.getDriverWinCount(resolvedErgast.driverId),
-        driverApi.getDriverPodiumCount(resolvedErgast.driverId),
-        driverApi.getDriverChampionshipCount(resolvedErgast.driverId),
-        driverApi.getDriverTotalPoints(resolvedErgast.driverId),
-        driverApi.getDriverSeasonRaceResults(resolvedErgast.driverId, currentSeason),
+      const raceResultsResult = await Promise.allSettled([
+        driverApi.getDriverSeasonRaceResults(nextResolvedDriverId, currentSeason),
       ]);
 
-      const mergedDriver = standing ? {
-        ...standing.Driver,
+      if (cancelled) {
+        return;
+      }
+
+      const mergedDriver = currentStanding ? {
+        ...currentStanding.Driver,
         ...baseDriver,
         totalWins: baseDriver?.totalWins ?? 0,
         totalPodiums: baseDriver?.totalPodiums ?? 0,
@@ -208,41 +264,98 @@ const DriverDetail = () => {
         totalRaceStarts: baseDriver?.totalRaceStarts ?? 0,
       } : baseDriver;
 
-      if (mergedDriver) {
-        mergedDriver.totalPodiums = podiumCount.status === 'fulfilled'
-          ? podiumCount.value
-          : (mergedDriver.totalPodiums || 0);
-      }
-
       setDriver(mergedDriver);
+      setResolvedDriverId(nextResolvedDriverId);
 
-      if (raceResults.status === 'fulfilled') {
+      if (raceResultsResult[0].status === 'fulfilled') {
         setSeasonRaceResults(
-          raceResults.value.sort((left, right) => parseInt(left.round, 10) - parseInt(right.round, 10)),
+          raceResultsResult[0].value.sort(
+            (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+          ),
         );
       } else {
         setSeasonRaceResults([]);
       }
 
-      if (sprintResults.status === 'fulfilled') {
-        setSeasonSprintResults(sprintResults.value);
+      if (sprintResultsResult.status === 'fulfilled') {
+        setSeasonSprintResults(sprintResultsResult.value);
       } else {
         setSeasonSprintResults([]);
       }
 
       setCareerStats({
-        raceCount: resolvedErgast.raceCount || (mergedDriver?.totalRaceStarts || 0),
-        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : (mergedDriver?.totalPolePositions || 0),
-        winCount: winCount.status === 'fulfilled' ? winCount.value : (mergedDriver?.totalWins || 0),
-        championshipCount: championshipCount.status === 'fulfilled' ? championshipCount.value : 0,
-        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : 0,
+        raceCount: mergedDriver?.totalRaceStarts || 0,
+        poleCount: mergedDriver?.totalPolePositions || 0,
+        winCount: mergedDriver?.totalWins || 0,
+        championshipCount: 0,
+        totalPoints: 0,
       });
 
       setLoading(false);
     };
 
-    void loadData();
-  }, [driverId, currentSeason]);
+    void loadPrimaryData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSeason, currentStanding, driverId, seasonLoading]);
+
+  useEffect(() => {
+    if (!resolvedDriverId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setCareerStatsLoading(true);
+
+    const loadCareerStats = async () => {
+      const [
+        raceCount,
+        poleCount,
+        winCount,
+        podiumCount,
+        championshipCount,
+        totalPoints,
+      ] = await Promise.allSettled([
+        driverApi.getDriverRaceCount(resolvedDriverId),
+        driverApi.getDriverPoleCount(resolvedDriverId),
+        driverApi.getDriverWinCount(resolvedDriverId),
+        driverApi.getDriverPodiumCount(resolvedDriverId),
+        driverApi.getDriverChampionshipCount(resolvedDriverId),
+        driverApi.getDriverTotalPoints(resolvedDriverId),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setCareerStats((previous) => ({
+        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : previous.raceCount,
+        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : previous.poleCount,
+        winCount: winCount.status === 'fulfilled' ? winCount.value : previous.winCount,
+        championshipCount: championshipCount.status === 'fulfilled'
+          ? championshipCount.value
+          : previous.championshipCount,
+        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : previous.totalPoints,
+      }));
+
+      if (podiumCount.status === 'fulfilled') {
+        setDriver((previous) => (
+          previous ? { ...previous, totalPodiums: podiumCount.value } : previous
+        ));
+      }
+
+      setCareerStatsLoading(false);
+    };
+
+    void loadCareerStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSeason, resolvedDriverId]);
 
   const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
@@ -306,17 +419,17 @@ const DriverDetail = () => {
           const racePoints = singlePoints[index] - sprintPoints;
 
           let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Race points:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.racePoints}:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
-            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>Sprint points:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
+            result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.sprintPoints}:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>Round total:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>Cumulative points:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>${TEXT.roundTotal}:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
           return result;
         },
       },
       legend: {
-        data: ['Cumulative Points'],
+        data: [TEXT.cumulativePoints],
         top: 0,
         right: 0,
         textStyle: {
@@ -353,7 +466,7 @@ const DriverDetail = () => {
       },
       yAxis: {
         type: 'value',
-        name: 'Cumulative Points',
+        name: TEXT.cumulativePoints,
         nameTextStyle: {
           color: '#8c8c8c',
           fontSize: 12,
@@ -388,7 +501,7 @@ const DriverDetail = () => {
       },
       series: [
         {
-          name: 'Cumulative Points',
+          name: TEXT.cumulativePoints,
           type: 'line',
           data: cumulativePointsArr,
           smooth: 0.4,
@@ -436,14 +549,14 @@ const DriverDetail = () => {
     };
   };
 
-  if (!driver && !loading) {
+  if (!driver && !loading && !seasonLoading) {
     return (
       <div className="driver-detail-container">
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
-          Back
+          {TEXT.back}
         </Button>
         <Card>
-          <p>Driver details are unavailable.</p>
+          <p>{TEXT.unavailable}</p>
         </Card>
       </div>
     );
@@ -452,28 +565,38 @@ const DriverDetail = () => {
   return (
     <div className="driver-detail-container">
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
-        Back
+        {TEXT.back}
       </Button>
 
-      <Card loading={loading}>
+      <Card loading={seasonLoading || loading}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>
             {driver?.givenName} {driver?.familyName}
             {driver?.code ? (
-              <Tag color={teamColor} style={{ marginLeft: 16, fontSize: 16 }}>
+              <span
+                style={{
+                  marginLeft: 16,
+                  display: 'inline-block',
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  fontSize: 16,
+                  background: `${teamColor}20`,
+                  color: teamColor,
+                }}
+              >
                 {driver.code}
-              </Tag>
+              </span>
             ) : null}
           </h1>
           <p style={{ fontSize: 18, color: '#666' }}>{driver?.nationality || '-'}</p>
         </div>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} Season Stats</h3>
+        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} {TEXT.seasonKeyStats}</h3>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Season Rank
+                <TrophyOutlined /> {TEXT.seasonRank}
               </div>
               <div className="stat-value" style={{ color: '#faad14' }}>
                 {currentStanding?.position || '-'}
@@ -483,17 +606,17 @@ const DriverDetail = () => {
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <CarOutlined /> Season Points
+                <CarOutlined /> {TEXT.seasonPoints}
               </div>
               <div className="stat-value" style={{ color: '#ff1801' }}>
-                {currentStanding?.points || '0'} pts
+                {currentStanding?.points || '0'} {TEXT.pointsUnit}
               </div>
             </Card>
           </Col>
           <Col xs={24} sm={8}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Season Wins
+                <TrophyOutlined /> {TEXT.seasonWins}
               </div>
               <div className="stat-value" style={{ color: '#52c41a' }}>
                 {currentStanding?.wins || '0'}
@@ -503,7 +626,7 @@ const DriverDetail = () => {
         </Row>
 
         <Card
-          title={`${currentSeason} Season Points Trend`}
+          title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
           headStyle={{
             background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
@@ -529,26 +652,43 @@ const DriverDetail = () => {
                   transformOrigin: 'left center',
                 }}
               >
-                <ReactECharts
-                  key={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}`}
-                  option={getPointsChartOption()}
-                  style={{ height: chartHeight }}
-                  notMerge
-                  lazyUpdate
-                />
+                {chartEnabled ? (
+                  <Suspense
+                    fallback={(
+                      <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+                        {TEXT.chartLoading}
+                      </div>
+                    )}
+                  >
+                    <LazyEChartsPanel
+                      chartKey={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}`}
+                      option={getPointsChartOption()}
+                      height={chartHeight}
+                    />
+                  </Suspense>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+                    {TEXT.chartLoading}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>No season points data.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>
           )}
         </Card>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>Career Stats</h3>
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.careerStats}</h3>
+          <div style={{ color: '#8c8c8c', fontSize: 13 }}>
+            {careerStatsLoading ? TEXT.loadingCareerStats : TEXT.loadedCareerStats}
+          </div>
+        </div>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <FlagOutlined /> Race Entries
+                <FlagOutlined /> {TEXT.raceEntries}
               </div>
               <div className="stat-value" style={{ color: '#1890ff' }}>
                 {careerStats.raceCount}
@@ -558,7 +698,7 @@ const DriverDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Race Wins
+                <TrophyOutlined /> {TEXT.raceWins}
               </div>
               <div className="stat-value" style={{ color: '#fa8c16' }}>
                 {careerStats.winCount}
@@ -568,7 +708,7 @@ const DriverDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <TrophyOutlined /> Podiums
+                <TrophyOutlined /> {TEXT.podiums}
               </div>
               <div className="stat-value" style={{ color: '#722ed1' }}>
                 {driver?.totalPodiums || 0}
@@ -578,7 +718,7 @@ const DriverDetail = () => {
           <Col xs={24} sm={12}>
             <Card className="stat-card">
               <div className="stat-label">
-                <FlagOutlined /> Pole Positions
+                <FlagOutlined /> {TEXT.poles}
               </div>
               <div className="stat-value" style={{ color: '#13c2c2' }}>
                 {careerStats.poleCount}
@@ -587,17 +727,17 @@ const DriverDetail = () => {
           </Col>
         </Row>
 
-        <Card title="Driver Info">
+        <Card title={TEXT.driverInfo}>
           <Row gutter={[24, 16]}>
             <Col xs={24} sm={12}>
-              <p><strong>Full Name:</strong> {driver?.givenName} {driver?.familyName}</p>
-              <p><strong>Code:</strong> {driver?.code || '-'}</p>
-              <p><strong>Number:</strong> {driver?.permanentNumber || '-'}</p>
-              <p><strong>Nationality:</strong> {driver?.nationality || '-'}</p>
+              <p><strong>{TEXT.name}</strong>{driver?.givenName} {driver?.familyName}</p>
+              <p><strong>{TEXT.code}</strong>{driver?.code || '-'}</p>
+              <p><strong>{TEXT.number}</strong>{driver?.permanentNumber || '-'}</p>
+              <p><strong>{TEXT.nationality}</strong>{driver?.nationality || '-'}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>Date of Birth:</strong> {driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
-              <p><strong>Current Team:</strong> {currentStanding?.Constructors[0]?.name || '-'}</p>
+              <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
+              <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || '-'}</p>
             </Col>
           </Row>
         </Card>
