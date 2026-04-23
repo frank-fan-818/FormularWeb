@@ -1,7 +1,10 @@
 export {
   useSeasonDataCached as useSeasonData,
   useSeasonsCached as useSeasons,
+  useConstructorStandingsCached,
+  useDriverStandingsCached,
   useSeasonDataCached,
+  useSeasonRacesCached,
   useSeasonsCached,
 } from './useSeasonDataCached';
 export { useDriverDetails } from './useF1Data';

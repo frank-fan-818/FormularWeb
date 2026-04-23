@@ -19,6 +19,30 @@ interface UseSeasonDataCachedReturn {
   refetch: () => void;
 }
 
+interface UseDriverStandingsCachedReturn {
+  driverStandings: DriverStanding[];
+  loading: boolean;
+  error: Error | null;
+  isOffline: boolean;
+  refetch: () => void;
+}
+
+interface UseConstructorStandingsCachedReturn {
+  constructorStandings: ConstructorStanding[];
+  loading: boolean;
+  error: Error | null;
+  isOffline: boolean;
+  refetch: () => void;
+}
+
+interface UseSeasonRacesCachedReturn {
+  races: Race[];
+  loading: boolean;
+  error: Error | null;
+  isOffline: boolean;
+  refetch: () => void;
+}
+
 interface UseSeasonsCachedReturn {
   seasons: Season[];
   loading: boolean;
@@ -51,6 +75,57 @@ export function useSeasonDataCached(season: string): UseSeasonDataCachedReturn {
     driverStandings: data?.driverStandings ?? [],
     constructorStandings: data?.constructorStandings ?? [],
     races: data?.races ?? [],
+    loading,
+    error,
+    isOffline,
+    refetch,
+  };
+}
+
+export function useDriverStandingsCached(season: string): UseDriverStandingsCachedReturn {
+  const fetchData = useCallback(() => seasonApi.getDriverStandings(season), [season]);
+
+  const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
+    cacheKey: `driver-standings-${season}`,
+    cacheDuration: 60 * 60 * 1000,
+  });
+
+  return {
+    driverStandings: data ?? [],
+    loading,
+    error,
+    isOffline,
+    refetch,
+  };
+}
+
+export function useConstructorStandingsCached(season: string): UseConstructorStandingsCachedReturn {
+  const fetchData = useCallback(() => seasonApi.getConstructorStandings(season), [season]);
+
+  const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
+    cacheKey: `constructor-standings-${season}`,
+    cacheDuration: 60 * 60 * 1000,
+  });
+
+  return {
+    constructorStandings: data ?? [],
+    loading,
+    error,
+    isOffline,
+    refetch,
+  };
+}
+
+export function useSeasonRacesCached(season: string): UseSeasonRacesCachedReturn {
+  const fetchData = useCallback(() => seasonApi.getSeasonRaces(season), [season]);
+
+  const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
+    cacheKey: `season-races-${season}`,
+    cacheDuration: 60 * 60 * 1000,
+  });
+
+  return {
+    races: data ?? [],
     loading,
     error,
     isOffline,

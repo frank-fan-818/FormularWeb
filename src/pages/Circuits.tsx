@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
-import { useSeasonData } from '@/hooks';
+import { useSeasonRacesCached } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
@@ -16,30 +16,46 @@ const TEXT = {
 const Circuits = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { races, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { races, loading: racesLoading } = useSeasonRacesCached(currentSeason);
   const [circuits, setCircuits] = useState<any[]>([]);
-  const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
+    const formattedCircuits = races.map((race, index) => {
+      const ergastId = race.Circuit.circuitId;
+      const supabaseId = getSupabaseCircuitId(ergastId);
+
+      return {
+        ...race.Circuit,
+        length: null,
+        turns: null,
+        first_race: null,
+        total_races: null,
+        race_laps: null,
+        total_distance: null,
+        lap_record: null,
+        lap_record_driver: null,
+        lap_record_year: null,
+        _supabaseId: supabaseId,
+        index,
+      };
+    });
+
+    setCircuits(formattedCircuits);
+  }, [races]);
+
+  useEffect(() => {
+    if (races.length === 0) {
+      return;
+    }
+
     let cancelled = false;
 
-    const loadData = async () => {
-      if (seasonLoading) {
-        return;
-      }
-
-      if (races.length === 0) {
-        setCircuits([]);
-        return;
-      }
-
-      setPageLoading(true);
-
+    const enrichCircuits = async () => {
       try {
         const supabaseCircuits = await supabaseApi.circuits.getAll();
         const circuitMap = new Map(supabaseCircuits.map((circuit) => [circuit.circuit_id, circuit]));
 
-        const formattedCircuits = races.map((race, index) => {
+        const enrichedCircuits = races.map((race, index) => {
           const ergastId = race.Circuit.circuitId;
           const supabaseId = getSupabaseCircuitId(ergastId);
           const dbCircuit = circuitMap.get(supabaseId);
@@ -61,28 +77,21 @@ const Circuits = () => {
         });
 
         if (!cancelled) {
-          setCircuits(formattedCircuits);
+          setCircuits(enrichedCircuits);
         }
       } catch (error) {
         console.error(TEXT.loadError, error);
-        if (!cancelled) {
-          setCircuits([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setPageLoading(false);
-        }
       }
     };
 
-    void loadData();
+    void enrichCircuits();
 
     return () => {
       cancelled = true;
     };
-  }, [races, seasonLoading]);
+  }, [races]);
 
-  const loading = seasonLoading || pageLoading;
+  const loading = racesLoading && circuits.length === 0;
 
   return (
     <div className="list-page-container">
