@@ -6,13 +6,20 @@
   background: var(--bg-primary);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.04);
   position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
   height: 100vh;
   z-index: 100;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), width var(--transition-base);
 }
 
 .sidebar.desktop-mounted {
   animation: slideUp 0.6s ease-out 0.1s backwards;
+}
+
+.sidebar.collapsed {
+  width: 80px;
 }
 
 .sidebar-logo {
@@ -25,45 +32,65 @@
   font-weight: var(--font-bold);
   font-size: var(--text-lg);
   letter-spacing: -0.02em;
+  padding: 0 var(--space-2);
+  text-align: center;
 }
 
-.sidebar-menu {
-  border-right: 0;
-  background: transparent;
+.sidebar-nav {
   margin-top: var(--space-3);
   padding: 0 var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.sidebar-menu .ant-menu-item {
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  margin: var(--space-1) 0;
-  border-radius: var(--radius-lg);
+.sidebar-nav-button {
+  width: 100%;
   height: 44px;
-  line-height: 44px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  cursor: pointer;
   transition: all var(--transition-base);
-  padding-left: var(--space-4) !important;
 }
 
-.sidebar-menu .ant-menu-item:hover {
+.sidebar-nav-button:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary);
 }
 
-.sidebar-menu .ant-menu-item-selected {
-  color: var(--text-primary) !important;
-  font-weight: var(--font-semibold) !important;
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-right: none !important;
+.sidebar-nav-button.is-active {
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  background: rgba(0, 0, 0, 0.04);
 }
 
-.sidebar-menu .ant-menu-item-selected::after {
-  display: none !important;
+.sidebar-nav-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
 }
 
-.sidebar-menu .ant-menu-item .anticon {
-  font-size: 20px;
-  margin-right: var(--space-3);
+.sidebar-nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-nav-button {
+  justify-content: center;
+  padding: 0;
 }
 
 .sidebar-overlay {
@@ -83,7 +110,7 @@
 
 .main-layout {
   margin-left: 200px;
-  transition: all var(--transition-base);
+  transition: margin-left var(--transition-base);
 }
 
 .main-layout.sidebar-collapsed {
@@ -131,13 +158,27 @@
 }
 
 .menu-toggle-btn {
+  width: 42px;
+  height: 42px;
+  border: 0;
   border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .menu-toggle-btn:hover {
   background: rgba(255, 24, 1, 0.1);
   color: var(--f1-red);
+}
+
+.menu-toggle-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .season-label {
@@ -147,10 +188,25 @@
   white-space: nowrap;
 }
 
-.season-select {
+.season-select-native {
   width: 120px;
+  height: 40px;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
+  padding: 0 var(--space-3);
+  cursor: pointer;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.season-select-native:hover,
+.season-select-native:focus-visible {
+  border-color: var(--f1-red);
+  box-shadow: 0 0 0 2px var(--f1-red-glow);
+  outline: none;
 }
 
 .header-search-slot {
@@ -187,6 +243,12 @@
   border-color: var(--f1-red);
   box-shadow: 0 0 0 2px var(--f1-red-glow);
   outline: none;
+}
+
+.search-trigger-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
 }
 
 .search-trigger-text {
@@ -302,10 +364,7 @@
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 200px !important;
-    flex: 0 0 200px !important;
-    max-width: 200px !important;
-    min-width: 200px !important;
+    width: 200px;
   }
 
   .sidebar.mobile-open {
@@ -345,7 +404,8 @@
   }
 
   .menu-toggle-btn {
-    padding: 4px 8px !important;
+    width: 36px;
+    height: 36px;
   }
 
   .header-search-slot {
@@ -388,7 +448,7 @@
     gap: var(--space-1);
   }
 
-  .season-select {
+  .season-select-native {
     width: 100px;
   }
 

@@ -8,7 +8,7 @@ import {
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
-import { historyApi } from '@/api/ergast';
+import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, ConstructorHistoryProfile } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './HistoryDetail.css';
@@ -51,7 +51,7 @@ const ConstructorHistoryDetail = () => {
       setLoading(true);
 
       try {
-        const profile = await historyApi.getConstructorHistoryProfile(constructorId);
+        const profile = await historyProfilesApi.getConstructorHistoryProfile(constructorId);
         if (!cancelled) {
           setConstructor(profile);
         }

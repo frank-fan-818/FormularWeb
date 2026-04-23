@@ -139,6 +139,88 @@
   min-width: 100%;
 }
 
+.history-inline-note {
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.driver-history-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.driver-history-meta-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-secondary);
+}
+
+.driver-history-meta-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.driver-history-meta-value {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.driver-history-table-card {
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+.driver-history-table-wrapper {
+  overflow-x: auto;
+}
+
+.driver-history-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.driver-history-table th,
+.driver-history-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border-secondary);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.driver-history-table th {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.driver-history-row-highlight {
+  background: rgba(250, 173, 20, 0.06);
+}
+
+.driver-history-team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.driver-history-team-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.driver-history-table-tags {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
   .driver-detail-container {
     padding: var(--space-4);
@@ -174,6 +256,11 @@
     font-size: var(--text-xl);
     margin: var(--space-6) 0 var(--space-4) 0;
   }
+
+  .driver-history-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
 }
 
 @media (max-width: 480px) {
@@ -201,5 +288,9 @@
   .stats-row {
     gap: var(--space-2);
     margin-bottom: var(--space-3);
+  }
+
+  .driver-history-meta-grid {
+    grid-template-columns: 1fr;
   }
 }

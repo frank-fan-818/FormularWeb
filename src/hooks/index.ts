@@ -1,5 +1,10 @@
-export { useSeasonData, useSeasons, useDriverDetails } from './useF1Data';
-export { useSeasonDataCached, useSeasonsCached } from './useSeasonDataCached';
+export {
+  useSeasonDataCached as useSeasonData,
+  useSeasonsCached as useSeasons,
+  useSeasonDataCached,
+  useSeasonsCached,
+} from './useSeasonDataCached';
+export { useDriverDetails } from './useF1Data';
 export { useRaceStatus, useRacesByStatus } from './useRaceStatus';
 export { useAsync, useLoadingDelay } from './useAsync';
 export { useGlobalSearch } from './useGlobalSearch';

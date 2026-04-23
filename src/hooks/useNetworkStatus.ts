@@ -1,37 +1,55 @@
 import { useState, useEffect } from 'react';
-import { Network } from '@capacitor/network';
 
 interface NetworkStatus {
   connected: boolean;
   connectionType: string;
 }
 
+function resolveBrowserConnectionType(): string {
+  if (typeof navigator === 'undefined') {
+    return 'unknown';
+  }
+
+  const connection = (navigator as Navigator & {
+    connection?: { effectiveType?: string };
+  }).connection;
+
+  return connection?.effectiveType || 'unknown';
+}
+
+function resolveConnectedState(): boolean {
+  if (typeof navigator === 'undefined') {
+    return true;
+  }
+
+  return navigator.onLine;
+}
+
 export function useNetworkStatus() {
   const [status, setStatus] = useState<NetworkStatus>({
-    connected: true,
-    connectionType: 'unknown',
+    connected: resolveConnectedState(),
+    connectionType: resolveBrowserConnectionType(),
   });
 
   useEffect(() => {
-    const checkNetwork = async () => {
-      const state = await Network.getStatus();
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const updateStatus = () => {
       setStatus({
-        connected: state.connected,
-        connectionType: state.connectionType,
+        connected: resolveConnectedState(),
+        connectionType: resolveBrowserConnectionType(),
       });
     };
 
-    checkNetwork();
-
-    const listener = Network.addListener('networkStatusChange', (state) => {
-      setStatus({
-        connected: state.connected,
-        connectionType: state.connectionType,
-      });
-    });
+    updateStatus();
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
 
     return () => {
-      listener.then((l) => l.remove());
+      window.removeEventListener('online', updateStatus);
+      window.removeEventListener('offline', updateStatus);
     };
   }, []);
 

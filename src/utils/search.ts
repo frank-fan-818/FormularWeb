@@ -31,36 +31,36 @@ interface SearchableEntry {
 const RESULT_LIMIT_PER_GROUP = 5;
 
 const constructorAliases: Record<string, string[]> = {
-  'mercedes': ['mercedes amg', 'mercedes-amg', 'silver arrows'],
-  'red_bull': ['red bull racing', 'redbull', 'rb'],
-  'ferrari': ['scuderia ferrari', 'scuderia'],
-  'mclaren': ['mclaren f1 team'],
-  'aston_martin': ['aston martin aramco', 'aston martin f1'],
-  'alpine': ['alpine f1 team', 'renault'],
-  'williams': ['williams racing'],
-  'haas': ['haas f1 team'],
-  'sauber': ['kick sauber', 'alfa romeo', 'stake', 'stake f1'],
-  'rb': ['racing bulls', 'visa cash app rb', 'alphatauri', 'alpha tauri', 'toro rosso'],
+  mercedes: ['mercedes amg', 'mercedes-amg', 'silver arrows'],
+  red_bull: ['red bull racing', 'redbull', 'rb'],
+  ferrari: ['scuderia ferrari', 'scuderia'],
+  mclaren: ['mclaren f1 team'],
+  aston_martin: ['aston martin aramco', 'aston martin f1'],
+  alpine: ['alpine f1 team', 'renault'],
+  williams: ['williams racing'],
+  haas: ['haas f1 team'],
+  sauber: ['kick sauber', 'alfa romeo', 'stake', 'stake f1'],
+  rb: ['racing bulls', 'visa cash app rb', 'alphatauri', 'alpha tauri', 'toro rosso'],
 };
 
 const circuitAliases: Record<string, string[]> = {
-  'americas': ['cota', 'circuit of the americas', 'austin'],
-  'austin': ['cota', 'circuit of the americas'],
-  'spa': ['spa francorchamps', 'spa-francorchamps'],
-  'spa_francorchamps': ['spa', 'spa francorchamps', 'spa-francorchamps'],
-  'silverstone': ['silverstone circuit'],
-  'monza': ['autodromo nazionale monza'],
-  'interlagos': ['sao paulo', 'sao paulo gp', 'autodromo jose carlos pace'],
-  'villeneuve': ['montreal', 'gilles villeneuve'],
-  'montreal': ['villeneuve', 'gilles villeneuve'],
-  'rodriguez': ['mexico city', 'mexico city gp', 'hermanos rodriguez'],
-  'yas_marina': ['yas marina', 'abu dhabi'],
-  'losail': ['lusail', 'qatar'],
-  'lusail': ['losail', 'qatar'],
-  'albert_park': ['melbourne', 'albert park'],
-  'red_bull_ring': ['spielberg', 'austria'],
-  'marina_bay': ['singapore', 'marina bay'],
-  'imola': ['autodromo enzo e dino ferrari'],
+  americas: ['cota', 'circuit of the americas', 'austin'],
+  austin: ['cota', 'circuit of the americas'],
+  spa: ['spa francorchamps', 'spa-francorchamps'],
+  spa_francorchamps: ['spa', 'spa francorchamps', 'spa-francorchamps'],
+  silverstone: ['silverstone circuit'],
+  monza: ['autodromo nazionale monza'],
+  interlagos: ['sao paulo', 'sao paulo gp', 'autodromo jose carlos pace'],
+  villeneuve: ['montreal', 'gilles villeneuve'],
+  montreal: ['villeneuve', 'gilles villeneuve'],
+  rodriguez: ['mexico city', 'mexico city gp', 'hermanos rodriguez'],
+  yas_marina: ['yas marina', 'abu dhabi'],
+  losail: ['lusail', 'qatar'],
+  lusail: ['losail', 'qatar'],
+  albert_park: ['melbourne', 'albert park'],
+  red_bull_ring: ['spielberg', 'austria'],
+  marina_bay: ['singapore', 'marina bay'],
+  imola: ['autodromo enzo e dino ferrari'],
 };
 
 export function normalizeSearchText(value: string): string {
@@ -80,7 +80,7 @@ function uniqueNormalized(values: Array<string | null | undefined>): string[] {
 function buildDriverEntry(driver: DriverSearchSource): SearchableEntry {
   const title = `${driver.first_name} ${driver.last_name}`.trim();
   const code = driver.code?.trim();
-  const subtitle = [driver.nationality, code ? code.toUpperCase() : null].filter(Boolean).join(' · ');
+  const subtitle = [driver.nationality, code ? code.toUpperCase() : null].filter(Boolean).join(' | ');
 
   return {
     entry: {
@@ -220,9 +220,9 @@ function scoreEntry(entry: SearchableEntry, query: string): number {
 }
 
 const groupLabels: Record<SearchEntityType, string> = {
-  driver: 'Drivers 车手',
-  constructor: 'Constructors 车队',
-  circuit: 'Circuits 赛道',
+  driver: '\u8f66\u624b',
+  constructor: '\u8f66\u961f',
+  circuit: '\u8d5b\u9053',
 };
 
 export function searchIndex(entries: SearchableEntry[], rawQuery: string): SearchResultGroup[] {

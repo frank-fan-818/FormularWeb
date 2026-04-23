@@ -9,7 +9,7 @@ import {
   TeamOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { historyApi } from '@/api/ergast';
+import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, DriverHistoryProfile } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './HistoryDetail.css';
@@ -52,7 +52,7 @@ const DriverHistoryDetail = () => {
       setLoading(true);
 
       try {
-        const profile = await historyApi.getDriverHistoryProfile(driverId);
+        const profile = await historyProfilesApi.getDriverHistoryProfile(driverId);
         if (!cancelled) {
           setDriver(profile);
         }

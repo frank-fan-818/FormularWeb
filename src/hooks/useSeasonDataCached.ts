@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { seasonApi } from '@/api/ergast';
+import { seasonApi } from '@/api/season';
 import { useCachedData } from './useCachedData';
 import type { ConstructorStanding, DriverStanding, Race, Season } from '@/types';
 

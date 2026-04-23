@@ -1,5 +1,4 @@
 import { Suspense, lazy } from 'react';
-import { Spin } from 'antd';
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
@@ -9,7 +8,6 @@ const Races = lazy(() => import('@/pages/Races'));
 const RaceDetail = lazy(() => import('@/pages/RaceDetail'));
 const Drivers = lazy(() => import('@/pages/Drivers'));
 const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
-const DriverHistoryDetail = lazy(() => import('@/pages/DriverHistoryDetail'));
 const Constructors = lazy(() => import('@/pages/Constructors'));
 const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
@@ -21,8 +19,25 @@ function withSuspense(element: JSX.Element) {
   return (
     <Suspense
       fallback={(
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 24px' }}>
-          <Spin size="large" />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '64px 24px',
+          }}
+        >
+          <div
+            aria-label="loading"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              border: '2px solid rgba(15, 23, 42, 0.16)',
+              borderTopColor: 'var(--f1-red, #ff1801)',
+              animation: 'route-spin 0.8s linear infinite',
+            }}
+          />
         </div>
       )}
     >
@@ -62,7 +77,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/history/drivers/:driverId',
-        element: withSuspense(<DriverHistoryDetail />),
+        element: withSuspense(<DriverDetail />),
       },
       {
         path: '/constructors',

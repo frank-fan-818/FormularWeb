@@ -1,13 +1,14 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Col, Row } from 'antd';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, Col, Empty, Row, Tag } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { driverApi, seasonApi } from '@/api/ergast';
+import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { DriverStanding } from '@/types';
+import type { BestFinishSummary, DriverHistoryProfile, DriverStanding } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './DriverDetail.css';
 
@@ -40,13 +41,16 @@ const TEXT = {
   seasonWins: '\u8d5b\u5b63\u80dc\u573a',
   pointsTrend: '\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf',
   noTrendData: '\u6682\u65e0\u8d5b\u5b63\u79ef\u5206\u8d70\u52bf\u6570\u636e\u3002',
-  careerStats: '\u804c\u4e1a\u751f\u6daf\u7edf\u8ba1',
-  loadingCareerStats: '\u6b63\u5728\u8865\u5145\u5386\u53f2\u7edf\u8ba1...',
-  loadedCareerStats: '\u5386\u53f2\u7edf\u8ba1\u5df2\u5b8c\u6210\u52a0\u8f7d\u3002',
+  careerStats: '\u5386\u53f2\u751f\u6daf\u6982\u89c8',
+  loadingCareerStats: '\u6b63\u5728\u52a0\u8f7d\u5386\u53f2 summary...',
+  loadedCareerStats: '\u5386\u53f2 summary \u5df2\u52a0\u8f7d\u3002',
+  historyUnavailable: '\u6682\u672a\u83b7\u53d6\u5230\u5386\u53f2\u8d5b\u5b63\u6863\u6848\u3002',
   raceEntries: '\u53c2\u8d5b\u573a\u6b21',
   raceWins: '\u5206\u7ad9\u51a0\u519b',
-  podiums: '\u767b\u4e0a\u9886\u5956\u53f0',
+  podiums: '\u9886\u5956\u53f0',
   poles: '\u6746\u4f4d\u6b21\u6570',
+  championships: '\u4e16\u754c\u51a0\u519b',
+  totalPoints: '\u603b\u79ef\u5206',
   driverInfo: '\u8f66\u624b\u4fe1\u606f',
   name: '\u59d3\u540d\uff1a',
   code: '\u7b80\u79f0\uff1a',
@@ -54,6 +58,20 @@ const TEXT = {
   nationality: '\u56fd\u7c4d\uff1a',
   birthDate: '\u51fa\u751f\u65e5\u671f\uff1a',
   currentTeam: '\u5f53\u524d\u8f66\u961f\uff1a',
+  recentTeam: '\u6700\u8fd1\u6548\u529b\u8f66\u961f\uff1a',
+  firstSeason: '\u9996\u4e2a\u8d5b\u5b63',
+  latestSeason: '\u6700\u65b0\u8d5b\u5b63',
+  bestRaceFinish: '\u6700\u4f73\u5206\u7ad9\u6210\u7ee9',
+  championshipSeasons: '\u51a0\u519b\u8d5b\u5b63',
+  seasonTimeline: '\u8d5b\u5b63\u65f6\u95f4\u7ebf',
+  seasonHistoryUnavailable: '\u6682\u65e0\u5386\u53f2\u8d5b\u5b63\u6570\u636e\u3002',
+  season: '\u8d5b\u5b63',
+  team: '\u8f66\u961f',
+  rank: '\u6392\u540d',
+  wins: '\u80dc\u573a',
+  highlights: '\u6807\u8bb0',
+  champion: '\u51a0\u519b',
+  latest: '\u6700\u65b0',
   pointsUnit: '\u5206',
   chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
 };
@@ -76,6 +94,25 @@ function mapSupabaseDriver(driver: Record<string, any>): DriverProfile {
     totalFastestLaps: driver.total_fastest_laps || 0,
     totalRaceStarts: driver.total_race_starts || 0,
   };
+}
+
+function formatPoints(points: number): string {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(points);
+}
+
+function formatBestFinish(summary: BestFinishSummary | null | undefined): string {
+  if (!summary) {
+    return '-';
+  }
+
+  if (summary.seasons.length === 1) {
+    return `P${summary.position} - ${summary.seasons[0]}`;
+  }
+
+  return `P${summary.position} - ${summary.seasons.length} seasons`;
 }
 
 function getDriverIdCandidates(driverId: string): string[] {
@@ -143,22 +180,18 @@ async function resolveErgastDriverId(
 
 const DriverDetail = () => {
   const { driverId } = useParams<{ driverId: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { driverStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+  const showHistoryOverview = location.pathname.startsWith('/history/drivers/');
 
   const [driver, setDriver] = useState<DriverProfile | null>(null);
-  const [careerStats, setCareerStats] = useState({
-    raceCount: 0,
-    poleCount: 0,
-    winCount: 0,
-    championshipCount: 0,
-    totalPoints: 0,
-  });
+  const [driverHistory, setDriverHistory] = useState<DriverHistoryProfile | null>(null);
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [careerStatsLoading, setCareerStatsLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
   const [chartScale, setChartScale] = useState(1);
@@ -168,6 +201,13 @@ const DriverDetail = () => {
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
 
   const currentStanding = driverId ? findStandingByDriverId(driverStandings, driverId) : null;
+  const historySeasons = driverHistory?.seasons || [];
+  const firstSeason = historySeasons.length > 0 ? historySeasons[historySeasons.length - 1] : null;
+  const latestSeason = historySeasons[0] || null;
+  const championshipSeasons = historySeasons.filter((season) => season.position === '1');
+  const teamColor = currentStanding?.Constructors[0]?.constructorId
+    ? getTeamColor(currentStanding.Constructors[0].constructorId)
+    : (driverHistory?.recentConstructorId ? getTeamColor(driverHistory.recentConstructorId) : '#1890ff');
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -229,7 +269,6 @@ const DriverDetail = () => {
     let cancelled = false;
 
     setLoading(true);
-    setCareerStatsLoading(false);
     setResolvedDriverId(null);
     setSeasonRaceResults([]);
     setSeasonSprintResults([]);
@@ -283,14 +322,6 @@ const DriverDetail = () => {
         setSeasonSprintResults([]);
       }
 
-      setCareerStats({
-        raceCount: mergedDriver?.totalRaceStarts || 0,
-        poleCount: mergedDriver?.totalPolePositions || 0,
-        winCount: mergedDriver?.totalWins || 0,
-        championshipCount: 0,
-        totalPoints: 0,
-      });
-
       setLoading(false);
     };
 
@@ -302,64 +333,38 @@ const DriverDetail = () => {
   }, [currentSeason, currentStanding, driverId, seasonLoading]);
 
   useEffect(() => {
-    if (!resolvedDriverId) {
+    if (!driverId || !showHistoryOverview) {
+      setDriverHistory(null);
+      setHistoryLoading(false);
       return;
     }
 
     let cancelled = false;
+    setHistoryLoading(true);
 
-    setCareerStatsLoading(true);
-
-    const loadCareerStats = async () => {
-      const [
-        raceCount,
-        poleCount,
-        winCount,
-        podiumCount,
-        championshipCount,
-        totalPoints,
-      ] = await Promise.allSettled([
-        driverApi.getDriverRaceCount(resolvedDriverId),
-        driverApi.getDriverPoleCount(resolvedDriverId),
-        driverApi.getDriverWinCount(resolvedDriverId),
-        driverApi.getDriverPodiumCount(resolvedDriverId),
-        driverApi.getDriverChampionshipCount(resolvedDriverId),
-        driverApi.getDriverTotalPoints(resolvedDriverId),
-      ]);
-
-      if (cancelled) {
-        return;
+    const loadHistorySummary = async () => {
+      try {
+        const profile = await historyProfilesApi.getDriverHistoryProfile(driverId);
+        if (!cancelled) {
+          setDriverHistory(profile);
+        }
+      } catch {
+        if (!cancelled) {
+          setDriverHistory(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setHistoryLoading(false);
+        }
       }
-
-      setCareerStats((previous) => ({
-        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : previous.raceCount,
-        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : previous.poleCount,
-        winCount: winCount.status === 'fulfilled' ? winCount.value : previous.winCount,
-        championshipCount: championshipCount.status === 'fulfilled'
-          ? championshipCount.value
-          : previous.championshipCount,
-        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : previous.totalPoints,
-      }));
-
-      if (podiumCount.status === 'fulfilled') {
-        setDriver((previous) => (
-          previous ? { ...previous, totalPodiums: podiumCount.value } : previous
-        ));
-      }
-
-      setCareerStatsLoading(false);
     };
 
-    void loadCareerStats();
+    void loadHistorySummary();
 
     return () => {
       cancelled = true;
     };
-  }, [currentSeason, resolvedDriverId]);
-
-  const teamColor = currentStanding?.Constructors[0]?.constructorId
-    ? getTeamColor(currentStanding.Constructors[0].constructorId)
-    : '#1890ff';
+  }, [driverId, showHistoryOverview]);
 
   const getPointsChartOption = () => {
     let cumulativePoints = 0;
@@ -678,54 +683,160 @@ const DriverDetail = () => {
           )}
         </Card>
 
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.careerStats}</h3>
-          <div style={{ color: '#8c8c8c', fontSize: 13 }}>
-            {careerStatsLoading ? TEXT.loadingCareerStats : TEXT.loadedCareerStats}
-          </div>
-        </div>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <FlagOutlined /> {TEXT.raceEntries}
+        {showHistoryOverview ? (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.careerStats}</h3>
+              <div className="history-inline-note">
+                {historyLoading ? TEXT.loadingCareerStats : TEXT.loadedCareerStats}
               </div>
-              <div className="stat-value" style={{ color: '#1890ff' }}>
-                {careerStats.raceCount}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.raceWins}
-              </div>
-              <div className="stat-value" style={{ color: '#fa8c16' }}>
-                {careerStats.winCount}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.podiums}
-              </div>
-              <div className="stat-value" style={{ color: '#722ed1' }}>
-                {driver?.totalPodiums || 0}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <FlagOutlined /> {TEXT.poles}
-              </div>
-              <div className="stat-value" style={{ color: '#13c2c2' }}>
-                {careerStats.poleCount}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+            </div>
+            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <FlagOutlined /> {TEXT.raceEntries}
+                  </div>
+                  <div className="stat-value" style={{ color: '#1890ff' }}>
+                    {driverHistory?.careerSummary.raceCount ?? driver?.totalRaceStarts ?? 0}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <TrophyOutlined /> {TEXT.raceWins}
+                  </div>
+                  <div className="stat-value" style={{ color: '#fa8c16' }}>
+                    {driverHistory?.careerSummary.winCount ?? driver?.totalWins ?? 0}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <TrophyOutlined /> {TEXT.podiums}
+                  </div>
+                  <div className="stat-value" style={{ color: '#722ed1' }}>
+                    {driverHistory?.careerSummary.podiumCount ?? driver?.totalPodiums ?? 0}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <FlagOutlined /> {TEXT.poles}
+                  </div>
+                  <div className="stat-value" style={{ color: '#13c2c2' }}>
+                    {driverHistory?.careerSummary.poleCount ?? driver?.totalPolePositions ?? 0}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <TrophyOutlined /> {TEXT.championships}
+                  </div>
+                  <div className="stat-value" style={{ color: '#faad14' }}>
+                    {driverHistory?.careerSummary.championshipCount ?? 0}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <CarOutlined /> {TEXT.totalPoints}
+                  </div>
+                  <div className="stat-value" style={{ color: '#ff1801' }}>
+                    {formatPoints(driverHistory?.careerSummary.totalPoints ?? 0)}
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            {driverHistory ? (
+              <>
+                <div className="driver-history-meta-grid">
+                  <Card className="driver-history-meta-card">
+                    <div className="driver-history-meta-label">{TEXT.firstSeason}</div>
+                    <div className="driver-history-meta-value">{firstSeason?.season || '-'}</div>
+                  </Card>
+                  <Card className="driver-history-meta-card">
+                    <div className="driver-history-meta-label">{TEXT.latestSeason}</div>
+                    <div className="driver-history-meta-value">{latestSeason?.season || '-'}</div>
+                  </Card>
+                  <Card className="driver-history-meta-card">
+                    <div className="driver-history-meta-label">{TEXT.bestRaceFinish}</div>
+                    <div className="driver-history-meta-value">{formatBestFinish(driverHistory.bestRaceFinish)}</div>
+                  </Card>
+                  <Card className="driver-history-meta-card">
+                    <div className="driver-history-meta-label">{TEXT.championshipSeasons}</div>
+                    <div className="driver-history-meta-value">
+                      {championshipSeasons.length > 0
+                        ? championshipSeasons.map((season) => season.season).join(', ')
+                        : '-'}
+                    </div>
+                  </Card>
+                </div>
+
+                <Card title={TEXT.seasonTimeline} className="driver-history-table-card">
+                  {historySeasons.length === 0 ? (
+                    <Empty description={TEXT.seasonHistoryUnavailable} />
+                  ) : (
+                    <div className="driver-history-table-wrapper">
+                      <table className="driver-history-table">
+                        <thead>
+                          <tr>
+                            <th>{TEXT.season}</th>
+                            <th>{TEXT.team}</th>
+                            <th>{TEXT.rank}</th>
+                            <th>{TEXT.totalPoints}</th>
+                            <th>{TEXT.wins}</th>
+                            <th>{TEXT.highlights}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {historySeasons.map((season) => {
+                            const isChampion = season.position === '1';
+                            const isLatest = season.season === latestSeason?.season;
+                            const swatchColor = season.constructorId ? getTeamColor(season.constructorId) : teamColor;
+
+                            return (
+                              <tr key={`${season.season}-${season.constructorId}`} className={isChampion ? 'driver-history-row-highlight' : ''}>
+                                <td>{season.season}</td>
+                                <td>
+                                  <span className="driver-history-team-cell">
+                                    <span className="driver-history-team-swatch" style={{ backgroundColor: swatchColor }} />
+                                    <span>{season.constructorName || '-'}</span>
+                                  </span>
+                                </td>
+                                <td>{season.position ? `P${season.position}` : '-'}</td>
+                                <td>{formatPoints(season.points)}</td>
+                                <td>{season.wins}</td>
+                                <td>
+                                  <span className="driver-history-table-tags">
+                                    {isChampion ? <Tag color="gold">{TEXT.champion}</Tag> : null}
+                                    {isLatest ? <Tag color="blue">{TEXT.latest}</Tag> : null}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </Card>
+              </>
+            ) : (
+              !historyLoading ? (
+                <Card style={{ marginBottom: 24 }}>
+                  <Empty description={TEXT.historyUnavailable} />
+                </Card>
+              ) : null
+            )}
+          </>
+        ) : null}
 
         <Card title={TEXT.driverInfo}>
           <Row gutter={[24, 16]}>
@@ -737,7 +848,10 @@ const DriverDetail = () => {
             </Col>
             <Col xs={24} sm={12}>
               <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
-              <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || '-'}</p>
+              <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</p>
+              {driverHistory?.recentConstructorName ? (
+                <p><strong>{TEXT.recentTeam}</strong>{driverHistory.recentConstructorName}</p>
+              ) : null}
             </Col>
           </Row>
         </Card>

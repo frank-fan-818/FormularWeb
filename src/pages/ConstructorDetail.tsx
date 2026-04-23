@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import { constructorApi, seasonApi } from '@/api/ergast';
+import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
+import type { HistoryCareerSummary } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import './ConstructorDetail.css';
 
@@ -49,6 +51,14 @@ const TEXT = {
 };
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const EMPTY_CAREER_STATS: HistoryCareerSummary = {
+  raceCount: 0,
+  poleCount: 0,
+  winCount: 0,
+  podiumCount: 0,
+  championshipCount: 0,
+  totalPoints: 0,
+};
 
 function mapSupabaseConstructor(constructor: Record<string, any>): ConstructorProfile {
   return {
@@ -71,18 +81,11 @@ const ConstructorDetail = () => {
   const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
 
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
-  const [careerStats, setCareerStats] = useState({
-    raceCount: 0,
-    poleCount: 0,
-    winCount: 0,
-    championshipCount: 0,
-    totalPoints: 0,
-  });
+  const [careerStats, setCareerStats] = useState<HistoryCareerSummary>(EMPTY_CAREER_STATS);
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [careerStatsLoading, setCareerStatsLoading] = useState(false);
-  const [careerStatsEnabled, setCareerStatsEnabled] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
   const [chartScale, setChartScale] = useState(1);
@@ -153,7 +156,6 @@ const ConstructorDetail = () => {
 
     setLoading(true);
     setCareerStatsLoading(false);
-    setCareerStatsEnabled(false);
     setSeasonRaceResults([]);
     setSeasonSprintResults([]);
 
@@ -205,16 +207,7 @@ const ConstructorDetail = () => {
         setSeasonSprintResults([]);
       }
 
-      setCareerStats({
-        raceCount: baseConstructor?.totalRaceEntries || 0,
-        poleCount: baseConstructor?.totalPolePositions || 0,
-        winCount: baseConstructor?.totalWins || 0,
-        championshipCount: 0,
-        totalPoints: 0,
-      });
-
       setLoading(false);
-      setCareerStatsEnabled(true);
     };
 
     void loadPrimaryData();
@@ -225,52 +218,39 @@ const ConstructorDetail = () => {
   }, [constructorId, currentSeason, currentStanding, seasonLoading]);
 
   useEffect(() => {
-    if (!constructorId || !careerStatsEnabled) {
+    if (!constructorId) {
       return;
     }
 
     let cancelled = false;
 
+    setCareerStats(EMPTY_CAREER_STATS);
     setCareerStatsLoading(true);
 
     const loadCareerStats = async () => {
-      const [
-        raceCount,
-        poleCount,
-        winCount,
-        championshipCount,
-        totalPoints,
-      ] = await Promise.allSettled([
-        constructorApi.getConstructorRaceCount(constructorId),
-        constructorApi.getConstructorPoleCount(constructorId),
-        constructorApi.getConstructorWinCount(constructorId),
-        constructorApi.getConstructorChampionshipCount(constructorId),
-        constructorApi.getConstructorTotalPoints(constructorId),
-      ]);
+      const profile = await historyProfilesApi.getConstructorHistoryProfile(constructorId);
 
       if (cancelled) {
         return;
       }
 
-      setCareerStats((previous) => ({
-        raceCount: raceCount.status === 'fulfilled' ? raceCount.value : previous.raceCount,
-        poleCount: poleCount.status === 'fulfilled' ? poleCount.value : previous.poleCount,
-        winCount: winCount.status === 'fulfilled' ? winCount.value : previous.winCount,
-        championshipCount: championshipCount.status === 'fulfilled'
-          ? championshipCount.value
-          : previous.championshipCount,
-        totalPoints: totalPoints.status === 'fulfilled' ? totalPoints.value : previous.totalPoints,
-      }));
+      if (profile) {
+        setCareerStats(profile.careerSummary);
+      }
 
       setCareerStatsLoading(false);
     };
 
-    void loadCareerStats();
+    void loadCareerStats().catch(() => {
+      if (!cancelled) {
+        setCareerStatsLoading(false);
+      }
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [careerStatsEnabled, constructorId, currentSeason]);
+  }, [constructorId]);
 
   const teamColor = constructorId ? getTeamColor(constructorId) : '#1890ff';
 
@@ -618,7 +598,7 @@ const ConstructorDetail = () => {
                 <TrophyOutlined /> {TEXT.podiums}
               </div>
               <div className="stat-value" style={{ color: '#722ed1' }}>
-                {constructor?.totalPodiums || 0}
+                {careerStats.podiumCount}
               </div>
             </Card>
           </Col>

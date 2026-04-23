@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { seasonApi } from '@/api/ergast';
+import { seasonApi } from '@/api/season';
 import type { DriverStanding, ConstructorStanding, Race, Season } from '@/types';
 
 interface UseSeasonDataReturn {

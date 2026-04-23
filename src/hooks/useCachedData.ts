@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Preferences } from '@capacitor/preferences';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNetworkStatus } from './useNetworkStatus';
 
 interface CacheOptions {
@@ -28,17 +27,103 @@ interface UseCachedDataReturn<T> {
 
 const memoryCache = new Map<string, CacheEntry<unknown>>();
 const inFlightRequests = new Map<string, Promise<unknown>>();
+const fallbackStorageMap = new Map<string, string>();
 
-const preferencesStorage: CacheStorageAdapter = {
+let resolvedStoragePromise: Promise<CacheStorageAdapter> | null = null;
+
+const memoryStorageAdapter: CacheStorageAdapter = {
   async get(key: string) {
-    const { value } = await Preferences.get({ key });
-    return value;
+    return fallbackStorageMap.get(key) ?? null;
   },
   async set(key: string, value: string) {
-    await Preferences.set({ key, value });
+    fallbackStorageMap.set(key, value);
   },
   async remove(key: string) {
-    await Preferences.remove({ key });
+    fallbackStorageMap.delete(key);
+  },
+};
+
+function createBrowserStorageAdapter(): CacheStorageAdapter | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storage = window.localStorage;
+    const probeKey = '__f1_cache_probe__';
+    storage.setItem(probeKey, '1');
+    storage.removeItem(probeKey);
+
+    return {
+      async get(key: string) {
+        return storage.getItem(key);
+      },
+      async set(key: string, value: string) {
+        storage.setItem(key, value);
+      },
+      async remove(key: string) {
+        storage.removeItem(key);
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function createCapacitorPreferencesAdapter(): Promise<CacheStorageAdapter | null> {
+  try {
+    const module = await import('@capacitor/preferences');
+    const { Preferences } = module;
+
+    return {
+      async get(key: string) {
+        const { value } = await Preferences.get({ key });
+        return value;
+      },
+      async set(key: string, value: string) {
+        await Preferences.set({ key, value });
+      },
+      async remove(key: string) {
+        await Preferences.remove({ key });
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function resolvePersistentStorageAdapter(): Promise<CacheStorageAdapter> {
+  const browserAdapter = createBrowserStorageAdapter();
+  if (browserAdapter) {
+    return browserAdapter;
+  }
+
+  const capacitorAdapter = await createCapacitorPreferencesAdapter();
+  if (capacitorAdapter) {
+    return capacitorAdapter;
+  }
+
+  return memoryStorageAdapter;
+}
+
+const persistentStorage: CacheStorageAdapter = {
+  async get(key: string) {
+    if (!resolvedStoragePromise) {
+      resolvedStoragePromise = resolvePersistentStorageAdapter();
+    }
+    return (await resolvedStoragePromise).get(key);
+  },
+  async set(key: string, value: string) {
+    if (!resolvedStoragePromise) {
+      resolvedStoragePromise = resolvePersistentStorageAdapter();
+    }
+    await (await resolvedStoragePromise).set(key, value);
+  },
+  async remove(key: string) {
+    if (!resolvedStoragePromise) {
+      resolvedStoragePromise = resolvePersistentStorageAdapter();
+    }
+    await (await resolvedStoragePromise).remove(key);
   },
 };
 
@@ -117,7 +202,7 @@ export async function fetchAndCacheValue<T>(params: {
   storage?: CacheStorageAdapter;
   now?: number;
 }): Promise<T> {
-  const { cacheKey, fetchFn, storage = preferencesStorage, now = Date.now() } = params;
+  const { cacheKey, fetchFn, storage = persistentStorage, now = Date.now() } = params;
   const inFlight = inFlightRequests.get(cacheKey) as Promise<T> | undefined;
 
   if (inFlight) {
@@ -140,6 +225,8 @@ export async function fetchAndCacheValue<T>(params: {
 export function clearCachedDataForTests(): void {
   memoryCache.clear();
   inFlightRequests.clear();
+  fallbackStorageMap.clear();
+  resolvedStoragePromise = null;
 }
 
 export function useCachedData<T>(
@@ -152,6 +239,11 @@ export function useCachedData<T>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const dataRef = useRef<T | null>(null);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   const getCachedData = useCallback(async (): Promise<T | null> => {
     const memoryValue = getMemoryCacheValue<T>(cacheKey, cacheDuration);
@@ -159,34 +251,33 @@ export function useCachedData<T>(
       return memoryValue;
     }
 
-    return getPersistentCacheValue<T>(preferencesStorage, cacheKey, cacheDuration);
+    return getPersistentCacheValue<T>(persistentStorage, cacheKey, cacheDuration);
   }, [cacheKey, cacheDuration]);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
     setError(null);
 
     try {
       const cached = await getCachedData();
+      const shouldShowLoading = cached === null && dataRef.current === null;
 
-      if (!connected) {
-        if (cached) {
-          setData(cached);
-        } else {
-          setError(new Error('No network connection and no cached data is available.'));
-        }
-        setLoading(false);
-        return;
-      }
+      setLoading(shouldShowLoading);
 
       if (cached) {
         setData(cached);
       }
 
+      if (!connected) {
+        if (!cached && dataRef.current === null) {
+          setError(new Error('No network connection and no cached data is available.'));
+        }
+        return;
+      }
+
       const freshData = await fetchAndCacheValue({
         cacheKey,
         fetchFn,
-        storage: preferencesStorage,
+        storage: persistentStorage,
       });
       setData(freshData);
     } catch (err) {

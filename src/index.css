@@ -411,6 +411,16 @@ code {
   }
 }
 
+@keyframes route-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes pulse-glow {
 
   0%,

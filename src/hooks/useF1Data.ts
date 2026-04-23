@@ -2,17 +2,10 @@ import { useEffect, useState } from 'react';
 import { f1DataService } from '@/services';
 import { useSeasonDataCached, useSeasonsCached } from './useSeasonDataCached';
 
-/**
- * 赛季数据 Hook
- * @param season - 赛季年份，例如 "2025"
- */
 export function useSeasonData(season: string) {
   return useSeasonDataCached(season);
 }
 
-/**
- * 赛季列表 Hook
- */
 export function useSeasons(limit = 100) {
   return useSeasonsCached(limit);
 }
@@ -23,9 +16,6 @@ interface UseDriverDetailsReturn {
   error: Error | null;
 }
 
-/**
- * 车手详情 Hook
- */
 export function useDriverDetails(driverId: string, season: string): UseDriverDetailsReturn {
   const [driver, setDriver] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
