@@ -121,7 +121,7 @@
 
 .history-meta-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .history-summary-card,
@@ -158,10 +158,42 @@
   font-size: var(--text-xl);
 }
 
-.history-summary-note {
-  margin-top: var(--space-2);
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
+.history-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: var(--space-3);
+}
+
+.history-mini-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.history-wide-card {
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.history-wide-card .ant-card-body {
+  padding: var(--space-4);
+}
+
+.history-wide-card__empty {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-base);
 }
 
 .history-table-card {
@@ -230,6 +262,10 @@
   padding: var(--space-8) var(--space-4);
 }
 
+.history-mobile-season-list {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .history-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -245,12 +281,132 @@
     padding: var(--space-4);
   }
 
+  .history-back-button {
+    width: 100%;
+  }
+
+  .history-hero-card {
+    margin-bottom: var(--space-4);
+  }
+
   .history-hero {
     gap: var(--space-4);
   }
 
+  .history-eyebrow {
+    align-self: flex-start;
+  }
+
+  .history-title {
+    font-size: clamp(1.8rem, 9vw, 2.4rem);
+  }
+
   .history-subtitle {
     font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  .history-chip-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .history-chip {
+    width: 100%;
+    min-height: 44px;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+
+  .history-summary-grid,
+  .history-meta-grid {
+    gap: var(--space-3);
+  }
+
+  .history-summary-card {
+    padding: var(--space-3);
+  }
+
+  .history-summary-value {
+    font-size: var(--text-2xl);
+  }
+
+  .history-meta-value {
+    font-size: var(--text-lg);
+  }
+
+  .history-wide-card .ant-card-body {
+    padding: var(--space-3);
+  }
+
+  .history-meta-tags {
+    gap: 6px;
+  }
+
+  .history-mini-tag {
+    min-height: 30px;
+    padding: 5px 10px;
+  }
+
+  .history-mobile-season-list {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .history-mobile-season-card {
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .history-mobile-season-card.is-highlighted {
+    background: color-mix(in srgb, var(--history-accent) 7%, white);
+    border-color: var(--history-accent-border);
+  }
+
+  .history-mobile-season-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .history-mobile-season-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  .history-mobile-season-body {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .history-mobile-season-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .history-mobile-season-key {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .history-mobile-season-value {
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    text-align: right;
+  }
+
+  .history-table-wrapper {
+    display: none;
   }
 }
 
@@ -264,7 +420,17 @@
     grid-template-columns: 1fr;
   }
 
-  .history-summary-value {
-    font-size: var(--text-2xl);
+  .history-chip-row {
+    grid-template-columns: 1fr;
+  }
+
+  .history-mobile-season-head,
+  .history-mobile-season-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .history-mobile-season-value {
+    text-align: left;
   }
 }

@@ -8,8 +8,10 @@ import {
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
+import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, ConstructorHistoryProfile } from '@/types';
+import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import './HistoryDetail.css';
 
@@ -37,6 +39,7 @@ const ConstructorHistoryDetail = () => {
   const navigate = useNavigate();
   const [constructor, setConstructor] = useState<ConstructorHistoryProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLatestSeasonComplete, setIsLatestSeasonComplete] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,10 +79,42 @@ const ConstructorHistoryDetail = () => {
   const seasons = constructor?.seasons || [];
   const firstSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
   const latestSeason = seasons[0] || null;
+  const latestSeasonCanBeChampion = latestSeason?.position === '1' ? isLatestSeasonComplete : true;
   const bestFinish = constructor?.bestRaceFinish;
-  const championshipSeasons = seasons.filter((season) => season.position === '1');
+  const championshipSeasons = seasons.filter((season) => (
+    season.position === '1' && (season.season !== latestSeason?.season || latestSeasonCanBeChampion)
+  ));
+  const championshipSeasonLabels = championshipSeasons.map((season) => season.season);
   const accentColor = constructor?.constructorId ? getTeamColor(constructor.constructorId) : '#FF1801';
   const accentStyle = { ['--history-accent' as string]: accentColor };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLatestSeasonStatus = async () => {
+      if (!latestSeason || latestSeason.position !== '1') {
+        setIsLatestSeasonComplete(true);
+        return;
+      }
+
+      try {
+        const races = await seasonApi.getSeasonRaces(latestSeason.season);
+        if (!cancelled) {
+          setIsLatestSeasonComplete(isSeasonComplete(races));
+        }
+      } catch {
+        if (!cancelled) {
+          setIsLatestSeasonComplete(false);
+        }
+      }
+    };
+
+    void loadLatestSeasonStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [latestSeason?.position, latestSeason?.season]);
 
   if (!loading && !constructor) {
     return (
@@ -146,32 +181,26 @@ const ConstructorHistoryDetail = () => {
             <Card className="history-summary-card">
               <div className="history-summary-label">Race Entries</div>
               <div className="history-summary-value">{constructor?.careerSummary.raceCount || 0}</div>
-              <div className="history-summary-note">All recorded Grands Prix entered</div>
             </Card>
             <Card className="history-summary-card">
               <div className="history-summary-label">Race Wins</div>
               <div className="history-summary-value">{constructor?.careerSummary.winCount || 0}</div>
-              <div className="history-summary-note">Career wins from aggregated results</div>
             </Card>
             <Card className="history-summary-card">
               <div className="history-summary-label">Podiums</div>
               <div className="history-summary-value">{constructor?.careerSummary.podiumCount || 0}</div>
-              <div className="history-summary-note">Career podium finishes</div>
             </Card>
             <Card className="history-summary-card">
               <div className="history-summary-label">Pole Positions</div>
               <div className="history-summary-value">{constructor?.careerSummary.poleCount || 0}</div>
-              <div className="history-summary-note">All qualifying P1 results</div>
             </Card>
             <Card className="history-summary-card">
               <div className="history-summary-label">World Championships</div>
-              <div className="history-summary-value">{constructor?.careerSummary.championshipCount || 0}</div>
-              <div className="history-summary-note">Constructors' titles won</div>
+              <div className="history-summary-value">{championshipSeasons.length}</div>
             </Card>
             <Card className="history-summary-card">
               <div className="history-summary-label">Total Points</div>
               <div className="history-summary-value">{formatPoints(constructor?.careerSummary.totalPoints || 0)}</div>
-              <div className="history-summary-note">Combined season standings points</div>
             </Card>
           </div>
 
@@ -197,15 +226,24 @@ const ConstructorHistoryDetail = () => {
             </Card>
             <Card className="history-meta-card">
               <div className="history-summary-card">
-                <div className="history-meta-label">Championship Seasons</div>
-                <div className="history-meta-value">
-                  {championshipSeasons.length > 0
-                    ? championshipSeasons.map((season) => season.season).join(', ')
-                    : '-'}
-                </div>
+                <div className="history-meta-label">Nationality</div>
+                <div className="history-meta-value">{constructor?.nationality || '-'}</div>
               </div>
             </Card>
           </div>
+
+          <Card className="history-wide-card">
+            <div className="history-meta-label">Championship Seasons</div>
+            {championshipSeasonLabels.length > 0 ? (
+              <div className="history-meta-tags">
+                {championshipSeasonLabels.map((season) => (
+                  <span key={season} className="history-mini-tag">{season}</span>
+                ))}
+              </div>
+            ) : (
+              <div className="history-wide-card__empty">-</div>
+            )}
+          </Card>
 
           <Card className="history-table-card" title="Season Timeline">
             {seasons.length === 0 ? (
@@ -214,40 +252,80 @@ const ConstructorHistoryDetail = () => {
                 description="Historical season data is not available for this constructor yet."
               />
             ) : (
-              <div className="history-table-wrapper">
-                <table className="history-table">
-                  <thead>
-                    <tr>
-                      <th>Season</th>
-                      <th>Rank</th>
-                      <th>Points</th>
-                      <th>Wins</th>
-                      <th>Highlights</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {seasons.map((season) => {
-                      const isChampion = season.position === '1';
-                      const isLatest = season.season === latestSeason?.season;
+              <>
+                <div className="history-mobile-season-list">
+                  {seasons.map((season) => {
+                    const isChampion = season.position === '1'
+                      && (season.season !== latestSeason?.season || latestSeasonCanBeChampion);
+                    const isLatest = season.season === latestSeason?.season;
 
-                      return (
-                        <tr key={season.season} className={isChampion ? 'history-row-highlight' : ''}>
-                          <td>{season.season}</td>
-                          <td>{season.position ? `P${season.position}` : '-'}</td>
-                          <td>{formatPoints(season.points)}</td>
-                          <td>{season.wins}</td>
-                          <td>
-                            <span className="history-table-tags">
-                              {isChampion ? <Tag color="gold">Champion</Tag> : null}
-                              {isLatest ? <Tag color="blue">Latest</Tag> : null}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                    return (
+                      <div
+                        key={`mobile-${season.season}`}
+                        className={`history-mobile-season-card ${isChampion ? 'is-highlighted' : ''}`}
+                      >
+                        <div className="history-mobile-season-head">
+                          <div className="history-mobile-season-title">{season.season}</div>
+                          <span className="history-table-tags">
+                            {isChampion ? <Tag color="gold">Champion</Tag> : null}
+                            {isLatest ? <Tag color="blue">Latest</Tag> : null}
+                          </span>
+                        </div>
+                        <div className="history-mobile-season-body">
+                          <div className="history-mobile-season-row">
+                            <span className="history-mobile-season-key">Rank</span>
+                            <span className="history-mobile-season-value">{season.position ? `P${season.position}` : '-'}</span>
+                          </div>
+                          <div className="history-mobile-season-row">
+                            <span className="history-mobile-season-key">Points</span>
+                            <span className="history-mobile-season-value">{formatPoints(season.points)}</span>
+                          </div>
+                          <div className="history-mobile-season-row">
+                            <span className="history-mobile-season-key">Wins</span>
+                            <span className="history-mobile-season-value">{season.wins}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="history-table-wrapper">
+                  <table className="history-table">
+                    <thead>
+                      <tr>
+                        <th>Season</th>
+                        <th>Rank</th>
+                        <th>Points</th>
+                        <th>Wins</th>
+                        <th>Highlights</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {seasons.map((season) => {
+                        const isChampion = season.position === '1'
+                          && (season.season !== latestSeason?.season || latestSeasonCanBeChampion);
+                        const isLatest = season.season === latestSeason?.season;
+
+                        return (
+                          <tr key={season.season} className={isChampion ? 'history-row-highlight' : ''}>
+                            <td>{season.season}</td>
+                            <td>{season.position ? `P${season.position}` : '-'}</td>
+                            <td>{formatPoints(season.points)}</td>
+                            <td>{season.wins}</td>
+                            <td>
+                              <span className="history-table-tags">
+                                {isChampion ? <Tag color="gold">Champion</Tag> : null}
+                                {isLatest ? <Tag color="blue">Latest</Tag> : null}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </Card>
         </>

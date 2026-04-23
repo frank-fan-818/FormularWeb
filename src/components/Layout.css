@@ -258,28 +258,88 @@
 }
 
 .global-search {
+  position: relative;
   width: min(420px, 100%);
 }
 
-.global-search .ant-input-affix-wrapper {
+.global-search-input-wrap {
   background: var(--bg-tertiary);
-  border-color: var(--border-primary);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
-.global-search .ant-input-affix-wrapper:hover,
-.global-search .ant-input-affix-wrapper-focused {
+.global-search-input-wrap:hover,
+.global-search-input-wrap:focus-within {
   border-color: var(--f1-red);
   box-shadow: 0 0 0 2px var(--f1-red-glow);
 }
 
-.global-search .ant-input {
-  background: transparent;
+.global-search-input-wrap.has-error {
+  border-color: var(--f1-red);
 }
 
-.global-search-dropdown .ant-select-dropdown {
+.global-search-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.global-search-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.global-search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.global-search-clear {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.global-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1100;
+  width: 100%;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
   padding: var(--space-2);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.global-search-group + .global-search-group {
+  border-top: 1px solid var(--border-secondary);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
 }
 
 .search-group-label {
@@ -296,7 +356,19 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--space-1) 0;
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.global-search-option:hover,
+.global-search-option:focus-visible {
+  background: var(--bg-tertiary);
+  outline: none;
 }
 
 .global-search-option-title {
@@ -322,6 +394,15 @@
 
 .global-search-feedback.error {
   color: var(--f1-red);
+}
+
+.global-search-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 23, 42, 0.16);
+  border-top-color: var(--f1-red);
+  animation: route-spin 0.8s linear infinite;
 }
 
 .content {
@@ -423,6 +504,53 @@
     width: 100%;
   }
 
+  .header-mobile-search .search-trigger,
+  .header-mobile-search .search-loading-shell,
+  .header-mobile-search .global-search-input-wrap {
+    min-height: 48px;
+    border-radius: var(--radius-xl);
+  }
+
+  .header-mobile-search .global-search {
+    position: relative;
+  }
+
+  .header-mobile-search .global-search-input {
+    font-size: 16px;
+  }
+
+  .header-mobile-search .global-search-clear {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .header-mobile-search .global-search-dropdown {
+    top: calc(100% + 10px);
+    padding: var(--space-2);
+    border-radius: var(--radius-xl);
+  }
+
+  .header-mobile-search .global-search-option {
+    min-height: 52px;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+
+  .header-mobile-search .global-search-option-title {
+    font-size: var(--text-base);
+  }
+
+  .header-mobile-search .global-search-option-subtitle {
+    font-size: var(--text-sm);
+  }
+
+  .header-mobile-search .global-search-feedback {
+    min-height: 56px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
   .content {
     margin: var(--space-3);
     border-radius: var(--radius-md);
@@ -450,6 +578,10 @@
 
   .season-select-native {
     width: 100px;
+  }
+
+  .header-mobile-search .global-search-dropdown {
+    max-height: min(58vh, 360px);
   }
 
   .content {

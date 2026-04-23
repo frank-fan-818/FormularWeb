@@ -1,32 +1,196 @@
-import { useState } from 'react';
-import { supabaseApi } from '@/api/supabase';
+import { useCallback, useState } from 'react';
+import { searchApi } from '@/api/search';
 import type { SearchResultGroup } from '@/types';
-import { buildSearchIndex, searchIndex } from '@/utils/search';
+import {
+  buildSearchIndex,
+  searchIndex,
+  type SearchSources,
+} from '@/utils/search';
 
-let cachedIndex: ReturnType<typeof buildSearchIndex> | null = null;
-let loadingPromise: Promise<ReturnType<typeof buildSearchIndex>> | null = null;
+const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v1';
+const SEARCH_INDEX_TTL = 24 * 60 * 60 * 1000;
+const BACKGROUND_REFRESH_INTERVAL = 5 * 60 * 1000;
 
-async function loadSearchIndex() {
-  if (cachedIndex) {
+type SearchIndex = ReturnType<typeof buildSearchIndex>;
+type SearchIndexFetcher = () => Promise<SearchSources>;
+
+export interface SearchIndexStorageAdapter {
+  getItem: (key: string) => string | null;
+  setItem: (key: string, value: string) => void;
+  removeItem: (key: string) => void;
+}
+
+interface CachedSearchIndex {
+  timestamp: number;
+  data: SearchIndex;
+}
+
+interface SearchIndexOptions {
+  fetchSources?: SearchIndexFetcher;
+  storage?: SearchIndexStorageAdapter | null;
+  now?: number;
+}
+
+let cachedIndex: SearchIndex | null = null;
+let cachedIndexTimestamp = 0;
+let loadingPromise: Promise<SearchIndex> | null = null;
+let lastBackgroundRefreshStartedAt = 0;
+
+function getDefaultStorage(): SearchIndexStorageAdapter | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storage = window.localStorage;
+    const probeKey = '__f1_search_cache_probe__';
+    storage.setItem(probeKey, '1');
+    storage.removeItem(probeKey);
+    return storage;
+  } catch {
+    return null;
+  }
+}
+
+function isFresh(timestamp: number, now: number): boolean {
+  return now - timestamp <= SEARCH_INDEX_TTL;
+}
+
+function getStorage(options?: SearchIndexOptions): SearchIndexStorageAdapter | null {
+  if (Object.prototype.hasOwnProperty.call(options || {}, 'storage')) {
+    return options?.storage || null;
+  }
+
+  return getDefaultStorage();
+}
+
+function readMemoryCachedIndex(now: number): SearchIndex | null {
+  if (cachedIndex && isFresh(cachedIndexTimestamp, now)) {
     return cachedIndex;
   }
 
-  if (!loadingPromise) {
-    loadingPromise = Promise.all([
-      supabaseApi.drivers.getAll(),
-      supabaseApi.constructors.getAll(),
-      supabaseApi.circuits.getAll(),
-    ])
-      .then(([drivers, constructors, circuits]) => {
-        cachedIndex = buildSearchIndex({ drivers, constructors, circuits });
-        return cachedIndex;
-      })
-      .finally(() => {
-        loadingPromise = null;
-      });
+  return null;
+}
+
+function readPersistentCachedIndex(options?: SearchIndexOptions): SearchIndex | null {
+  const now = options?.now ?? Date.now();
+  const storage = getStorage(options);
+  if (!storage) {
+    return null;
   }
 
+  try {
+    const rawValue = storage.getItem(SEARCH_INDEX_CACHE_KEY);
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(rawValue) as CachedSearchIndex;
+    if (!isFresh(parsed.timestamp, now)) {
+      storage.removeItem(SEARCH_INDEX_CACHE_KEY);
+      return null;
+    }
+
+    cachedIndex = parsed.data;
+    cachedIndexTimestamp = parsed.timestamp;
+    return cachedIndex;
+  } catch {
+    storage.removeItem(SEARCH_INDEX_CACHE_KEY);
+    return null;
+  }
+}
+
+function readCachedIndex(options?: SearchIndexOptions): SearchIndex | null {
+  const now = options?.now ?? Date.now();
+  return readMemoryCachedIndex(now) || readPersistentCachedIndex(options);
+}
+
+function writeCachedIndex(index: SearchIndex, options?: SearchIndexOptions): void {
+  const timestamp = options?.now ?? Date.now();
+  cachedIndex = index;
+  cachedIndexTimestamp = timestamp;
+
+  const storage = getStorage(options);
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.setItem(
+      SEARCH_INDEX_CACHE_KEY,
+      JSON.stringify({
+        timestamp,
+        data: index,
+      } satisfies CachedSearchIndex),
+    );
+  } catch {
+    // Search should keep working even when browser storage is unavailable or full.
+  }
+}
+
+async function fetchFreshSearchIndex(options?: SearchIndexOptions): Promise<SearchIndex> {
+  if (loadingPromise) {
+    return loadingPromise;
+  }
+
+  const fetchSources = options?.fetchSources || searchApi.getSearchSources;
+  loadingPromise = fetchSources()
+    .then((sources) => {
+      const index = buildSearchIndex(sources);
+      writeCachedIndex(index, options);
+      return index;
+    })
+    .finally(() => {
+      loadingPromise = null;
+    });
+
   return loadingPromise;
+}
+
+function refreshCachedSearchIndex(options?: SearchIndexOptions): void {
+  const now = options?.now ?? Date.now();
+  if (
+    loadingPromise
+    || (lastBackgroundRefreshStartedAt > 0 && now - lastBackgroundRefreshStartedAt < BACKGROUND_REFRESH_INTERVAL)
+  ) {
+    return;
+  }
+
+  lastBackgroundRefreshStartedAt = now;
+  void fetchFreshSearchIndex(options).catch(() => {
+    // Stale-while-revalidate failures should not break visible cached search.
+  });
+}
+
+export function getCachedGlobalSearchIndex(options?: SearchIndexOptions): SearchIndex | null {
+  return readCachedIndex(options);
+}
+
+export async function loadGlobalSearchIndex(options?: SearchIndexOptions): Promise<SearchIndex> {
+  const now = options?.now ?? Date.now();
+  const memoryCached = readMemoryCachedIndex(now);
+  if (memoryCached) {
+    return memoryCached;
+  }
+
+  const persistentCached = readPersistentCachedIndex(options);
+  if (persistentCached) {
+    refreshCachedSearchIndex(options);
+    return persistentCached;
+  }
+
+  return fetchFreshSearchIndex(options);
+}
+
+export async function preloadGlobalSearchIndex(options?: SearchIndexOptions): Promise<void> {
+  await loadGlobalSearchIndex(options);
+}
+
+export function clearGlobalSearchIndexForTests(): void {
+  cachedIndex = null;
+  cachedIndexTimestamp = 0;
+  loadingPromise = null;
+  lastBackgroundRefreshStartedAt = 0;
 }
 
 export function useGlobalSearch() {
@@ -34,25 +198,27 @@ export function useGlobalSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const ensureLoaded = async () => {
-    if (cachedIndex) {
-      return cachedIndex;
+  const ensureLoaded = useCallback(async () => {
+    const cached = getCachedGlobalSearchIndex();
+    if (cached) {
+      refreshCachedSearchIndex();
+      return cached;
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      return await loadSearchIndex();
+      return await loadGlobalSearchIndex();
     } catch (searchError) {
       setError(searchError instanceof Error ? searchError.message : 'Unable to load search data.');
       throw searchError;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const runSearch = async (query: string) => {
+  const runSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setGroups([]);
       setError(null);
@@ -60,17 +226,17 @@ export function useGlobalSearch() {
     }
 
     try {
-      const index = cachedIndex || await ensureLoaded();
+      const index = getCachedGlobalSearchIndex() || await ensureLoaded();
       setGroups(searchIndex(index, query));
     } catch {
       setGroups([]);
     }
-  };
+  }, [ensureLoaded]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setGroups([]);
     setError(null);
-  };
+  }, []);
 
   return {
     groups,

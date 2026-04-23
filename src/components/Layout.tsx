@@ -133,6 +133,17 @@ const SearchIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    saveData?: boolean;
+  };
+};
+
+type WindowWithIdleCallback = Window & typeof globalThis & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 const navItems = [
   { key: '/', icon: HomeIcon, label: TEXT.home },
   { key: '/seasons', icon: SeasonIcon, label: TEXT.seasonStandings },
@@ -217,6 +228,30 @@ const LayoutComponent = () => {
     }
   }, [location.pathname, navigate]);
 
+  useEffect(() => {
+    const connection = (navigator as NavigatorWithConnection).connection;
+    if (connection?.saveData) {
+      return undefined;
+    }
+
+    const preloadSearch = () => {
+      void import('@/hooks/useGlobalSearch')
+        .then(({ preloadGlobalSearchIndex }) => preloadGlobalSearchIndex())
+        .catch(() => {
+          // Search still loads on demand if idle preloading fails.
+        });
+    };
+
+    const idleWindow = window as WindowWithIdleCallback;
+    if (idleWindow.requestIdleCallback) {
+      const idleHandle = idleWindow.requestIdleCallback(preloadSearch, { timeout: 4000 });
+      return () => idleWindow.cancelIdleCallback?.(idleHandle);
+    }
+
+    const timeoutId = window.setTimeout(preloadSearch, 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   const handleMenuClick = (key: string) => {
     navigate(key);
     if (isMobile) {
@@ -239,7 +274,7 @@ const LayoutComponent = () => {
 
   const searchBox = searchActivated ? (
     <Suspense fallback={<div className="search-loading-shell">{TEXT.searching}</div>}>
-      <GlobalSearchBox autoFocus />
+      <GlobalSearchBox autoFocus mobileOptimized={isMobile} />
     </Suspense>
   ) : (
     <button

@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
-import { AutoComplete, Input, Spin } from 'antd';
-import type { InputRef } from 'antd';
-import type { DefaultOptionType } from 'antd/es/select';
-import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useGlobalSearch } from '@/hooks';
+import { useGlobalSearch } from '@/hooks/useGlobalSearch';
+import type { SearchIndexEntry } from '@/types';
 
 const TEXT = {
   searching: '\u641c\u7d22\u4e2d...',
@@ -14,19 +10,30 @@ const TEXT = {
   searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
 };
 
-interface SearchOption extends DefaultOptionType {
-  route?: string;
-}
-
 interface GlobalSearchBoxProps {
   autoFocus?: boolean;
+  mobileOptimized?: boolean;
 }
 
-const GlobalSearchBox = ({ autoFocus = false }: GlobalSearchBoxProps) => {
+const SearchIcon = () => (
+  <svg
+    className="global-search-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <circle cx="11" cy="11" r="5.2" />
+    <path d="m15 15 4.2 4.2" />
+  </svg>
+);
+
+const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalSearchBoxProps) => {
   const navigate = useNavigate();
-  const inputRef = useRef<InputRef>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const blurTimeoutRef = useRef<number | null>(null);
   const autoFocusHandledRef = useRef(false);
   const [searchValue, setSearchValue] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const {
     groups,
     loading: searchLoading,
@@ -45,76 +52,144 @@ const GlobalSearchBox = ({ autoFocus = false }: GlobalSearchBoxProps) => {
 
     const timeoutId = window.setTimeout(() => {
       inputRef.current?.focus();
+      setDropdownOpen(true);
       void ensureLoaded();
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
   }, [autoFocus, ensureLoaded]);
 
-  const searchOptions: SearchOption[] = groups.map((group) => ({
-    label: <span className="search-group-label">{group.label}</span>,
-    options: group.items.map((item) => ({
-      value: `${item.type}:${item.id}`,
-      route: item.route,
-      label: (
-        <div className="global-search-option">
-          <div className="global-search-option-title">{item.title}</div>
-          {item.subtitle ? (
-            <div className="global-search-option-subtitle">{item.subtitle}</div>
-          ) : null}
-        </div>
-      ),
-    })),
-  }));
+  useEffect(() => {
+    const query = searchValue.trim();
+    if (!query) {
+      reset();
+      return;
+    }
 
-  const notFoundContent: ReactNode = searchLoading ? (
-    <div className="global-search-feedback">
-      <Spin size="small" />
-      <span>{TEXT.searching}</span>
-    </div>
-  ) : searchError ? (
-    <div className="global-search-feedback error">{TEXT.searchUnavailable}</div>
-  ) : searchValue.trim() ? (
-    <div className="global-search-feedback">{TEXT.noSearchResults}</div>
-  ) : null;
+    const timeoutId = window.setTimeout(() => {
+      void runSearch(query);
+    }, 120);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [reset, runSearch, searchValue]);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current !== null) {
+        window.clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSelect = (item: SearchIndexEntry) => {
+    navigate(item.route);
+    setSearchValue('');
+    setDropdownOpen(false);
+    reset();
+  };
+
+  const showFeedback = dropdownOpen && (searchLoading || searchError || (searchValue.trim() && groups.length === 0));
+  const showResults = dropdownOpen && groups.length > 0;
 
   return (
-    <AutoComplete
-      className="global-search"
-      value={searchValue}
-      options={searchOptions}
-      onSearch={(value) => {
-        setSearchValue(value);
-        void runSearch(value);
-      }}
-      onChange={(value) => {
-        setSearchValue(value);
-        if (!value) {
-          reset();
-        }
-      }}
-      onSelect={(_value, option: SearchOption) => {
-        if (option.route) {
-          navigate(option.route);
-        }
-        setSearchValue('');
-        reset();
-      }}
-      onFocus={() => {
-        void ensureLoaded();
-      }}
-      notFoundContent={notFoundContent}
-      popupClassName="global-search-dropdown"
-    >
-      <Input
-        ref={inputRef}
-        allowClear
-        size="large"
-        prefix={<SearchOutlined />}
-        placeholder={TEXT.searchPlaceholder}
-        status={searchError ? 'error' : undefined}
-      />
-    </AutoComplete>
+    <div className={`global-search ${mobileOptimized ? 'is-mobile-optimized' : ''}`}>
+      <div className={`global-search-input-wrap ${searchError ? 'has-error' : ''}`}>
+        <SearchIcon />
+        <input
+          ref={inputRef}
+          className="global-search-input"
+          value={searchValue}
+          placeholder={TEXT.searchPlaceholder}
+          onChange={(event) => {
+            setSearchValue(event.target.value);
+            setDropdownOpen(true);
+            if (searchError) {
+              reset();
+            }
+          }}
+          onFocus={() => {
+            if (blurTimeoutRef.current !== null) {
+              window.clearTimeout(blurTimeoutRef.current);
+              blurTimeoutRef.current = null;
+            }
+            setDropdownOpen(true);
+            if (searchError) {
+              reset();
+            }
+            void ensureLoaded();
+          }}
+          onBlur={() => {
+            blurTimeoutRef.current = window.setTimeout(() => {
+              setDropdownOpen(false);
+            }, 120);
+          }}
+          role="combobox"
+          aria-expanded={dropdownOpen}
+          aria-autocomplete="list"
+          aria-label={TEXT.searchPlaceholder}
+          enterKeyHint="search"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+        />
+        {searchValue ? (
+          <button
+            type="button"
+            className="global-search-clear"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setSearchValue('');
+              reset();
+              inputRef.current?.focus();
+            }}
+            aria-label="\u6e05\u7a7a\u641c\u7d22"
+          >
+            x
+          </button>
+        ) : null}
+      </div>
+
+      {showResults ? (
+        <div className="global-search-dropdown" role="listbox">
+          {groups.map((group) => (
+            <div className="global-search-group" key={group.type}>
+              <div className="search-group-label">{group.label}</div>
+              {group.items.map((item) => (
+                <button
+                  type="button"
+                  key={`${item.type}:${item.id}`}
+                  className="global-search-option"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSelect(item)}
+                  role="option"
+                  aria-selected="false"
+                >
+                  <span className="global-search-option-title">{item.title}</span>
+                  {item.subtitle ? (
+                    <span className="global-search-option-subtitle">{item.subtitle}</span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {showFeedback ? (
+        <div className={`global-search-dropdown global-search-feedback ${searchError ? 'error' : ''}`}>
+          {searchLoading ? (
+            <>
+              <span className="global-search-spinner" />
+              <span>{TEXT.searching}</span>
+            </>
+          ) : searchError ? (
+            TEXT.searchUnavailable
+          ) : (
+            TEXT.noSearchResults
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 };
 

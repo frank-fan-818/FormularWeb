@@ -45,28 +45,24 @@ const Home = () => {
 
   const statCards = [
     {
-      marker: 'GP',
       value: completedRaces.length,
       label: `${TEXT.completedRaces} / ${races.length}`,
       color: 'var(--f1-red)',
       delay: 'stagger-1',
     },
     {
-      marker: 'DR',
       value: driverStandings.length,
       label: TEXT.activeDrivers,
       color: 'var(--accent-blue)',
       delay: 'stagger-2',
     },
     {
-      marker: 'TM',
       value: constructorStandings.length,
       label: TEXT.activeConstructors,
       color: 'var(--accent-green)',
       delay: 'stagger-3',
     },
     {
-      marker: 'D',
       value: daysUntilNextRace ?? '--',
       label: nextRace ? TEXT.daysUntilNextRace : TEXT.seasonEnded,
       color: 'var(--accent-yellow)',
@@ -213,16 +209,13 @@ const Home = () => {
 
       <section className="stats-grid">
         {statCards.map((card, index) => (
-          <div
-            key={index}
-            className={`stat-card-f1 animate-slide-up ${card.delay}`}
-          >
-            <span className="stat-marker" style={{ color: card.color }}>
-              {card.marker}
-            </span>
-            <div className="stat-value" style={{ color: card.color }}>
-              {card.value}
-            </div>
+        <div
+          key={index}
+          className={`stat-card-f1 animate-slide-up ${card.delay}`}
+        >
+          <div className="stat-value" style={{ color: card.color }}>
+            {card.value}
+          </div>
             <div className="stat-label">{card.label}</div>
           </div>
         ))}

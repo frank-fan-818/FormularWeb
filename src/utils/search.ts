@@ -1,6 +1,6 @@
 import type { SearchEntityType, SearchIndexEntry, SearchResultGroup } from '@/types';
 
-interface DriverSearchSource {
+export interface DriverSearchSource {
   driver_id: string;
   first_name: string;
   last_name: string;
@@ -8,13 +8,13 @@ interface DriverSearchSource {
   nationality?: string | null;
 }
 
-interface ConstructorSearchSource {
+export interface ConstructorSearchSource {
   constructor_id: string;
   name: string;
   nationality?: string | null;
 }
 
-interface CircuitSearchSource {
+export interface CircuitSearchSource {
   circuit_id: string;
   name: string;
   locality?: string | null;
@@ -26,6 +26,12 @@ interface SearchableEntry {
   entry: SearchIndexEntry;
   primaryKeywords: string[];
   aliasKeywords: string[];
+}
+
+export interface SearchSources {
+  drivers: DriverSearchSource[];
+  constructors: ConstructorSearchSource[];
+  circuits: CircuitSearchSource[];
 }
 
 const RESULT_LIMIT_PER_GROUP = 5;
@@ -145,11 +151,7 @@ function buildCircuitEntry(circuit: CircuitSearchSource): SearchableEntry {
   };
 }
 
-export function buildSearchIndex(params: {
-  drivers: DriverSearchSource[];
-  constructors: ConstructorSearchSource[];
-  circuits: CircuitSearchSource[];
-}): SearchableEntry[] {
+export function buildSearchIndex(params: SearchSources): SearchableEntry[] {
   return [
     ...params.drivers.map(buildDriverEntry),
     ...params.constructors.map(buildConstructorEntry),

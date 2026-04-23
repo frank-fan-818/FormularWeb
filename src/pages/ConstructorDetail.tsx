@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import { constructorApi, seasonApi } from '@/api/ergast';
@@ -76,9 +76,11 @@ function mapSupabaseConstructor(constructor: Record<string, any>): ConstructorPr
 
 const ConstructorDetail = () => {
   const { constructorId } = useParams<{ constructorId: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+  const showHistoryOverview = location.pathname.startsWith('/history/constructors/');
 
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
   const [careerStats, setCareerStats] = useState<HistoryCareerSummary>(EMPTY_CAREER_STATS);
@@ -181,6 +183,7 @@ const ConstructorDetail = () => {
         baseConstructor = {
           ...currentStanding.Constructor,
           ...baseConstructor,
+          nationality: baseConstructor?.nationality || currentStanding.Constructor.nationality || '',
           totalWins: baseConstructor?.totalWins ?? 0,
           totalPodiums: baseConstructor?.totalPodiums ?? 0,
           totalPolePositions: baseConstructor?.totalPolePositions ?? 0,
@@ -218,7 +221,9 @@ const ConstructorDetail = () => {
   }, [constructorId, currentSeason, currentStanding, seasonLoading]);
 
   useEffect(() => {
-    if (!constructorId) {
+    if (!constructorId || !showHistoryOverview) {
+      setCareerStats(EMPTY_CAREER_STATS);
+      setCareerStatsLoading(false);
       return;
     }
 
@@ -250,7 +255,7 @@ const ConstructorDetail = () => {
     return () => {
       cancelled = true;
     };
-  }, [constructorId]);
+  }, [constructorId, showHistoryOverview]);
 
   const teamColor = constructorId ? getTeamColor(constructorId) : '#1890ff';
 
@@ -565,54 +570,58 @@ const ConstructorDetail = () => {
           )}
         </Card>
 
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.historicalStats}</h3>
-          <div style={{ color: '#8c8c8c', fontSize: 13 }}>
-            {careerStatsLoading ? TEXT.loadingHistoricalStats : TEXT.loadedHistoricalStats}
-          </div>
-        </div>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <FlagOutlined /> {TEXT.raceEntries}
+        {showHistoryOverview ? (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.historicalStats}</h3>
+              <div style={{ color: '#8c8c8c', fontSize: 13 }}>
+                {careerStatsLoading ? TEXT.loadingHistoricalStats : TEXT.loadedHistoricalStats}
               </div>
-              <div className="stat-value" style={{ color: '#1890ff' }}>
-                {careerStats.raceCount}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.raceWins}
-              </div>
-              <div className="stat-value" style={{ color: '#fa8c16' }}>
-                {careerStats.winCount}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.podiums}
-              </div>
-              <div className="stat-value" style={{ color: '#722ed1' }}>
-                {careerStats.podiumCount}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <FlagOutlined /> {TEXT.poles}
-              </div>
-              <div className="stat-value" style={{ color: '#13c2c2' }}>
-                {careerStats.poleCount}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+            </div>
+            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={12}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <FlagOutlined /> {TEXT.raceEntries}
+                  </div>
+                  <div className="stat-value" style={{ color: '#1890ff' }}>
+                    {careerStats.raceCount}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <TrophyOutlined /> {TEXT.raceWins}
+                  </div>
+                  <div className="stat-value" style={{ color: '#fa8c16' }}>
+                    {careerStats.winCount}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <TrophyOutlined /> {TEXT.podiums}
+                  </div>
+                  <div className="stat-value" style={{ color: '#722ed1' }}>
+                    {careerStats.podiumCount}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card className="stat-card">
+                  <div className="stat-label">
+                    <FlagOutlined /> {TEXT.poles}
+                  </div>
+                  <div className="stat-value" style={{ color: '#13c2c2' }}>
+                    {careerStats.poleCount}
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+          </>
+        ) : null}
 
         <Card title={TEXT.constructorInfo}>
           <Row gutter={[24, 16]}>

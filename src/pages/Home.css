@@ -25,25 +25,11 @@
   text-align: center;
 }
 
-.stat-marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  min-height: 52px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.08em;
-  margin-bottom: var(--space-3);
-}
-
 .stat-card-f1 .stat-value {
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
   font-family: var(--font-family);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
 .stat-card-f1 .stat-label {

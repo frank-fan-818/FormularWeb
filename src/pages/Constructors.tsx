@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
-import { GlobalOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
+import { FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useConstructorStandingsCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
@@ -14,7 +14,6 @@ const TEXT = {
   wins: '\u80dc',
   poles: '\u6746\u4f4d',
   entries: '\u53c2\u8d5b\u573a\u6b21',
-  nationality: '\u56fd\u7c4d',
 };
 
 const Constructors = () => {
@@ -106,9 +105,6 @@ const Constructors = () => {
                         {constructor.name}
                       </h3>
                       <div className="item-stats">
-                        {constructor.nationality ? (
-                          <span className="stat-item"><GlobalOutlined /> {TEXT.nationality}: {constructor.nationality}</span>
-                        ) : null}
                         {constructor.total_wins ? (
                           <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} {TEXT.wins}</span>
                         ) : null}
