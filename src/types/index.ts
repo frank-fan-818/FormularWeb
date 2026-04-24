@@ -238,3 +238,80 @@ export interface ConstructorHistorySummaryRecord {
   seasons: unknown;
   updated_at?: string | null;
 }
+
+export interface FastF1LapPoint {
+  lapNumber: number;
+  lapTimeSeconds: number;
+  compound: string;
+  stint: number;
+  position: number | null;
+}
+
+export interface FastF1DriverLapSeries {
+  driver: string;
+  team: string;
+  racePosition?: number;
+  laps: FastF1LapPoint[];
+}
+
+export interface FastF1StrategyStint {
+  stint: number;
+  compound: string;
+  startLap: number;
+  endLap: number;
+  lapCount: number;
+}
+
+export interface FastF1DriverStrategy {
+  driver: string;
+  team: string;
+  racePosition?: number;
+  stints: FastF1StrategyStint[];
+}
+
+export interface FastF1FastestLap {
+  driver: string;
+  team: string;
+  lapNumber: number;
+  lapTimeSeconds: number;
+  compound: string;
+  position: number | null;
+}
+
+export interface FastF1TrackStatusPeriod {
+  type: 'YELLOW' | 'SC' | 'VSC' | 'RED';
+  label: string;
+  message: string;
+  rawStatus: string;
+  startTimeSeconds: number;
+  endTimeSeconds: number;
+  startLap: number;
+  endLap: number;
+}
+
+export interface FastF1RaceControlMessage {
+  time: string;
+  category: string;
+  message: string;
+  status: string;
+  flag: string;
+  scope: string;
+  sector: number | null;
+  lap: number | null;
+}
+
+export interface FastF1RaceAnalytics {
+  source: 'fastf1';
+  generatedAt: string;
+  season: string;
+  round: string;
+  session: string;
+  eventName: string;
+  sessionName: string;
+  totalLaps?: number;
+  fastestLap?: FastF1FastestLap | null;
+  trackStatusPeriods?: FastF1TrackStatusPeriod[];
+  raceControlMessages?: FastF1RaceControlMessage[];
+  lapTimeSeries: FastF1DriverLapSeries[];
+  tyreStrategies: FastF1DriverStrategy[];
+}

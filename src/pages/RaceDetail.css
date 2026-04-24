@@ -49,6 +49,278 @@
   overflow: hidden;
 }
 
+.fastf1-analytics-section {
+  margin-bottom: 16px;
+}
+
+.fastf1-analytics-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 2px 2px 0;
+}
+
+.fastf1-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--f1-red);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fastf1-analytics-heading h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.fastf1-summary-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.fastf1-summary-strip span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.fastf1-analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.fastf1-chart-card {
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--border-primary) 78%, var(--f1-red) 22%);
+  box-shadow: var(--shadow-sm);
+}
+
+.fastf1-chart-card:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+.fastf1-chart-card .ant-card-body {
+  padding: 18px;
+}
+
+.fastf1-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.fastf1-chart-title {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+}
+
+.fastf1-chart-header p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.fastf1-chart-badges {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fastf1-fastest-lap-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(255, 24, 1, 0.24);
+  border-radius: var(--radius-full);
+  padding: 0 12px;
+  background: rgba(255, 24, 1, 0.08);
+  color: var(--f1-red);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+.driver-legend,
+.track-status-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+}
+
+.driver-legend-item,
+.track-status-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+.driver-legend-item {
+  min-height: 28px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 0 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+}
+
+.driver-legend-item:hover,
+.driver-legend-item:focus-visible {
+  border-color: var(--border-secondary);
+  background: var(--bg-secondary);
+  outline: none;
+}
+
+.driver-legend-item.is-active {
+  color: var(--text-primary);
+}
+
+.driver-legend-item.is-muted {
+  opacity: 0.38;
+}
+
+.driver-legend-line {
+  width: 22px;
+  height: 4px;
+  border-radius: var(--radius-full);
+}
+
+.track-status-legend {
+  gap: 8px;
+  margin-top: -2px;
+}
+
+.track-status-swatch {
+  width: 16px;
+  height: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 3px;
+}
+
+.compound-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.compound-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.compound-swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: var(--radius-full);
+}
+
+.fastf1-tooltip {
+  min-width: 250px;
+  color: #f8fafc;
+}
+
+.fastf1-tooltip-title {
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+}
+
+.fastf1-tooltip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+  row-gap: 6px;
+}
+
+.fastf1-tooltip-row {
+  display: grid;
+  grid-template-columns: 10px minmax(34px, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.fastf1-tooltip-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.fastf1-tooltip-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #e2e8f0;
+  font-weight: var(--font-semibold);
+  text-overflow: ellipsis;
+}
+
+.fastf1-tooltip-row strong {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.fastf1-tooltip-single {
+  min-width: 180px;
+}
+
+.fastf1-tooltip-driver {
+  display: grid;
+  grid-template-columns: 10px minmax(36px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.fastf1-tooltip-driver strong {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
 /* 车手和车队名称样式 */
 .driver-name {
   font-weight: 500;
@@ -177,6 +449,50 @@
   .sprint-tag {
     font-size: 12px;
     padding: 2px 8px;
+  }
+
+  .fastf1-analytics-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fastf1-analytics-heading h2 {
+    font-size: 20px;
+  }
+
+  .fastf1-summary-strip {
+    justify-content: flex-start;
+  }
+
+  .fastf1-analytics-grid {
+    gap: 12px;
+  }
+
+  .fastf1-chart-card .ant-card-body {
+    padding: 12px;
+  }
+
+  .fastf1-chart-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fastf1-chart-badges {
+    justify-content: flex-start;
+  }
+
+  .fastf1-chart-title {
+    font-size: 16px;
+  }
+
+  .driver-legend,
+  .track-status-legend {
+    gap: 8px 10px;
+  }
+
+  .compound-legend {
+    justify-content: flex-start;
   }
 
   .sprint-tag {
