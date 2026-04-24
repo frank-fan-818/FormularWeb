@@ -473,11 +473,23 @@
   .header-left {
     width: 100%;
     justify-content: space-between;
+    align-items: center;
     gap: var(--space-3);
+  }
+
+  .header-mobile-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    flex: 0 0 auto;
   }
 
   .season-switcher {
     gap: var(--space-2);
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
   }
 
   .season-label {
@@ -487,6 +499,26 @@
   .menu-toggle-btn {
     width: 36px;
     height: 36px;
+  }
+
+  .mobile-search-trigger {
+    width: 36px;
+    min-height: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .mobile-search-trigger .search-trigger-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mobile-search-trigger .search-trigger-text {
+    display: none;
   }
 
   .header-search-slot {
@@ -567,17 +599,19 @@
   }
 
   .header-left {
-    align-items: flex-start;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .season-switcher {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-1);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .season-select-native {
-    width: 100px;
+    width: 92px;
+    padding: 0 var(--space-2);
   }
 
   .header-mobile-search .global-search-dropdown {

@@ -13,7 +13,6 @@ const TEXT = {
   drivers: '\u8f66\u624b',
   constructors: '\u8f66\u961f',
   circuits: '\u8d5b\u9053',
-  databaseAudit: '\u6570\u636e\u5e93\u5ba1\u8ba1',
   searching: '\u52a0\u8f7d\u641c\u7d22\u4e2d...',
   searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
   appName: 'F1 \u6570\u636e\u4e2d\u5fc3',
@@ -100,14 +99,6 @@ const CircuitIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
-const DatabaseIcon = ({ className }: IconProps) => (
-  <IconBase className={className}>
-    <ellipse cx="12" cy="6.5" rx="6.5" ry="2.8" />
-    <path d="M5.5 6.5v5.5c0 1.6 2.9 2.8 6.5 2.8s6.5-1.2 6.5-2.8V6.5" />
-    <path d="M5.5 12v5.5c0 1.6 2.9 2.8 6.5 2.8s6.5-1.2 6.5-2.8V12" />
-  </IconBase>
-);
-
 const MenuFoldIcon = ({ className }: IconProps) => (
   <IconBase className={className}>
     <path d="M4 6.5h9" />
@@ -151,7 +142,6 @@ const navItems = [
   { key: '/drivers', icon: DriverIcon, label: TEXT.drivers },
   { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
   { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
-  { key: '/database', icon: DatabaseIcon, label: TEXT.databaseAudit },
 ];
 
 const resolveActiveNavKey = (pathname: string) => {
@@ -177,10 +167,6 @@ const resolveActiveNavKey = (pathname: string) => {
 
   if (pathname.startsWith('/seasons')) {
     return '/seasons';
-  }
-
-  if (pathname.startsWith('/database')) {
-    return '/database';
   }
 
   return '';
@@ -272,14 +258,10 @@ const LayoutComponent = () => {
     setSearchActivated(true);
   };
 
-  const searchBox = searchActivated ? (
-    <Suspense fallback={<div className="search-loading-shell">{TEXT.searching}</div>}>
-      <GlobalSearchBox autoFocus mobileOptimized={isMobile} />
-    </Suspense>
-  ) : (
+  const searchTrigger = (
     <button
       type="button"
-      className="search-trigger"
+      className={`search-trigger ${isMobile ? 'mobile-search-trigger' : ''}`}
       onClick={activateSearch}
       onFocus={activateSearch}
       onMouseEnter={() => void import('@/components/GlobalSearchBox')}
@@ -287,6 +269,44 @@ const LayoutComponent = () => {
     >
       <SearchIcon className="search-trigger-icon" />
       <span className="search-trigger-text">{TEXT.searchPlaceholder}</span>
+    </button>
+  );
+
+  const searchBox = searchActivated ? (
+    <Suspense fallback={<div className="search-loading-shell">{TEXT.searching}</div>}>
+      <GlobalSearchBox autoFocus mobileOptimized={isMobile} />
+    </Suspense>
+  ) : searchTrigger;
+
+  const seasonSwitcher = (
+    <label className="season-switcher">
+      <span className="season-label">{TEXT.currentSeason}</span>
+      <select
+        value={currentSeason}
+        onChange={(event) => setCurrentSeason(event.target.value)}
+        className="season-select-native"
+      >
+        {seasons.map((season) => (
+          <option key={season.season} value={season.season}>
+            {season.season}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const menuButton = (
+    <button
+      type="button"
+      onClick={isMobile ? () => setMobileSidebarOpen((previous) => !previous) : toggleSidebar}
+      className="menu-toggle-btn"
+      aria-label={mobileSidebarOpen || !sidebarCollapsed
+        ? '\u6536\u8d77\u4fa7\u8fb9\u680f'
+        : '\u5c55\u5f00\u4fa7\u8fb9\u680f'}
+    >
+      {isMobile
+        ? (mobileSidebarOpen ? <MenuFoldIcon className="menu-toggle-icon" /> : <MenuUnfoldIcon className="menu-toggle-icon" />)
+        : (sidebarCollapsed ? <MenuUnfoldIcon className="menu-toggle-icon" /> : <MenuFoldIcon className="menu-toggle-icon" />)}
     </button>
   );
 
@@ -338,33 +358,20 @@ const LayoutComponent = () => {
         <header className={`header ${isMobile ? 'mobile-header' : ''}`}>
           <div className="header-main">
             <div className="header-left">
-              <button
-                type="button"
-                onClick={isMobile ? () => setMobileSidebarOpen((previous) => !previous) : toggleSidebar}
-                className="menu-toggle-btn"
-                aria-label={mobileSidebarOpen || !sidebarCollapsed
-                  ? '\u6536\u8d77\u4fa7\u8fb9\u680f'
-                  : '\u5c55\u5f00\u4fa7\u8fb9\u680f'}
-              >
-                {isMobile
-                  ? (mobileSidebarOpen ? <MenuFoldIcon className="menu-toggle-icon" /> : <MenuUnfoldIcon className="menu-toggle-icon" />)
-                  : (sidebarCollapsed ? <MenuUnfoldIcon className="menu-toggle-icon" /> : <MenuFoldIcon className="menu-toggle-icon" />)}
-              </button>
-
-              <label className="season-switcher">
-                <span className="season-label">{TEXT.currentSeason}</span>
-                <select
-                  value={currentSeason}
-                  onChange={(event) => setCurrentSeason(event.target.value)}
-                  className="season-select-native"
-                >
-                  {seasons.map((season) => (
-                    <option key={season.season} value={season.season}>
-                      {season.season}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {isMobile ? (
+                <>
+                  {seasonSwitcher}
+                  <div className="header-mobile-actions">
+                    {!searchActivated ? searchTrigger : null}
+                    {menuButton}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {menuButton}
+                  {seasonSwitcher}
+                </>
+              )}
             </div>
 
             {!isMobile ? (
@@ -374,7 +381,7 @@ const LayoutComponent = () => {
             ) : null}
           </div>
 
-          {isMobile ? (
+          {isMobile && searchActivated ? (
             <div className="header-mobile-search">
               {searchBox}
             </div>

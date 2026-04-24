@@ -160,12 +160,12 @@
   }
 
   .page-title {
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-2);
+    font-size: 1.65rem;
+    margin-bottom: var(--space-3);
   }
 
   .list-container {
-    gap: 3px;
+    gap: 6px;
   }
 
   .list-item {
@@ -178,8 +178,8 @@
   .item-content {
     flex-direction: row;
     align-items: center;
-    gap: 6px;
-    padding: 6px 8px 6px 10px;
+    gap: 8px;
+    padding: 10px 12px;
   }
 
   .item-right {
@@ -187,11 +187,12 @@
   }
 
   .item-title {
-    font-size: 0.8rem;
+    font-size: 1rem;
+    line-height: 1.25;
   }
 
   .item-stats {
-    font-size: 10px;
+    font-size: 12px;
     flex-wrap: wrap;
     gap: 4px 8px;
   }

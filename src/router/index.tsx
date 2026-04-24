@@ -13,7 +13,6 @@ const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
 const Circuits = lazy(() => import('@/pages/Circuits'));
 const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
-const DatabaseAudit = lazy(() => import('@/pages/DatabaseAudit'));
 
 function withSuspense(element: JSX.Element) {
   return (
@@ -98,10 +97,6 @@ const router = createBrowserRouter([
       {
         path: '/circuits/:circuitId',
         element: withSuspense(<CircuitDetail />),
-      },
-      {
-        path: '/database',
-        element: withSuspense(<DatabaseAudit />),
       },
     ],
   },
