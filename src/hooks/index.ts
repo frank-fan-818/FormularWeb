@@ -11,4 +11,4 @@ export { useDriverDetails } from './useF1Data';
 export { useRaceStatus, useRacesByStatus } from './useRaceStatus';
 export { useAsync, useLoadingDelay } from './useAsync';
 export { useGlobalSearch } from './useGlobalSearch';
-export { useFastF1RaceAnalytics } from './useFastF1RaceAnalytics';
+export { useFastF1RaceAnalytics, useFastF1SessionAnalytics } from './useFastF1RaceAnalytics';

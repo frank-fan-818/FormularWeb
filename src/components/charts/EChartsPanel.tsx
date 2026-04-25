@@ -1,5 +1,5 @@
 import ReactEChartsCore from 'echarts-for-react/lib/core';
-import { BarChart, LineChart } from 'echarts/charts';
+import { BarChart, LineChart, LinesChart, ScatterChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
@@ -14,6 +14,8 @@ import * as echarts from 'echarts/core';
 echarts.use([
   BarChart,
   LineChart,
+  LinesChart,
+  ScatterChart,
   TooltipComponent,
   LegendComponent,
   MarkAreaComponent,

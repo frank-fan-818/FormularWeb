@@ -300,6 +300,136 @@ export interface FastF1RaceControlMessage {
   lap: number | null;
 }
 
+export interface FastF1WeatherPoint {
+  timeSeconds: number;
+  lapNumber: number | null;
+  airTempC: number | null;
+  trackTempC: number | null;
+  humidityPct: number | null;
+  pressureHpa: number | null;
+  rainfall: boolean;
+  windDirectionDeg: number | null;
+  windSpeedMps: number | null;
+}
+
+export interface FastF1WeatherStatSummary {
+  min: number | null;
+  max: number | null;
+  average: number | null;
+}
+
+export interface FastF1WeatherLapRange {
+  startLap: number;
+  endLap: number;
+}
+
+export interface FastF1WeatherSummary {
+  airTempC: FastF1WeatherStatSummary;
+  trackTempC: FastF1WeatherStatSummary;
+  humidityPct: FastF1WeatherStatSummary;
+  rainPointCount: number;
+  rainLapRanges: FastF1WeatherLapRange[];
+  maxWindSpeedMps: number | null;
+}
+
+export interface FastF1WeatherAnalysis {
+  points: FastF1WeatherPoint[];
+  summary: FastF1WeatherSummary;
+}
+
+export type FastF1QualifyingSessionType = 'QUALIFYING' | 'SPRINT_QUALIFYING' | 'SPRINT_SHOOTOUT';
+
+export interface FastF1PhaseTime {
+  time: string;
+  timeSeconds: number | null;
+}
+
+export interface FastF1PhaseResult {
+  driver: string;
+  team: string;
+  position: number;
+  phases: Record<string, FastF1PhaseTime>;
+}
+
+export interface FastF1QualifyingBestLap {
+  driver: string;
+  team: string;
+  position: number;
+  lapNumber: number | null;
+  lapTimeSeconds: number;
+  sector1Seconds: number | null;
+  sector2Seconds: number | null;
+  sector3Seconds: number | null;
+  compound: string;
+  isDeleted: boolean;
+}
+
+export interface FastF1QualifyingAnalysis {
+  sessionType: FastF1QualifyingSessionType;
+  phaseResults: FastF1PhaseResult[];
+  bestLaps: FastF1QualifyingBestLap[];
+}
+
+export interface FastF1TelemetrySample {
+  distanceM: number;
+  timeSeconds: number | null;
+  speedKph: number | null;
+  rpm: number | null;
+  gear: number | null;
+  throttlePct: number | null;
+  brake: boolean;
+  drs: number | null;
+}
+
+export interface FastF1PositionSample {
+  distanceM: number;
+  x: number;
+  y: number;
+  z: number | null;
+  speedKph: number | null;
+}
+
+export interface FastF1TelemetryDriver {
+  driver: string;
+  team: string;
+  lapNumber: number | null;
+  lapTimeSeconds: number | null;
+  compound: string;
+  samples: FastF1TelemetrySample[];
+  positionSamples: FastF1PositionSample[];
+}
+
+export interface FastF1CircuitCorner {
+  number: number;
+  letter: string;
+  label: string;
+  distanceM: number;
+  x: number | null;
+  y: number | null;
+  angleDeg: number | null;
+}
+
+export interface FastF1CornerDriverSpeed {
+  driver: string;
+  entrySpeedKph: number | null;
+  minSpeedKph: number | null;
+  exitSpeedKph: number | null;
+}
+
+export interface FastF1CornerAnalysis {
+  corner: string;
+  number: number;
+  letter: string;
+  distanceM: number;
+  drivers: FastF1CornerDriverSpeed[];
+}
+
+export interface FastF1TelemetryAnalysis {
+  drivers: FastF1TelemetryDriver[];
+  corners: FastF1CircuitCorner[];
+  cornerAnalysis: FastF1CornerAnalysis[];
+}
+
 export interface FastF1RaceAnalytics {
   source: 'fastf1';
   generatedAt: string;
@@ -312,6 +442,9 @@ export interface FastF1RaceAnalytics {
   fastestLap?: FastF1FastestLap | null;
   trackStatusPeriods?: FastF1TrackStatusPeriod[];
   raceControlMessages?: FastF1RaceControlMessage[];
+  weather?: FastF1WeatherAnalysis;
+  qualifyingAnalysis?: FastF1QualifyingAnalysis;
+  telemetry?: FastF1TelemetryAnalysis;
   lapTimeSeries: FastF1DriverLapSeries[];
   tyreStrategies: FastF1DriverStrategy[];
 }

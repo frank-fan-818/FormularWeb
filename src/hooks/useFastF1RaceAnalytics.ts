@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
 import type { FastF1RaceAnalytics } from '@/types';
 
-export function useFastF1RaceAnalytics(season: string, round?: string) {
+export function useFastF1SessionAnalytics(
+  season: string,
+  round?: string,
+  session = 'R',
+) {
   const [data, setData] = useState<FastF1RaceAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -20,7 +24,7 @@ export function useFastF1RaceAnalytics(season: string, round?: string) {
     setLoading(true);
     setError(null);
 
-    fastF1AnalyticsApi.getRaceAnalytics(season, round, 'R', controller.signal)
+    fastF1AnalyticsApi.getRaceAnalytics(season, round, session, controller.signal)
       .then((analytics) => {
         setData(analytics);
       })
@@ -39,7 +43,11 @@ export function useFastF1RaceAnalytics(season: string, round?: string) {
       });
 
     return () => controller.abort();
-  }, [round, season]);
+  }, [round, season, session]);
 
   return { data, loading, error };
+}
+
+export function useFastF1RaceAnalytics(season: string, round?: string) {
+  return useFastF1SessionAnalytics(season, round, 'R');
 }

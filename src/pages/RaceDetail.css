@@ -254,6 +254,166 @@
   border-radius: var(--radius-full);
 }
 
+.weather-summary-pills,
+.weather-rain-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.weather-summary-pills {
+  max-width: 460px;
+}
+
+.weather-summary-pills span,
+.weather-rain-legend span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.weather-rain-legend {
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.weather-rain-swatch {
+  width: 16px;
+  min-height: 10px !important;
+  height: 10px;
+  border-color: rgba(2, 132, 199, 0.32) !important;
+  border-radius: 3px !important;
+  padding: 0 !important;
+  background: rgba(14, 165, 233, 0.16) !important;
+}
+
+.fastf1-weather-tooltip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.16);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.telemetry-card .ant-table {
+  margin-top: 8px;
+}
+
+.telemetry-driver-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+}
+
+.telemetry-metric-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.telemetry-metric-button {
+  min-height: 28px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+}
+
+.telemetry-metric-button:hover,
+.telemetry-metric-button:focus-visible {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.telemetry-metric-button.is-active {
+  border-color: rgba(255, 24, 1, 0.28);
+  background: rgba(255, 24, 1, 0.08);
+  color: var(--f1-red);
+}
+
+.telemetry-metric-button.is-muted {
+  opacity: 0.46;
+}
+
+.telemetry-chart-divider {
+  height: 1px;
+  margin: 10px 0 14px;
+  background: var(--border-secondary);
+}
+
+.telemetry-heatmap-panel {
+  margin-top: 12px;
+}
+
+.telemetry-panel-title {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.telemetry-heat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: -8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.telemetry-heat-legend span {
+  width: 24px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.telemetry-heat-low {
+  background: linear-gradient(90deg, #2563eb, #16a34a);
+}
+
+.telemetry-heat-high {
+  background: linear-gradient(90deg, #f59e0b, #dc2626);
+}
+
+.telemetry-corner-table {
+  margin-top: 14px;
+}
+
+.corner-label {
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+}
+
+.corner-distance {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
 .fastf1-tooltip {
   min-width: 250px;
   color: #f8fafc;
@@ -349,6 +509,11 @@
 .fastest-lap {
   color: #faad14;
   font-weight: bold;
+}
+
+.fastf1-deleted-lap {
+  color: #d48806;
+  font-weight: var(--font-semibold);
 }
 
 .points {
@@ -493,6 +658,15 @@
 
   .compound-legend {
     justify-content: flex-start;
+  }
+
+  .weather-summary-pills,
+  .weather-rain-legend {
+    justify-content: flex-start;
+  }
+
+  .telemetry-driver-strip {
+    gap: 8px 10px;
   }
 
   .sprint-tag {
