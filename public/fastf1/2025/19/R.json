@@ -1,6 +1,6 @@
 {
   "source": "fastf1",
-  "generatedAt": "2026-04-25T05:50:03.923065+00:00",
+  "generatedAt": "2026-04-25T12:12:02.120221+00:00",
   "season": "2025",
   "round": "19",
   "session": "R",
@@ -9489,6 +9489,820 @@
       "rainPointCount": 0,
       "rainLapRanges": [],
       "maxWindSpeedMps": 4.9
+    }
+  },
+  "strategyAnalysis": {
+    "pitStops": [
+      {
+        "driver": "ALB",
+        "team": "Williams",
+        "stopNumber": 1,
+        "pitLap": 7,
+        "outLap": 8,
+        "oldCompound": "HARD",
+        "newCompound": "MEDIUM",
+        "pitDurationSeconds": 23.767,
+        "paceBeforeSeconds": 101.901,
+        "paceAfterSeconds": 99.809,
+        "paceDeltaSeconds": 2.092,
+        "positionBefore": 20,
+        "positionAfter": 19,
+        "positionDelta": 1,
+        "contexts": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "lap": 7,
+            "message": "Yellow"
+          },
+          {
+            "type": "VSC",
+            "label": "VSC",
+            "lap": 7,
+            "message": "Virtual Safety Car Ending"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "lap": 7,
+            "message": "CLEAR IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "lap": 7,
+            "message": "YELLOW IN TRACK SECTOR 19"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "SafetyCar",
+            "lap": 7,
+            "message": "VIRTUAL SAFETY CAR DEPLOYED"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "lap": 7,
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 19"
+          }
+        ]
+      },
+      {
+        "driver": "BOR",
+        "team": "Kick Sauber",
+        "stopNumber": 1,
+        "pitLap": 14,
+        "outLap": 15,
+        "oldCompound": "SOFT",
+        "newCompound": "MEDIUM",
+        "pitDurationSeconds": 25.614,
+        "paceBeforeSeconds": 101.381,
+        "paceAfterSeconds": 100.246,
+        "paceDeltaSeconds": 1.135,
+        "positionBefore": 16,
+        "positionAfter": 19,
+        "positionDelta": -3,
+        "contexts": []
+      },
+      {
+        "driver": "LEC",
+        "team": "Ferrari",
+        "stopNumber": 1,
+        "pitLap": 22,
+        "outLap": 23,
+        "oldCompound": "SOFT",
+        "newCompound": "MEDIUM",
+        "pitDurationSeconds": 23.643,
+        "paceBeforeSeconds": 100.373,
+        "paceAfterSeconds": 99.262,
+        "paceDeltaSeconds": 1.111,
+        "positionBefore": 2,
+        "positionAfter": 9,
+        "positionDelta": -7,
+        "contexts": []
+      },
+      {
+        "driver": "OCO",
+        "team": "Haas F1 Team",
+        "stopNumber": 1,
+        "pitLap": 24,
+        "outLap": 25,
+        "oldCompound": "HARD",
+        "newCompound": "MEDIUM",
+        "pitDurationSeconds": 25.088,
+        "paceBeforeSeconds": 101.391,
+        "paceAfterSeconds": 99.644,
+        "paceDeltaSeconds": 1.747,
+        "positionBefore": 15,
+        "positionAfter": 19,
+        "positionDelta": -4,
+        "contexts": []
+      },
+      {
+        "driver": "GAS",
+        "team": "Alpine",
+        "stopNumber": 1,
+        "pitLap": 27,
+        "outLap": 28,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 26.515,
+        "paceBeforeSeconds": 101.44,
+        "paceAfterSeconds": 99.788,
+        "paceDeltaSeconds": 1.652,
+        "positionBefore": 14,
+        "positionAfter": 18,
+        "positionDelta": -4,
+        "contexts": []
+      },
+      {
+        "driver": "STR",
+        "team": "Aston Martin",
+        "stopNumber": 1,
+        "pitLap": 28,
+        "outLap": 29,
+        "oldCompound": "SOFT",
+        "newCompound": "MEDIUM",
+        "pitDurationSeconds": 24.216,
+        "paceBeforeSeconds": 101.387,
+        "paceAfterSeconds": 99.684,
+        "paceDeltaSeconds": 1.703,
+        "positionBefore": 18,
+        "positionAfter": 16,
+        "positionDelta": 2,
+        "contexts": []
+      },
+      {
+        "driver": "HAD",
+        "team": "Racing Bulls",
+        "stopNumber": 1,
+        "pitLap": 28,
+        "outLap": 29,
+        "oldCompound": "HARD",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.468,
+        "paceBeforeSeconds": 101.431,
+        "paceAfterSeconds": 99.994,
+        "paceDeltaSeconds": 1.437,
+        "positionBefore": 19,
+        "positionAfter": 19,
+        "positionDelta": 0,
+        "contexts": []
+      },
+      {
+        "driver": "TSU",
+        "team": "Red Bull Racing",
+        "stopNumber": 1,
+        "pitLap": 29,
+        "outLap": 30,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 24.162,
+        "paceBeforeSeconds": 101.044,
+        "paceAfterSeconds": 99.583,
+        "paceDeltaSeconds": 1.461,
+        "positionBefore": 10,
+        "positionAfter": 8,
+        "positionDelta": 2,
+        "contexts": []
+      },
+      {
+        "driver": "PIA",
+        "team": "McLaren",
+        "stopNumber": 1,
+        "pitLap": 30,
+        "outLap": 31,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.46,
+        "paceBeforeSeconds": 100.748,
+        "paceAfterSeconds": 99.585,
+        "paceDeltaSeconds": 1.163,
+        "positionBefore": 5,
+        "positionAfter": 7,
+        "positionDelta": -2,
+        "contexts": []
+      },
+      {
+        "driver": "BEA",
+        "team": "Haas F1 Team",
+        "stopNumber": 1,
+        "pitLap": 30,
+        "outLap": 31,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.712,
+        "paceBeforeSeconds": 101.219,
+        "paceAfterSeconds": 99.337,
+        "paceDeltaSeconds": 1.882,
+        "positionBefore": 8,
+        "positionAfter": 9,
+        "positionDelta": -1,
+        "contexts": []
+      },
+      {
+        "driver": "ALO",
+        "team": "Aston Martin",
+        "stopNumber": 1,
+        "pitLap": 30,
+        "outLap": 31,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.934,
+        "paceBeforeSeconds": 101.136,
+        "paceAfterSeconds": 100.694,
+        "paceDeltaSeconds": 0.442,
+        "positionBefore": 12,
+        "positionAfter": 13,
+        "positionDelta": -1,
+        "contexts": []
+      },
+      {
+        "driver": "LAW",
+        "team": "Racing Bulls",
+        "stopNumber": 1,
+        "pitLap": 30,
+        "outLap": 31,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.424,
+        "paceBeforeSeconds": 101.088,
+        "paceAfterSeconds": 100.002,
+        "paceDeltaSeconds": 1.086,
+        "positionBefore": 13,
+        "positionAfter": 14,
+        "positionDelta": -1,
+        "contexts": []
+      },
+      {
+        "driver": "HAM",
+        "team": "Ferrari",
+        "stopNumber": 1,
+        "pitLap": 31,
+        "outLap": 32,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.952,
+        "paceBeforeSeconds": 100.329,
+        "paceAfterSeconds": null,
+        "paceDeltaSeconds": null,
+        "positionBefore": 4,
+        "positionAfter": 6,
+        "positionDelta": -2,
+        "contexts": []
+      },
+      {
+        "driver": "ANT",
+        "team": "Mercedes",
+        "stopNumber": 1,
+        "pitLap": 31,
+        "outLap": 32,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.914,
+        "paceBeforeSeconds": 100.303,
+        "paceAfterSeconds": null,
+        "paceDeltaSeconds": null,
+        "positionBefore": 7,
+        "positionAfter": 17,
+        "positionDelta": -10,
+        "contexts": []
+      },
+      {
+        "driver": "NOR",
+        "team": "McLaren",
+        "stopNumber": 1,
+        "pitLap": 32,
+        "outLap": 33,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 24.515,
+        "paceBeforeSeconds": 99.765,
+        "paceAfterSeconds": null,
+        "paceDeltaSeconds": null,
+        "positionBefore": 3,
+        "positionAfter": 3,
+        "positionDelta": 0,
+        "contexts": []
+      },
+      {
+        "driver": "COL",
+        "team": "Alpine",
+        "stopNumber": 1,
+        "pitLap": 32,
+        "outLap": 33,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.785,
+        "paceBeforeSeconds": 101.212,
+        "paceAfterSeconds": null,
+        "paceDeltaSeconds": null,
+        "positionBefore": 17,
+        "positionAfter": 19,
+        "positionDelta": -2,
+        "contexts": []
+      },
+      {
+        "driver": "VER",
+        "team": "Red Bull Racing",
+        "stopNumber": 1,
+        "pitLap": 33,
+        "outLap": 34,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.721,
+        "paceBeforeSeconds": 100.176,
+        "paceAfterSeconds": 98.698,
+        "paceDeltaSeconds": 1.478,
+        "positionBefore": 1,
+        "positionAfter": 1,
+        "positionDelta": 0,
+        "contexts": []
+      },
+      {
+        "driver": "RUS",
+        "team": "Mercedes",
+        "stopNumber": 1,
+        "pitLap": 33,
+        "outLap": 34,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.465,
+        "paceBeforeSeconds": 100.612,
+        "paceAfterSeconds": 98.483,
+        "paceDeltaSeconds": 2.129,
+        "positionBefore": 6,
+        "positionAfter": 6,
+        "positionDelta": 0,
+        "contexts": []
+      },
+      {
+        "driver": "HUL",
+        "team": "Kick Sauber",
+        "stopNumber": 1,
+        "pitLap": 33,
+        "outLap": 34,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.754,
+        "paceBeforeSeconds": 100.178,
+        "paceAfterSeconds": 99.82,
+        "paceDeltaSeconds": 0.358,
+        "positionBefore": 11,
+        "positionAfter": 8,
+        "positionDelta": 3,
+        "contexts": []
+      },
+      {
+        "driver": "ALB",
+        "team": "Williams",
+        "stopNumber": 2,
+        "pitLap": 36,
+        "outLap": 37,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 24.233,
+        "paceBeforeSeconds": null,
+        "paceAfterSeconds": 98.496,
+        "paceDeltaSeconds": null,
+        "positionBefore": 20,
+        "positionAfter": 16,
+        "positionDelta": 4,
+        "contexts": []
+      },
+      {
+        "driver": "BOR",
+        "team": "Kick Sauber",
+        "stopNumber": 2,
+        "pitLap": 36,
+        "outLap": 37,
+        "oldCompound": "MEDIUM",
+        "newCompound": "SOFT",
+        "pitDurationSeconds": 23.973,
+        "paceBeforeSeconds": null,
+        "paceAfterSeconds": 98.679,
+        "paceDeltaSeconds": null,
+        "positionBefore": 16,
+        "positionAfter": 19,
+        "positionDelta": -3,
+        "contexts": []
+      }
+    ],
+    "eventTimeline": [
+      {
+        "lapNumber": 1,
+        "events": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "message": "Yellow"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "GREEN LIGHT - PIT EXIT OPEN"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 14"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 14"
+          }
+        ]
+      },
+      {
+        "lapNumber": 6,
+        "events": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "message": "Yellow"
+          },
+          {
+            "type": "VSC",
+            "label": "VSC",
+            "message": "Virtual Safety Car Ending"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 6 (HAD) - TRACK LIMITS"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "YELLOW IN TRACK SECTOR 16"
+          }
+        ]
+      },
+      {
+        "lapNumber": 7,
+        "events": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "message": "Yellow"
+          },
+          {
+            "type": "VSC",
+            "label": "VSC",
+            "message": "Virtual Safety Car Ending"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "YELLOW IN TRACK SECTOR 19"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "SafetyCar",
+            "message": "VIRTUAL SAFETY CAR DEPLOYED"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 19"
+          }
+        ]
+      },
+      {
+        "lapNumber": 8,
+        "events": [
+          {
+            "type": "VSC",
+            "label": "VSC",
+            "message": "Virtual Safety Car Ending"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 19"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 2"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 2"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "SafetyCar",
+            "message": "VIRTUAL SAFETY CAR ENDING"
+          }
+        ]
+      },
+      {
+        "lapNumber": 9,
+        "events": [
+          {
+            "type": "VSC",
+            "label": "VSC",
+            "message": "Virtual Safety Car Ending"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "TRACK CLEAR"
+          }
+        ]
+      },
+      {
+        "lapNumber": 21,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 4 (NOR) - TRACK LIMITS"
+          }
+        ]
+      },
+      {
+        "lapNumber": 34,
+        "events": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "message": "Yellow"
+          }
+        ]
+      },
+      {
+        "lapNumber": 35,
+        "events": [
+          {
+            "type": "YELLOW",
+            "label": "Yellow",
+            "message": "Yellow"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "YELLOW IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "DOUBLE YELLOW IN TRACK SECTOR 16"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CLEAR IN TRACK SECTOR 16"
+          }
+        ]
+      },
+      {
+        "lapNumber": 38,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 5 (BOR) - TRACK LIMITS"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 23 (ALB) - TRACK LIMITS"
+          }
+        ]
+      },
+      {
+        "lapNumber": 41,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 12 (ANT) - TRACK LIMITS"
+          }
+        ]
+      },
+      {
+        "lapNumber": 54,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "WAVED BLUE FLAG FOR CAR 5 (BOR) TIMED AT 15:34:11"
+          }
+        ]
+      },
+      {
+        "lapNumber": 55,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 15:34:49"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "WAVED BLUE FLAG FOR CAR 43 (COL) TIMED AT 15:35:41"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "WAVED BLUE FLAG FOR CAR 43 (COL) TIMED AT 15:35:50"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "WAVED BLUE FLAG FOR CAR 43 (COL) TIMED AT 15:36:01"
+          }
+        ]
+      },
+      {
+        "lapNumber": 56,
+        "events": [
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "CHEQUERED FLAG"
+          },
+          {
+            "type": "MESSAGE",
+            "label": "Flag",
+            "message": "BLACK AND WHITE FLAG FOR CAR 44 (HAM) - TRACK LIMITS"
+          }
+        ]
+      }
+    ],
+    "strategyBattles": [
+      {
+        "type": "OVERCUT",
+        "driver": "OCO",
+        "rival": "LEC",
+        "startLap": 22,
+        "endLap": 24,
+        "positionDelta": 3,
+        "summary": "OCO overcut LEC +3 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "GAS",
+        "rival": "LEC",
+        "startLap": 22,
+        "endLap": 27,
+        "positionDelta": 3,
+        "summary": "GAS overcut LEC +3 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "STR",
+        "rival": "OCO",
+        "startLap": 24,
+        "endLap": 28,
+        "positionDelta": 6,
+        "summary": "STR overcut OCO +6 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "HAD",
+        "rival": "OCO",
+        "startLap": 24,
+        "endLap": 28,
+        "positionDelta": 4,
+        "summary": "HAD overcut OCO +4 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "TSU",
+        "rival": "OCO",
+        "startLap": 24,
+        "endLap": 29,
+        "positionDelta": 6,
+        "summary": "TSU overcut OCO +6 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "STR",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 28,
+        "positionDelta": 6,
+        "summary": "STR overcut GAS +6 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "HAD",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 28,
+        "positionDelta": 4,
+        "summary": "HAD overcut GAS +4 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "TSU",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 29,
+        "positionDelta": 6,
+        "summary": "TSU overcut GAS +6 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "PIA",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 30,
+        "positionDelta": 2,
+        "summary": "PIA overcut GAS +2 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "BEA",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 30,
+        "positionDelta": 3,
+        "summary": "BEA overcut GAS +3 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "ALO",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 30,
+        "positionDelta": 3,
+        "summary": "ALO overcut GAS +3 pos"
+      },
+      {
+        "type": "OVERCUT",
+        "driver": "LAW",
+        "rival": "GAS",
+        "startLap": 27,
+        "endLap": 30,
+        "positionDelta": 3,
+        "summary": "LAW overcut GAS +3 pos"
+      }
+    ],
+    "summary": {
+      "pitStopCount": 21,
+      "statusLapRanges": [
+        {
+          "type": "YELLOW",
+          "label": "Yellow",
+          "startLap": 1,
+          "endLap": 1
+        },
+        {
+          "type": "YELLOW",
+          "label": "Yellow",
+          "startLap": 6,
+          "endLap": 7
+        },
+        {
+          "type": "VSC",
+          "label": "VSC",
+          "startLap": 6,
+          "endLap": 9
+        },
+        {
+          "type": "YELLOW",
+          "label": "Yellow",
+          "startLap": 34,
+          "endLap": 35
+        }
+      ],
+      "biggestPositionGain": {
+        "driver": "ALB",
+        "value": 4,
+        "pitLap": 36
+      },
+      "biggestPositionLoss": {
+        "driver": "ANT",
+        "value": -10,
+        "pitLap": 31
+      },
+      "bestPaceGain": {
+        "driver": "RUS",
+        "valueSeconds": 2.129,
+        "pitLap": 33
+      }
     }
   },
   "telemetry": {

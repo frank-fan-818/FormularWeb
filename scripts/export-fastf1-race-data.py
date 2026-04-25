@@ -614,6 +614,208 @@ def build_qualifying_best_laps(
     return sort_by_driver_order(best_laps, driver_order)
 
 
+def build_phase_cutoffs(
+    results: pd.DataFrame,
+    session_code: str,
+) -> list[dict[str, Any]]:
+    if results.empty or "Abbreviation" not in results.columns:
+        return []
+
+    phase_columns = [column for column in ["Q1", "Q2", "Q3"] if column in results.columns]
+    if not phase_columns:
+        return []
+
+    session_prefix = "SQ" if session_code.upper() in {"SQ", "SS"} else "Q"
+    cutoff_positions = {"Q1": 15, "Q2": 10, "Q3": 1}
+    cutoffs = []
+
+    for phase in phase_columns:
+        phase_rows = []
+        for _, result in results.iterrows():
+            seconds = to_seconds(result.get(phase))
+            if seconds is None:
+                continue
+
+            phase_rows.append({
+                "driver": clean_text(result.get("Abbreviation")),
+                "team": clean_text(result.get("TeamName")) or clean_text(result.get("Team")),
+                "time": format_session_time(result.get(phase)),
+                "timeSeconds": seconds,
+            })
+
+        if not phase_rows:
+            continue
+
+        phase_rows = sorted(phase_rows, key=lambda item: item["timeSeconds"])
+        cutoff_position = cutoff_positions.get(phase, len(phase_rows))
+        cutoff_index = min(max(cutoff_position - 1, 0), len(phase_rows) - 1)
+        cutoff_driver = phase_rows[cutoff_index]
+
+        cutoffs.append({
+            "phase": phase.lower(),
+            "label": f"{session_prefix}{phase[-1]}",
+            "cutoffPosition": cutoff_index + 1,
+            "cutoffDriver": cutoff_driver["driver"],
+            "cutoffTime": cutoff_driver["time"],
+            "cutoffTimeSeconds": cutoff_driver["timeSeconds"],
+            "eliminatedDrivers": [
+                item["driver"]
+                for item in phase_rows[cutoff_index + 1:]
+            ],
+        })
+
+    return cutoffs
+
+
+def build_last_flying_laps(
+    laps: pd.DataFrame,
+    driver_order: dict[str, int],
+) -> list[dict[str, Any]]:
+    if laps.empty or "Driver" not in laps.columns:
+        return []
+
+    records = []
+    for driver, driver_laps in laps.groupby("Driver", sort=False):
+        timed_laps = driver_laps.dropna(subset=["LapTime", "LapNumber"]).sort_values("LapNumber")
+        if timed_laps.empty:
+            continue
+
+        summary = build_lap_summary(timed_laps.iloc[-1])
+        if summary is None:
+            continue
+
+        summary["driver"] = clean_text(driver)
+        summary["position"] = driver_order.get(clean_text(driver), 0) + 1
+        records.append(summary)
+
+    return sort_by_driver_order(records, driver_order)
+
+
+def build_deleted_laps(
+    laps: pd.DataFrame,
+    driver_order: dict[str, int],
+) -> list[dict[str, Any]]:
+    if laps.empty or "Driver" not in laps.columns or "Deleted" not in laps.columns:
+        return []
+
+    deleted_laps = laps[laps.apply(is_deleted_lap, axis=1)].dropna(subset=["LapNumber"])
+    records = []
+    for _, lap in deleted_laps.sort_values(["Driver", "LapNumber"]).iterrows():
+        records.append({
+            "driver": clean_text(lap.get("Driver")),
+            "team": clean_text(lap.get("Team")),
+            "lapNumber": to_number(lap.get("LapNumber")),
+            "lapTimeSeconds": to_seconds(lap.get("LapTime")),
+            "reason": clean_text(lap.get("DeletedReason")) or clean_text(lap.get("TrackStatus")),
+            "position": driver_order.get(clean_text(lap.get("Driver")), 0) + 1,
+        })
+
+    return sort_by_driver_order(records, driver_order)
+
+
+def best_sector_for_driver(
+    driver_laps: pd.DataFrame,
+    sector_column: str,
+    include_deleted: bool = False,
+) -> pd.Series | None:
+    sector_laps = driver_laps.dropna(subset=[sector_column])
+    if not include_deleted and "Deleted" in sector_laps.columns:
+        sector_laps = sector_laps[~sector_laps.apply(is_deleted_lap, axis=1)]
+
+    if sector_laps.empty:
+        return None
+
+    return sector_laps.sort_values(sector_column).iloc[0]
+
+
+def build_sector_rankings(laps: pd.DataFrame) -> list[dict[str, Any]]:
+    if laps.empty or "Driver" not in laps.columns:
+        return []
+
+    sectors = [
+        ("s1", "Sector1Time"),
+        ("s2", "Sector2Time"),
+        ("s3", "Sector3Time"),
+    ]
+    rankings = []
+
+    for sector_key, sector_column in sectors:
+        if sector_column not in laps.columns:
+            continue
+
+        sector_records = []
+        for driver, driver_laps in laps.groupby("Driver", sort=False):
+            lap = best_sector_for_driver(driver_laps, sector_column, include_deleted=False)
+            if lap is None:
+                lap = best_sector_for_driver(driver_laps, sector_column, include_deleted=True)
+
+            seconds = to_seconds(lap.get(sector_column)) if lap is not None else None
+            if seconds is None:
+                continue
+
+            sector_records.append({
+                "driver": clean_text(driver),
+                "team": clean_text(lap.get("Team")),
+                "lapNumber": to_number(lap.get("LapNumber")),
+                "timeSeconds": seconds,
+                "isDeleted": is_deleted_lap(lap),
+            })
+
+        sector_records = sorted(sector_records, key=lambda item: item["timeSeconds"])
+        rankings.append({
+            "sector": sector_key,
+            "laps": [
+                {
+                    **record,
+                    "rank": index + 1,
+                    "deltaToBestSeconds": round(record["timeSeconds"] - sector_records[0]["timeSeconds"], 3),
+                }
+                for index, record in enumerate(sector_records)
+            ] if sector_records else [],
+        })
+
+    return rankings
+
+
+def build_teammate_comparisons(
+    best_laps: list[dict[str, Any]],
+    driver_order: dict[str, int],
+) -> list[dict[str, Any]]:
+    by_team: dict[str, list[dict[str, Any]]] = {}
+    for lap in best_laps:
+        by_team.setdefault(lap.get("team") or "UNKNOWN", []).append(lap)
+
+    comparisons = []
+    for team, team_laps in by_team.items():
+        if len(team_laps) != 2:
+            continue
+
+        first, second = sorted(
+            team_laps,
+            key=lambda item: driver_order.get(item["driver"], len(driver_order)),
+        )
+
+        def delta(key: str) -> float | None:
+            first_value = first.get(key)
+            second_value = second.get(key)
+            if first_value is None or second_value is None:
+                return None
+
+            return round(float(first_value) - float(second_value), 3)
+
+        comparisons.append({
+            "team": team,
+            "driverA": first["driver"],
+            "driverB": second["driver"],
+            "fastestLapDeltaSeconds": delta("lapTimeSeconds"),
+            "sector1DeltaSeconds": delta("sector1Seconds"),
+            "sector2DeltaSeconds": delta("sector2Seconds"),
+            "sector3DeltaSeconds": delta("sector3Seconds"),
+        })
+
+    return sorted(comparisons, key=lambda item: item["team"])
+
+
 def build_qualifying_analysis(
     session_code: str,
     results: pd.DataFrame,
@@ -629,7 +831,12 @@ def build_qualifying_analysis(
     return {
         "sessionType": current_session_type,
         "phaseResults": build_phase_results(results, driver_order),
+        "phaseCutoffs": build_phase_cutoffs(results, session_code),
         "bestLaps": best_laps,
+        "lastFlyingLaps": build_last_flying_laps(laps, driver_order),
+        "deletedLaps": build_deleted_laps(laps, driver_order),
+        "sectorRankings": build_sector_rankings(laps),
+        "teamMateComparisons": build_teammate_comparisons(best_laps, driver_order),
     }
 
 
@@ -1117,16 +1324,17 @@ def main() -> None:
     if qualifying_analysis:
         payload["qualifyingAnalysis"] = qualifying_analysis
 
-    telemetry = build_fastest_lap_telemetry(
-        session,
-        laps,
-        driver_order,
-        parse_driver_codes(args.telemetry_drivers),
-        max(0, args.telemetry_driver_count),
-        max(0, args.telemetry_samples),
-    )
-    if telemetry:
-        payload["telemetry"] = telemetry
+    if str(args.session).upper() == "R":
+        telemetry = build_fastest_lap_telemetry(
+            session,
+            laps,
+            driver_order,
+            parse_driver_codes(args.telemetry_drivers),
+            max(0, args.telemetry_driver_count),
+            max(0, args.telemetry_samples),
+        )
+        if telemetry:
+            payload["telemetry"] = telemetry
 
     output_path = output_root / str(args.season) / str(args.round) / f"{args.session}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)

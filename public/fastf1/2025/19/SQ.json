@@ -1,6 +1,6 @@
 {
   "source": "fastf1",
-  "generatedAt": "2026-04-24T11:34:54.109855+00:00",
+  "generatedAt": "2026-04-25T12:53:56.525914+00:00",
   "season": "2025",
   "round": "19",
   "session": "SQ",
@@ -2710,6 +2710,55 @@
         }
       }
     ],
+    "phaseCutoffs": [
+      {
+        "phase": "q1",
+        "label": "SQ1",
+        "cutoffPosition": 15,
+        "cutoffDriver": "GAS",
+        "cutoffTime": "1:35.144",
+        "cutoffTimeSeconds": 95.144,
+        "eliminatedDrivers": [
+          "BEA",
+          "COL",
+          "TSU",
+          "OCO"
+        ]
+      },
+      {
+        "phase": "q2",
+        "label": "SQ2",
+        "cutoffPosition": 10,
+        "cutoffDriver": "HAM",
+        "cutoffTime": "1:34.012",
+        "cutoffTimeSeconds": 94.012,
+        "eliminatedDrivers": [
+          "ANT",
+          "HAD",
+          "GAS",
+          "STR"
+        ]
+      },
+      {
+        "phase": "q3",
+        "label": "SQ3",
+        "cutoffPosition": 1,
+        "cutoffDriver": "VER",
+        "cutoffTime": "1:32.143",
+        "cutoffTimeSeconds": 92.143,
+        "eliminatedDrivers": [
+          "NOR",
+          "PIA",
+          "HUL",
+          "RUS",
+          "ALO",
+          "SAI",
+          "HAM",
+          "ALB",
+          "LEC"
+        ]
+      }
+    ],
     "bestLaps": [
       {
         "driver": "VER",
@@ -2950,6 +2999,915 @@
         "compound": "MEDIUM",
         "isDeleted": false,
         "position": 20
+      }
+    ],
+    "lastFlyingLaps": [
+      {
+        "driver": "VER",
+        "team": "Red Bull Racing",
+        "lapNumber": 12,
+        "lapTimeSeconds": 130.416,
+        "sector1Seconds": 36.405,
+        "sector2Seconds": 49.214,
+        "sector3Seconds": 44.797,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 1
+      },
+      {
+        "driver": "NOR",
+        "team": "McLaren",
+        "lapNumber": 12,
+        "lapTimeSeconds": 128.568,
+        "sector1Seconds": 40.361,
+        "sector2Seconds": 47.166,
+        "sector3Seconds": 41.041,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 2
+      },
+      {
+        "driver": "PIA",
+        "team": "McLaren",
+        "lapNumber": 13,
+        "lapTimeSeconds": 131.112,
+        "sector1Seconds": 38.215,
+        "sector2Seconds": 48.415,
+        "sector3Seconds": 44.482,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 3
+      },
+      {
+        "driver": "HUL",
+        "team": "Kick Sauber",
+        "lapNumber": 12,
+        "lapTimeSeconds": 134.184,
+        "sector1Seconds": 37.476,
+        "sector2Seconds": 49.936,
+        "sector3Seconds": 46.772,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 4
+      },
+      {
+        "driver": "RUS",
+        "team": "Mercedes",
+        "lapNumber": 13,
+        "lapTimeSeconds": 133.327,
+        "sector1Seconds": 39.284,
+        "sector2Seconds": 50.438,
+        "sector3Seconds": 43.605,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 5
+      },
+      {
+        "driver": "ALO",
+        "team": "Aston Martin",
+        "lapNumber": 11,
+        "lapTimeSeconds": 92.91,
+        "sector1Seconds": 25.231,
+        "sector2Seconds": 37.152,
+        "sector3Seconds": 30.527,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 6
+      },
+      {
+        "driver": "SAI",
+        "team": "Williams",
+        "lapNumber": 14,
+        "lapTimeSeconds": 125.869,
+        "sector1Seconds": 33.269,
+        "sector2Seconds": 52.85,
+        "sector3Seconds": 39.75,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 7
+      },
+      {
+        "driver": "HAM",
+        "team": "Ferrari",
+        "lapNumber": 14,
+        "lapTimeSeconds": 132.738,
+        "sector1Seconds": 35.696,
+        "sector2Seconds": 50.981,
+        "sector3Seconds": 46.061,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 8
+      },
+      {
+        "driver": "ALB",
+        "team": "Williams",
+        "lapNumber": 14,
+        "lapTimeSeconds": 126.029,
+        "sector1Seconds": 36.629,
+        "sector2Seconds": 46.826,
+        "sector3Seconds": 42.574,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 9
+      },
+      {
+        "driver": "LEC",
+        "team": "Ferrari",
+        "lapNumber": 14,
+        "lapTimeSeconds": 93.104,
+        "sector1Seconds": 25.118,
+        "sector2Seconds": 37.514,
+        "sector3Seconds": 30.472,
+        "compound": "SOFT",
+        "isDeleted": false,
+        "position": 10
+      },
+      {
+        "driver": "ANT",
+        "team": "Mercedes",
+        "lapNumber": 11,
+        "lapTimeSeconds": 122.623,
+        "sector1Seconds": 34.355,
+        "sector2Seconds": 46.515,
+        "sector3Seconds": 41.753,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 11
+      },
+      {
+        "driver": "HAD",
+        "team": "Racing Bulls",
+        "lapNumber": 9,
+        "lapTimeSeconds": 127.188,
+        "sector1Seconds": 37.756,
+        "sector2Seconds": 46.548,
+        "sector3Seconds": 42.884,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 12
+      },
+      {
+        "driver": "GAS",
+        "team": "Alpine",
+        "lapNumber": 9,
+        "lapTimeSeconds": 128.855,
+        "sector1Seconds": 38.216,
+        "sector2Seconds": 47.709,
+        "sector3Seconds": 42.93,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 13
+      },
+      {
+        "driver": "STR",
+        "team": "Aston Martin",
+        "lapNumber": 10,
+        "lapTimeSeconds": 118.024,
+        "sector1Seconds": 26.503,
+        "sector2Seconds": 52.249,
+        "sector3Seconds": 39.272,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 14
+      },
+      {
+        "driver": "LAW",
+        "team": "Racing Bulls",
+        "lapNumber": 8,
+        "lapTimeSeconds": 124.406,
+        "sector1Seconds": 39.311,
+        "sector2Seconds": 46.128,
+        "sector3Seconds": 38.967,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 15
+      },
+      {
+        "driver": "BEA",
+        "team": "Haas F1 Team",
+        "lapNumber": 5,
+        "lapTimeSeconds": 130.684,
+        "sector1Seconds": 37.1,
+        "sector2Seconds": 47.859,
+        "sector3Seconds": 45.725,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 16
+      },
+      {
+        "driver": "COL",
+        "team": "Alpine",
+        "lapNumber": 6,
+        "lapTimeSeconds": 125.573,
+        "sector1Seconds": 36.527,
+        "sector2Seconds": 46.518,
+        "sector3Seconds": 42.528,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 17
+      },
+      {
+        "driver": "TSU",
+        "team": "Red Bull Racing",
+        "lapNumber": 5,
+        "lapTimeSeconds": 130.992,
+        "sector1Seconds": 37.725,
+        "sector2Seconds": 48.253,
+        "sector3Seconds": 45.014,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 18
+      },
+      {
+        "driver": "OCO",
+        "team": "Haas F1 Team",
+        "lapNumber": 5,
+        "lapTimeSeconds": 129.903,
+        "sector1Seconds": 38.87,
+        "sector2Seconds": 46.8,
+        "sector3Seconds": 44.233,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 19
+      },
+      {
+        "driver": "BOR",
+        "team": "Kick Sauber",
+        "lapNumber": 5,
+        "lapTimeSeconds": 130.734,
+        "sector1Seconds": 38.135,
+        "sector2Seconds": 47.999,
+        "sector3Seconds": 44.6,
+        "compound": "MEDIUM",
+        "isDeleted": false,
+        "position": 20
+      }
+    ],
+    "deletedLaps": [
+      {
+        "driver": "LAW",
+        "team": "Racing Bulls",
+        "lapNumber": 7,
+        "lapTimeSeconds": 94.316,
+        "reason": "TRACK LIMITS AT TURN 19 LAP 8 ",
+        "position": 15
+      },
+      {
+        "driver": "BOR",
+        "team": "Kick Sauber",
+        "lapNumber": 2,
+        "lapTimeSeconds": 96.313,
+        "reason": "TRACK LIMITS AT TURN 19 LAP 3 ",
+        "position": 20
+      }
+    ],
+    "sectorRankings": [
+      {
+        "sector": "s1",
+        "laps": [
+          {
+            "driver": "VER",
+            "team": "Red Bull Racing",
+            "lapNumber": 11,
+            "timeSeconds": 24.891,
+            "isDeleted": false,
+            "rank": 1,
+            "deltaToBestSeconds": 0.0
+          },
+          {
+            "driver": "NOR",
+            "team": "McLaren",
+            "lapNumber": 11,
+            "timeSeconds": 24.955,
+            "isDeleted": false,
+            "rank": 2,
+            "deltaToBestSeconds": 0.064
+          },
+          {
+            "driver": "HUL",
+            "team": "Kick Sauber",
+            "lapNumber": 11,
+            "timeSeconds": 25.096,
+            "isDeleted": false,
+            "rank": 3,
+            "deltaToBestSeconds": 0.205
+          },
+          {
+            "driver": "SAI",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 25.107,
+            "isDeleted": false,
+            "rank": 4,
+            "deltaToBestSeconds": 0.216
+          },
+          {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 25.108,
+            "isDeleted": false,
+            "rank": 5,
+            "deltaToBestSeconds": 0.217
+          },
+          {
+            "driver": "LEC",
+            "team": "Ferrari",
+            "lapNumber": 14,
+            "timeSeconds": 25.118,
+            "isDeleted": false,
+            "rank": 6,
+            "deltaToBestSeconds": 0.227
+          },
+          {
+            "driver": "PIA",
+            "team": "McLaren",
+            "lapNumber": 12,
+            "timeSeconds": 25.125,
+            "isDeleted": false,
+            "rank": 7,
+            "deltaToBestSeconds": 0.234
+          },
+          {
+            "driver": "HAM",
+            "team": "Ferrari",
+            "lapNumber": 13,
+            "timeSeconds": 25.17,
+            "isDeleted": false,
+            "rank": 8,
+            "deltaToBestSeconds": 0.279
+          },
+          {
+            "driver": "RUS",
+            "team": "Mercedes",
+            "lapNumber": 12,
+            "timeSeconds": 25.199,
+            "isDeleted": false,
+            "rank": 9,
+            "deltaToBestSeconds": 0.308
+          },
+          {
+            "driver": "ALO",
+            "team": "Aston Martin",
+            "lapNumber": 11,
+            "timeSeconds": 25.231,
+            "isDeleted": false,
+            "rank": 10,
+            "deltaToBestSeconds": 0.34
+          },
+          {
+            "driver": "GAS",
+            "team": "Alpine",
+            "lapNumber": 8,
+            "timeSeconds": 25.406,
+            "isDeleted": false,
+            "rank": 11,
+            "deltaToBestSeconds": 0.515
+          },
+          {
+            "driver": "ANT",
+            "team": "Mercedes",
+            "lapNumber": 10,
+            "timeSeconds": 25.483,
+            "isDeleted": false,
+            "rank": 12,
+            "deltaToBestSeconds": 0.592
+          },
+          {
+            "driver": "HAD",
+            "team": "Racing Bulls",
+            "lapNumber": 8,
+            "timeSeconds": 25.505,
+            "isDeleted": false,
+            "rank": 13,
+            "deltaToBestSeconds": 0.614
+          },
+          {
+            "driver": "STR",
+            "team": "Aston Martin",
+            "lapNumber": 7,
+            "timeSeconds": 25.529,
+            "isDeleted": false,
+            "rank": 14,
+            "deltaToBestSeconds": 0.638
+          },
+          {
+            "driver": "LAW",
+            "team": "Racing Bulls",
+            "lapNumber": 2,
+            "timeSeconds": 25.645,
+            "isDeleted": false,
+            "rank": 15,
+            "deltaToBestSeconds": 0.754
+          },
+          {
+            "driver": "COL",
+            "team": "Alpine",
+            "lapNumber": 5,
+            "timeSeconds": 25.77,
+            "isDeleted": false,
+            "rank": 16,
+            "deltaToBestSeconds": 0.879
+          },
+          {
+            "driver": "BEA",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 25.827,
+            "isDeleted": false,
+            "rank": 17,
+            "deltaToBestSeconds": 0.936
+          },
+          {
+            "driver": "TSU",
+            "team": "Red Bull Racing",
+            "lapNumber": 2,
+            "timeSeconds": 25.914,
+            "isDeleted": false,
+            "rank": 18,
+            "deltaToBestSeconds": 1.023
+          },
+          {
+            "driver": "OCO",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 26.087,
+            "isDeleted": false,
+            "rank": 19,
+            "deltaToBestSeconds": 1.196
+          },
+          {
+            "driver": "BOR",
+            "team": "Kick Sauber",
+            "lapNumber": 5,
+            "timeSeconds": 38.135,
+            "isDeleted": false,
+            "rank": 20,
+            "deltaToBestSeconds": 13.244
+          }
+        ]
+      },
+      {
+        "sector": "s2",
+        "laps": [
+          {
+            "driver": "NOR",
+            "team": "McLaren",
+            "lapNumber": 11,
+            "timeSeconds": 37.134,
+            "isDeleted": false,
+            "rank": 1,
+            "deltaToBestSeconds": 0.0
+          },
+          {
+            "driver": "ALO",
+            "team": "Aston Martin",
+            "lapNumber": 11,
+            "timeSeconds": 37.152,
+            "isDeleted": false,
+            "rank": 2,
+            "deltaToBestSeconds": 0.018
+          },
+          {
+            "driver": "VER",
+            "team": "Red Bull Racing",
+            "lapNumber": 11,
+            "timeSeconds": 37.159,
+            "isDeleted": false,
+            "rank": 3,
+            "deltaToBestSeconds": 0.025
+          },
+          {
+            "driver": "PIA",
+            "team": "McLaren",
+            "lapNumber": 12,
+            "timeSeconds": 37.206,
+            "isDeleted": false,
+            "rank": 4,
+            "deltaToBestSeconds": 0.072
+          },
+          {
+            "driver": "RUS",
+            "team": "Mercedes",
+            "lapNumber": 12,
+            "timeSeconds": 37.304,
+            "isDeleted": false,
+            "rank": 5,
+            "deltaToBestSeconds": 0.17
+          },
+          {
+            "driver": "HUL",
+            "team": "Kick Sauber",
+            "lapNumber": 11,
+            "timeSeconds": 37.336,
+            "isDeleted": false,
+            "rank": 6,
+            "deltaToBestSeconds": 0.202
+          },
+          {
+            "driver": "HAM",
+            "team": "Ferrari",
+            "lapNumber": 13,
+            "timeSeconds": 37.403,
+            "isDeleted": false,
+            "rank": 7,
+            "deltaToBestSeconds": 0.269
+          },
+          {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 37.489,
+            "isDeleted": false,
+            "rank": 8,
+            "deltaToBestSeconds": 0.355
+          },
+          {
+            "driver": "LEC",
+            "team": "Ferrari",
+            "lapNumber": 14,
+            "timeSeconds": 37.514,
+            "isDeleted": false,
+            "rank": 9,
+            "deltaToBestSeconds": 0.38
+          },
+          {
+            "driver": "SAI",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 37.519,
+            "isDeleted": false,
+            "rank": 10,
+            "deltaToBestSeconds": 0.385
+          },
+          {
+            "driver": "ANT",
+            "team": "Mercedes",
+            "lapNumber": 7,
+            "timeSeconds": 37.759,
+            "isDeleted": false,
+            "rank": 11,
+            "deltaToBestSeconds": 0.625
+          },
+          {
+            "driver": "STR",
+            "team": "Aston Martin",
+            "lapNumber": 7,
+            "timeSeconds": 37.915,
+            "isDeleted": false,
+            "rank": 12,
+            "deltaToBestSeconds": 0.781
+          },
+          {
+            "driver": "HAD",
+            "team": "Racing Bulls",
+            "lapNumber": 8,
+            "timeSeconds": 37.93,
+            "isDeleted": false,
+            "rank": 13,
+            "deltaToBestSeconds": 0.796
+          },
+          {
+            "driver": "GAS",
+            "team": "Alpine",
+            "lapNumber": 8,
+            "timeSeconds": 38.048,
+            "isDeleted": false,
+            "rank": 14,
+            "deltaToBestSeconds": 0.914
+          },
+          {
+            "driver": "BEA",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 38.122,
+            "isDeleted": false,
+            "rank": 15,
+            "deltaToBestSeconds": 0.988
+          },
+          {
+            "driver": "LAW",
+            "team": "Racing Bulls",
+            "lapNumber": 2,
+            "timeSeconds": 38.218,
+            "isDeleted": false,
+            "rank": 16,
+            "deltaToBestSeconds": 1.084
+          },
+          {
+            "driver": "COL",
+            "team": "Alpine",
+            "lapNumber": 5,
+            "timeSeconds": 38.237,
+            "isDeleted": false,
+            "rank": 17,
+            "deltaToBestSeconds": 1.103
+          },
+          {
+            "driver": "TSU",
+            "team": "Red Bull Racing",
+            "lapNumber": 2,
+            "timeSeconds": 38.332,
+            "isDeleted": false,
+            "rank": 18,
+            "deltaToBestSeconds": 1.198
+          },
+          {
+            "driver": "OCO",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 38.403,
+            "isDeleted": false,
+            "rank": 19,
+            "deltaToBestSeconds": 1.269
+          },
+          {
+            "driver": "BOR",
+            "team": "Kick Sauber",
+            "lapNumber": 4,
+            "timeSeconds": 43.056,
+            "isDeleted": false,
+            "rank": 20,
+            "deltaToBestSeconds": 5.922
+          }
+        ]
+      },
+      {
+        "sector": "s3",
+        "laps": [
+          {
+            "driver": "VER",
+            "team": "Red Bull Racing",
+            "lapNumber": 11,
+            "timeSeconds": 30.093,
+            "isDeleted": false,
+            "rank": 1,
+            "deltaToBestSeconds": 0.0
+          },
+          {
+            "driver": "NOR",
+            "team": "McLaren",
+            "lapNumber": 11,
+            "timeSeconds": 30.125,
+            "isDeleted": false,
+            "rank": 2,
+            "deltaToBestSeconds": 0.032
+          },
+          {
+            "driver": "PIA",
+            "team": "McLaren",
+            "lapNumber": 12,
+            "timeSeconds": 30.192,
+            "isDeleted": false,
+            "rank": 3,
+            "deltaToBestSeconds": 0.099
+          },
+          {
+            "driver": "HUL",
+            "team": "Kick Sauber",
+            "lapNumber": 11,
+            "timeSeconds": 30.213,
+            "isDeleted": false,
+            "rank": 4,
+            "deltaToBestSeconds": 0.12
+          },
+          {
+            "driver": "SAI",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 30.285,
+            "isDeleted": false,
+            "rank": 5,
+            "deltaToBestSeconds": 0.192
+          },
+          {
+            "driver": "RUS",
+            "team": "Mercedes",
+            "lapNumber": 12,
+            "timeSeconds": 30.385,
+            "isDeleted": false,
+            "rank": 6,
+            "deltaToBestSeconds": 0.292
+          },
+          {
+            "driver": "HAM",
+            "team": "Ferrari",
+            "lapNumber": 13,
+            "timeSeconds": 30.462,
+            "isDeleted": false,
+            "rank": 7,
+            "deltaToBestSeconds": 0.369
+          },
+          {
+            "driver": "LEC",
+            "team": "Ferrari",
+            "lapNumber": 14,
+            "timeSeconds": 30.472,
+            "isDeleted": false,
+            "rank": 8,
+            "deltaToBestSeconds": 0.379
+          },
+          {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 30.502,
+            "isDeleted": false,
+            "rank": 9,
+            "deltaToBestSeconds": 0.409
+          },
+          {
+            "driver": "ALO",
+            "team": "Aston Martin",
+            "lapNumber": 11,
+            "timeSeconds": 30.527,
+            "isDeleted": false,
+            "rank": 10,
+            "deltaToBestSeconds": 0.434
+          },
+          {
+            "driver": "ANT",
+            "team": "Mercedes",
+            "lapNumber": 10,
+            "timeSeconds": 30.563,
+            "isDeleted": false,
+            "rank": 11,
+            "deltaToBestSeconds": 0.47
+          },
+          {
+            "driver": "LAW",
+            "team": "Racing Bulls",
+            "lapNumber": 2,
+            "timeSeconds": 30.74,
+            "isDeleted": false,
+            "rank": 12,
+            "deltaToBestSeconds": 0.647
+          },
+          {
+            "driver": "HAD",
+            "team": "Racing Bulls",
+            "lapNumber": 5,
+            "timeSeconds": 30.763,
+            "isDeleted": false,
+            "rank": 13,
+            "deltaToBestSeconds": 0.67
+          },
+          {
+            "driver": "GAS",
+            "team": "Alpine",
+            "lapNumber": 8,
+            "timeSeconds": 30.804,
+            "isDeleted": false,
+            "rank": 14,
+            "deltaToBestSeconds": 0.711
+          },
+          {
+            "driver": "STR",
+            "team": "Aston Martin",
+            "lapNumber": 7,
+            "timeSeconds": 30.95,
+            "isDeleted": false,
+            "rank": 15,
+            "deltaToBestSeconds": 0.857
+          },
+          {
+            "driver": "TSU",
+            "team": "Red Bull Racing",
+            "lapNumber": 2,
+            "timeSeconds": 31.013,
+            "isDeleted": false,
+            "rank": 16,
+            "deltaToBestSeconds": 0.92
+          },
+          {
+            "driver": "BEA",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 31.21,
+            "isDeleted": false,
+            "rank": 17,
+            "deltaToBestSeconds": 1.117
+          },
+          {
+            "driver": "COL",
+            "team": "Alpine",
+            "lapNumber": 5,
+            "timeSeconds": 31.239,
+            "isDeleted": false,
+            "rank": 18,
+            "deltaToBestSeconds": 1.146
+          },
+          {
+            "driver": "OCO",
+            "team": "Haas F1 Team",
+            "lapNumber": 2,
+            "timeSeconds": 31.513,
+            "isDeleted": false,
+            "rank": 19,
+            "deltaToBestSeconds": 1.42
+          },
+          {
+            "driver": "BOR",
+            "team": "Kick Sauber",
+            "lapNumber": 4,
+            "timeSeconds": 36.41,
+            "isDeleted": false,
+            "rank": 20,
+            "deltaToBestSeconds": 6.317
+          }
+        ]
+      }
+    ],
+    "teamMateComparisons": [
+      {
+        "team": "Alpine",
+        "driverA": "GAS",
+        "driverB": "COL",
+        "fastestLapDeltaSeconds": -0.988,
+        "sector1DeltaSeconds": -0.364,
+        "sector2DeltaSeconds": -0.189,
+        "sector3DeltaSeconds": -0.435
+      },
+      {
+        "team": "Aston Martin",
+        "driverA": "ALO",
+        "driverB": "STR",
+        "fastestLapDeltaSeconds": -1.484,
+        "sector1DeltaSeconds": -0.298,
+        "sector2DeltaSeconds": -0.763,
+        "sector3DeltaSeconds": -0.423
+      },
+      {
+        "team": "Ferrari",
+        "driverA": "HAM",
+        "driverB": "LEC",
+        "fastestLapDeltaSeconds": -0.069,
+        "sector1DeltaSeconds": 0.052,
+        "sector2DeltaSeconds": -0.111,
+        "sector3DeltaSeconds": -0.01
+      },
+      {
+        "team": "Haas F1 Team",
+        "driverA": "BEA",
+        "driverB": "OCO",
+        "fastestLapDeltaSeconds": -0.844,
+        "sector1DeltaSeconds": -0.26,
+        "sector2DeltaSeconds": -0.281,
+        "sector3DeltaSeconds": -0.303
+      },
+      {
+        "team": "Kick Sauber",
+        "driverA": "HUL",
+        "driverB": "BOR",
+        "fastestLapDeltaSeconds": -38.089,
+        "sector1DeltaSeconds": -13.039,
+        "sector2DeltaSeconds": -10.663,
+        "sector3DeltaSeconds": -14.387
+      },
+      {
+        "team": "McLaren",
+        "driverA": "NOR",
+        "driverB": "PIA",
+        "fastestLapDeltaSeconds": -0.309,
+        "sector1DeltaSeconds": -0.17,
+        "sector2DeltaSeconds": -0.072,
+        "sector3DeltaSeconds": -0.067
+      },
+      {
+        "team": "Mercedes",
+        "driverA": "RUS",
+        "driverB": "ANT",
+        "fastestLapDeltaSeconds": -1.13,
+        "sector1DeltaSeconds": -0.284,
+        "sector2DeltaSeconds": -0.668,
+        "sector3DeltaSeconds": -0.178
+      },
+      {
+        "team": "Racing Bulls",
+        "driverA": "HAD",
+        "driverB": "LAW",
+        "fastestLapDeltaSeconds": -0.362,
+        "sector1DeltaSeconds": -0.14,
+        "sector2DeltaSeconds": -0.288,
+        "sector3DeltaSeconds": 0.066
+      },
+      {
+        "team": "Red Bull Racing",
+        "driverA": "VER",
+        "driverB": "TSU",
+        "fastestLapDeltaSeconds": -3.116,
+        "sector1DeltaSeconds": -1.023,
+        "sector2DeltaSeconds": -1.173,
+        "sector3DeltaSeconds": -0.92
+      },
+      {
+        "team": "Williams",
+        "driverA": "SAI",
+        "driverB": "ALB",
+        "fastestLapDeltaSeconds": -0.188,
+        "sector1DeltaSeconds": -0.001,
+        "sector2DeltaSeconds": 0.03,
+        "sector3DeltaSeconds": -0.217
       }
     ]
   }

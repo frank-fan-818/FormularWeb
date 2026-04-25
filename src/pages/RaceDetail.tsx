@@ -58,6 +58,9 @@ const TEXT = {
   fastF1Analysis: 'FastF1 \u6bd4\u8d5b\u5206\u6790',
   lapPace: '\u5708\u901f\u8d70\u52bf',
   tyreStrategy: '\u8f6e\u80ce\u7b56\u7565',
+  qualifyingAnalyzer: '\u6392\u4f4d\u5206\u6790',
+  driverDuel: '\u8f66\u624b\u5bf9\u6218',
+  strategyTimeline: '\u7b56\u7565\u4e0e\u8d5b\u4e8b\u65f6\u95f4\u8f74',
   weatherTrend: '\u5929\u6c14\u8d70\u52bf',
   telemetryComparison: '\u6700\u5feb\u5708\u9065\u6d4b',
   telemetryDescription: '\u5bf9\u6bd4\u4e24\u4f4d\u8f66\u624b\u6700\u5feb\u5708\u7684\u901f\u5ea6\u3001\u6cb9\u95e8\u3001\u5239\u8f66\u3001\u6863\u4f4d\u548c RPM\uff0c\u5e76\u6309\u5f2f\u89d2\u6c47\u603b\u5165\u5f2f\u3001\u6700\u4f4e\u548c\u51fa\u5f2f\u901f\u5ea6\u3002',
@@ -68,6 +71,9 @@ const TEXT = {
   stints: '\u6bb5\u8f6e\u80ce',
   lapPaceDescription: '\u9010\u5708\u5bf9\u6bd4\u6b63\u8d5b\u8282\u594f\uff0c\u53ef\u5feb\u901f\u770b\u5230\u957f\u8ddd\u79bb\u901f\u5ea6\u8870\u51cf\u548c\u5b89\u5168\u8f66\u5f71\u54cd\u3002',
   tyreStrategyDescription: '\u6309\u8f66\u624b\u62c6\u5206 stint \u548c compound\uff0c\u5c55\u793a\u6bcf\u6bb5\u8f6e\u80ce\u7684\u5708\u6570\u548c\u6362\u80ce\u8282\u70b9\u3002',
+  qualifyingAnalyzerDescription: '\u6309\u8f66\u961f\u5bf9\u6bd4 Q/SQ/SS \u6700\u5feb\u5708\u4e0e sector gap\uff0c\u5feb\u901f\u5224\u65ad\u961f\u53cb\u4e4b\u95f4\u7684\u5355\u5708\u5dee\u5f02\u3002',
+  driverDuelDescription: '\u9009\u62e9\u4e24\u4f4d\u8f66\u624b\uff0c\u5bf9\u6bd4\u6392\u4f4d sector\u3001\u6b63\u8d5b stint pace\u3001\u8f6e\u80ce\u8870\u51cf\u3001\u9065\u6d4b\u548c\u5f2f\u89d2\u6700\u4f4e\u901f\u3002',
+  strategyTimelineDescription: '\u5c06\u8fdb\u7ad9\u3001\u6362\u80ce\u3001\u8d5b\u9053\u72b6\u6001\u3001Race Control \u548c\u964d\u96e8\u4e32\u5230\u540c\u4e00\u6761\u5708\u6570\u8f74\u4e0a\uff0c\u5e2e\u52a9\u89e3\u91ca\u7b56\u7565\u6536\u76ca\u548c\u8282\u594f\u53d8\u5316\u3002',
   weatherDescription: '\u5c06\u8d5b\u9053\u6e29\u5ea6\u3001\u6c14\u6e29\u3001\u6e7f\u5ea6\u548c\u964d\u96e8\u6620\u5c04\u5230\u5708\u6570\uff0c\u7528\u4e8e\u89e3\u91ca\u5708\u901f\u548c\u8f6e\u80ce\u8868\u73b0\u53d8\u5316\u3002',
   raceStatus: '\u8d5b\u9053\u72b6\u6001',
   trackTemp: '\u8d5b\u9053\u6e29\u5ea6',
@@ -89,6 +95,27 @@ const TEXT = {
   minimum: '\u6700\u4f4e',
   exit: '\u51fa\u5f2f',
   delta: '\u5dee\u503c',
+  cutoff: '\u664b\u7ea7\u7ebf',
+  lastFlyer: '\u6700\u540e\u4e00\u98de',
+  deletedLap: 'Deleted Lap',
+  teamMateDelta: '\u961f\u53cb\u5dee\u8ddd',
+  phase: '\u9636\u6bb5',
+  lap: '\u5708',
+  time: '\u65f6\u95f4',
+  reason: '\u539f\u56e0',
+  pitStops: '\u8fdb\u7ad9',
+  pitLap: '\u8fdb\u7ad9\u5708',
+  tyre: '\u8f6e\u80ce',
+  pitTime: '\u8fdb\u7ad9\u65f6\u95f4',
+  paceBefore: '\u8fdb\u7ad9\u524d\u8282\u594f',
+  paceAfter: '\u8fdb\u7ad9\u540e\u8282\u594f',
+  positionDelta: '\u4f4d\u7f6e\u53d8\u5316',
+  context: '\u80cc\u666f',
+  strategyBattle: '\u7b56\u7565\u5bf9\u6297',
+  bestPaceGain: '\u6700\u5927\u8282\u594f\u63d0\u5347',
+  stintPace: 'Stint Pace',
+  degradation: '\u8870\u51cf',
+  advantage: '\u4f18\u52bf',
 };
 
 const TELEMETRY_METRICS: Array<{ key: TelemetryMetric; label: string }> = [
@@ -219,6 +246,32 @@ function formatSpeed(value: number | null | undefined) {
 function formatRpm(value: number | null | undefined) {
   const formatted = formatNumber(value, 0);
   return formatted === '-' ? formatted : `${formatted} rpm`;
+}
+
+function formatSignedNumber(value: number | null | undefined, decimals = 0) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return '-';
+  }
+
+  const formatted = Math.abs(value).toFixed(decimals);
+  return value > 0 ? `+${formatted}` : value < 0 ? `-${formatted}` : '0';
+}
+
+function formatSignedSeconds(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return '-';
+  }
+
+  const formatted = Math.abs(value).toFixed(3);
+  return value > 0 ? `+${formatted}s` : value < 0 ? `-${formatted}s` : '0.000s';
+}
+
+function getGapToneClassName(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value) || value === 0) {
+    return 'is-even';
+  }
+
+  return value < 0 ? 'is-faster' : 'is-slower';
 }
 
 function formatStatRange(summary?: { min: number | null; max: number | null }) {
@@ -494,20 +547,109 @@ function buildLapPaceOption(
   };
 }
 
-function getStintAtIndex(stints: FastF1StrategyStint[], index: number) {
+function getStintAtIndex<T extends FastF1StrategyStint>(stints: T[], index: number) {
   return stints.find((stint) => stint.stint === index + 1) || null;
 }
 
-function buildTyreStrategyOption(analytics: FastF1RaceAnalytics) {
+type StintPaceMetric = FastF1StrategyStint & {
+  driver: string;
+  averagePaceSeconds: number | null;
+  degradationSeconds: number | null;
+  previousDeltaSeconds: number | null;
+};
+
+function getStintPaceMetrics(
+  analytics: FastF1RaceAnalytics,
+  driver: string,
+  stints: FastF1StrategyStint[],
+) {
+  const series = analytics.lapTimeSeries.find((item) => item.driver === driver);
+  let previousAverage: number | null = null;
+
+  return stints.map((stint): StintPaceMetric => {
+    const lapTimes = (series?.laps || [])
+      .filter((lap) => (
+        Number.isFinite(lap.lapTimeSeconds)
+        && lap.lapNumber >= stint.startLap
+        && lap.lapNumber <= stint.endLap
+      ))
+      .sort((a, b) => a.lapNumber - b.lapNumber)
+      .map((lap) => lap.lapTimeSeconds);
+
+    const averagePaceSeconds = averageLapTimes(lapTimes);
+    const firstAverage = averageLapTimes(lapTimes.slice(0, 3));
+    const lastAverage = averageLapTimes(lapTimes.slice(-3));
+    const degradationSeconds = firstAverage !== null && lastAverage !== null
+      ? Number((lastAverage - firstAverage).toFixed(3))
+      : null;
+    const previousDeltaSeconds = averagePaceSeconds !== null && previousAverage !== null
+      ? Number((averagePaceSeconds - previousAverage).toFixed(3))
+      : null;
+
+    if (averagePaceSeconds !== null) {
+      previousAverage = averagePaceSeconds;
+    }
+
+    return {
+      ...stint,
+      driver,
+      averagePaceSeconds,
+      degradationSeconds,
+      previousDeltaSeconds,
+    };
+  });
+}
+
+function buildStintTooltip(params: any) {
+  const data = params.data as { stint?: StintPaceMetric };
+  const stint = data?.stint;
+
+  if (!stint) {
+    return '';
+  }
+
+  return `
+    <div class="fastf1-tooltip">
+      <div class="fastf1-tooltip-title">${escapeTooltipText(stint.driver)} - Stint ${stint.stint}</div>
+      <div class="fastf1-tooltip-grid">
+        <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker" style="background:${getCompoundColor(stint.compound)};"></span>
+          <span class="fastf1-tooltip-name">${escapeTooltipText(stint.compound)}</span>
+          <strong>L${stint.startLap}-L${stint.endLap} (${stint.lapCount})</strong>
+        </div>
+        <div class="fastf1-tooltip-row">
+          <span>${TEXT.stintPace}</span>
+          <strong>${formatSessionSeconds(stint.averagePaceSeconds)}</strong>
+        </div>
+        <div class="fastf1-tooltip-row">
+          <span>${TEXT.degradation}</span>
+          <strong>${formatSignedSeconds(stint.degradationSeconds)}</strong>
+        </div>
+        <div class="fastf1-tooltip-row">
+          <span>vs Prev Stint</span>
+          <strong>${formatSignedSeconds(stint.previousDeltaSeconds)}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildTyreStrategyOption(analytics: FastF1RaceAnalytics, highlightedDrivers: string[] = []) {
   const strategies = [...analytics.tyreStrategies].sort((a, b) => {
     const aPosition = a.racePosition ?? Number.MAX_SAFE_INTEGER;
     const bPosition = b.racePosition ?? Number.MAX_SAFE_INTEGER;
     return aPosition - bPosition;
   });
-  const drivers = strategies.map((strategy) => strategy.driver);
+  const highlightedSet = new Set(highlightedDrivers);
+  const hasHighlight = highlightedSet.size > 0;
+  const metricStrategies = strategies.map((strategy) => ({
+    ...strategy,
+    stints: getStintPaceMetrics(analytics, strategy.driver, strategy.stints),
+  }));
+  const drivers = metricStrategies.map((strategy) => strategy.driver);
   const maxStints = Math.max(
     0,
-    ...strategies.map((strategy) => strategy.stints.length),
+    ...metricStrategies.map((strategy) => strategy.stints.length),
   );
 
   return {
@@ -521,15 +663,7 @@ function buildTyreStrategyOption(analytics: FastF1RaceAnalytics) {
       textStyle: {
         color: '#fff',
       },
-      formatter: (params: any) => {
-        const data = params.data as { stint?: FastF1StrategyStint };
-        const stint = data?.stint;
-        if (!stint) {
-          return '';
-        }
-
-        return `${params.name}<br/>${stint.compound}: L${stint.startLap}-L${stint.endLap} (${stint.lapCount})`;
-      },
+      formatter: buildStintTooltip,
     },
     legend: {
       show: false,
@@ -578,8 +712,9 @@ function buildTyreStrategyOption(analytics: FastF1RaceAnalytics) {
       type: 'bar',
       stack: 'stints',
       barMaxWidth: 18,
-      data: strategies.map((strategy) => {
+      data: metricStrategies.map((strategy) => {
         const stint = getStintAtIndex(strategy.stints, index);
+        const isHighlighted = !hasHighlight || highlightedSet.has(strategy.driver);
         return {
           value: stint?.lapCount || 0,
           stint: stint || undefined,
@@ -587,6 +722,7 @@ function buildTyreStrategyOption(analytics: FastF1RaceAnalytics) {
             color: stint ? getCompoundColor(stint.compound) : 'transparent',
             borderColor: 'rgba(15, 23, 42, 0.3)',
             borderWidth: stint ? 1 : 0,
+            opacity: isHighlighted ? 1 : 0.22,
           },
         };
       }),
@@ -859,6 +995,183 @@ function buildWeatherOption(analytics: FastF1RaceAnalytics) {
       },
     ],
   };
+}
+
+function getQualifyingSessionTitle(session: string) {
+  if (session === 'SQ') {
+    return TEXT.sprintQualifying;
+  }
+  if (session === 'SS') {
+    return 'Sprint Shootout';
+  }
+  return TEXT.qualifying;
+}
+
+function getTeamMateComparisonRows(analytics: FastF1RaceAnalytics | null) {
+  return (analytics?.qualifyingAnalysis?.teamMateComparisons || []).map((comparison) => ({
+    key: comparison.team,
+    ...comparison,
+  }));
+}
+
+function getDuelDriverItems(analytics: FastF1RaceAnalytics | null) {
+  return (analytics?.lapTimeSeries || []).map((series, index) => ({
+    driver: series.driver,
+    team: series.team,
+    color: getDriverColor(index),
+  }));
+}
+
+function getSelectedDuelDrivers(
+  analytics: FastF1RaceAnalytics | null,
+  selectedDrivers: string[],
+) {
+  if (!analytics || selectedDrivers.length !== 2) {
+    return [];
+  }
+
+  const selectedSet = new Set(selectedDrivers);
+  return analytics.lapTimeSeries.filter((series) => selectedSet.has(series.driver));
+}
+
+function averageLapTimes(values: number[]) {
+  if (!values.length) {
+    return null;
+  }
+
+  return Number((values.reduce((total, value) => total + value, 0) / values.length).toFixed(3));
+}
+
+function getDuelTyreSummaryItems(
+  analytics: FastF1RaceAnalytics | null,
+  selectedDrivers: string[],
+) {
+  if (!analytics || selectedDrivers.length !== 2) {
+    return [];
+  }
+
+  return selectedDrivers
+    .map((driver) => {
+      const strategy = analytics.tyreStrategies.find((item) => item.driver === driver);
+
+      if (!strategy) {
+        return null;
+      }
+
+      return {
+        driver,
+        stints: getStintPaceMetrics(analytics, driver, strategy.stints),
+      };
+    })
+    .filter((item): item is { driver: string; stints: StintPaceMetric[] } => item !== null);
+}
+
+function getDuelSectorRows(
+  qualifyingAnalytics: FastF1RaceAnalytics | null,
+  selectedDrivers: string[],
+) {
+  if (selectedDrivers.length !== 2) {
+    return [];
+  }
+
+  const selectedSet = new Set(selectedDrivers);
+  return (qualifyingAnalytics?.qualifyingAnalysis?.bestLaps || [])
+    .filter((lap) => selectedSet.has(lap.driver))
+    .sort((a, b) => selectedDrivers.indexOf(a.driver) - selectedDrivers.indexOf(b.driver))
+    .map((lap) => ({
+      key: lap.driver,
+      driver: lap.driver,
+      fastestLap: lap.lapTimeSeconds,
+      s1: lap.sector1Seconds,
+      s2: lap.sector2Seconds,
+      s3: lap.sector3Seconds,
+    }));
+}
+
+function getDuelSectorGapItems(
+  qualifyingAnalytics: FastF1RaceAnalytics | null,
+  selectedDrivers: string[],
+) {
+  const rows = getDuelSectorRows(qualifyingAnalytics, selectedDrivers);
+
+  if (rows.length !== 2) {
+    return [];
+  }
+
+  const [first, second] = rows;
+  const delta = (firstValue: number | null | undefined, secondValue: number | null | undefined) => (
+    firstValue !== null
+    && firstValue !== undefined
+    && secondValue !== null
+    && secondValue !== undefined
+    && Number.isFinite(firstValue)
+    && Number.isFinite(secondValue)
+      ? Number((firstValue - secondValue).toFixed(3))
+      : null
+  );
+
+  return [
+    {
+      key: 'total',
+      label: TEXT.fastestLap,
+      value: delta(first.fastestLap, second.fastestLap),
+      firstDriver: first.driver,
+      secondDriver: second.driver,
+    },
+    {
+      key: 's1',
+      label: TEXT.sector1,
+      value: delta(first.s1, second.s1),
+      firstDriver: first.driver,
+      secondDriver: second.driver,
+    },
+    {
+      key: 's2',
+      label: TEXT.sector2,
+      value: delta(first.s2, second.s2),
+      firstDriver: first.driver,
+      secondDriver: second.driver,
+    },
+    {
+      key: 's3',
+      label: TEXT.sector3,
+      value: delta(first.s3, second.s3),
+      firstDriver: first.driver,
+      secondDriver: second.driver,
+    },
+  ];
+}
+
+function getDuelCornerRows(
+  analytics: FastF1RaceAnalytics | null,
+  selectedDrivers: string[],
+) {
+  if (!analytics?.telemetry || selectedDrivers.length !== 2) {
+    return [];
+  }
+
+  const [driverA, driverB] = selectedDrivers;
+  return analytics.telemetry.cornerAnalysis.map((corner) => {
+    const first = corner.drivers.find((driver) => driver.driver === driverA);
+    const second = corner.drivers.find((driver) => driver.driver === driverB);
+    const delta = first?.minSpeedKph !== null
+      && first?.minSpeedKph !== undefined
+      && second?.minSpeedKph !== null
+      && second?.minSpeedKph !== undefined
+      ? Number((first.minSpeedKph - second.minSpeedKph).toFixed(1))
+      : null;
+
+    return {
+      key: `${corner.corner}-${corner.distanceM}`,
+      corner: corner.corner,
+      distanceM: corner.distanceM,
+      driverA,
+      driverB,
+      firstMinSpeed: first?.minSpeedKph ?? null,
+      secondMinSpeed: second?.minSpeedKph ?? null,
+      delta,
+    };
+  });
 }
 
 function getTelemetryDriverColor(driver: string, drivers: FastF1TelemetryDriver[]) {
@@ -1556,6 +1869,8 @@ const RaceDetail = () => {
   const [activeTab, setActiveTab] = useState('qualifying');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
+  const [selectedQualifyingSession, setSelectedQualifyingSession] = useState('Q');
+  const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
   const [selectedTelemetryDrivers, setSelectedTelemetryDrivers] = useState<string[]>([]);
   const [selectedTelemetryMetrics, setSelectedTelemetryMetrics] = useState<TelemetryMetric[]>(
     TELEMETRY_METRICS.map((metric) => metric.key),
@@ -1567,12 +1882,36 @@ const RaceDetail = () => {
     [fastF1Analytics, selectedLapDrivers],
   );
   const tyreStrategyOption = useMemo(
-    () => (fastF1Analytics ? buildTyreStrategyOption(fastF1Analytics) : null),
-    [fastF1Analytics],
+    () => (fastF1Analytics ? buildTyreStrategyOption(fastF1Analytics, selectedDuelDrivers) : null),
+    [fastF1Analytics, selectedDuelDrivers],
   );
   const weatherOption = useMemo(
     () => (fastF1Analytics ? buildWeatherOption(fastF1Analytics) : null),
     [fastF1Analytics],
+  );
+  const qualifyingAnalyticsItems = useMemo(
+    () => [
+      { session: 'Q', analytics: fastF1QualifyingAnalytics },
+      { session: 'SQ', analytics: fastF1SprintQualifyingAnalytics },
+      { session: 'SS', analytics: fastF1SprintShootoutAnalytics },
+    ].filter((item) => item.analytics?.qualifyingAnalysis),
+    [fastF1QualifyingAnalytics, fastF1SprintQualifyingAnalytics, fastF1SprintShootoutAnalytics],
+  );
+  const activeQualifyingAnalytics = useMemo(
+    () => qualifyingAnalyticsItems.find((item) => item.session === selectedQualifyingSession)?.analytics
+      || qualifyingAnalyticsItems[0]?.analytics
+      || null,
+    [qualifyingAnalyticsItems, selectedQualifyingSession],
+  );
+  const activeQualifyingSession = useMemo(
+    () => qualifyingAnalyticsItems.find((item) => item.session === selectedQualifyingSession)?.session
+      || qualifyingAnalyticsItems[0]?.session
+      || 'Q',
+    [qualifyingAnalyticsItems, selectedQualifyingSession],
+  );
+  const teamMateComparisonRows = useMemo(
+    () => getTeamMateComparisonRows(activeQualifyingAnalytics),
+    [activeQualifyingAnalytics],
   );
   const activeTelemetryDrivers = useMemo(
     () => getActiveTelemetryDrivers(fastF1Analytics, selectedTelemetryDrivers),
@@ -1612,6 +1951,26 @@ const RaceDetail = () => {
     () => getDriverLegendItems(fastF1Analytics?.lapTimeSeries || []),
     [fastF1Analytics],
   );
+  const duelDriverItems = useMemo(
+    () => getDuelDriverItems(fastF1Analytics),
+    [fastF1Analytics],
+  );
+  const activeDuelDrivers = useMemo(
+    () => getSelectedDuelDrivers(fastF1Analytics, selectedDuelDrivers),
+    [fastF1Analytics, selectedDuelDrivers],
+  );
+  const duelTyreSummaryItems = useMemo(
+    () => getDuelTyreSummaryItems(fastF1Analytics, selectedDuelDrivers),
+    [fastF1Analytics, selectedDuelDrivers],
+  );
+  const duelSectorGapItems = useMemo(
+    () => getDuelSectorGapItems(fastF1QualifyingAnalytics, selectedDuelDrivers),
+    [fastF1QualifyingAnalytics, selectedDuelDrivers],
+  );
+  const duelCornerRows = useMemo(
+    () => getDuelCornerRows(fastF1Analytics, selectedDuelDrivers),
+    [fastF1Analytics, selectedDuelDrivers],
+  );
   const fastF1QualifyingBestLapByDriver = useMemo(
     () => getBestLapByDriver(fastF1QualifyingAnalytics),
     [fastF1QualifyingAnalytics],
@@ -1634,6 +1993,8 @@ const RaceDetail = () => {
 
   useEffect(() => {
     setSelectedLapDrivers([]);
+    setSelectedQualifyingSession('Q');
+    setSelectedDuelDrivers([]);
     setSelectedTelemetryDrivers([]);
     setSelectedTelemetryMetrics(TELEMETRY_METRICS.map((metric) => metric.key));
   }, [currentSeason, round]);
@@ -1951,6 +2312,22 @@ const RaceDetail = () => {
     });
   };
 
+  const handleDuelDriverToggle = (driver: string) => {
+    setSelectedDuelDrivers((currentDrivers) => {
+      let nextDrivers: string[];
+      if (currentDrivers.includes(driver)) {
+        nextDrivers = currentDrivers.filter((item) => item !== driver);
+      } else if (currentDrivers.length < 2) {
+        nextDrivers = [...currentDrivers, driver];
+      } else {
+        nextDrivers = [currentDrivers[1], driver];
+      }
+
+      setSelectedLapDrivers(nextDrivers);
+      return nextDrivers;
+    });
+  };
+
   const handleTelemetryDriverToggle = (driver: string) => {
     setSelectedTelemetryDrivers((currentDrivers) => {
       if (!currentDrivers.length) {
@@ -2012,7 +2389,11 @@ const RaceDetail = () => {
     return DEFERRED_TAB_KEYS.includes(tabKey) && sessionsLoading && data.length === 0;
   };
 
-  const shouldShowFastF1Section = Boolean(fastF1AnalyticsLoading || fastF1Analytics);
+  const shouldShowFastF1Section = Boolean(
+    fastF1AnalyticsLoading
+    || fastF1Analytics
+    || qualifyingAnalyticsItems.length,
+  );
 
   return (
     <div className="race-detail-page">
@@ -2074,6 +2455,63 @@ const RaceDetail = () => {
 
           {fastF1Analytics && lapPaceOption && tyreStrategyOption ? (
             <div className="fastf1-analytics-grid">
+              {activeQualifyingAnalytics?.qualifyingAnalysis ? (
+                <Card className="fastf1-chart-card qualifying-analyzer-card">
+                  <div className="fastf1-chart-header">
+                    <div>
+                      <h3 className="fastf1-chart-title">{TEXT.qualifyingAnalyzer}</h3>
+                      <p>{TEXT.qualifyingAnalyzerDescription}</p>
+                    </div>
+                    <div className="qualifying-session-switch" aria-label={TEXT.qualifyingAnalyzer}>
+                      {qualifyingAnalyticsItems.map((item) => (
+                        <button
+                          key={item.session}
+                          type="button"
+                          className={`telemetry-metric-button${activeQualifyingSession === item.session ? ' is-active' : ' is-muted'}`}
+                          aria-pressed={activeQualifyingSession === item.session}
+                          onClick={() => setSelectedQualifyingSession(item.session)}
+                        >
+                          {getQualifyingSessionTitle(item.session)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {teamMateComparisonRows.length ? (
+                    <div className="qualifying-gap-grid">
+                      {teamMateComparisonRows.map((record) => (
+                        <div key={record.key} className="qualifying-gap-card">
+                          <div className="qualifying-gap-card-header">
+                            <span>{record.team}</span>
+                            <strong>{record.driverA} vs {record.driverB}</strong>
+                          </div>
+                          <div className={`qualifying-gap-total ${getGapToneClassName(record.fastestLapDeltaSeconds)}`}>
+                            <span>{TEXT.fastestLap}</span>
+                            <strong>{formatSignedSeconds(record.fastestLapDeltaSeconds)}</strong>
+                          </div>
+                          <div className="qualifying-sector-gap-grid">
+                            {[
+                              [TEXT.sector1, record.sector1DeltaSeconds],
+                              [TEXT.sector2, record.sector2DeltaSeconds],
+                              [TEXT.sector3, record.sector3DeltaSeconds],
+                            ].map(([label, value]) => (
+                              <span
+                                key={label}
+                                className={`qualifying-sector-gap ${getGapToneClassName(value as number | null)}`}
+                              >
+                                <em>{label}</em>
+                                <strong>{formatSignedSeconds(value as number | null)}</strong>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="duel-empty-state">{TEXT.teamMateDelta} -</div>
+                  )}
+                </Card>
+              ) : null}
+
               <Card className="fastf1-chart-card">
                 <div className="fastf1-chart-header">
                   <div>
@@ -2160,6 +2598,117 @@ const RaceDetail = () => {
                   height={isMobile ? 300 : 430}
                   option={tyreStrategyOption}
                 />
+              </Card>
+
+              <Card className="fastf1-chart-card driver-duel-card">
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{TEXT.driverDuel}</h3>
+                    <p>{TEXT.driverDuelDescription}</p>
+                  </div>
+                  {duelTyreSummaryItems.length ? (
+                    <div className="duel-summary-pills" aria-label={TEXT.driverDuel}>
+                      {duelTyreSummaryItems.map((item) => (
+                        <span key={item.driver} className="duel-stint-pill">
+                          <strong>{item.driver}</strong>
+                          {item.stints.map((stint) => (
+                            <span key={`${item.driver}-${stint.stint}`} className="duel-stint-token">
+                              <span
+                                className="compound-swatch"
+                                style={{ backgroundColor: getCompoundColor(stint.compound) }}
+                              />
+                              {formatSessionSeconds(stint.averagePaceSeconds)}
+                              {stint.previousDeltaSeconds !== null ? (
+                                <em>{formatSignedSeconds(stint.previousDeltaSeconds)}</em>
+                              ) : null}
+                            </span>
+                          ))}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="driver-legend" aria-label={TEXT.driverDuel}>
+                  {duelDriverItems.map((item) => {
+                    const isActive = selectedDuelDrivers.includes(item.driver);
+                    const isMuted = selectedDuelDrivers.length === 2 && !isActive;
+
+                    return (
+                        <button
+                          key={item.driver}
+                          type="button"
+                          className={`driver-legend-item${isActive ? ' is-active' : ''}${isMuted ? ' is-muted' : ''}`}
+                          aria-pressed={isActive}
+                          onClick={() => handleDuelDriverToggle(item.driver)}
+                        >
+                          <span
+                            className="driver-legend-line"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          {item.driver}
+                          {isActive ? (
+                            <span className="duel-pick-badge">
+                              {selectedDuelDrivers.indexOf(item.driver) + 1}
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                </div>
+                {activeDuelDrivers.length === 2 ? (
+                  <>
+                    <div className="duel-grid">
+                      {duelSectorGapItems.length ? (
+                        <div className="duel-sector-panel">
+                          <div className="telemetry-panel-title">{TEXT.qualifying} Gap</div>
+                          <div className="duel-sector-gap-grid">
+                            {duelSectorGapItems.map((item) => (
+                              <div
+                                key={item.key}
+                                className={`duel-sector-gap-card ${getGapToneClassName(item.value)}`}
+                              >
+                                <span>{item.label}</span>
+                                <strong>{formatSignedSeconds(item.value)}</strong>
+                                <em>{item.firstDriver} vs {item.secondDriver}</em>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {duelCornerRows.length ? (
+                        <div className="duel-corner-panel">
+                          <div className="telemetry-panel-title">{TEXT.cornerSpeed}</div>
+                          <div className="duel-corner-grid">
+                            {duelCornerRows.map((row) => (
+                              <div key={row.key} className="duel-corner-card">
+                                <div className="duel-corner-head">
+                                  <span>{row.corner}</span>
+                                  <em>{formatNumber(row.distanceM, 0)}m</em>
+                                </div>
+                                <div className="duel-corner-row">
+                                  <strong>{row.driverA}</strong>
+                                  <span>{formatSpeed(row.firstMinSpeed)}</span>
+                                </div>
+                                <div className="duel-corner-row">
+                                  <strong>{row.driverB}</strong>
+                                  <span>{formatSpeed(row.secondMinSpeed)}</span>
+                                </div>
+                                <div className="duel-corner-row is-delta">
+                                  <strong>{TEXT.delta}</strong>
+                                  <span>{formatSignedNumber(row.delta, 1)}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <div className="duel-empty-state">
+                    {TEXT.driverDuel}: {TEXT.driver} 2
+                  </div>
+                )}
               </Card>
 
               {weatherOption && fastF1Analytics.weather ? (

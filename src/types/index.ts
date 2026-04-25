@@ -364,10 +364,59 @@ export interface FastF1QualifyingBestLap {
   isDeleted: boolean;
 }
 
+export interface FastF1QualifyingPhaseCutoff {
+  phase: string;
+  label: string;
+  cutoffPosition: number;
+  cutoffDriver: string;
+  cutoffTime: string;
+  cutoffTimeSeconds: number;
+  eliminatedDrivers: string[];
+}
+
+export interface FastF1QualifyingDeletedLap {
+  driver: string;
+  team: string;
+  lapNumber: number | null;
+  lapTimeSeconds: number | null;
+  reason: string;
+  position: number;
+}
+
+export interface FastF1SectorRankingLap {
+  rank: number;
+  driver: string;
+  team: string;
+  lapNumber: number | null;
+  timeSeconds: number;
+  deltaToBestSeconds: number;
+  isDeleted: boolean;
+}
+
+export interface FastF1SectorRanking {
+  sector: 's1' | 's2' | 's3' | string;
+  laps: FastF1SectorRankingLap[];
+}
+
+export interface FastF1TeamMateComparison {
+  team: string;
+  driverA: string;
+  driverB: string;
+  fastestLapDeltaSeconds: number | null;
+  sector1DeltaSeconds: number | null;
+  sector2DeltaSeconds: number | null;
+  sector3DeltaSeconds: number | null;
+}
+
 export interface FastF1QualifyingAnalysis {
   sessionType: FastF1QualifyingSessionType;
   phaseResults: FastF1PhaseResult[];
   bestLaps: FastF1QualifyingBestLap[];
+  phaseCutoffs?: FastF1QualifyingPhaseCutoff[];
+  lastFlyingLaps?: FastF1QualifyingBestLap[];
+  deletedLaps?: FastF1QualifyingDeletedLap[];
+  sectorRankings?: FastF1SectorRanking[];
+  teamMateComparisons?: FastF1TeamMateComparison[];
 }
 
 export interface FastF1TelemetrySample {
@@ -430,6 +479,85 @@ export interface FastF1TelemetryAnalysis {
   cornerAnalysis: FastF1CornerAnalysis[];
 }
 
+export type FastF1StrategyEventType = 'YELLOW' | 'SC' | 'VSC' | 'RED' | 'RAIN' | 'MESSAGE';
+
+export interface FastF1StrategyEvent {
+  type: FastF1StrategyEventType | string;
+  label: string;
+  message: string;
+}
+
+export interface FastF1StrategyEventTimelineItem {
+  lapNumber: number;
+  events: FastF1StrategyEvent[];
+}
+
+export interface FastF1PitContext extends FastF1StrategyEvent {
+  lap: number;
+}
+
+export interface FastF1PitStop {
+  driver: string;
+  team: string;
+  stopNumber: number;
+  pitLap: number;
+  outLap: number;
+  oldCompound: string;
+  newCompound: string;
+  pitDurationSeconds: number | null;
+  paceBeforeSeconds: number | null;
+  paceAfterSeconds: number | null;
+  paceDeltaSeconds: number | null;
+  positionBefore: number | null;
+  positionAfter: number | null;
+  positionDelta: number | null;
+  contexts: FastF1PitContext[];
+}
+
+export interface FastF1StrategyBattle {
+  type: 'UNDERCUT' | 'OVERCUT' | string;
+  driver: string;
+  rival: string;
+  startLap: number;
+  endLap: number;
+  positionDelta: number;
+  summary: string;
+}
+
+export interface FastF1StrategyStatusRange {
+  type: FastF1TrackStatusPeriod['type'] | string;
+  label: string;
+  startLap: number;
+  endLap: number;
+}
+
+export interface FastF1StrategyPositionSummary {
+  driver: string;
+  value: number;
+  pitLap: number;
+}
+
+export interface FastF1StrategyPaceSummary {
+  driver: string;
+  valueSeconds: number;
+  pitLap: number;
+}
+
+export interface FastF1StrategySummary {
+  pitStopCount: number;
+  statusLapRanges: FastF1StrategyStatusRange[];
+  biggestPositionGain: FastF1StrategyPositionSummary | null;
+  biggestPositionLoss: FastF1StrategyPositionSummary | null;
+  bestPaceGain: FastF1StrategyPaceSummary | null;
+}
+
+export interface FastF1StrategyAnalysis {
+  pitStops: FastF1PitStop[];
+  eventTimeline: FastF1StrategyEventTimelineItem[];
+  strategyBattles: FastF1StrategyBattle[];
+  summary: FastF1StrategySummary;
+}
+
 export interface FastF1RaceAnalytics {
   source: 'fastf1';
   generatedAt: string;
@@ -445,6 +573,7 @@ export interface FastF1RaceAnalytics {
   weather?: FastF1WeatherAnalysis;
   qualifyingAnalysis?: FastF1QualifyingAnalysis;
   telemetry?: FastF1TelemetryAnalysis;
+  strategyAnalysis?: FastF1StrategyAnalysis;
   lapTimeSeries: FastF1DriverLapSeries[];
   tyreStrategies: FastF1DriverStrategy[];
 }
