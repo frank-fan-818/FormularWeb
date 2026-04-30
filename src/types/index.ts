@@ -39,6 +39,17 @@ export interface Race {
   Results?: Result[];
   QualifyingResults?: QualifyingResult[];
   SprintResults?: Result[];
+  FirstPractice?: SessionSchedule;
+  SecondPractice?: SessionSchedule;
+  ThirdPractice?: SessionSchedule;
+  Qualifying?: SessionSchedule;
+  Sprint?: SessionSchedule;
+  SprintQualifying?: SessionSchedule;
+}
+
+export interface SessionSchedule {
+  date: string;
+  time?: string;
 }
 
 export interface Result {
@@ -76,6 +87,62 @@ export interface QualifyingResult {
   Q1?: string;
   Q2?: string;
   Q3?: string;
+}
+
+export type RaceWeekendMode = 'pre' | 'post';
+
+export interface RecentGrandPrixResult {
+  raceId: number;
+  season: number;
+  round: number;
+  raceName: string;
+  circuitId: string;
+  date: string | null;
+  winnerDriverId: string | null;
+  winnerName: string | null;
+  winnerConstructorId: string | null;
+  winnerConstructorName: string | null;
+  poleDriverId: string | null;
+  poleName: string | null;
+  podium: Array<{
+    position: number;
+    driverId: string;
+    driverName: string;
+    constructorId: string | null;
+    constructorName: string | null;
+  }>;
+}
+
+export interface TrackInterruptionProbability {
+  type: 'SC' | 'VSC' | 'RED' | 'YELLOW';
+  label: string;
+  sampleSize: number;
+  triggeredCount: number;
+  probabilityPct: number | null;
+  status: 'ok' | 'insufficient-data';
+}
+
+export interface RacePreviewSummary {
+  season: number;
+  round: number;
+  circuitId: string;
+  recentResults: RecentGrandPrixResult[];
+  interruptionProbabilities: TrackInterruptionProbability[];
+  poleWinConversionPct: number | null;
+  sampleSize: number;
+}
+
+export interface DriverPostRaceTelemetrySummary {
+  driver: string;
+  team: string;
+  lapNumber: number | null;
+  lapTimeSeconds: number | null;
+  maxSpeedKph: number | null;
+  avgSpeedKph: number | null;
+  fullThrottlePct: number | null;
+  avgThrottlePct: number | null;
+  brakePct: number | null;
+  drsPct: number | null;
 }
 
 export interface DriverStanding {
@@ -245,6 +312,8 @@ export interface FastF1LapPoint {
   compound: string;
   stint: number;
   position: number | null;
+  freshTyre?: boolean | null;
+  tyreLife?: number | null;
 }
 
 export interface FastF1DriverLapSeries {
@@ -260,6 +329,9 @@ export interface FastF1StrategyStint {
   startLap: number;
   endLap: number;
   lapCount: number;
+  freshTyre?: boolean | null;
+  startTyreLife?: number | null;
+  endTyreLife?: number | null;
 }
 
 export interface FastF1DriverStrategy {
@@ -419,6 +491,24 @@ export interface FastF1QualifyingAnalysis {
   teamMateComparisons?: FastF1TeamMateComparison[];
 }
 
+export interface FastF1SessionResult {
+  driver: string;
+  driverNumber: string;
+  driverId: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  team: string;
+  position: number | null;
+  classifiedPosition: string;
+  gridPosition: number | null;
+  time: string;
+  timeSeconds: number | null;
+  status: string;
+  points: number | null;
+  laps: number | null;
+}
+
 export interface FastF1TelemetrySample {
   distanceM: number;
   timeSeconds: number | null;
@@ -444,6 +534,8 @@ export interface FastF1TelemetryDriver {
   lapNumber: number | null;
   lapTimeSeconds: number | null;
   compound: string;
+  freshTyre?: boolean | null;
+  tyreLife?: number | null;
   samples: FastF1TelemetrySample[];
   positionSamples: FastF1PositionSample[];
 }
@@ -568,11 +660,13 @@ export interface FastF1RaceAnalytics {
   sessionName: string;
   totalLaps?: number;
   fastestLap?: FastF1FastestLap | null;
+  sessionResults?: FastF1SessionResult[];
   trackStatusPeriods?: FastF1TrackStatusPeriod[];
   raceControlMessages?: FastF1RaceControlMessage[];
   weather?: FastF1WeatherAnalysis;
   qualifyingAnalysis?: FastF1QualifyingAnalysis;
   telemetry?: FastF1TelemetryAnalysis;
+  telemetrySummary?: DriverPostRaceTelemetrySummary[];
   strategyAnalysis?: FastF1StrategyAnalysis;
   lapTimeSeries: FastF1DriverLapSeries[];
   tyreStrategies: FastF1DriverStrategy[];

@@ -223,6 +223,8 @@ def build_lap_time_series(
                 "compound": clean_text(lap.get("Compound")) or "UNKNOWN",
                 "stint": to_number(lap.get("Stint")) or 0,
                 "position": to_number(lap.get("Position")),
+                "freshTyre": to_bool(lap.get("FreshTyre")),
+                "tyreLife": to_number(lap.get("TyreLife")),
             })
 
         if points:
@@ -257,6 +259,9 @@ def build_tyre_strategies(
         )
 
         for (stint_number, compound), stint_laps in grouped:
+            sorted_stint_laps = stint_laps.sort_values("LapNumber")
+            first_lap = sorted_stint_laps.iloc[0] if not sorted_stint_laps.empty else None
+            last_lap = sorted_stint_laps.iloc[-1] if not sorted_stint_laps.empty else None
             lap_numbers = [
                 value for value in (
                     to_number(item) for item in stint_laps["LapNumber"].tolist()
@@ -273,6 +278,9 @@ def build_tyre_strategies(
                 "startLap": min(lap_numbers),
                 "endLap": max(lap_numbers),
                 "lapCount": len(lap_numbers),
+                "freshTyre": to_bool(first_lap.get("FreshTyre")) if first_lap is not None else False,
+                "startTyreLife": to_number(first_lap.get("TyreLife")) if first_lap is not None else None,
+                "endTyreLife": to_number(last_lap.get("TyreLife")) if last_lap is not None else None,
             })
 
         if stints:
@@ -308,6 +316,53 @@ def build_fastest_lap(laps: pd.DataFrame) -> dict[str, Any] | None:
         "compound": clean_text(lap.get("Compound")) or "UNKNOWN",
         "position": to_number(lap.get("Position")),
     }
+
+
+def format_result_time(value: Any, position: int | None) -> str:
+    seconds = to_seconds(value)
+    if seconds is None:
+        return clean_text(value)
+
+    if position is not None and position > 1:
+        return f"+{seconds:.3f}s"
+
+    minutes = int(seconds // 60)
+    remaining = seconds - minutes * 60
+    return f"{minutes}:{remaining:06.3f}"
+
+
+def build_session_results(results: pd.DataFrame) -> list[dict[str, Any]]:
+    if results.empty or "Abbreviation" not in results.columns:
+        return []
+
+    sort_column = "Position" if "Position" in results.columns else "Abbreviation"
+    records = []
+
+    for _, result in results.sort_values(sort_column).iterrows():
+        driver = clean_text(result.get("Abbreviation"))
+        if not driver:
+            continue
+
+        position = to_number(result.get("Position"))
+        records.append({
+            "driver": driver,
+            "driverNumber": clean_text(result.get("DriverNumber")),
+            "driverId": clean_text(result.get("DriverId")),
+            "firstName": clean_text(result.get("FirstName")),
+            "lastName": clean_text(result.get("LastName")),
+            "fullName": clean_text(result.get("FullName")),
+            "team": clean_text(result.get("TeamName")) or clean_text(result.get("Team")),
+            "position": position,
+            "classifiedPosition": clean_text(result.get("ClassifiedPosition")),
+            "gridPosition": to_number(result.get("GridPosition")),
+            "time": format_result_time(result.get("Time"), position),
+            "timeSeconds": to_seconds(result.get("Time")),
+            "status": clean_text(result.get("Status")),
+            "points": to_float(result.get("Points")),
+            "laps": to_number(result.get("Laps")),
+        })
+
+    return records
 
 
 def time_to_seconds(value: Any) -> float | None:
@@ -906,6 +961,51 @@ def telemetry_records(car_data: pd.DataFrame) -> list[dict[str, Any]]:
     return records
 
 
+def average(values: list[float]) -> float | None:
+    if not values:
+        return None
+
+    return sum(values) / len(values)
+
+
+def build_driver_telemetry_summary(driver_record: dict[str, Any]) -> dict[str, Any]:
+    samples = driver_record.get("samples") or []
+    speed_values = [
+        float(sample["speedKph"])
+        for sample in samples
+        if sample.get("speedKph") is not None
+    ]
+    throttle_values = [
+        float(sample["throttlePct"])
+        for sample in samples
+        if sample.get("throttlePct") is not None
+    ]
+    brake_count = len([sample for sample in samples if sample.get("brake")])
+    drs_count = len([
+        sample
+        for sample in samples
+        if sample.get("drs") is not None and float(sample.get("drs")) > 0
+    ])
+    avg_speed = average(speed_values)
+    avg_throttle = average(throttle_values)
+
+    return {
+        "driver": driver_record.get("driver"),
+        "team": driver_record.get("team"),
+        "lapNumber": driver_record.get("lapNumber"),
+        "lapTimeSeconds": driver_record.get("lapTimeSeconds"),
+        "maxSpeedKph": round(max(speed_values), 1) if speed_values else None,
+        "avgSpeedKph": round(avg_speed, 1) if avg_speed is not None else None,
+        "fullThrottlePct": round(
+            len([value for value in throttle_values if value >= 99]) / len(throttle_values) * 100,
+            1,
+        ) if throttle_values else None,
+        "avgThrottlePct": round(avg_throttle, 1) if avg_throttle is not None else None,
+        "brakePct": round(brake_count / len(samples) * 100, 1) if samples else None,
+        "drsPct": round(drs_count / len(samples) * 100, 1) if samples else None,
+    }
+
+
 def position_records(
     position_data: pd.DataFrame,
     car_data: pd.DataFrame,
@@ -1142,6 +1242,8 @@ def build_fastest_lap_telemetry(
             "lapNumber": to_number(lap.get("LapNumber")),
             "lapTimeSeconds": to_seconds(lap.get("LapTime")),
             "compound": clean_text(lap.get("Compound")) or "UNKNOWN",
+            "freshTyre": to_bool(lap.get("FreshTyre")),
+            "tyreLife": to_number(lap.get("TyreLife")),
             "samples": downsample(samples, sample_limit),
             "positionSamples": downsample(positions, sample_limit),
         })
@@ -1155,6 +1257,10 @@ def build_fastest_lap_telemetry(
         "drivers": telemetry_driver_records,
         "corners": corners,
         "cornerAnalysis": build_corner_analysis(corners, full_driver_samples),
+        "summary": [
+            build_driver_telemetry_summary(driver_record)
+            for driver_record in telemetry_driver_records
+        ],
     }
 
 
@@ -1302,6 +1408,7 @@ def main() -> None:
         "sessionName": clean_text(getattr(session, "name", args.session)),
         "totalLaps": int(laps["LapNumber"].dropna().max()) if "LapNumber" in laps.columns and not laps.empty else 0,
         "fastestLap": build_fastest_lap(laps),
+        "sessionResults": build_session_results(results),
         "trackStatusPeriods": build_track_status_periods(track_status, laps),
         "raceControlMessages": build_race_control_messages(race_control_messages),
         "lapTimeSeries": build_lap_time_series(laps, driver_order),
@@ -1335,6 +1442,7 @@ def main() -> None:
         )
         if telemetry:
             payload["telemetry"] = telemetry
+            payload["telemetrySummary"] = telemetry.get("summary", [])
 
     output_path = output_root / str(args.season) / str(args.round) / f"{args.session}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)

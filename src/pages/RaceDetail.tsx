@@ -1,26 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Table, Tabs, Tag } from 'antd';
+import { Button, Card, Segmented, Table, Tabs, Tag } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
 import EChartsPanel from '@/components/charts/EChartsPanel';
-import { useFastF1RaceAnalytics, useFastF1SessionAnalytics, useSeasonData } from '@/hooks';
+import {
+  useFastF1RaceAnalytics,
+  useFastF1SessionAnalytics,
+  usePostRaceTelemetrySummary,
+  useRacePreviewSummary,
+  useSeasonData,
+} from '@/hooks';
 import { useAppStore } from '@/store';
 import type {
+  Constructor,
+  Driver,
   FastF1DriverLapSeries,
   FastF1CornerAnalysis,
   FastF1QualifyingBestLap,
   FastF1RaceAnalytics,
+  FastF1SessionResult,
   FastF1StrategyStint,
   FastF1TelemetryDriver,
   FastF1TelemetrySample,
   FastF1TrackStatusPeriod,
   FastF1WeatherLapRange,
   FastF1WeatherPoint,
+  RaceWeekendMode,
+  RecentGrandPrixResult,
   QualifyingResult,
   Result,
+  TrackInterruptionProbability,
+  DriverPostRaceTelemetrySummary,
 } from '@/types';
+import { getSupabaseCircuitId } from '@/utils/circuitIds';
+import { formatSessionDateTime, getRaceWeekendSchedule } from '@/utils/raceSchedule';
+import { formatCompoundWithCode, formatTyreLife, getTyreAgeLabel } from '@/utils/tyreCompounds';
 import './RaceDetail.css';
 
 interface RaceTabItem {
@@ -47,6 +63,7 @@ const TEXT = {
   fastestLap: '\u6700\u5feb\u5708',
   points: '\u79ef\u5206',
   sprintWeekend: '\u51b2\u523a\u5468\u672b',
+  weekendSchedule: '\u5468\u672b\u65f6\u95f4\u8868',
   mobileHint: '\u70b9\u51fb\u4e0a\u65b9\u5706\u70b9\u5207\u6362\u4f1a\u8bdd',
   fp1: '\u7ec3\u4e60\u8d5b 1',
   fp2: '\u7ec3\u4e60\u8d5b 2',
@@ -56,6 +73,7 @@ const TEXT = {
   sprint: '\u51b2\u523a\u8d5b',
   race: '\u6b63\u8d5b',
   fastF1Analysis: 'FastF1 \u6bd4\u8d5b\u5206\u6790',
+  raceAnalysisGroup: '\u6b63\u8d5b\u5206\u6790',
   lapPace: '\u5708\u901f\u8d70\u52bf',
   tyreStrategy: '\u8f6e\u80ce\u7b56\u7565',
   qualifyingAnalyzer: '\u6392\u4f4d\u5206\u6790',
@@ -71,11 +89,34 @@ const TEXT = {
   stints: '\u6bb5\u8f6e\u80ce',
   lapPaceDescription: '\u9010\u5708\u5bf9\u6bd4\u6b63\u8d5b\u8282\u594f\uff0c\u53ef\u5feb\u901f\u770b\u5230\u957f\u8ddd\u79bb\u901f\u5ea6\u8870\u51cf\u548c\u5b89\u5168\u8f66\u5f71\u54cd\u3002',
   tyreStrategyDescription: '\u6309\u8f66\u624b\u62c6\u5206 stint \u548c compound\uff0c\u5c55\u793a\u6bcf\u6bb5\u8f6e\u80ce\u7684\u5708\u6570\u548c\u6362\u80ce\u8282\u70b9\u3002',
-  qualifyingAnalyzerDescription: '\u6309\u8f66\u961f\u5bf9\u6bd4 Q/SQ/SS \u6700\u5feb\u5708\u4e0e sector gap\uff0c\u5feb\u901f\u5224\u65ad\u961f\u53cb\u4e4b\u95f4\u7684\u5355\u5708\u5dee\u5f02\u3002',
   driverDuelDescription: '\u9009\u62e9\u4e24\u4f4d\u8f66\u624b\uff0c\u5bf9\u6bd4\u6392\u4f4d sector\u3001\u6b63\u8d5b stint pace\u3001\u8f6e\u80ce\u8870\u51cf\u3001\u9065\u6d4b\u548c\u5f2f\u89d2\u6700\u4f4e\u901f\u3002',
   strategyTimelineDescription: '\u5c06\u8fdb\u7ad9\u3001\u6362\u80ce\u3001\u8d5b\u9053\u72b6\u6001\u3001Race Control \u548c\u964d\u96e8\u4e32\u5230\u540c\u4e00\u6761\u5708\u6570\u8f74\u4e0a\uff0c\u5e2e\u52a9\u89e3\u91ca\u7b56\u7565\u6536\u76ca\u548c\u8282\u594f\u53d8\u5316\u3002',
   weatherDescription: '\u5c06\u8d5b\u9053\u6e29\u5ea6\u3001\u6c14\u6e29\u3001\u6e7f\u5ea6\u548c\u964d\u96e8\u6620\u5c04\u5230\u5708\u6570\uff0c\u7528\u4e8e\u89e3\u91ca\u5708\u901f\u548c\u8f6e\u80ce\u8868\u73b0\u53d8\u5316\u3002',
   raceStatus: '\u8d5b\u9053\u72b6\u6001',
+  raceWeekendMode: '\u8d5b\u5468\u6a21\u5f0f',
+  preRace: '\u8d5b\u524d',
+  postRace: '\u8d5b\u540e',
+  preRaceOverview: '\u8d5b\u524d\u60c5\u62a5',
+  preRaceDescription: '\u805a\u5408\u672c\u7ad9\u8fd1\u56db\u6b21\u529e\u8d5b\u7684\u51a0\u519b\u3001\u6746\u4f4d\u3001\u9886\u5956\u53f0\u548c\u8d5b\u9053\u72b6\u6001\u98ce\u9669\u3002',
+  recentWinners: '\u8fd1\u56db\u6b21\u51a0\u519b',
+  interruptionRisk: '\u8d5b\u9053\u4e2d\u65ad\u6982\u7387',
+  poleConversion: '\u6746\u4f4d\u8f6c\u5316',
+  postRaceOverview: '\u8d5b\u540e\u603b\u7ed3',
+  postRaceDescription: '\u6309\u8f66\u624b\u6c47\u603b\u6700\u5feb\u5708\u9065\u6d4b\u4e2d\u7684\u5c3e\u901f\u3001\u6cb9\u95e8\u3001\u5239\u8f66\u548c DRS \u8868\u73b0\u3002',
+  telemetrySummary: '\u9065\u6d4b\u6458\u8981',
+  winner: '\u51a0\u519b',
+  pole: '\u6746\u4f4d',
+  podium: '\u9886\u5956\u53f0',
+  sampleSize: '\u6837\u672c',
+  insufficientData: '\u6570\u636e\u4e0d\u8db3',
+  probability: '\u6982\u7387',
+  maxSpeed: '\u6700\u9ad8\u5c3e\u901f',
+  averageSpeed: '\u5e73\u5747\u901f\u5ea6',
+  fullThrottle: '\u5168\u6cb9\u95e8',
+  averageThrottle: '\u5e73\u5747\u6cb9\u95e8',
+  drs: 'DRS',
+  noPreviewData: '\u6682\u65e0\u672c\u7ad9\u5386\u53f2\u805a\u5408\u6570\u636e',
+  noTelemetrySummary: '\u6682\u65e0\u8d5b\u540e\u9065\u6d4b\u6458\u8981',
   trackTemp: '\u8d5b\u9053\u6e29\u5ea6',
   airTemp: '\u6c14\u6e29',
   humidity: '\u6e7f\u5ea6',
@@ -106,6 +147,8 @@ const TEXT = {
   pitStops: '\u8fdb\u7ad9',
   pitLap: '\u8fdb\u7ad9\u5708',
   tyre: '\u8f6e\u80ce',
+  tyreAge: '\u65b0\u65e7',
+  tyreLife: '\u80ce\u9f84',
   pitTime: '\u8fdb\u7ad9\u65f6\u95f4',
   paceBefore: '\u8fdb\u7ad9\u524d\u8282\u594f',
   paceAfter: '\u8fdb\u7ad9\u540e\u8282\u594f',
@@ -243,6 +286,10 @@ function formatSpeed(value: number | null | undefined) {
   return formatted === '-' ? formatted : `${formatted} km/h`;
 }
 
+function formatProbability(value: number | null | undefined) {
+  return value === null || value === undefined ? '-' : `${formatNumber(value, 0)}%`;
+}
+
 function formatRpm(value: number | null | undefined) {
   const formatted = formatNumber(value, 0);
   return formatted === '-' ? formatted : `${formatted} rpm`;
@@ -272,6 +319,16 @@ function getGapToneClassName(value: number | null | undefined) {
   }
 
   return value < 0 ? 'is-faster' : 'is-slower';
+}
+
+function formatPodium(result: RecentGrandPrixResult) {
+  if (!result.podium.length) {
+    return '-';
+  }
+
+  return result.podium
+    .map((item) => `P${item.position} ${item.driverName}`)
+    .join(' / ');
 }
 
 function formatStatRange(summary?: { min: number | null; max: number | null }) {
@@ -601,7 +658,12 @@ function getStintPaceMetrics(
 }
 
 function buildStintTooltip(params: any) {
-  const data = params.data as { stint?: StintPaceMetric };
+  const data = params.data as {
+    stint?: StintPaceMetric;
+    compoundLabel?: string;
+    tyreAgeLabel?: string;
+    tyreLifeLabel?: string | null;
+  };
   const stint = data?.stint;
 
   if (!stint) {
@@ -611,21 +673,34 @@ function buildStintTooltip(params: any) {
   return `
     <div class="fastf1-tooltip">
       <div class="fastf1-tooltip-title">${escapeTooltipText(stint.driver)} - Stint ${stint.stint}</div>
-      <div class="fastf1-tooltip-grid">
+      <div class="fastf1-tooltip-grid fastf1-tooltip-grid-stint">
         <div class="fastf1-tooltip-row">
           <span class="fastf1-tooltip-marker" style="background:${getCompoundColor(stint.compound)};"></span>
-          <span class="fastf1-tooltip-name">${escapeTooltipText(stint.compound)}</span>
+          <span class="fastf1-tooltip-name">${escapeTooltipText(data.compoundLabel || stint.compound)}</span>
           <strong>L${stint.startLap}-L${stint.endLap} (${stint.lapCount})</strong>
         </div>
         <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker is-empty"></span>
+          <span>${TEXT.tyreAge}</span>
+          <strong class="fastf1-tyre-age-badge">${escapeTooltipText(data.tyreAgeLabel || getTyreAgeLabel(stint))}</strong>
+        </div>
+        <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker is-empty"></span>
+          <span>${TEXT.tyreLife}</span>
+          <strong>${escapeTooltipText(data.tyreLifeLabel || formatTyreLife(stint) || '-')}</strong>
+        </div>
+        <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker is-empty"></span>
           <span>${TEXT.stintPace}</span>
           <strong>${formatSessionSeconds(stint.averagePaceSeconds)}</strong>
         </div>
         <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker is-empty"></span>
           <span>${TEXT.degradation}</span>
           <strong>${formatSignedSeconds(stint.degradationSeconds)}</strong>
         </div>
         <div class="fastf1-tooltip-row">
+          <span class="fastf1-tooltip-marker is-empty"></span>
           <span>vs Prev Stint</span>
           <strong>${formatSignedSeconds(stint.previousDeltaSeconds)}</strong>
         </div>
@@ -634,7 +709,12 @@ function buildStintTooltip(params: any) {
   `;
 }
 
-function buildTyreStrategyOption(analytics: FastF1RaceAnalytics, highlightedDrivers: string[] = []) {
+function buildTyreStrategyOption(
+  analytics: FastF1RaceAnalytics,
+  highlightedDrivers: string[] = [],
+  season: string | number = analytics.season,
+  round: string | number | undefined = analytics.round,
+) {
   const strategies = [...analytics.tyreStrategies].sort((a, b) => {
     const aPosition = a.racePosition ?? Number.MAX_SAFE_INTEGER;
     const bPosition = b.racePosition ?? Number.MAX_SAFE_INTEGER;
@@ -718,10 +798,14 @@ function buildTyreStrategyOption(analytics: FastF1RaceAnalytics, highlightedDriv
         return {
           value: stint?.lapCount || 0,
           stint: stint || undefined,
+          compoundLabel: stint ? formatCompoundWithCode(season, round, stint.compound) : '',
+          tyreAgeLabel: stint ? getTyreAgeLabel(stint) : '',
+          tyreLifeLabel: stint ? formatTyreLife(stint) : null,
           itemStyle: {
             color: stint ? getCompoundColor(stint.compound) : 'transparent',
             borderColor: 'rgba(15, 23, 42, 0.3)',
             borderWidth: stint ? 1 : 0,
+            borderType: stint && getTyreAgeLabel(stint) === '\u65e7\u80ce' ? 'dashed' : 'solid',
             opacity: isHighlighted ? 1 : 0.22,
           },
         };
@@ -997,21 +1081,83 @@ function buildWeatherOption(analytics: FastF1RaceAnalytics) {
   };
 }
 
-function getQualifyingSessionTitle(session: string) {
-  if (session === 'SQ') {
-    return TEXT.sprintQualifying;
-  }
-  if (session === 'SS') {
-    return 'Sprint Shootout';
-  }
-  return TEXT.qualifying;
+function getTyreTimelineRows(
+  analytics: FastF1RaceAnalytics,
+  highlightedDrivers: string[] = [],
+) {
+  const highlightedSet = new Set(highlightedDrivers);
+  const hasHighlight = highlightedSet.size > 0;
+
+  return [...analytics.tyreStrategies]
+    .sort((a, b) => {
+      const aPosition = a.racePosition ?? Number.MAX_SAFE_INTEGER;
+      const bPosition = b.racePosition ?? Number.MAX_SAFE_INTEGER;
+      return aPosition - bPosition;
+    })
+    .map((strategy) => ({
+      ...strategy,
+      isMuted: hasHighlight && !highlightedSet.has(strategy.driver),
+      stints: getStintPaceMetrics(analytics, strategy.driver, strategy.stints),
+    }));
 }
 
-function getTeamMateComparisonRows(analytics: FastF1RaceAnalytics | null) {
-  return (analytics?.qualifyingAnalysis?.teamMateComparisons || []).map((comparison) => ({
-    key: comparison.team,
-    ...comparison,
-  }));
+function TyreStrategyTimeline({
+  analytics,
+  highlightedDrivers,
+  season,
+  round,
+}: {
+  analytics: FastF1RaceAnalytics;
+  highlightedDrivers: string[];
+  season: string;
+  round?: string;
+}) {
+  const maxLap = Math.max(1, getMaxRaceLap(analytics));
+  const rows = getTyreTimelineRows(analytics, highlightedDrivers);
+
+  return (
+    <div className="tyre-broadcast-timeline" style={{ ['--max-lap' as string]: maxLap }}>
+      {rows.map((strategy) => (
+        <div
+          key={strategy.driver}
+          className={`tyre-timeline-row${strategy.isMuted ? ' is-muted' : ''}`}
+        >
+          <div className="tyre-timeline-driver">{strategy.driver}</div>
+          <div className="tyre-timeline-track">
+            {strategy.stints.map((stint) => {
+              const startPct = ((stint.startLap - 1) / maxLap) * 100;
+              const widthPct = (stint.lapCount / maxLap) * 100;
+              const ageLabel = getTyreAgeLabel(stint);
+              const compoundLabel = formatCompoundWithCode(season, round, stint.compound);
+              const tyreLife = formatTyreLife(stint);
+
+              const endLabelClassName = stint.stint % 2 === 0
+                ? 'tyre-stint-end-label is-below'
+                : 'tyre-stint-end-label';
+
+              return (
+                <div
+                  key={`${strategy.driver}-${stint.stint}`}
+                  className={`tyre-stint-line${ageLabel === '\u65e7\u80ce' ? ' is-used' : ' is-new'}`}
+                  style={{
+                    left: `${startPct}%`,
+                    width: `${Math.max(widthPct, 0.8)}%`,
+                    ['--compound-color' as string]: getCompoundColor(stint.compound),
+                  }}
+                  title={`${strategy.driver} ${compoundLabel} ${ageLabel} L${stint.startLap}-L${stint.endLap}${tyreLife ? ` ${tyreLife}` : ''}`}
+                >
+                  <span className="tyre-stint-segment tyre-stint-segment-left" />
+                  <span className="tyre-stint-segment tyre-stint-segment-right" />
+                  <span className={endLabelClassName}>{stint.endLap}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="tyre-timeline-finish">{maxLap}</div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function getDuelDriverItems(analytics: FastF1RaceAnalytics | null) {
@@ -1838,6 +1984,188 @@ function getBestLapByDriver(analytics: FastF1RaceAnalytics | null) {
   );
 }
 
+interface FastF1SprintLapSummary {
+  driver: string;
+  position: number | null;
+  lapCount: number;
+  lapNumber: number | null;
+  lapTimeSeconds: number | null;
+}
+
+type ParticipantRecord = Result | QualifyingResult;
+
+function normalizeLookupKey(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+}
+
+function buildDriverLookup(records: ParticipantRecord[]) {
+  const drivers = new Map<string, Driver>();
+
+  records.forEach((record) => {
+    const code = record.Driver.code;
+    if (code && !drivers.has(code)) {
+      drivers.set(code, record.Driver);
+    }
+  });
+
+  return drivers;
+}
+
+function buildConstructorLookup(records: ParticipantRecord[]) {
+  const constructors = new Map<string, Constructor>();
+
+  records.forEach((record) => {
+    const name = record.Constructor.name;
+    if (name) {
+      constructors.set(normalizeLookupKey(name), record.Constructor);
+    }
+  });
+
+  return constructors;
+}
+
+function getFastF1SprintLapByDriver(analytics: FastF1RaceAnalytics | null) {
+  const summaries = (analytics?.lapTimeSeries || []).map((series) => {
+    const fastestLap = series.laps
+      .filter((lap) => Number.isFinite(lap.lapTimeSeconds))
+      .sort((a, b) => a.lapTimeSeconds - b.lapTimeSeconds)[0];
+
+    return {
+      driver: series.driver,
+      position: series.racePosition ?? null,
+      lapCount: series.laps.length,
+      lapNumber: fastestLap?.lapNumber ?? null,
+      lapTimeSeconds: fastestLap?.lapTimeSeconds ?? null,
+    };
+  });
+
+  return new Map(summaries.map((summary) => [summary.driver, summary]));
+}
+
+function buildFallbackDriver(
+  code: string,
+  driverByCode: Map<string, Driver> = new Map(),
+  result?: FastF1SessionResult,
+): Driver {
+  const [firstName = code, ...lastNameParts] = (result?.fullName || '').split(' ').filter(Boolean);
+
+  return driverByCode.get(code) || {
+    driverId: result?.driverId || code.toLowerCase(),
+    permanentNumber: result?.driverNumber || '',
+    code,
+    url: '',
+    givenName: result?.firstName || firstName || code,
+    familyName: result?.lastName || lastNameParts.join(' '),
+    dateOfBirth: '',
+    nationality: '',
+  };
+}
+
+function buildFallbackConstructor(
+  name: string,
+  constructorByName: Map<string, Constructor> = new Map(),
+): Constructor {
+  return constructorByName.get(normalizeLookupKey(name)) || {
+    constructorId: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'unknown',
+    url: '',
+    name: name || '-',
+    nationality: '',
+  };
+}
+
+function buildSessionResultByDriver(analytics: FastF1RaceAnalytics | null) {
+  return new Map(
+    (analytics?.sessionResults || []).map((result) => [result.driver, result]),
+  );
+}
+
+function buildFastF1QualifyingRows(
+  analytics: FastF1RaceAnalytics | null,
+  driverByCode: Map<string, Driver>,
+  constructorByName: Map<string, Constructor>,
+): QualifyingResult[] {
+  const phaseResults = analytics?.qualifyingAnalysis?.phaseResults || [];
+  const bestLaps = analytics?.qualifyingAnalysis?.bestLaps || [];
+
+  if (!phaseResults.length && !bestLaps.length) {
+    return [];
+  }
+
+  const phaseByDriver = new Map(phaseResults.map((result) => [result.driver, result]));
+  const sessionResultByDriver = buildSessionResultByDriver(analytics);
+  const rows = (phaseResults.length ? phaseResults : bestLaps)
+    .map((item) => {
+      const phaseResult = phaseByDriver.get(item.driver);
+      const sessionResult = sessionResultByDriver.get(item.driver);
+      return {
+        number: '',
+        position: String(item.position || sessionResult?.position || ''),
+        Driver: buildFallbackDriver(item.driver, driverByCode, sessionResult),
+        Constructor: buildFallbackConstructor(item.team, constructorByName),
+        Q1: phaseResult?.phases.q1?.time || undefined,
+        Q2: phaseResult?.phases.q2?.time || undefined,
+        Q3: phaseResult?.phases.q3?.time || undefined,
+      };
+    });
+
+  return rows.sort((a, b) => Number(a.position) - Number(b.position));
+}
+
+function buildFastF1SprintRows(
+  analytics: FastF1RaceAnalytics | null,
+  driverByCode: Map<string, Driver>,
+  constructorByName: Map<string, Constructor>,
+): Result[] {
+  const sessionResults = analytics?.sessionResults || [];
+  const lapSeries = analytics?.lapTimeSeries || [];
+  const lapSummaryByDriver = getFastF1SprintLapByDriver(analytics);
+
+  if (sessionResults.length) {
+    return sessionResults
+      .map((result, index) => {
+        const lapSummary = lapSummaryByDriver.get(result.driver);
+
+        return {
+          number: result.driverNumber,
+          position: String(result.position ?? index + 1),
+          positionText: String(result.classifiedPosition || result.position || index + 1),
+          points: result.points === null || result.points === undefined ? '0' : String(result.points),
+          Driver: buildFallbackDriver(result.driver, driverByCode, result),
+          Constructor: buildFallbackConstructor(result.team, constructorByName),
+          grid: result.gridPosition === null || result.gridPosition === undefined ? '-' : String(result.gridPosition),
+          laps: result.laps === null || result.laps === undefined ? String(lapSummary?.lapCount || '') : String(result.laps),
+          status: result.time || result.status || 'Finished',
+          FastestLap: lapSummary?.lapTimeSeconds ? {
+            rank: '',
+            lap: lapSummary.lapNumber === null ? '' : String(lapSummary.lapNumber),
+            Time: {
+              time: formatSessionSeconds(lapSummary.lapTimeSeconds),
+            },
+            AverageSpeed: {
+              units: 'kph',
+              speed: '',
+            },
+          } : undefined,
+        };
+      })
+      .sort((a, b) => Number(a.position) - Number(b.position));
+  }
+
+  return lapSeries
+    .map((series, index) => ({
+      number: '',
+      position: String(series.racePosition ?? index + 1),
+      positionText: String(series.racePosition ?? index + 1),
+      points: '0',
+      Driver: buildFallbackDriver(series.driver, driverByCode),
+      Constructor: buildFallbackConstructor(series.team, constructorByName),
+      grid: '-',
+      laps: String(series.laps.length),
+      status: '',
+    }))
+    .sort((a, b) => Number(a.position) - Number(b.position));
+}
+
 const RaceDetail = () => {
   const { round } = useParams<{ round: string }>();
   const navigate = useNavigate();
@@ -1856,6 +2184,9 @@ const RaceDetail = () => {
   const {
     data: fastF1SprintShootoutAnalytics,
   } = useFastF1SessionAnalytics(currentSeason, round, 'SS');
+  const {
+    data: fastF1SprintAnalytics,
+  } = useFastF1SessionAnalytics(currentSeason, round, 'S');
 
   const [qualifyingResults, setQualifyingResults] = useState<QualifyingResult[]>([]);
   const [raceResults, setRaceResults] = useState<Result[]>([]);
@@ -1866,52 +2197,48 @@ const RaceDetail = () => {
   const [fp3Results, setFp3Results] = useState<Result[]>([]);
   const [primaryLoading, setPrimaryLoading] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('qualifying');
+  const [activeTab, setActiveTab] = useState('sprintQualifying');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
-  const [selectedQualifyingSession, setSelectedQualifyingSession] = useState('Q');
   const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
   const [selectedTelemetryDrivers, setSelectedTelemetryDrivers] = useState<string[]>([]);
   const [selectedTelemetryMetrics, setSelectedTelemetryMetrics] = useState<TelemetryMetric[]>(
     TELEMETRY_METRICS.map((metric) => metric.key),
   );
+  const [selectedWeekendMode, setSelectedWeekendMode] = useState<RaceWeekendMode | null>(null);
 
   const raceInfo = races.find((race) => race.round === round) || null;
+  const previewCircuitId = useMemo(
+    () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
+    [raceInfo],
+  );
+  const {
+    data: racePreviewSummary,
+    loading: racePreviewLoading,
+  } = useRacePreviewSummary(currentSeason, round, previewCircuitId);
+  const postRaceTelemetrySummary = usePostRaceTelemetrySummary(fastF1Analytics);
+  const defaultWeekendMode: RaceWeekendMode = useMemo(() => {
+    if (!raceInfo) {
+      return 'pre';
+    }
+
+    return dayjs().isAfter(dayjs(raceInfo.date).endOf('day')) && fastF1Analytics ? 'post' : 'pre';
+  }, [fastF1Analytics, raceInfo]);
+  const activeWeekendMode = selectedWeekendMode || defaultWeekendMode;
+  const weekendSchedule = useMemo(() => getRaceWeekendSchedule(raceInfo, TEXT), [raceInfo]);
   const lapPaceOption = useMemo(
     () => (fastF1Analytics ? buildLapPaceOption(fastF1Analytics, selectedLapDrivers) : null),
     [fastF1Analytics, selectedLapDrivers],
   );
   const tyreStrategyOption = useMemo(
-    () => (fastF1Analytics ? buildTyreStrategyOption(fastF1Analytics, selectedDuelDrivers) : null),
-    [fastF1Analytics, selectedDuelDrivers],
+    () => (fastF1Analytics
+      ? buildTyreStrategyOption(fastF1Analytics, selectedDuelDrivers, currentSeason, round)
+      : null),
+    [currentSeason, fastF1Analytics, round, selectedDuelDrivers],
   );
   const weatherOption = useMemo(
     () => (fastF1Analytics ? buildWeatherOption(fastF1Analytics) : null),
     [fastF1Analytics],
-  );
-  const qualifyingAnalyticsItems = useMemo(
-    () => [
-      { session: 'Q', analytics: fastF1QualifyingAnalytics },
-      { session: 'SQ', analytics: fastF1SprintQualifyingAnalytics },
-      { session: 'SS', analytics: fastF1SprintShootoutAnalytics },
-    ].filter((item) => item.analytics?.qualifyingAnalysis),
-    [fastF1QualifyingAnalytics, fastF1SprintQualifyingAnalytics, fastF1SprintShootoutAnalytics],
-  );
-  const activeQualifyingAnalytics = useMemo(
-    () => qualifyingAnalyticsItems.find((item) => item.session === selectedQualifyingSession)?.analytics
-      || qualifyingAnalyticsItems[0]?.analytics
-      || null,
-    [qualifyingAnalyticsItems, selectedQualifyingSession],
-  );
-  const activeQualifyingSession = useMemo(
-    () => qualifyingAnalyticsItems.find((item) => item.session === selectedQualifyingSession)?.session
-      || qualifyingAnalyticsItems[0]?.session
-      || 'Q',
-    [qualifyingAnalyticsItems, selectedQualifyingSession],
-  );
-  const teamMateComparisonRows = useMemo(
-    () => getTeamMateComparisonRows(activeQualifyingAnalytics),
-    [activeQualifyingAnalytics],
   );
   const activeTelemetryDrivers = useMemo(
     () => getActiveTelemetryDrivers(fastF1Analytics, selectedTelemetryDrivers),
@@ -1979,7 +2306,15 @@ const RaceDetail = () => {
     () => getBestLapByDriver(fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics),
     [fastF1SprintQualifyingAnalytics, fastF1SprintShootoutAnalytics],
   );
+  const fastF1SprintLapByDriver = useMemo(
+    () => getFastF1SprintLapByDriver(fastF1SprintAnalytics),
+    [fastF1SprintAnalytics],
+  );
   const hasLapDriverFilter = selectedLapDrivers.length > 0;
+  const hasRaceAnalysisSection = Boolean(
+    fastF1Analytics
+    && (lapPaceOption || tyreStrategyOption || weatherOption || fastF1Analytics.telemetry),
+  );
 
   useEffect(() => {
     const checkMobile = () => {
@@ -1993,10 +2328,10 @@ const RaceDetail = () => {
 
   useEffect(() => {
     setSelectedLapDrivers([]);
-    setSelectedQualifyingSession('Q');
     setSelectedDuelDrivers([]);
     setSelectedTelemetryDrivers([]);
     setSelectedTelemetryMetrics(TELEMETRY_METRICS.map((metric) => metric.key));
+    setSelectedWeekendMode(null);
   }, [currentSeason, round]);
 
   useEffect(() => {
@@ -2006,7 +2341,7 @@ const RaceDetail = () => {
 
     let cancelled = false;
 
-    setActiveTab('qualifying');
+    setActiveTab('sprintQualifying');
     setQualifyingResults([]);
     setRaceResults([]);
     setPrimaryLoading(true);
@@ -2083,6 +2418,7 @@ const RaceDetail = () => {
 
   const getQualifyingColumns = (
     bestLapByDriver: Map<string, FastF1QualifyingBestLap>,
+    phasePrefix = 'Q',
   ) => {
     const hasFastF1Laps = bestLapByDriver.size > 0;
     const fastF1Columns = hasFastF1Laps ? [
@@ -2103,27 +2439,6 @@ const RaceDetail = () => {
             </span>
           );
         },
-      },
-      {
-        title: TEXT.sector1,
-        key: 'fastf1S1',
-        width: 80,
-        render: (_: unknown, record: QualifyingResult) =>
-          formatSessionSeconds(bestLapByDriver.get(record.Driver.code)?.sector1Seconds),
-      },
-      {
-        title: TEXT.sector2,
-        key: 'fastf1S2',
-        width: 80,
-        render: (_: unknown, record: QualifyingResult) =>
-          formatSessionSeconds(bestLapByDriver.get(record.Driver.code)?.sector2Seconds),
-      },
-      {
-        title: TEXT.sector3,
-        key: 'fastf1S3',
-        width: 80,
-        render: (_: unknown, record: QualifyingResult) =>
-          formatSessionSeconds(bestLapByDriver.get(record.Driver.code)?.sector3Seconds),
       },
     ] : [];
 
@@ -2156,20 +2471,29 @@ const RaceDetail = () => {
           </span>
         ),
       },
-      { title: 'Q1', dataIndex: 'Q1', key: 'Q1', width: 80 },
-      { title: 'Q2', dataIndex: 'Q2', key: 'Q2', width: 80 },
-      { title: 'Q3', dataIndex: 'Q3', key: 'Q3', width: 80 },
+      { title: `${phasePrefix}1`, dataIndex: 'Q1', key: 'Q1', width: 80 },
+      { title: `${phasePrefix}2`, dataIndex: 'Q2', key: 'Q2', width: 80 },
+      { title: `${phasePrefix}3`, dataIndex: 'Q3', key: 'Q3', width: 80 },
       ...fastF1Columns,
     ];
   };
 
-  const getRaceColumns = (data: Result[]) => {
+  const getRaceColumns = (
+    data: Result[],
+    fastF1LapByDriver: Map<string, FastF1SprintLapSummary> = new Map(),
+  ) => {
     let fastestLapTime = '';
     data.forEach((result) => {
       if (result.FastestLap?.Time?.time) {
         if (!fastestLapTime || result.FastestLap.Time.time < fastestLapTime) {
           fastestLapTime = result.FastestLap.Time.time;
         }
+      }
+    });
+    fastF1LapByDriver.forEach((summary) => {
+      const time = formatSessionSeconds(summary.lapTimeSeconds);
+      if (time !== '-' && (!fastestLapTime || time < fastestLapTime)) {
+        fastestLapTime = time;
       }
     });
 
@@ -2213,8 +2537,10 @@ const RaceDetail = () => {
         title: TEXT.fastestLap,
         key: 'fastestLap',
         render: (_: unknown, record: Result) => {
-          const time = record.FastestLap?.Time?.time;
-          if (!time) {
+          const fastF1Lap = fastF1LapByDriver.get(record.Driver.code);
+          const time = record.FastestLap?.Time?.time
+            || formatSessionSeconds(fastF1Lap?.lapTimeSeconds);
+          if (!time || time === '-') {
             return '-';
           }
 
@@ -2258,31 +2584,49 @@ const RaceDetail = () => {
   const hasFp1 = fp1Results.length > 0;
   const hasFp2 = fp2Results.length > 0;
   const hasFp3 = fp3Results.length > 0;
-  const hasSprintQualifying = sprintQualifyingResults.length > 0;
-  const hasSprint = sprintResults.length > 0;
+  const sprintQualifyingAnalytics = fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
+  const participantRecords = [
+    ...qualifyingResults,
+    ...raceResults,
+    ...sprintQualifyingResults,
+    ...sprintResults,
+    ...fp1Results,
+    ...fp2Results,
+    ...fp3Results,
+  ];
+  const driverByCode = buildDriverLookup(participantRecords);
+  const constructorByName = buildConstructorLookup(participantRecords);
+  const sprintQualifyingTableData = sprintQualifyingResults.length
+    ? sprintQualifyingResults
+    : buildFastF1QualifyingRows(sprintQualifyingAnalytics, driverByCode, constructorByName);
+  const sprintTableData = sprintResults.length
+    ? sprintResults
+    : buildFastF1SprintRows(fastF1SprintAnalytics, driverByCode, constructorByName);
+  const hasSprintQualifying = sprintQualifyingTableData.length > 0;
+  const hasSprint = sprintTableData.length > 0;
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
   const tabItems: RaceTabItem[] = [
-    hasFp1 && { key: 'fp1', label: TEXT.fp1, data: fp1Results, columns: getRaceColumns(fp1Results) },
-    hasFp2 && { key: 'fp2', label: TEXT.fp2, data: fp2Results, columns: getRaceColumns(fp2Results) },
-    hasFp3 && { key: 'fp3', label: TEXT.fp3, data: fp3Results, columns: getRaceColumns(fp3Results) },
+    hasSprintQualifying && {
+      key: 'sprintQualifying',
+      label: TEXT.sprintQualifying,
+      data: sprintQualifyingTableData,
+      columns: getQualifyingColumns(fastF1SprintQualifyingBestLapByDriver, 'SQ'),
+    },
+    hasSprint && { key: 'sprint', label: TEXT.sprint, data: sprintTableData, columns: getRaceColumns(sprintTableData, fastF1SprintLapByDriver) },
     {
       key: 'qualifying',
       label: TEXT.qualifying,
       data: qualifyingResults,
       columns: getQualifyingColumns(fastF1QualifyingBestLapByDriver),
     },
-    hasSprintQualifying && {
-      key: 'sprintQualifying',
-      label: TEXT.sprintQualifying,
-      data: sprintQualifyingResults,
-      columns: getQualifyingColumns(fastF1SprintQualifyingBestLapByDriver),
-    },
-    hasSprint && { key: 'sprint', label: TEXT.sprint, data: sprintResults, columns: getRaceColumns(sprintResults) },
     { key: 'race', label: TEXT.race, data: raceResults, columns: getRaceColumns(raceResults) },
+    hasFp1 && { key: 'fp1', label: TEXT.fp1, data: fp1Results, columns: getRaceColumns(fp1Results) },
+    hasFp2 && { key: 'fp2', label: TEXT.fp2, data: fp2Results, columns: getRaceColumns(fp2Results) },
+    hasFp3 && { key: 'fp3', label: TEXT.fp3, data: fp3Results, columns: getRaceColumns(fp3Results) },
   ].filter(Boolean) as RaceTabItem[];
 
-  const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'qualifying';
+  const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'sprintQualifying';
   const currentTabIndex = tabItems.findIndex((item) => item.key === effectiveActiveTab);
   const currentItem = tabItems.find((item) => item.key === effectiveActiveTab);
 
@@ -2389,10 +2733,132 @@ const RaceDetail = () => {
     return DEFERRED_TAB_KEYS.includes(tabKey) && sessionsLoading && data.length === 0;
   };
 
+  const recentResultColumns = [
+    {
+      title: TEXT.time,
+      key: 'season',
+      width: 86,
+      render: (_: unknown, record: RecentGrandPrixResult) => (
+        <span>{record.season}</span>
+      ),
+    },
+    {
+      title: TEXT.winner,
+      key: 'winner',
+      width: 180,
+      render: (_: unknown, record: RecentGrandPrixResult) => (
+        <div className="race-weekend-driver-cell">
+          <strong>{record.winnerName || '-'}</strong>
+          <span>{record.winnerConstructorName || '-'}</span>
+        </div>
+      ),
+    },
+    {
+      title: TEXT.pole,
+      key: 'pole',
+      width: 160,
+      render: (_: unknown, record: RecentGrandPrixResult) => record.poleName || '-',
+    },
+    {
+      title: TEXT.podium,
+      key: 'podium',
+      render: (_: unknown, record: RecentGrandPrixResult) => formatPodium(record),
+    },
+  ];
+
+  const interruptionColumns = [
+    {
+      title: TEXT.raceStatus,
+      dataIndex: 'label',
+      key: 'label',
+      width: 160,
+    },
+    {
+      title: TEXT.probability,
+      key: 'probability',
+      width: 120,
+      render: (_: unknown, record: TrackInterruptionProbability) => (
+        <strong>{formatProbability(record.probabilityPct)}</strong>
+      ),
+    },
+    {
+      title: TEXT.sampleSize,
+      key: 'sampleSize',
+      width: 140,
+      render: (_: unknown, record: TrackInterruptionProbability) => (
+        <span>
+          {record.triggeredCount}
+          /
+          {record.sampleSize}
+          {record.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
+        </span>
+      ),
+    },
+  ];
+
+  const telemetrySummaryColumns = [
+    {
+      title: TEXT.driver,
+      key: 'driver',
+      fixed: 'left' as const,
+      width: 120,
+      render: (_: unknown, record: DriverPostRaceTelemetrySummary) => (
+        <div className="race-weekend-driver-cell">
+          <strong>{record.driver}</strong>
+          <span>{record.team}</span>
+        </div>
+      ),
+    },
+    {
+      title: TEXT.maxSpeed,
+      dataIndex: 'maxSpeedKph',
+      key: 'maxSpeedKph',
+      width: 120,
+      render: formatSpeed,
+      sorter: (a: DriverPostRaceTelemetrySummary, b: DriverPostRaceTelemetrySummary) =>
+        (a.maxSpeedKph || 0) - (b.maxSpeedKph || 0),
+      defaultSortOrder: 'descend' as const,
+    },
+    {
+      title: TEXT.averageSpeed,
+      dataIndex: 'avgSpeedKph',
+      key: 'avgSpeedKph',
+      width: 120,
+      render: formatSpeed,
+    },
+    {
+      title: TEXT.fullThrottle,
+      dataIndex: 'fullThrottlePct',
+      key: 'fullThrottlePct',
+      width: 110,
+      render: formatPercent,
+    },
+    {
+      title: TEXT.averageThrottle,
+      dataIndex: 'avgThrottlePct',
+      key: 'avgThrottlePct',
+      width: 110,
+      render: formatPercent,
+    },
+    {
+      title: TEXT.brake,
+      dataIndex: 'brakePct',
+      key: 'brakePct',
+      width: 90,
+      render: formatPercent,
+    },
+    {
+      title: TEXT.drs,
+      dataIndex: 'drsPct',
+      key: 'drsPct',
+      width: 90,
+      render: formatPercent,
+    },
+  ];
+
   const shouldShowFastF1Section = Boolean(
-    fastF1AnalyticsLoading
-    || fastF1Analytics
-    || qualifyingAnalyticsItems.length,
+    activeWeekendMode === 'post'
+    && (fastF1AnalyticsLoading || hasRaceAnalysisSection)
   );
 
   return (
@@ -2425,9 +2891,102 @@ const RaceDetail = () => {
                 {TEXT.sprintWeekend}
               </Tag>
             ) : null}
+            {weekendSchedule.length ? (
+              <div className="weekend-schedule" aria-label={TEXT.weekendSchedule}>
+                {weekendSchedule.map((item) => (
+                  <span key={item.key} className="weekend-session">
+                    <strong>{item.label}</strong>
+                    {formatSessionDateTime(item.session)}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </Card>
+
+      <section className="race-weekend-mode-section">
+        <div className="race-weekend-mode-bar">
+          <div>
+            <span className="fastf1-eyebrow">{TEXT.raceWeekendMode}</span>
+            <h2>{activeWeekendMode === 'pre' ? TEXT.preRaceOverview : TEXT.postRaceOverview}</h2>
+          </div>
+          <Segmented<RaceWeekendMode>
+            value={activeWeekendMode}
+            onChange={(value) => setSelectedWeekendMode(value)}
+            options={[
+              { label: TEXT.preRace, value: 'pre' },
+              { label: TEXT.postRace, value: 'post' },
+            ]}
+          />
+        </div>
+
+        {activeWeekendMode === 'pre' ? (
+          <div className="race-weekend-grid">
+            <Card
+              className="race-weekend-card"
+              loading={racePreviewLoading}
+              title={TEXT.recentWinners}
+            >
+              <p className="race-weekend-card-description">{TEXT.preRaceDescription}</p>
+              {racePreviewSummary?.recentResults.length ? (
+                <Table
+                  columns={recentResultColumns}
+                  dataSource={racePreviewSummary.recentResults}
+                  rowKey={(record) => record.raceId}
+                  pagination={false}
+                  size="small"
+                  scroll={{ x: 'max-content' }}
+                />
+              ) : (
+                <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+              )}
+            </Card>
+
+            <Card
+              className="race-weekend-card"
+              loading={racePreviewLoading}
+              title={TEXT.interruptionRisk}
+            >
+              <div className="race-weekend-stat-strip">
+                <span>
+                  {TEXT.sampleSize}
+                  {' '}
+                  <strong>{racePreviewSummary?.sampleSize || 0}</strong>
+                </span>
+                <span>
+                  {TEXT.poleConversion}
+                  {' '}
+                  <strong>{formatProbability(racePreviewSummary?.poleWinConversionPct)}</strong>
+                </span>
+              </div>
+              <Table
+                columns={interruptionColumns}
+                dataSource={racePreviewSummary?.interruptionProbabilities || []}
+                rowKey={(record) => record.type}
+                pagination={false}
+                size="small"
+              />
+            </Card>
+          </div>
+        ) : (
+          <Card className="race-weekend-card race-weekend-post-card" title={TEXT.telemetrySummary}>
+            <p className="race-weekend-card-description">{TEXT.postRaceDescription}</p>
+            {postRaceTelemetrySummary.length ? (
+              <Table
+                columns={telemetrySummaryColumns}
+                dataSource={postRaceTelemetrySummary}
+                rowKey={(record) => record.driver}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            ) : (
+              <div className="race-weekend-empty">{TEXT.noTelemetrySummary}</div>
+            )}
+          </Card>
+        )}
+      </section>
 
       {shouldShowFastF1Section ? (
         <section className="fastf1-analytics-section">
@@ -2453,66 +3012,19 @@ const RaceDetail = () => {
             ) : null}
           </div>
 
-          {fastF1Analytics && lapPaceOption && tyreStrategyOption ? (
-            <div className="fastf1-analytics-grid">
-              {activeQualifyingAnalytics?.qualifyingAnalysis ? (
-                <Card className="fastf1-chart-card qualifying-analyzer-card">
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{TEXT.qualifyingAnalyzer}</h3>
-                      <p>{TEXT.qualifyingAnalyzerDescription}</p>
-                    </div>
-                    <div className="qualifying-session-switch" aria-label={TEXT.qualifyingAnalyzer}>
-                      {qualifyingAnalyticsItems.map((item) => (
-                        <button
-                          key={item.session}
-                          type="button"
-                          className={`telemetry-metric-button${activeQualifyingSession === item.session ? ' is-active' : ' is-muted'}`}
-                          aria-pressed={activeQualifyingSession === item.session}
-                          onClick={() => setSelectedQualifyingSession(item.session)}
-                        >
-                          {getQualifyingSessionTitle(item.session)}
-                        </button>
-                      ))}
-                    </div>
+          <div className="fastf1-analysis-stack">
+            {hasRaceAnalysisSection ? (
+              <div className="fastf1-analysis-group fastf1-race-group">
+                <div className="fastf1-analysis-group-header">
+                  <div>
+                    <span>{TEXT.race}</span>
+                    <h3>{TEXT.raceAnalysisGroup}</h3>
+                    <p>{TEXT.lapPaceDescription}</p>
                   </div>
-                  {teamMateComparisonRows.length ? (
-                    <div className="qualifying-gap-grid">
-                      {teamMateComparisonRows.map((record) => (
-                        <div key={record.key} className="qualifying-gap-card">
-                          <div className="qualifying-gap-card-header">
-                            <span>{record.team}</span>
-                            <strong>{record.driverA} vs {record.driverB}</strong>
-                          </div>
-                          <div className={`qualifying-gap-total ${getGapToneClassName(record.fastestLapDeltaSeconds)}`}>
-                            <span>{TEXT.fastestLap}</span>
-                            <strong>{formatSignedSeconds(record.fastestLapDeltaSeconds)}</strong>
-                          </div>
-                          <div className="qualifying-sector-gap-grid">
-                            {[
-                              [TEXT.sector1, record.sector1DeltaSeconds],
-                              [TEXT.sector2, record.sector2DeltaSeconds],
-                              [TEXT.sector3, record.sector3DeltaSeconds],
-                            ].map(([label, value]) => (
-                              <span
-                                key={label}
-                                className={`qualifying-sector-gap ${getGapToneClassName(value as number | null)}`}
-                              >
-                                <em>{label}</em>
-                                <strong>{formatSignedSeconds(value as number | null)}</strong>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="duel-empty-state">{TEXT.teamMateDelta} -</div>
-                  )}
-                </Card>
-              ) : null}
-
-              <Card className="fastf1-chart-card">
+                </div>
+                <div className="fastf1-analytics-grid">
+              {fastF1Analytics && lapPaceOption ? (
+                <Card className="fastf1-chart-card">
                 <div className="fastf1-chart-header">
                   <div>
                     <h3 className="fastf1-chart-title">{TEXT.lapPace}</h3>
@@ -2572,7 +3084,9 @@ const RaceDetail = () => {
                   option={lapPaceOption}
                 />
               </Card>
+              ) : null}
 
+              {fastF1Analytics?.tyreStrategies.length ? (
               <Card className="fastf1-chart-card">
                 <div className="fastf1-chart-header">
                   <div>
@@ -2587,19 +3101,30 @@ const RaceDetail = () => {
                             className="compound-swatch"
                             style={{ backgroundColor: getCompoundColor(compound) }}
                           />
-                          {compound}
+                          {formatCompoundWithCode(currentSeason, round, compound)}
                         </span>
                       ))}
+                      <span className="compound-legend-item tyre-age-legend-item">
+                        <span className="tyre-age-line is-new" />
+                        新胎
+                      </span>
+                      <span className="compound-legend-item tyre-age-legend-item">
+                        <span className="tyre-age-line is-used" />
+                        旧胎
+                      </span>
                     </div>
                   ) : null}
                 </div>
-                <EChartsPanel
-                  chartKey={`fastf1-strategy-${currentSeason}-${round}`}
-                  height={isMobile ? 300 : 430}
-                  option={tyreStrategyOption}
+                <TyreStrategyTimeline
+                  analytics={fastF1Analytics}
+                  highlightedDrivers={selectedDuelDrivers}
+                  season={currentSeason}
+                  round={round}
                 />
               </Card>
+              ) : null}
 
+              {fastF1Analytics ? (
               <Card className="fastf1-chart-card driver-duel-card">
                 <div className="fastf1-chart-header">
                   <div>
@@ -2617,6 +3142,8 @@ const RaceDetail = () => {
                                 className="compound-swatch"
                                 style={{ backgroundColor: getCompoundColor(stint.compound) }}
                               />
+                              <strong>{formatCompoundWithCode(currentSeason, round, stint.compound)}</strong>
+                              <em>{getTyreAgeLabel(stint)}</em>
                               {formatSessionSeconds(stint.averagePaceSeconds)}
                               {stint.previousDeltaSeconds !== null ? (
                                 <em>{formatSignedSeconds(stint.previousDeltaSeconds)}</em>
@@ -2710,8 +3237,9 @@ const RaceDetail = () => {
                   </div>
                 )}
               </Card>
+              ) : null}
 
-              {weatherOption && fastF1Analytics.weather ? (
+              {fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
                 <Card className="fastf1-chart-card">
                   <div className="fastf1-chart-header">
                     <div>
@@ -2738,7 +3266,7 @@ const RaceDetail = () => {
                 </Card>
               ) : null}
 
-              {fastF1Analytics.telemetry ? (
+              {fastF1Analytics?.telemetry ? (
                 <Card className="fastf1-chart-card telemetry-card">
                   <div className="fastf1-chart-header">
                     <div>
@@ -2830,8 +3358,10 @@ const RaceDetail = () => {
                   ) : null}
                 </Card>
               ) : null}
-            </div>
-          ) : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </section>
       ) : null}
 
