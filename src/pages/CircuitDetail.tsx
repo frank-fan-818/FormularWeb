@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button, Card, Spin, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import CircuitImage from '@/components/circuits/CircuitImage';
-import { supabaseApi } from '@/api/supabase';
-import { useSeasonData } from '@/hooks';
+import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { Circuit } from '@/types';
-import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitIds';
+import type { Race } from '@/types';
+import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import './CircuitDetail.css';
 
 const TEXT = {
@@ -16,6 +14,10 @@ const TEXT = {
   back: '\u8fd4\u56de',
   length: '\u8d5b\u9053\u957f\u5ea6',
   turns: '\u5f2f\u9053\u6570\u91cf',
+  leftRightTurns: '\u5de6/\u53f3\u5f2f',
+  direction: '\u8d5b\u9053\u65b9\u5411',
+  totalDistance: '\u6bd4\u8d5b\u603b\u91cc\u7a0b',
+  elevation: '\u9ad8\u4f4e\u843d\u5dee',
   raceCount: '\u4e3e\u529e\u6b21\u6570',
   firstRace: '\u9996\u6b21\u529e\u8d5b',
   lapRecord: '\u6b63\u8d5b\u6700\u5feb\u5355\u5708',
@@ -28,98 +30,24 @@ const TEXT = {
   error: '\u52a0\u8f7d\u8d5b\u9053\u8be6\u60c5\u5931\u8d25:',
 };
 
+type CircuitRaceWithMetadata = Race & {
+  is_sprint_weekend?: boolean;
+};
+
 const CircuitDetail = () => {
   const { circuitId } = useParams<{ circuitId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentSeason } = useAppStore();
-  const { races, loading: seasonLoading } = useSeasonData(currentSeason);
+  const {
+    circuit,
+    circuitDetails,
+    circuitRaces,
+    loading,
+    detailsLoading,
+  } = useCircuitDetailData(circuitId, currentSeason, location.state as { circuit?: any } | null);
 
-  const [circuit, setCircuit] = useState<Circuit | null>(null);
-  const [circuitDetails, setCircuitDetails] = useState<any>(null);
-  const [circuitRaces, setCircuitRaces] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!circuitId) {
-      setCircuit(null);
-      setCircuitDetails(null);
-      setCircuitRaces([]);
-      setLoading(false);
-      setDetailsLoading(false);
-      return;
-    }
-
-    if (seasonLoading) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const matchedCircuitRaces = races.filter((race) => areCircuitIdsEquivalent(race.Circuit.circuitId, circuitId));
-    const matchedRace = matchedCircuitRaces[0] || null;
-
-    setCircuit(matchedRace ? matchedRace.Circuit : null);
-    setCircuitRaces(matchedCircuitRaces);
-    setCircuitDetails(null);
-    setLoading(!matchedRace);
-    setDetailsLoading(true);
-
-    const loadCircuitDetails = async () => {
-      try {
-        const supabaseId = getSupabaseCircuitId(circuitId);
-        const supabaseCircuit = await supabaseApi.circuits.getById(supabaseId);
-
-        if (cancelled) {
-          return;
-        }
-
-        setCircuitDetails(supabaseCircuit);
-
-        if (!matchedRace && supabaseCircuit) {
-          setCircuit({
-            circuitId: supabaseCircuit.circuit_id || supabaseId,
-            url: '#',
-            circuitName: supabaseCircuit.name,
-            Location: {
-              locality: supabaseCircuit.locality || supabaseCircuit.location || '',
-              country: supabaseCircuit.country || '',
-              lat: String(supabaseCircuit.lat || ''),
-              long: String(supabaseCircuit.long || supabaseCircuit.lng || ''),
-            },
-          });
-        }
-
-        if (!matchedRace && !supabaseCircuit) {
-          setCircuit(null);
-        }
-      } catch (error) {
-        console.error(TEXT.error, error);
-
-        if (cancelled) {
-          return;
-        }
-
-        setCircuitDetails(null);
-        if (!matchedRace) {
-          setCircuit(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-          setDetailsLoading(false);
-        }
-      }
-    };
-
-    void loadCircuitDetails();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [circuitId, races, seasonLoading]);
-
-  if (seasonLoading || (loading && !circuit)) {
+  if (loading) {
     return (
       <div className="circuit-detail-container">
         <div className="loading-container">
@@ -137,6 +65,15 @@ const CircuitDetail = () => {
       </div>
     );
   }
+
+  const enhancement = getCircuitEnhancement(circuit.circuitId);
+  const leftRightTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
+    ? `${enhancement.leftTurns}L / ${enhancement.rightTurns}R`
+    : '-';
+  const elevation = enhancement.elevationChangeM !== undefined
+    ? `${enhancement.elevationChangeM} m`
+    : '-';
+  const currentSeasonRace = circuitRaces[0] as CircuitRaceWithMetadata | undefined;
 
   return (
     <div className="circuit-detail-container">
@@ -158,7 +95,13 @@ const CircuitDetail = () => {
               alt={circuit.circuitName}
               circuitId={circuit.circuitId}
               className="circuit-image"
+              showSectors
             />
+            <div className="sector-legend" aria-label="Sector">
+              <span><i className="sector-dot sector-dot-1" />S1</span>
+              <span><i className="sector-dot sector-dot-2" />S2</span>
+              <span><i className="sector-dot sector-dot-3" />S3</span>
+            </div>
           </div>
         </Card>
 
@@ -178,6 +121,42 @@ const CircuitDetail = () => {
             </div>
             <div className="stat-value">
               {circuitDetails?.turns || '-'}
+            </div>
+          </Card>
+
+          <Card className="stat-card" loading={detailsLoading}>
+            <div className="stat-label">
+              <FlagOutlined /> {TEXT.leftRightTurns}
+            </div>
+            <div className="stat-value">
+              {leftRightTurns}
+            </div>
+          </Card>
+
+          <Card className="stat-card" loading={detailsLoading}>
+            <div className="stat-label">
+              <FlagOutlined /> {TEXT.direction}
+            </div>
+            <div className="stat-value">
+              {formatCircuitDirection(circuitDetails?.direction)}
+            </div>
+          </Card>
+
+          <Card className="stat-card" loading={detailsLoading}>
+            <div className="stat-label">
+              <CarOutlined /> {TEXT.totalDistance}
+            </div>
+            <div className="stat-value">
+              {circuitDetails?.total_distance || '-'}
+            </div>
+          </Card>
+
+          <Card className="stat-card" loading={detailsLoading}>
+            <div className="stat-label">
+              <FlagOutlined /> {TEXT.elevation}
+            </div>
+            <div className="stat-value">
+              {elevation}
             </div>
           </Card>
 
@@ -222,17 +201,17 @@ const CircuitDetail = () => {
         </>
       ) : null}
 
-      {circuitRaces.length > 0 ? (
+      {currentSeasonRace ? (
         <>
           <h2 className="section-title">{TEXT.seasonRace}</h2>
           <Card className="race-info-card">
             <div className="race-info-item">
               <span className="race-info-label">{TEXT.raceDate}</span>
               <span className="race-info-value">
-                {dayjs(circuitRaces[0].date).format('YYYY-MM-DD')}
+                {formatRaceDateTimeFull(currentSeasonRace)}
               </span>
             </div>
-            {circuitRaces[0].is_sprint_weekend ? (
+            {currentSeasonRace.is_sprint_weekend ? (
               <div className="race-info-item">
                 <span className="race-info-label">{TEXT.raceType}</span>
                 <span className="race-info-value">

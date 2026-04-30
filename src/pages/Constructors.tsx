@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
-import { FlagOutlined, TrophyOutlined } from '@ant-design/icons';
+import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useConstructorStandingsCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
@@ -14,7 +14,20 @@ const TEXT = {
   wins: '\u80dc',
   poles: '\u6746\u4f4d',
   entries: '\u53c2\u8d5b\u573a\u6b21',
+  points: '\u79ef\u5206',
+  nationality: '\u56fd\u7c4d',
+  season: '\u672c\u5b63',
+  fastestLaps: '\u6700\u5feb\u5708',
 };
+
+function hasStatValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') {
+    return false;
+  }
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0;
+}
 
 const Constructors = () => {
   const navigate = useNavigate();
@@ -30,6 +43,9 @@ const Constructors = () => {
       total_pole_positions: null,
       total_fastest_laps: null,
       total_race_entries: null,
+      position: standing.position,
+      points: standing.points,
+      seasonWins: standing.wins,
       index,
     }));
 
@@ -56,6 +72,9 @@ const Constructors = () => {
             total_pole_positions: dbConstructor?.total_pole_positions || null,
             total_fastest_laps: dbConstructor?.total_fastest_laps || null,
             total_race_entries: dbConstructor?.total_race_entries || null,
+            position: standing.position,
+            points: standing.points,
+            seasonWins: standing.wins,
             index,
           };
         });
@@ -78,51 +97,76 @@ const Constructors = () => {
   const loading = standingsLoading && constructors.length === 0;
 
   return (
-    <div className="list-page-container">
-      <h1 className="page-title"><span>{TEXT.title}</span></h1>
+    <div className="list-page-container constructors-page">
+      <h1 className="page-title"><span>{currentSeason} {TEXT.title}</span></h1>
 
       {loading ? (
         <div className="loading-container">
           <Spin size="large" />
         </div>
       ) : (
-        <div className="list-container">
+        <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);
+            const profileStats = [
+              hasStatValue(constructor.total_race_entries) ? {
+                key: 'entries',
+                icon: <TeamOutlined />,
+                value: constructor.total_race_entries,
+                label: TEXT.entries,
+              } : null,
+              hasStatValue(constructor.total_wins) ? {
+                key: 'wins',
+                icon: <TrophyOutlined />,
+                value: constructor.total_wins,
+                label: TEXT.wins,
+              } : null,
+              hasStatValue(constructor.total_pole_positions) ? {
+                key: 'poles',
+                icon: <FlagOutlined />,
+                value: constructor.total_pole_positions,
+                label: TEXT.poles,
+              } : null,
+              hasStatValue(constructor.total_fastest_laps) ? {
+                key: 'fastest-laps',
+                icon: <FlagOutlined />,
+                value: constructor.total_fastest_laps,
+                label: TEXT.fastestLaps,
+              } : null,
+            ].filter(Boolean);
+
             return (
               <Card
                 key={constructor.constructorId}
-                className="list-item"
+                className="constructor-profile-card"
                 hoverable
-                style={{ animationDelay: `${constructor.index * 0.05}s` }}
+                style={{ animationDelay: `${constructor.index * 0.045}s`, borderTopColor: teamColor }}
                 onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
               >
-                <div className="team-color-bar" style={{ backgroundColor: teamColor }} />
-                <div className="item-content">
-                  <div className="item-left">
-                    <div className="item-info">
-                      <h3 className="item-title">
-                        {constructor.name}
-                      </h3>
-                      <div className="item-stats">
-                        {constructor.total_wins ? (
-                          <span className="stat-item"><TrophyOutlined /> {constructor.total_wins} {TEXT.wins}</span>
-                        ) : null}
-                        {constructor.total_pole_positions ? (
-                          <span className="stat-item"><FlagOutlined /> {constructor.total_pole_positions} {TEXT.poles}</span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="item-right">
-                    {constructor.total_race_entries ? (
-                      <div className="stat-badge" style={{ background: teamColor }}>
-                        <span className="stat-value" style={{ color: '#ffffff' }}>{constructor.total_race_entries}</span>
-                        <span className="stat-label" style={{ color: '#ffffff' }}>{TEXT.entries}</span>
-                      </div>
-                    ) : null}
-                  </div>
+                <div className="constructor-card-topline">
+                  <span className="constructor-team-swatch" style={{ backgroundColor: teamColor }} />
+                  <span className="constructor-season-chip">
+                    {TEXT.season} P{constructor.position || '-'} / {constructor.points || '0'} {TEXT.points}
+                  </span>
                 </div>
+                <h2 className="constructor-card-name">{constructor.name}</h2>
+                {constructor.nationality ? (
+                  <div className="constructor-card-meta">
+                    <span>{TEXT.nationality}</span>
+                    <strong>{constructor.nationality}</strong>
+                  </div>
+                ) : null}
+                {profileStats.length > 0 ? (
+                  <div className="constructor-profile-stats">
+                    {profileStats.map((stat) => stat ? (
+                      <span key={stat.key}>
+                        {stat.icon}
+                        <strong>{stat.value}</strong>
+                        {stat.label}
+                      </span>
+                    ) : null)}
+                  </div>
+                ) : null}
               </Card>
             );
           })}

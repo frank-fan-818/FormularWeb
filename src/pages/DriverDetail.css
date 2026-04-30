@@ -42,6 +42,99 @@
   background: var(--bg-card);
 }
 
+.driver-profile-shell {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-secondary);
+}
+
+.driver-profile-shell > .ant-card-body {
+  padding: 0;
+}
+
+.driver-profile-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-5);
+  align-items: end;
+  min-height: 280px;
+  padding: var(--space-7);
+  border-top: 8px solid var(--f1-red);
+  background:
+    linear-gradient(135deg, rgba(15, 15, 18, 0.94), rgba(35, 35, 42, 0.78)),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
+  color: #ffffff;
+}
+
+.driver-profile-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.driver-profile-swatch {
+  width: 12px;
+  height: 36px;
+  border-radius: 3px;
+}
+
+.driver-profile-name {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 0.92;
+  letter-spacing: 0;
+}
+
+.driver-profile-name span,
+.driver-profile-name strong {
+  display: block;
+}
+
+.driver-profile-name span {
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: var(--font-medium);
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.driver-profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.driver-profile-number {
+  font-size: clamp(5rem, 18vw, 12rem);
+  line-height: 0.78;
+  font-weight: var(--font-bold);
+  opacity: 0.72;
+}
+
+.driver-current-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-secondary);
+  margin-bottom: var(--space-5);
+}
+
+.driver-current-stat-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.driver-current-stat-card .ant-card-body {
+  padding: var(--space-5);
+}
+
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -241,6 +334,21 @@
 
   .driver-info-card {
     border-radius: var(--radius-md);
+  }
+
+  .driver-profile-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: var(--space-5);
+  }
+
+  .driver-profile-number {
+    justify-self: start;
+    font-size: clamp(4rem, 32vw, 7rem);
+  }
+
+  .driver-current-stat-grid {
+    grid-template-columns: 1fr;
   }
 
   .stats-row {

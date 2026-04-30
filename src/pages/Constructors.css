@@ -1,7 +1,106 @@
 @import './Drivers.css';
 
 .list-page-container {
-  max-width: 900px;
+  max-width: 980px;
+}
+
+.constructors-page {
+  max-width: 980px;
+}
+
+.constructor-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.constructor-profile-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-secondary);
+  border-top: 6px solid var(--f1-red);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: slideUp 0.45s ease both;
+}
+
+.constructor-profile-card .ant-card-body {
+  min-height: 230px;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+}
+
+.constructor-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.constructor-team-swatch {
+  width: 12px;
+  height: 36px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.constructor-season-chip {
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+.constructor-card-name {
+  margin: var(--space-4) 0 var(--space-2);
+  color: var(--text-primary);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.constructor-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.constructor-card-meta span {
+  font-size: var(--text-xs);
+}
+
+.constructor-card-meta strong {
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.constructor-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.constructor-profile-stats span {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.constructor-profile-stats strong {
+  color: var(--text-primary);
+  font-size: var(--text-lg);
 }
 
 @media (max-width: 768px) {
@@ -117,5 +216,28 @@
 
   .stat-label {
     font-size: 8px;
+  }
+
+  .constructor-library-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .constructor-profile-card .ant-card-body {
+    min-height: 0;
+    padding: var(--space-4);
+  }
+
+  .constructor-card-name {
+    font-size: var(--text-3xl);
+  }
+
+  .constructor-profile-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .constructor-season-chip {
+    white-space: normal;
+    text-align: right;
   }
 }

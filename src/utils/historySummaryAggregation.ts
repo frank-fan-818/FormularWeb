@@ -43,12 +43,28 @@ export interface SummaryQualifyingResultRow {
   position: string | number | null;
 }
 
+export interface SummaryOfficialDriverStandingRow {
+  season: string | number;
+  driver_id: string;
+  position: string | number;
+  points: string | number;
+}
+
+export interface SummaryOfficialConstructorStandingRow {
+  season: string | number;
+  constructor_id: string;
+  position: string | number;
+  points: string | number;
+}
+
 export interface HistorySummarySourceData {
   drivers: SummaryDriverRow[];
   constructors: SummaryConstructorRow[];
   races: SummaryRaceRow[];
   raceResults: SummaryRaceResultRow[];
   qualifyingResults: SummaryQualifyingResultRow[];
+  officialDriverStandings?: SummaryOfficialDriverStandingRow[];
+  officialConstructorStandings?: SummaryOfficialConstructorStandingRow[];
 }
 
 export interface HistorySummaryPayloads {
@@ -147,6 +163,43 @@ function getDateSortKey(race: SummaryRaceRow): string {
   return `${race.date || ''}T${race.time || ''}`;
 }
 
+function getRaceStartTimestamp(race: SummaryRaceRow): number | null {
+  if (!race.date) {
+    return null;
+  }
+
+  const time = race.time && race.time.trim() ? race.time.trim() : '23:59:59Z';
+  const normalizedTime = time.endsWith('Z') ? time : `${time}Z`;
+  const timestamp = Date.parse(`${race.date}T${normalizedTime}`);
+
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function buildCompletedSeasonSet(races: SummaryRaceRow[], now: number): Set<string> {
+  const racesBySeason = new Map<string, SummaryRaceRow[]>();
+
+  races.forEach((race) => {
+    const season = toSeasonString(race.season);
+    const seasonRaces = racesBySeason.get(season) || [];
+    seasonRaces.push(race);
+    racesBySeason.set(season, seasonRaces);
+  });
+
+  const completedSeasons = new Set<string>();
+  racesBySeason.forEach((seasonRaces, season) => {
+    const isComplete = seasonRaces.length > 0 && seasonRaces.every((race) => {
+      const timestamp = getRaceStartTimestamp(race);
+      return timestamp !== null && timestamp <= now;
+    });
+
+    if (isComplete) {
+      completedSeasons.add(season);
+    }
+  });
+
+  return completedSeasons;
+}
+
 function isLaterRace(
   candidateRound: number,
   candidateDateSortKey: string,
@@ -187,6 +240,7 @@ function buildJoinedRaceResults(
 function buildDriverSeasonItems(
   joinedRaceResults: JoinedRaceResult[],
   constructorNameById: Map<string, string>,
+  officialStandings: SummaryOfficialDriverStandingRow[] = [],
 ): Map<string, DriverSeasonSummaryItem[]> {
   const driverSeasonMap = new Map<string, DriverSeasonAggregate>();
 
@@ -232,9 +286,21 @@ function buildDriverSeasonItems(
   });
 
   const byDriverId = new Map<string, DriverSeasonSummaryItem[]>();
+  const officialBySeason = new Map<string, SummaryOfficialDriverStandingRow[]>();
+  const officialKeySet = new Set<string>();
+
+  officialStandings.forEach((standing) => {
+    const season = toSeasonString(standing.season);
+    const seasonItems = officialBySeason.get(season) || [];
+    seasonItems.push(standing);
+    officialBySeason.set(season, seasonItems);
+    officialKeySet.add(`${season}::${standing.driver_id}`);
+  });
 
   bySeason.forEach((seasonItems) => {
-    const ranked = [...seasonItems].sort((left, right) => {
+    const officialSeasonItems = officialBySeason.get(seasonItems[0]?.season || '') || [];
+
+    const ranked = [...seasonItems].filter((item) => !officialKeySet.has(`${item.season}::${item.driverId}`)).sort((left, right) => {
       if (right.points !== left.points) {
         return right.points - left.points;
       }
@@ -246,11 +312,36 @@ function buildDriverSeasonItems(
       return left.driverId.localeCompare(right.driverId);
     });
 
+    const season = seasonItems[0]?.season || '';
+    const orderedOfficialSeasonItems = [...officialSeasonItems].sort((left, right) => {
+      const leftPosition = toPositionNumber(left.position) ?? Number.POSITIVE_INFINITY;
+      const rightPosition = toPositionNumber(right.position) ?? Number.POSITIVE_INFINITY;
+      if (leftPosition !== rightPosition) {
+        return leftPosition - rightPosition;
+      }
+
+      return left.driver_id.localeCompare(right.driver_id);
+    });
+
+    orderedOfficialSeasonItems.forEach((standing) => {
+      const item = driverSeasonMap.get(`${season}::${standing.driver_id}`);
+      const driverItems = byDriverId.get(standing.driver_id) || [];
+      driverItems.push({
+        season,
+        position: String(standing.position),
+        points: toFiniteNumber(standing.points),
+        wins: item?.wins || 0,
+        constructorName: constructorNameById.get(item?.latestConstructorId || '') || item?.latestConstructorId || '',
+        constructorId: item?.latestConstructorId || '',
+      });
+      byDriverId.set(standing.driver_id, driverItems);
+    });
+
     ranked.forEach((item, index) => {
       const driverItems = byDriverId.get(item.driverId) || [];
       driverItems.push({
         season: item.season,
-        position: String(index + 1),
+        position: String(orderedOfficialSeasonItems.length + index + 1),
         points: item.points,
         wins: item.wins,
         constructorName: constructorNameById.get(item.latestConstructorId) || item.latestConstructorId,
@@ -270,6 +361,7 @@ function buildDriverSeasonItems(
 
 function buildConstructorSeasonItems(
   joinedRaceResults: JoinedRaceResult[],
+  officialStandings: SummaryOfficialConstructorStandingRow[] = [],
 ): Map<string, ConstructorSeasonSummaryItem[]> {
   const constructorSeasonMap = new Map<string, ConstructorSeasonAggregate>();
 
@@ -303,9 +395,21 @@ function buildConstructorSeasonItems(
   });
 
   const byConstructorId = new Map<string, ConstructorSeasonSummaryItem[]>();
+  const officialBySeason = new Map<string, SummaryOfficialConstructorStandingRow[]>();
+  const officialKeySet = new Set<string>();
+
+  officialStandings.forEach((standing) => {
+    const season = toSeasonString(standing.season);
+    const seasonItems = officialBySeason.get(season) || [];
+    seasonItems.push(standing);
+    officialBySeason.set(season, seasonItems);
+    officialKeySet.add(`${season}::${standing.constructor_id}`);
+  });
 
   bySeason.forEach((seasonItems) => {
-    const ranked = [...seasonItems].sort((left, right) => {
+    const officialSeasonItems = officialBySeason.get(seasonItems[0]?.season || '') || [];
+
+    const ranked = [...seasonItems].filter((item) => !officialKeySet.has(`${item.season}::${item.constructorId}`)).sort((left, right) => {
       if (right.points !== left.points) {
         return right.points - left.points;
       }
@@ -317,11 +421,34 @@ function buildConstructorSeasonItems(
       return left.constructorId.localeCompare(right.constructorId);
     });
 
+    const season = seasonItems[0]?.season || '';
+    const orderedOfficialSeasonItems = [...officialSeasonItems].sort((left, right) => {
+      const leftPosition = toPositionNumber(left.position) ?? Number.POSITIVE_INFINITY;
+      const rightPosition = toPositionNumber(right.position) ?? Number.POSITIVE_INFINITY;
+      if (leftPosition !== rightPosition) {
+        return leftPosition - rightPosition;
+      }
+
+      return left.constructor_id.localeCompare(right.constructor_id);
+    });
+
+    orderedOfficialSeasonItems.forEach((standing) => {
+      const item = constructorSeasonMap.get(`${season}::${standing.constructor_id}`);
+      const constructorItems = byConstructorId.get(standing.constructor_id) || [];
+      constructorItems.push({
+        season,
+        position: String(standing.position),
+        points: toFiniteNumber(standing.points),
+        wins: item?.wins || 0,
+      });
+      byConstructorId.set(standing.constructor_id, constructorItems);
+    });
+
     ranked.forEach((item, index) => {
       const constructorItems = byConstructorId.get(item.constructorId) || [];
       constructorItems.push({
         season: item.season,
-        position: String(index + 1),
+        position: String(orderedOfficialSeasonItems.length + index + 1),
         points: item.points,
         wins: item.wins,
       });
@@ -451,8 +578,10 @@ export function buildHistorySummaryPayloads(
   });
 
   const joinedRaceResults = buildJoinedRaceResults(source.races, source.raceResults);
-  const driverSeasonItems = buildDriverSeasonItems(joinedRaceResults, constructorNameById);
-  const constructorSeasonItems = buildConstructorSeasonItems(joinedRaceResults);
+  const driverSeasonItems = buildDriverSeasonItems(joinedRaceResults, constructorNameById, source.officialDriverStandings);
+  const constructorSeasonItems = buildConstructorSeasonItems(joinedRaceResults, source.officialConstructorStandings);
+  const updatedAtTime = Date.parse(updatedAt);
+  const completedSeasonSet = buildCompletedSeasonSet(source.races, Number.isNaN(updatedAtTime) ? Date.now() : updatedAtTime);
   const driverBestFinishById = buildBestFinishByEntity(joinedRaceResults, (result) => result.driver_id);
   const constructorBestFinishById = buildBestFinishByEntity(joinedRaceResults, (result) => result.constructor_id);
   const driverPoleCountById = countPolePositions(source.qualifyingResults, (result) => result.driver_id);
@@ -467,7 +596,7 @@ export function buildHistorySummaryPayloads(
   const driverSummaries = source.drivers.map<DriverHistorySummaryRecord>((driver) => {
     const seasons = driverSeasonItems.get(driver.driver_id) || [];
     const recentSeason = seasons[0];
-    const championshipCount = seasons.filter((season) => season.position === '1').length;
+    const championshipCount = seasons.filter((season) => season.position === '1' && completedSeasonSet.has(season.season)).length;
     const totalPoints = seasons.reduce((sum, season) => sum + season.points, 0);
 
     return {
@@ -497,7 +626,7 @@ export function buildHistorySummaryPayloads(
 
   const constructorSummaries = source.constructors.map<ConstructorHistorySummaryRecord>((constructor) => {
     const seasons = constructorSeasonItems.get(constructor.constructor_id) || [];
-    const championshipCount = seasons.filter((season) => season.position === '1').length;
+    const championshipCount = seasons.filter((season) => season.position === '1' && completedSeasonSet.has(season.season)).length;
     const totalPoints = seasons.reduce((sum, season) => sum + season.points, 0);
 
     return {

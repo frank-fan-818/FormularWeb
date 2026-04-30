@@ -9,6 +9,8 @@ import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { BestFinishSummary, DriverHistoryProfile, DriverStanding } from '@/types';
+import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
+import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import './DriverDetail.css';
 
@@ -183,7 +185,7 @@ const DriverDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { driverStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { driverStandings, races: currentSeasonRaces, loading: seasonLoading } = useSeasonData(currentSeason);
   const showHistoryOverview = location.pathname.startsWith('/history/drivers/');
 
   const [driver, setDriver] = useState<DriverProfile | null>(null);
@@ -204,7 +206,8 @@ const DriverDetail = () => {
   const historySeasons = driverHistory?.seasons || [];
   const firstSeason = historySeasons.length > 0 ? historySeasons[historySeasons.length - 1] : null;
   const latestSeason = historySeasons[0] || null;
-  const championshipSeasons = historySeasons.filter((season) => season.position === '1');
+  const latestSeasonCanBeChampion = latestSeason?.season === currentSeason ? isSeasonComplete(currentSeasonRaces) : true;
+  const championshipSeasons = getCountableChampionshipSeasons(historySeasons, latestSeason, latestSeasonCanBeChampion);
   const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
     : (driverHistory?.recentConstructorId ? getTeamColor(driverHistory.recentConstructorId) : '#1890ff');
@@ -573,62 +576,54 @@ const DriverDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={seasonLoading || loading}>
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 36, marginBottom: 8 }}>
-            {driver?.givenName} {driver?.familyName}
-            {driver?.code ? (
-              <span
-                style={{
-                  marginLeft: 16,
-                  display: 'inline-block',
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  fontSize: 16,
-                  background: `${teamColor}20`,
-                  color: teamColor,
-                }}
-              >
-                {driver.code}
-              </span>
-            ) : null}
-          </h1>
-          <p style={{ fontSize: 18, color: '#666' }}>{driver?.nationality || '-'}</p>
-        </div>
+      <Card loading={seasonLoading || loading} className="driver-profile-shell">
+        <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
+          <div className="driver-profile-copy">
+            <div className="driver-profile-kicker">
+              <span className="driver-profile-swatch" style={{ backgroundColor: teamColor }} />
+              <span>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</span>
+            </div>
+            <h1 className="driver-profile-name">
+              <span>{driver?.givenName || '-'}</span>
+              <strong>{driver?.familyName || ''}</strong>
+            </h1>
+            <div className="driver-profile-tags">
+              {driver?.code ? <Tag color="default">{driver.code}</Tag> : null}
+              <Tag color="default">{driver?.nationality || '-'}</Tag>
+              <Tag color="default">{currentSeason}</Tag>
+            </div>
+          </div>
+          <div className="driver-profile-number" style={{ color: teamColor }}>
+            {driver?.permanentNumber || driver?.code || '--'}
+          </div>
+        </section>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} {TEXT.seasonKeyStats}</h3>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.seasonRank}
-              </div>
-              <div className="stat-value" style={{ color: '#faad14' }}>
-                {currentStanding?.position || '-'}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <CarOutlined /> {TEXT.seasonPoints}
-              </div>
-              <div className="stat-value" style={{ color: '#ff1801' }}>
-                {currentStanding?.points || '0'} {TEXT.pointsUnit}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.seasonWins}
-              </div>
-              <div className="stat-value" style={{ color: '#52c41a' }}>
-                {currentStanding?.wins || '0'}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+        <div className="driver-current-stat-grid">
+          <Card className="driver-current-stat-card">
+            <div className="stat-label">
+              <TrophyOutlined /> {TEXT.seasonRank}
+            </div>
+            <div className="stat-value" style={{ color: teamColor }}>
+              {currentStanding?.position ? `P${currentStanding.position}` : '-'}
+            </div>
+          </Card>
+          <Card className="driver-current-stat-card">
+            <div className="stat-label">
+              <CarOutlined /> {TEXT.seasonPoints}
+            </div>
+            <div className="stat-value">
+              {currentStanding?.points || '0'} {TEXT.pointsUnit}
+            </div>
+          </Card>
+          <Card className="driver-current-stat-card">
+            <div className="stat-label">
+              <TrophyOutlined /> {TEXT.seasonWins}
+            </div>
+            <div className="stat-value">
+              {currentStanding?.wins || '0'}
+            </div>
+          </Card>
+        </div>
 
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
@@ -738,7 +733,7 @@ const DriverDetail = () => {
                     <TrophyOutlined /> {TEXT.championships}
                   </div>
                   <div className="stat-value" style={{ color: '#faad14' }}>
-                    {driverHistory?.careerSummary.championshipCount ?? 0}
+                    {driverHistory ? championshipSeasons.length : 0}
                   </div>
                 </Card>
               </Col>
@@ -797,7 +792,7 @@ const DriverDetail = () => {
                         </thead>
                         <tbody>
                           {historySeasons.map((season) => {
-                            const isChampion = season.position === '1';
+                            const isChampion = canCountChampionshipSeason(season, latestSeason, latestSeasonCanBeChampion);
                             const isLatest = season.season === latestSeason?.season;
                             const swatchColor = season.constructorId ? getTeamColor(season.constructorId) : teamColor;
 

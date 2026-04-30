@@ -35,7 +35,7 @@ import type {
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import { formatSessionDateTime, getRaceWeekendSchedule } from '@/utils/raceSchedule';
+import { formatRaceDateTimeFull, formatSessionDateTime, getRaceWeekendSchedule } from '@/utils/raceSchedule';
 import { formatCompoundWithCode, formatTyreLife, getTyreAgeLabel } from '@/utils/tyreCompounds';
 import './RaceDetail.css';
 
@@ -2884,7 +2884,7 @@ const RaceDetail = () => {
               {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}
             </p>
             <Tag color="blue" className="race-date">
-              {dayjs(raceInfo.date).format('YYYY-MM-DD')}
+              {formatRaceDateTimeFull(raceInfo)}
             </Tag>
             {isSprintWeekend ? (
               <Tag color="orange" className="sprint-tag">

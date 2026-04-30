@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin, Tabs } from 'antd';
 import { useSeasonData } from '@/hooks';
@@ -7,29 +6,26 @@ import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
 import './Seasons.css';
 
 const TEXT = {
-  drivers: '车手',
-  constructors: '车队',
-  points: '积分',
-  nationality: '国籍',
-  seasonStandings: '赛季积分榜',
+  drivers: '\u8f66\u624b',
+  constructors: '\u8f66\u961f',
+  points: '\u79ef\u5206',
+  nationality: '\u56fd\u7c4d',
+  seasonStandings: '\u8d5b\u5b63\u79ef\u5206\u699c',
+  position: 'POS',
+  driver: '\u8f66\u624b',
+  team: '\u8f66\u961f',
+  gap: '\u5dee\u8ddd',
+  leader: '\u9886\u5148',
 };
 
-interface ProgressBarProps {
-  color: string;
-  percentage: number;
-}
+function formatGap(points: string, leaderPoints: number): string {
+  const value = parseFloat(points);
+  if (!Number.isFinite(value) || leaderPoints <= 0 || value === leaderPoints) {
+    return TEXT.leader;
+  }
 
-const SeasonProgressBar = ({ color, percentage }: ProgressBarProps) => (
-  <div className="season-progress" aria-hidden="true">
-    <div
-      className="season-progress-bar"
-      style={{
-        width: `${percentage}%`,
-        backgroundColor: color,
-      }}
-    />
-  </div>
-);
+  return `-${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(leaderPoints - value)}`;
+}
 
 const Seasons = () => {
   const navigate = useNavigate();
@@ -38,84 +34,57 @@ const Seasons = () => {
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const tabItems = [
     {
       key: 'drivers',
       label: TEXT.drivers,
       children: (
-        <div className="list-container">
+        <div className="official-season-table">
+          <div className="official-season-head">
+            <span>{TEXT.position}</span>
+            <span>{TEXT.driver}</span>
+            <span>{TEXT.team}</span>
+            <span>{TEXT.points}</span>
+          </div>
           {driverStandings.map((standing, index) => {
-            const teamColor = getTeamColor(standing.Constructors[0].constructorId);
-            const darkTeamColor = getTeamDarkColor(standing.Constructors[0].constructorId);
-            const points = parseFloat(standing.points);
-            const percentage = maxDriverPoints > 0 ? Math.min(100, (points / maxDriverPoints) * 100) : 0;
+            const constructor = standing.Constructors[0];
+            const teamColor = getTeamColor(constructor.constructorId);
+            const darkTeamColor = getTeamDarkColor(constructor.constructorId);
 
             return (
               <Card
                 key={standing.Driver.driverId}
-                className="list-item"
+                className="official-season-row"
                 hoverable
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={{ animationDelay: `${index * 0.035}s`, borderLeftColor: teamColor }}
               >
-                <div className="team-color-bar" style={{ backgroundColor: teamColor }} />
-                <div className="item-content">
-                  <div className="item-left">
-                    <div className="item-info">
-                      <h3 className="item-title">
-                        <span
-                          className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}
-                        >
-                          P{standing.position}
-                        </span>
-                        <span
-                          className="clickable-text driver-name"
-                          onClick={() => navigate(`/drivers/${standing.Driver.driverId}`)}
-                        >
-                          {standing.Driver.givenName} {standing.Driver.familyName}
-                        </span>
-                      </h3>
-                      <div className="item-stats">
-                        <span
-                          className="stat-item team-name clickable-text"
-                          style={{ color: teamColor }}
-                          onClick={() => navigate(`/constructors/${standing.Constructors[0].constructorId}`)}
-                        >
-                          {standing.Constructors[0].name}
-                        </span>
-                        {isMobile ? (
-                          <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
-                            {standing.points} pts
-                          </span>
-                        ) : null}
-                        <div className="progress-wrapper">
-                          <SeasonProgressBar color={teamColor} percentage={percentage} />
-                        </div>
-                      </div>
-                    </div>
+                <div className="official-rank">P{standing.position}</div>
+                <div className="official-identity">
+                  <button
+                    type="button"
+                    className="official-name-button"
+                    onClick={() => navigate(`/drivers/${standing.Driver.driverId}`)}
+                  >
+                    {standing.Driver.givenName} {standing.Driver.familyName}
+                  </button>
+                  <div className="official-subline">
+                    <span className="official-code">{standing.Driver.code || standing.Driver.nationality}</span>
+                    <span>{TEXT.gap}: {formatGap(standing.points, maxDriverPoints)}</span>
                   </div>
-                  {!isMobile ? (
-                    <div className="item-right">
-                      <div
-                        className="points-badge"
-                        style={{
-                          background: darkTeamColor,
-                          boxShadow: `0 4px 15px ${darkTeamColor}40`,
-                        }}
-                      >
-                        <span className="points-value">{standing.points}</span>
-                        <span className="points-label">{TEXT.points}</span>
-                      </div>
-                    </div>
-                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="official-team-link"
+                  onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
+                >
+                  <span className="official-team-swatch" style={{ backgroundColor: teamColor }} />
+                  <span>{constructor.name}</span>
+                </button>
+                <div className="official-points-cell">
+                  <div className="official-points-value" style={{ color: darkTeamColor }}>
+                    {standing.points}
+                  </div>
+                  <div className="official-points-label">{TEXT.points}</div>
                 </div>
               </Card>
             );
@@ -127,64 +96,39 @@ const Seasons = () => {
       key: 'constructors',
       label: TEXT.constructors,
       children: (
-        <div className="list-container">
+        <div className="official-season-table">
+          <div className="official-season-head">
+            <span>{TEXT.position}</span>
+            <span>{TEXT.team}</span>
+            <span>{TEXT.nationality}</span>
+            <span>{TEXT.points}</span>
+          </div>
           {constructorStandings.map((standing, index) => {
             const teamColor = getTeamColor(standing.Constructor.constructorId);
             const darkTeamColor = getTeamDarkColor(standing.Constructor.constructorId);
-            const points = parseFloat(standing.points);
-            const percentage = maxConstructorPoints > 0 ? Math.min(100, (points / maxConstructorPoints) * 100) : 0;
 
             return (
               <Card
                 key={standing.Constructor.constructorId}
-                className="list-item"
+                className="official-season-row"
                 hoverable
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={{ animationDelay: `${index * 0.035}s`, borderLeftColor: teamColor }}
+                onClick={() => navigate(`/constructors/${standing.Constructor.constructorId}`)}
               >
-                <div className="team-color-bar" style={{ backgroundColor: teamColor }} />
-                <div className="item-content">
-                  <div className="item-left">
-                    <div className="item-info">
-                      <h3 className="item-title">
-                        <span
-                          className={`position-badge ${index === 0 ? 'position-1' : index === 1 ? 'position-2' : index === 2 ? 'position-3' : 'position-other'}`}
-                        >
-                          P{standing.position}
-                        </span>
-                        <span
-                          className="clickable-text constructor-name"
-                          onClick={() => navigate(`/constructors/${standing.Constructor.constructorId}`)}
-                        >
-                          {standing.Constructor.name}
-                        </span>
-                        <span className="item-tag">{TEXT.nationality} {standing.Constructor.nationality}</span>
-                      </h3>
-                      <div className="item-stats">
-                        {isMobile ? (
-                          <span className="mobile-points-inline" style={{ color: darkTeamColor }}>
-                            {standing.points} pts
-                          </span>
-                        ) : null}
-                        <div className="progress-wrapper">
-                          <SeasonProgressBar color={teamColor} percentage={percentage} />
-                        </div>
-                      </div>
-                    </div>
+                <div className="official-rank">P{standing.position}</div>
+                <div className="official-identity">
+                  <div className="official-team-title">
+                    <span className="official-team-swatch" style={{ backgroundColor: teamColor }} />
+                    <span>{standing.Constructor.name}</span>
                   </div>
-                  {!isMobile ? (
-                    <div className="item-right">
-                      <div
-                        className="points-badge"
-                        style={{
-                          background: darkTeamColor,
-                          boxShadow: `0 4px 15px ${darkTeamColor}40`,
-                        }}
-                      >
-                        <span className="points-value">{standing.points}</span>
-                        <span className="points-label">{TEXT.points}</span>
-                      </div>
-                    </div>
-                  ) : null}
+                  <div className="official-subline">{TEXT.gap}: {formatGap(standing.points, maxConstructorPoints)}</div>
+                </div>
+                <div className="official-nationality">{standing.Constructor.nationality}</div>
+                <div className="official-points-cell">
+                  <div className="official-points-value" style={{ color: darkTeamColor }}>
+                    {standing.points}
+                  </div>
+                  <div className="official-points-label">{TEXT.points}</div>
                 </div>
               </Card>
             );
@@ -195,7 +139,7 @@ const Seasons = () => {
   ];
 
   return (
-    <div className="list-page-container">
+    <div className="list-page-container season-standings-page">
       <h1 className="page-title"><span>{currentSeason} {TEXT.seasonStandings}</span></h1>
 
       {loading ? (
@@ -203,7 +147,7 @@ const Seasons = () => {
           <Spin size="large" />
         </div>
       ) : (
-        <Tabs defaultActiveKey="drivers" items={tabItems} />
+        <Tabs defaultActiveKey="drivers" items={tabItems} className="official-season-tabs" />
       )}
     </div>
   );

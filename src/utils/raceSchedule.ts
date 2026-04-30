@@ -15,17 +15,54 @@ export function formatSessionDateTime(session: { date?: string; time?: string } 
     return '-';
   }
 
-  const dateLabel = dayjs(session.date).format('MM-DD');
   if (!session.time) {
-    return dateLabel;
+    return dayjs(session.date).format('MM-DD');
   }
 
-  const timeLabel = session.time.replace(/Z$/, '').slice(0, 5);
-  return `${dateLabel} ${timeLabel} UTC`;
+  const normalizedTime = session.time.trim().endsWith('Z') ? session.time.trim() : `${session.time.trim()}Z`;
+  const timestamp = Date.parse(`${session.date}T${normalizedTime}`);
+  if (Number.isNaN(timestamp)) {
+    return dayjs(session.date).format('MM-DD');
+  }
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(timestamp)).replace(/\//g, '-') + ' \u5317\u4eac\u65f6\u95f4';
 }
 
 export function formatRaceDateTime(race: Pick<Race, 'date' | 'time'>): string {
   return formatSessionDateTime({ date: race.date, time: race.time });
+}
+
+export function formatRaceDateTimeFull(race: Pick<Race, 'date' | 'time'>): string {
+  if (!race.date) {
+    return '-';
+  }
+
+  if (!race.time) {
+    return dayjs(race.date).format('YYYY-MM-DD');
+  }
+
+  const normalizedTime = race.time.trim().endsWith('Z') ? race.time.trim() : `${race.time.trim()}Z`;
+  const timestamp = Date.parse(`${race.date}T${normalizedTime}`);
+  if (Number.isNaN(timestamp)) {
+    return dayjs(race.date).format('YYYY-MM-DD');
+  }
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(timestamp)).replace(/\//g, '-') + ' \u5317\u4eac\u65f6\u95f4';
 }
 
 export function getRaceWeekendSchedule(

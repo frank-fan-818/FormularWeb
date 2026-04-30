@@ -109,7 +109,7 @@ const Circuits = () => {
               className="list-item"
               hoverable
               style={{ animationDelay: `${circuit.index * 0.06}s` }}
-              onClick={() => navigate(`/circuits/${circuit.circuitId}`)}
+              onClick={() => navigate(`/circuits/${circuit.circuitId}`, { state: { circuit } })}
             >
               <div className="item-content">
                 <div className="item-left">

@@ -4,7 +4,7 @@ import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Race } from '@/types';
-import dayjs from 'dayjs';
+import { formatRaceDateTime } from '@/utils/raceSchedule';
 import './Races.css';
 
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
@@ -29,7 +29,7 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
             </h3>
             <div className="item-meta">
               {!isMobile && <span><EnvironmentOutlined /> {race.Circuit.circuitName}</span>}
-              <span className="date-item"><CalendarOutlined /> {dayjs(race.date).format('YYYY-MM-DD')}</span>
+              <span className="date-item"><CalendarOutlined /> {formatRaceDateTime(race)}</span>
             </div>
           </div>
         </div>

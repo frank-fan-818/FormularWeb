@@ -475,47 +475,50 @@ const ConstructorDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={seasonLoading || loading}>
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 36, marginBottom: 8 }}>
-            {constructor?.name}
-          </h1>
-          <p style={{ fontSize: 18, color: '#666' }}>{constructor?.nationality || '-'}</p>
-        </div>
+      <Card loading={seasonLoading || loading} className="constructor-profile-shell">
+        <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
+          <div className="constructor-profile-copy">
+            <div className="constructor-profile-kicker">
+              <span className="constructor-profile-swatch" style={{ backgroundColor: teamColor }} />
+              <span>{constructor?.nationality || '-'}</span>
+            </div>
+            <h1 className="constructor-profile-name">{constructor?.name || '-'}</h1>
+            <div className="constructor-profile-tags">
+              <span>{currentSeason}</span>
+              <span>{TEXT.seasonKeyStats}</span>
+            </div>
+          </div>
+          <div className="constructor-profile-rank" style={{ color: teamColor }}>
+            {currentStanding?.position ? `P${currentStanding.position}` : '--'}
+          </div>
+        </section>
 
-        <h3 style={{ fontSize: 20, marginBottom: 16 }}>{currentSeason} {TEXT.seasonKeyStats}</h3>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.seasonRank}
-              </div>
-              <div className="stat-value" style={{ color: '#faad14' }}>
-                {currentStanding?.position || '-'}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TeamOutlined /> {TEXT.seasonPoints}
-              </div>
-              <div className="stat-value" style={{ color: '#ff1801' }}>
-                {currentStanding?.points || '0'} {TEXT.pointsUnit}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="stat-card">
-              <div className="stat-label">
-                <TrophyOutlined /> {TEXT.seasonWins}
-              </div>
-              <div className="stat-value" style={{ color: '#52c41a' }}>
-                {currentStanding?.wins || '0'}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+        <div className="constructor-current-stat-grid">
+          <Card className="constructor-current-stat-card">
+            <div className="stat-label">
+              <TrophyOutlined /> {TEXT.seasonRank}
+            </div>
+            <div className="stat-value" style={{ color: teamColor }}>
+              {currentStanding?.position ? `P${currentStanding.position}` : '-'}
+            </div>
+          </Card>
+          <Card className="constructor-current-stat-card">
+            <div className="stat-label">
+              <TeamOutlined /> {TEXT.seasonPoints}
+            </div>
+            <div className="stat-value">
+              {currentStanding?.points || '0'} {TEXT.pointsUnit}
+            </div>
+          </Card>
+          <Card className="constructor-current-stat-card">
+            <div className="stat-label">
+              <TrophyOutlined /> {TEXT.seasonWins}
+            </div>
+            <div className="stat-value">
+              {currentStanding?.wins || '0'}
+            </div>
+          </Card>
+        </div>
 
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}

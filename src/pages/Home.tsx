@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import type { CSSProperties } from 'react';
 import dayjs from 'dayjs';
 import { useSeasonData, useRacesByStatus } from '@/hooks';
 import { useAppStore } from '@/store';
+import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { getTeamColor } from '@/utils/teamColors';
 import './Home.css';
 
 const TEXT = {
@@ -17,6 +20,9 @@ const TEXT = {
   standingsTopThree: '\u79ef\u5206\u699c TOP 3',
   driverStandings: '\u8f66\u624b\u79ef\u5206\u699c',
   constructorStandings: '\u8f66\u961f\u79ef\u5206\u699c',
+  points: '\u79ef\u5206',
+  gap: '\u5dee\u8ddd',
+  leader: '\u9886\u5148',
   raceCircuit: '\u8d5b\u9053',
   raceLocation: '\u5730\u70b9',
   today: '\u4eca\u5929',
@@ -28,6 +34,8 @@ const Home = () => {
   const { currentSeason } = useAppStore();
   const { driverStandings, constructorStandings, races, loading } = useSeasonData(currentSeason);
   const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
+  const driverLeaderPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
+  const constructorLeaderPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
   const daysUntilNextRace = nextRace
     ? Math.max(0, dayjs(nextRace.date).startOf('day').diff(dayjs().startOf('day'), 'day'))
     : null;
@@ -77,6 +85,15 @@ const Home = () => {
     return 'rank-badge-other';
   };
 
+  const formatGap = (points: string, leaderPoints: number) => {
+    const value = parseFloat(points);
+    if (!Number.isFinite(value) || !Number.isFinite(leaderPoints) || value === leaderPoints) {
+      return TEXT.leader;
+    }
+
+    return `-${(leaderPoints - value).toFixed(0)}`;
+  };
+
   return (
     <div className="page-container">
       {nextRace ? (
@@ -100,7 +117,7 @@ const Home = () => {
                   {TEXT.raceLocation}: {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
                 </p>
                 <div className="next-race-date">
-                  {dayjs(nextRace.date).format('YYYY-MM-DD')}
+                  {formatRaceDateTimeFull(nextRace)}
                   <span className="countdown">
                     {daysUntilNextRace === 0 ? TEXT.today : `\u8fd8\u6709 ${daysUntilNextRace} \u5929`}
                   </span>
@@ -141,13 +158,23 @@ const Home = () => {
         </h2>
 
         <div className="standings-grid">
-          <div className="standings-card-f1 animate-slide-up stagger-5">
-            <div className="card-header">{TEXT.driverStandings}</div>
+          <div className="standings-card-f1 official-standings-card animate-slide-up stagger-5">
+            <div className="official-standings-header">
+              <span>{TEXT.driverStandings}</span>
+              <strong>{TEXT.points}</strong>
+            </div>
             <div className="standings-list-f1">
-              {driverStandings.slice(0, 3).map((item, index) => (
-                <div key={item.Driver.driverId} className="standings-item-f1">
+              {driverStandings.slice(0, 3).map((item, index) => {
+                const teamColor = getTeamColor(item.Constructors[0].constructorId);
+
+                return (
+                <div
+                  key={item.Driver.driverId}
+                  className="standings-item-f1 official-standings-row"
+                  style={{ '--row-team-color': teamColor } as CSSProperties}
+                >
                   <div className={`rank-badge ${getRankBadgeClass(index)}`}>
-                    {index + 1}
+                    {item.position}
                   </div>
                   <div className="standings-info-f1">
                     <button
@@ -164,23 +191,37 @@ const Home = () => {
                     >
                       {item.Constructors[0].name}
                     </button>
+                    <span className="standings-gap-f1">
+                      {TEXT.gap}: {formatGap(item.points, driverLeaderPoints)}
+                    </span>
                   </div>
                   <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="standings-card-f1 animate-slide-up stagger-6">
-            <div className="card-header">{TEXT.constructorStandings}</div>
+          <div className="standings-card-f1 official-standings-card animate-slide-up stagger-6">
+            <div className="official-standings-header">
+              <span>{TEXT.constructorStandings}</span>
+              <strong>{TEXT.points}</strong>
+            </div>
             <div className="standings-list-f1">
-              {constructorStandings.slice(0, 3).map((item, index) => (
-                <div key={item.Constructor.constructorId} className="standings-item-f1">
+              {constructorStandings.slice(0, 3).map((item, index) => {
+                const teamColor = getTeamColor(item.Constructor.constructorId);
+
+                return (
+                <div
+                  key={item.Constructor.constructorId}
+                  className="standings-item-f1 official-standings-row"
+                  style={{ '--row-team-color': teamColor } as CSSProperties}
+                >
                   <div className={`rank-badge ${getRankBadgeClass(index)}`}>
-                    {index + 1}
+                    {item.position}
                   </div>
                   <div className="standings-info-f1">
                     <button
@@ -193,13 +234,17 @@ const Home = () => {
                     <div className="standings-team-f1">
                       {item.Constructor.nationality}
                     </div>
+                    <span className="standings-gap-f1">
+                      {TEXT.gap}: {formatGap(item.points, constructorLeaderPoints)}
+                    </span>
                   </div>
                   <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

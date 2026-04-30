@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, DriverHistoryProfile } from '@/types';
+import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import './HistoryDetail.css';
@@ -82,9 +83,7 @@ const DriverHistoryDetail = () => {
   const latestSeason = seasons[0] || null;
   const latestSeasonCanBeChampion = latestSeason?.position === '1' ? isLatestSeasonComplete : true;
   const bestFinish = driver?.bestRaceFinish;
-  const championshipSeasons = seasons.filter((season) => (
-    season.position === '1' && (season.season !== latestSeason?.season || latestSeasonCanBeChampion)
-  ));
+  const championshipSeasons = getCountableChampionshipSeasons(seasons, latestSeason, latestSeasonCanBeChampion);
   const championshipSeasonLabels = championshipSeasons.map((season) => season.season);
   const accentColor = driver?.recentConstructorId ? getTeamColor(driver.recentConstructorId) : '#FF1801';
   const accentStyle = { ['--history-accent' as string]: accentColor };
@@ -265,8 +264,7 @@ const DriverHistoryDetail = () => {
               <>
                 <div className="history-mobile-season-list">
                   {seasons.map((season) => {
-                    const isChampion = season.position === '1'
-                      && (season.season !== latestSeason?.season || latestSeasonCanBeChampion);
+                    const isChampion = canCountChampionshipSeason(season, latestSeason, latestSeasonCanBeChampion);
                     const isLatest = season.season === latestSeason?.season;
                     const swatchColor = season.constructorId ? getTeamColor(season.constructorId) : accentColor;
 
@@ -322,8 +320,7 @@ const DriverHistoryDetail = () => {
                     </thead>
                     <tbody>
                       {seasons.map((season) => {
-                        const isChampion = season.position === '1'
-                          && (season.season !== latestSeason?.season || latestSeasonCanBeChampion);
+                        const isChampion = canCountChampionshipSeason(season, latestSeason, latestSeasonCanBeChampion);
                         const isLatest = season.season === latestSeason?.season;
                         const swatchColor = season.constructorId ? getTeamColor(season.constructorId) : accentColor;
 

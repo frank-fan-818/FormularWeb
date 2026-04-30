@@ -2,6 +2,12 @@
   padding: var(--space-5);
   max-width: 1200px;
   margin: 0 auto;
+  --sector-1: #ef233c;
+  --sector-2: #11b5e4;
+  --sector-3: #f8d210;
+  --sector-1-soft: rgba(239, 35, 60, 0.14);
+  --sector-2-soft: rgba(17, 181, 228, 0.14);
+  --sector-3-soft: rgba(248, 210, 16, 0.2);
 }
 
 .back-button {
@@ -54,9 +60,12 @@
 }
 
 .circuit-image-wrapper {
+  position: relative;
   background: var(--bg-tertiary);
   padding: var(--space-8) var(--space-5);
   display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   justify-content: center;
   align-items: center;
 }
@@ -65,6 +74,181 @@
   max-width: 100%;
   height: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.circuit-sector-frame {
+  width: 100%;
+  isolation: isolate;
+}
+
+.circuit-sector-map {
+  position: relative;
+  width: min(100%, 520px);
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 24, 1, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fafc, #eef2f7);
+}
+
+.circuit-sector-map svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sector-map-shadow,
+.sector-map-base,
+.sector-map-sector {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sector-map-shadow {
+  stroke: rgba(15, 23, 42, 0.22);
+  stroke-width: 29;
+  filter: blur(3px);
+}
+
+.sector-map-base {
+  stroke: #0f172a;
+  stroke-width: 24;
+}
+
+.sector-map-sector {
+  stroke-width: 8;
+}
+
+.sector-map-sector-1 {
+  stroke: var(--sector-1);
+  stroke-dasharray: 33.4 66.6;
+  stroke-dashoffset: 0;
+}
+
+.sector-map-sector-2 {
+  stroke: var(--sector-2);
+  stroke-dasharray: 33.3 66.7;
+  stroke-dashoffset: -33.4;
+}
+
+.sector-map-sector-3 {
+  stroke: var(--sector-3);
+  stroke-dasharray: 33.3 66.7;
+  stroke-dashoffset: -66.7;
+}
+
+.circuit-sector-overlay {
+  position: absolute;
+  inset: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sector-marker,
+.sector-band {
+  position: absolute;
+  display: inline-flex;
+}
+
+.sector-marker {
+  width: 34px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-sm);
+}
+
+.sector-marker-1 {
+  top: 10%;
+  left: 12%;
+  color: var(--sector-1);
+}
+
+.sector-marker-2 {
+  top: 42%;
+  right: 10%;
+  color: var(--sector-2);
+}
+
+.sector-marker-3 {
+  right: 22%;
+  bottom: 12%;
+  color: #b28b00;
+}
+
+.sector-band {
+  width: 30%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  opacity: 0.82;
+}
+
+.sector-band-1 {
+  top: 22%;
+  left: 16%;
+  background: var(--sector-1);
+  transform: rotate(-18deg);
+}
+
+.sector-band-2 {
+  top: 50%;
+  right: 13%;
+  background: var(--sector-2);
+  transform: rotate(16deg);
+}
+
+.sector-band-3 {
+  right: 24%;
+  bottom: 20%;
+  background: var(--sector-3);
+  transform: rotate(-8deg);
+}
+
+.sector-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+}
+
+.sector-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sector-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+}
+
+.sector-dot-1 {
+  background: var(--sector-1);
+}
+
+.sector-dot-2 {
+  background: var(--sector-2);
+}
+
+.sector-dot-3 {
+  background: var(--sector-3);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
 }
 
 .stats-grid {
@@ -105,6 +289,7 @@
   font-weight: var(--font-bold);
   color: var(--text-primary);
   font-family: var(--font-family);
+  overflow-wrap: anywhere;
 }
 
 .section-title {
