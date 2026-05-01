@@ -120,16 +120,6 @@ const CircuitImage = ({ alt, circuitId, className, showSectors = false }: Circui
         decoding="async"
         onError={() => setImageFailed(true)}
       />
-      {showSectors ? (
-        <div className="circuit-sector-overlay" aria-hidden="true">
-          <span className="sector-marker sector-marker-1">S1</span>
-          <span className="sector-marker sector-marker-2">S2</span>
-          <span className="sector-marker sector-marker-3">S3</span>
-          <span className="sector-band sector-band-1" />
-          <span className="sector-band sector-band-2" />
-          <span className="sector-band sector-band-3" />
-        </div>
-      ) : null}
     </div>
   );
 };
