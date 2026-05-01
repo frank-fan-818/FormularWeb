@@ -5,6 +5,7 @@ export interface CircuitEnhancement {
 }
 
 const CIRCUIT_ENHANCEMENTS: Record<string, CircuitEnhancement> = {
+  albert_park: { leftTurns: 9, rightTurns: 5, elevationChangeM: 2 },
   austin: { leftTurns: 11, rightTurns: 9, elevationChangeM: 41 },
   bahrain: { leftTurns: 6, rightTurns: 9, elevationChangeM: 18 },
   baku: { leftTurns: 8, rightTurns: 12, elevationChangeM: 26 },
@@ -28,6 +29,7 @@ const CIRCUIT_ENHANCEMENTS: Record<string, CircuitEnhancement> = {
   spa: { leftTurns: 9, rightTurns: 10, elevationChangeM: 102 },
   spa_francorchamps: { leftTurns: 9, rightTurns: 10, elevationChangeM: 102 },
   suzuka: { leftTurns: 10, rightTurns: 8, elevationChangeM: 40 },
+  suzuka_circuit: { leftTurns: 10, rightTurns: 8, elevationChangeM: 40 },
   yas_marina: { leftTurns: 7, rightTurns: 9, elevationChangeM: 11 },
   zandvoort: { leftTurns: 4, rightTurns: 10, elevationChangeM: 8 },
 };

@@ -362,7 +362,31 @@ export const getCircuitDetails = async (circuitId: string) => {
     }
   };
 
-  const circuit = circuitData[circuitId];
+  const normalizedCircuitId = String(circuitId || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_')
+    .replace(/_+/g, '_');
+  const circuitAliases: Record<string, string> = {
+    albert_park: 'melbourne',
+    albert_park_grand_prix_circuit: 'melbourne',
+    japanese_gp: 'suzuka',
+    suzuka_circuit: 'suzuka',
+    circuit_of_the_americas: 'austin',
+    americas: 'austin',
+    red_bull_ring_spielberg: 'red_bull_ring',
+    marina_bay_street_circuit: 'marina_bay',
+    yas_marina_circuit: 'yas_marina',
+    bahrain_international_circuit: 'bahrain',
+    catalunya_barcelona: 'catalunya',
+    circuit_de_barcelona_catalunya: 'catalunya',
+    interlagos_sao_paulo: 'interlagos',
+    autodromo_jose_carlos_pace: 'interlagos',
+    rodriguez: 'mexico_city',
+    autodromo_hermanos_rodriguez: 'mexico_city',
+  };
+  const lookupId = circuitAliases[normalizedCircuitId] || normalizedCircuitId;
+  const circuit = circuitData[lookupId];
   if (!circuit) return null;
 
   return {

@@ -22,6 +22,7 @@ const TEXT = {
   firstRace: '\u9996\u6b21\u529e\u8d5b',
   lapRecord: '\u6b63\u8d5b\u6700\u5feb\u5355\u5708',
   unknown: '\u672a\u77e5',
+  pendingData: '\u8d44\u6599\u5f85\u8865',
   seasonRace: '\u672c\u8d5b\u5b63\u6bd4\u8d5b',
   raceDate: '\u6bd4\u8d5b\u65f6\u95f4',
   raceType: '\u8d5b\u4e8b\u7c7b\u578b',
@@ -33,6 +34,18 @@ const TEXT = {
 type CircuitRaceWithMetadata = Race & {
   is_sprint_weekend?: boolean;
 };
+
+function hasDisplayValue(value: unknown): boolean {
+  return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '-';
+}
+
+function formatStatValue(value: unknown, suffix = ''): string {
+  if (!hasDisplayValue(value)) {
+    return TEXT.pendingData;
+  }
+
+  return `${value}${suffix}`;
+}
 
 const CircuitDetail = () => {
   const { circuitId } = useParams<{ circuitId: string }>();
@@ -69,10 +82,10 @@ const CircuitDetail = () => {
   const enhancement = getCircuitEnhancement(circuit.circuitId);
   const leftRightTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
     ? `${enhancement.leftTurns}L / ${enhancement.rightTurns}R`
-    : '-';
+    : TEXT.pendingData;
   const elevation = enhancement.elevationChangeM !== undefined
     ? `${enhancement.elevationChangeM} m`
-    : '-';
+    : TEXT.pendingData;
   const currentSeasonRace = circuitRaces[0] as CircuitRaceWithMetadata | undefined;
 
   return (
@@ -111,7 +124,7 @@ const CircuitDetail = () => {
               <CarOutlined /> {TEXT.length}
             </div>
             <div className="stat-value">
-              {circuitDetails?.length || '-'} km
+              {formatStatValue(circuitDetails?.length, ' km')}
             </div>
           </Card>
 
@@ -120,7 +133,7 @@ const CircuitDetail = () => {
               <FlagOutlined /> {TEXT.turns}
             </div>
             <div className="stat-value">
-              {circuitDetails?.turns || '-'}
+              {formatStatValue(circuitDetails?.turns)}
             </div>
           </Card>
 
@@ -147,7 +160,7 @@ const CircuitDetail = () => {
               <CarOutlined /> {TEXT.totalDistance}
             </div>
             <div className="stat-value">
-              {circuitDetails?.total_distance || '-'}
+              {formatStatValue(circuitDetails?.total_distance)}
             </div>
           </Card>
 
@@ -165,7 +178,7 @@ const CircuitDetail = () => {
               <TrophyOutlined /> {TEXT.raceCount}
             </div>
             <div className="stat-value">
-              {circuitDetails?.total_races || '-'}
+              {formatStatValue(circuitDetails?.total_races)}
             </div>
           </Card>
 
@@ -174,7 +187,7 @@ const CircuitDetail = () => {
               <CalendarOutlined /> {TEXT.firstRace}
             </div>
             <div className="stat-value">
-              {circuitDetails?.first_race || '-'}
+              {formatStatValue(circuitDetails?.first_race)}
             </div>
           </Card>
         </div>

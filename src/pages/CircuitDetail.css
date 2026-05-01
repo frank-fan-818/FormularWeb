@@ -218,6 +218,8 @@
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
   background: var(--bg-card);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .stat-card:hover {
@@ -238,6 +240,11 @@
   color: var(--text-primary);
   font-family: var(--font-family);
   overflow-wrap: anywhere;
+}
+
+.stat-card ::selection {
+  color: inherit;
+  background: transparent;
 }
 
 .section-title {
