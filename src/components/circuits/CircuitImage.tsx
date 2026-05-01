@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getCircuitImageUrl } from '@/utils/circuitImageResolver';
+import { resolveCircuitImageSvg, resolveCircuitImageUrl } from '@/utils/circuitImageResolver';
 
 interface CircuitImageProps {
   alt: string;
@@ -10,6 +10,7 @@ interface CircuitImageProps {
 
 const TEXT = {
   unavailable: '\u8d5b\u9053\u56fe\u6682\u4e0d\u53ef\u7528',
+  loading: '\u8d5b\u9053\u56fe\u52a0\u8f7d\u4e2d',
 };
 
 interface InlineCircuitSvg {
@@ -18,55 +19,87 @@ interface InlineCircuitSvg {
   path: string;
 }
 
+const SVG_ATTRIBUTE_PATTERN = (name: string) => new RegExp(`${name}=("|')([^"']+)\\1`);
+
 function parseCircuitSvg(svgText: string): InlineCircuitSvg | null {
-  const path = svgText.match(/<path[^>]*\sd="([^"]+)"/)?.[1];
+  const path = svgText.match(/<path[^>]*\sd=("|')([^"']+)\1/)?.[2];
   if (!path) {
     return null;
   }
 
   return {
-    width: svgText.match(/<svg[^>]*\swidth="([^"]+)"/)?.[1] || '500',
-    height: svgText.match(/<svg[^>]*\sheight="([^"]+)"/)?.[1] || '500',
+    width: svgText.match(SVG_ATTRIBUTE_PATTERN('width'))?.[2] || '500',
+    height: svgText.match(SVG_ATTRIBUTE_PATTERN('height'))?.[2] || '500',
     path,
   };
 }
 
+function svgTextToDataUrl(svgText: string): string {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
+}
+
 const CircuitImage = ({ alt, circuitId, className, showSectors = false }: CircuitImageProps) => {
-  const imageUrl = getCircuitImageUrl(circuitId, 'black-outline');
+  const [imageUrl, setImageUrl] = useState('');
   const [imageFailed, setImageFailed] = useState(false);
   const [inlineSvg, setInlineSvg] = useState<InlineCircuitSvg | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setImageFailed(false);
-    setInlineSvg(null);
-  }, [imageUrl]);
-
-  useEffect(() => {
-    if (!showSectors || !imageUrl) {
-      return;
-    }
-
     let cancelled = false;
 
-    fetch(imageUrl)
-      .then((response) => response.ok ? response.text() : '')
-      .then((text) => {
+    setImageFailed(false);
+    setInlineSvg(null);
+    setImageUrl('');
+    setLoading(true);
+
+    const resolveImage = showSectors
+      ? resolveCircuitImageSvg(circuitId, 'black-outline').then((svgText) => {
+        if (!svgText) {
+          return '';
+        }
+
+        const parsedSvg = parseCircuitSvg(svgText);
         if (!cancelled) {
-          setInlineSvg(parseCircuitSvg(text));
+          setInlineSvg(parsedSvg);
+        }
+
+        return parsedSvg ? '' : svgTextToDataUrl(svgText);
+      })
+      : resolveCircuitImageUrl(circuitId, 'black-outline');
+
+    resolveImage
+      .then((resolvedUrl) => {
+        if (!cancelled && resolvedUrl) {
+          setImageUrl(resolvedUrl);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setInlineSvg(null);
+          setImageUrl('');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [imageUrl, showSectors]);
+  }, [circuitId, showSectors]);
 
-  if (!imageUrl || imageFailed) {
+  if (loading) {
+    return (
+      <div
+        className={showSectors ? 'circuit-sector-frame circuit-image-loading' : 'circuit-image-loading'}
+        aria-label={TEXT.loading}
+      />
+    );
+  }
+
+  if ((!imageUrl && !inlineSvg) || imageFailed) {
     return (
       <div
         style={{

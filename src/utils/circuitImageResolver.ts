@@ -104,32 +104,43 @@ const circuitKeyAliases: Record<string, string> = {
   'yas-marina-circuit': 'yas-marina',
 };
 
-const blackOutlineCircuitModules = import.meta.glob('../assets/circuits/black-outline/*.svg', {
-  eager: true,
+const blackOutlineCircuitUrlModules = import.meta.glob('../assets/circuits/black-outline/*.svg', {
   import: 'default',
   query: '?url',
-}) as Record<string, string>;
+}) as Record<string, () => Promise<string>>;
+
+const blackOutlineCircuitRawModules = import.meta.glob('../assets/circuits/black-outline/*.svg', {
+  import: 'default',
+  query: '?raw',
+}) as Record<string, () => Promise<string>>;
 
 function toAssetKey(value: string): string {
   return value.trim().toLowerCase().replace(/[\s_]+/g, '-').replace(/-+/g, '-');
 }
 
-function buildStyleMap(_style: CircuitImageStyle) {
+function buildStyleMap<T>(modules: Record<string, T>) {
   return Object.fromEntries(
     preferredAssetKeys.flatMap((key) => {
       const assetPath = `../assets/circuits/black-outline/${key}-1.svg`;
-      const assetUrl = blackOutlineCircuitModules[assetPath];
+      const asset = modules[assetPath];
 
-      return assetUrl ? [[key, assetUrl]] : [];
+      return asset ? [[key, asset]] : [];
     }),
   );
 }
 
-const circuitImageMap: Record<CircuitImageStyle, Record<string, string>> = {
-  'black-outline': buildStyleMap('black-outline'),
-  'white-outline': buildStyleMap('white-outline'),
-  black: buildStyleMap('black'),
-  white: buildStyleMap('white'),
+const circuitImageUrlLoaderMap: Record<CircuitImageStyle, Record<string, () => Promise<string>>> = {
+  'black-outline': buildStyleMap(blackOutlineCircuitUrlModules),
+  'white-outline': buildStyleMap(blackOutlineCircuitUrlModules),
+  black: buildStyleMap(blackOutlineCircuitUrlModules),
+  white: buildStyleMap(blackOutlineCircuitUrlModules),
+};
+
+const circuitImageRawLoaderMap: Record<CircuitImageStyle, Record<string, () => Promise<string>>> = {
+  'black-outline': buildStyleMap(blackOutlineCircuitRawModules),
+  'white-outline': buildStyleMap(blackOutlineCircuitRawModules),
+  black: buildStyleMap(blackOutlineCircuitRawModules),
+  white: buildStyleMap(blackOutlineCircuitRawModules),
 };
 
 function buildCircuitKeyCandidates(circuitId: string): string[] {
@@ -145,19 +156,27 @@ function buildCircuitKeyCandidates(circuitId: string): string[] {
   return [...new Set(candidates)];
 }
 
-export function getCircuitImageUrl(
+function findCircuitAssetLoader(
   circuitId: string,
-  style: CircuitImageStyle = 'black-outline',
-): string {
+  style: CircuitImageStyle,
+  loaderMap: Record<CircuitImageStyle, Record<string, () => Promise<string>>>,
+): (() => Promise<string>) | null {
   const candidates = buildCircuitKeyCandidates(circuitId);
 
   for (const key of candidates) {
-    const matchedUrl = circuitImageMap[style][key];
-    if (matchedUrl) {
-      return matchedUrl;
+    const matchedLoader = loaderMap[style][key];
+    if (matchedLoader) {
+      return matchedLoader;
     }
   }
 
+  return null;
+}
+
+export function getCircuitImageUrl(
+  _circuitId: string,
+  _style: CircuitImageStyle = 'black-outline',
+): string {
   return '';
 }
 
@@ -165,5 +184,14 @@ export function resolveCircuitImageUrl(
   circuitId: string,
   style: CircuitImageStyle = 'black-outline',
 ): Promise<string> {
-  return Promise.resolve(getCircuitImageUrl(circuitId, style));
+  const loader = findCircuitAssetLoader(circuitId, style, circuitImageUrlLoaderMap);
+  return loader ? loader() : Promise.resolve('');
+}
+
+export function resolveCircuitImageSvg(
+  circuitId: string,
+  style: CircuitImageStyle = 'black-outline',
+): Promise<string> {
+  const loader = findCircuitAssetLoader(circuitId, style, circuitImageRawLoaderMap);
+  return loader ? loader() : Promise.resolve('');
 }

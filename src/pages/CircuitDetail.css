@@ -81,6 +81,27 @@
   isolation: isolate;
 }
 
+.circuit-image-loading {
+  width: min(100%, 520px);
+  min-height: 260px;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0)),
+    #eef2f7;
+  background-size: 220% 100%, 100% 100%;
+  animation: circuit-image-loading 1s ease-in-out infinite;
+}
+
+@keyframes circuit-image-loading {
+  from {
+    background-position: 120% 0, 0 0;
+  }
+
+  to {
+    background-position: -120% 0, 0 0;
+  }
+}
+
 .circuit-sector-map {
   position: relative;
   width: min(100%, 520px);
