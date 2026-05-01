@@ -99,6 +99,10 @@ function mergeCircuitDetails(
   };
 }
 
+function getLocalCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {
+  return getCircuitDetails(supabaseId).then(normalizeLocalCircuitDetails).catch(() => null);
+}
+
 function getCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {
   if (circuitDetailsCache.has(supabaseId)) {
     return Promise.resolve(circuitDetailsCache.get(supabaseId) || null);
@@ -111,7 +115,7 @@ function getCircuitDetail(supabaseId: string): Promise<Record<string, any> | nul
 
   const request = Promise.all([
     supabaseApi.circuits.getById(supabaseId).catch(() => null),
-    getCircuitDetails(supabaseId).then(normalizeLocalCircuitDetails).catch(() => null),
+    getLocalCircuitDetail(supabaseId),
   ])
     .then(([databaseDetails, localDetails]) => {
       const result = mergeCircuitDetails(databaseDetails, localDetails);
@@ -166,6 +170,19 @@ export function useCircuitDetailData(
       setCircuitDetails(null);
       setDetailsLoading(true);
     }
+
+    void getLocalCircuitDetail(supabaseId)
+      .then((localDetails) => {
+        if (cancelled || !localDetails) {
+          return;
+        }
+
+        setCircuitDetails((currentDetails) => mergeCircuitDetails(currentDetails, localDetails));
+        setFallbackCircuit((currentFallback) => (
+          !matchedRace ? mapSupabaseCircuitToCircuit(localDetails, supabaseId) : currentFallback
+        ));
+        setDetailsLoading(false);
+      });
 
     void getCircuitDetail(supabaseId)
       .then((details) => {

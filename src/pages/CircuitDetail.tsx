@@ -28,6 +28,7 @@ const TEXT = {
   raceType: '\u8d5b\u4e8b\u7c7b\u578b',
   sprintWeekend: '\u51b2\u523a\u8d5b\u5468\u672b',
   loading: '\u52a0\u8f7d\u4e2d...',
+  loadingStat: '\u6b63\u5728\u8bfb\u53d6',
   error: '\u52a0\u8f7d\u8d5b\u9053\u8be6\u60c5\u5931\u8d25:',
 };
 
@@ -39,8 +40,12 @@ function hasDisplayValue(value: unknown): boolean {
   return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '-';
 }
 
-function formatStatValue(value: unknown, suffix = ''): string {
+function formatStatValue(value: unknown, suffix = '', isLoading = false): string {
   if (!hasDisplayValue(value)) {
+    if (isLoading) {
+      return TEXT.loadingStat;
+    }
+
     return TEXT.pendingData;
   }
 
@@ -87,6 +92,8 @@ const CircuitDetail = () => {
     ? `${enhancement.elevationChangeM} m`
     : TEXT.pendingData;
   const currentSeasonRace = circuitRaces[0] as CircuitRaceWithMetadata | undefined;
+  const waitingForDetails = detailsLoading && !circuitDetails;
+  const direction = waitingForDetails ? TEXT.loadingStat : formatCircuitDirection(circuitDetails?.direction);
 
   return (
     <div className="circuit-detail-container">
@@ -119,25 +126,25 @@ const CircuitDetail = () => {
         </Card>
 
         <div className="stats-grid">
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <CarOutlined /> {TEXT.length}
             </div>
             <div className="stat-value">
-              {formatStatValue(circuitDetails?.length, ' km')}
+              {formatStatValue(circuitDetails?.length, ' km', waitingForDetails)}
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.turns}
             </div>
             <div className="stat-value">
-              {formatStatValue(circuitDetails?.turns)}
+              {formatStatValue(circuitDetails?.turns, '', waitingForDetails)}
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.leftRightTurns}
             </div>
@@ -146,25 +153,25 @@ const CircuitDetail = () => {
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.direction}
             </div>
             <div className="stat-value">
-              {formatCircuitDirection(circuitDetails?.direction)}
+              {direction}
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <CarOutlined /> {TEXT.totalDistance}
             </div>
             <div className="stat-value">
-              {formatStatValue(circuitDetails?.total_distance)}
+              {formatStatValue(circuitDetails?.total_distance, '', waitingForDetails)}
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.elevation}
             </div>
@@ -173,21 +180,21 @@ const CircuitDetail = () => {
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <TrophyOutlined /> {TEXT.raceCount}
             </div>
             <div className="stat-value">
-              {formatStatValue(circuitDetails?.total_races)}
+              {formatStatValue(circuitDetails?.total_races, '', waitingForDetails)}
             </div>
           </Card>
 
-          <Card className="stat-card" loading={detailsLoading}>
+          <Card className="stat-card">
             <div className="stat-label">
               <CalendarOutlined /> {TEXT.firstRace}
             </div>
             <div className="stat-value">
-              {formatStatValue(circuitDetails?.first_race)}
+              {formatStatValue(circuitDetails?.first_race, '', waitingForDetails)}
             </div>
           </Card>
         </div>
