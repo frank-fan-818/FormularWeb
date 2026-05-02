@@ -55,6 +55,16 @@ def parse_args() -> argparse.Namespace:
         default=650,
         help="Maximum telemetry samples per driver after downsampling.",
     )
+    parser.add_argument(
+        "--results-only",
+        action="store_true",
+        help="Only export classification/session results; skips laps, telemetry, weather and messages.",
+    )
+    parser.add_argument(
+        "--laps-only",
+        action="store_true",
+        help="Export classification and lap timing, but skip telemetry, weather and messages.",
+    )
     return parser.parse_args()
 
 
@@ -1379,18 +1389,18 @@ def main() -> None:
         fastf1.Cache.enable_cache(str(cache_dir))
 
     session = fastf1.get_session(int(args.season), int(args.round), args.session)
-    session.load(laps=True, telemetry=True, weather=True, messages=True)
+    session.load(
+        laps=not args.results_only,
+        telemetry=not args.results_only and not args.laps_only,
+        weather=not args.results_only and not args.laps_only,
+        messages=not args.results_only and not args.laps_only,
+    )
 
     current_session_type = session_type(str(args.session))
     try:
         laps = session.laps
     except Exception:
-        if current_session_type is None:
-            raise
         laps = pd.DataFrame()
-
-    if laps.empty and current_session_type is None:
-        raise RuntimeError("FastF1 returned no laps for this session.")
 
     results = safe_session_frame(session, "results")
     track_status = safe_session_frame(session, "track_status")

@@ -9,6 +9,7 @@ import type {
   SummaryRaceRow,
 } from '../src/utils/historySummaryAggregation.ts';
 import { buildHistorySummaryPayloads } from '../src/utils/historySummaryAggregation.ts';
+import { loadF1DbOfficialStandings } from './f1db-official-standings.ts';
 
 const PAGE_SIZE = 1000;
 
@@ -358,6 +359,7 @@ function collectMissingIds<TId extends string>(baseIds: TId[], existingIds: TId[
 async function loadSummarySourceData(
   client: ReturnType<typeof createSupabaseAdminClient>,
 ): Promise<HistorySummarySourceData> {
+  const officialStandings = loadF1DbOfficialStandings();
   const [drivers, constructors, races, raceResults, qualifyingResults] = await Promise.all([
     fetchAllRows<SummaryDriverRow>({
       client,
@@ -397,6 +399,7 @@ async function loadSummarySourceData(
     races,
     raceResults,
     qualifyingResults,
+    ...officialStandings,
   };
 }
 
@@ -504,6 +507,7 @@ async function main(): Promise<void> {
   if (hasDriverHistorySummaryTable && hasConstructorHistorySummaryTable) {
     console.log('Loading summary source data...');
     sourceData = await loadSummarySourceData(client);
+    console.log(`Loaded official standings drivers=${sourceData.officialDriverStandings?.length || 0} constructors=${sourceData.officialConstructorStandings?.length || 0}`);
     payloads = buildHistorySummaryPayloads(sourceData);
 
     const [existingDriverSummaryRows, existingConstructorSummaryRows] = await Promise.all([

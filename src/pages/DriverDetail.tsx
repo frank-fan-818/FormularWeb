@@ -193,6 +193,7 @@ const DriverDetail = () => {
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [seasonResultsLoading, setSeasonResultsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
@@ -272,29 +273,38 @@ const DriverDetail = () => {
     let cancelled = false;
 
     setLoading(true);
+    setSeasonResultsLoading(true);
     setResolvedDriverId(null);
     setSeasonRaceResults([]);
     setSeasonSprintResults([]);
 
+    if (currentStanding) {
+      setDriver({
+        ...currentStanding.Driver,
+        totalWins: 0,
+        totalPodiums: 0,
+        totalPolePositions: 0,
+        totalFastestLaps: 0,
+        totalRaceStarts: 0,
+      });
+    } else {
+      setDriver(null);
+    }
+
     const loadPrimaryData = async () => {
-      const [baseDriverResult, resolvedDriverIdResult, sprintResultsResult] = await Promise.allSettled([
+      const [baseDriverResult, resolvedDriverIdResult] = await Promise.allSettled([
         resolveSupabaseDriverProfile(driverId, currentStanding),
         resolveErgastDriverId(driverId, currentSeason, currentStanding),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
-
-      const baseDriver = baseDriverResult.status === 'fulfilled' ? baseDriverResult.value : null;
-      const nextResolvedDriverId = resolvedDriverIdResult.status === 'fulfilled'
-        ? resolvedDriverIdResult.value
-        : driverId;
-
-      const raceResultsResult = await Promise.allSettled([
-        driverApi.getDriverSeasonRaceResults(nextResolvedDriverId, currentSeason),
       ]);
 
       if (cancelled) {
         return;
       }
+
+      const baseDriver = baseDriverResult.status === 'fulfilled' ? baseDriverResult.value : null;
+      const nextResolvedDriverId = resolvedDriverIdResult.status === 'fulfilled'
+        ? resolvedDriverIdResult.value
+        : driverId;
 
       const mergedDriver = currentStanding ? {
         ...currentStanding.Driver,
@@ -308,27 +318,37 @@ const DriverDetail = () => {
 
       setDriver(mergedDriver);
       setResolvedDriverId(nextResolvedDriverId);
-
-      if (raceResultsResult[0].status === 'fulfilled') {
-        setSeasonRaceResults(
-          raceResultsResult[0].value.sort(
-            (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-          ),
-        );
-      } else {
-        setSeasonRaceResults([]);
-      }
-
-      if (sprintResultsResult.status === 'fulfilled') {
-        setSeasonSprintResults(sprintResultsResult.value);
-      } else {
-        setSeasonSprintResults([]);
-      }
-
       setLoading(false);
+
+      const [raceResultsResult, sprintResultsResult] = await Promise.allSettled([
+        driverApi.getDriverSeasonRaceResults(nextResolvedDriverId, currentSeason),
+        seasonApi.getSeasonSprintResults(currentSeason),
+      ]);
+
+      if (!cancelled) {
+        if (raceResultsResult.status === 'fulfilled') {
+          setSeasonRaceResults(
+            raceResultsResult.value.sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            ),
+          );
+        } else {
+          setSeasonRaceResults([]);
+        }
+
+        setSeasonSprintResults(
+          sprintResultsResult.status === 'fulfilled' ? sprintResultsResult.value : [],
+        );
+        setSeasonResultsLoading(false);
+      }
     };
 
-    void loadPrimaryData();
+    void loadPrimaryData().catch(() => {
+      if (!cancelled) {
+        setLoading(false);
+        setSeasonResultsLoading(false);
+      }
+    });
 
     return () => {
       cancelled = true;
@@ -576,7 +596,7 @@ const DriverDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={seasonLoading || loading} className="driver-profile-shell">
+      <Card loading={!driver && (seasonLoading || loading)} className="driver-profile-shell">
         <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
           <div className="driver-profile-copy">
             <div className="driver-profile-kicker">
@@ -672,6 +692,10 @@ const DriverDetail = () => {
                   </div>
                 )}
               </div>
+            </div>
+          ) : seasonResultsLoading ? (
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+              {TEXT.chartLoading}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>

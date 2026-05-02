@@ -1,15 +1,95 @@
 import { supabase } from '@/utils/supabase';
+import { measureRequest } from '@/utils/performance';
+import type {
+  ConstructorHistorySummaryRecord,
+  DriverHistorySummaryRecord,
+} from '@/types';
 
 type RowPatch = Record<string, string | number | boolean | null>;
+type SupabaseRow = Record<string, any>;
 
-async function listRows(table: string, options?: {
+export const SUPABASE_COLUMNS = {
+  circuitListMetadata: [
+    'circuit_id',
+    'length',
+    'turns',
+    'first_race',
+    'total_races',
+    'race_laps',
+    'total_distance',
+    'lap_record',
+    'lap_record_driver',
+    'lap_record_year',
+  ].join(', '),
+  constructorListMetadata: [
+    'constructor_id',
+    'nationality',
+    'total_wins',
+    'total_pole_positions',
+    'total_fastest_laps',
+    'total_race_entries',
+  ].join(', '),
+  driverListMetadata: [
+    'driver_id',
+    'total_wins',
+    'total_pole_positions',
+    'total_fastest_laps',
+    'total_race_starts',
+  ].join(', '),
+  constructorDetail: [
+    'constructor_id',
+    'name',
+    'nationality',
+    'total_wins',
+    'total_podiums',
+    'total_pole_positions',
+    'total_fastest_laps',
+    'total_race_entries',
+  ].join(', '),
+  driverDetail: [
+    'driver_id',
+    'permanent_number',
+    'code',
+    'first_name',
+    'last_name',
+    'date_of_birth',
+    'nationality',
+    'total_wins',
+    'total_podiums',
+    'total_pole_positions',
+    'total_fastest_laps',
+    'total_race_starts',
+  ].join(', '),
+  circuitDetail: [
+    'circuit_id',
+    'name',
+    'locality',
+    'location',
+    'country',
+    'lat',
+    'long',
+    'lng',
+    'length',
+    'turns',
+    'first_race',
+    'total_races',
+    'race_laps',
+    'total_distance',
+    'lap_record',
+    'lap_record_driver',
+    'lap_record_year',
+  ].join(', '),
+};
+
+async function listRows<T extends SupabaseRow = SupabaseRow>(table: string, options?: {
+  columns?: string;
   orderBy?: string;
   ascending?: boolean;
   limit?: number;
-}) {
+}): Promise<T[]> {
   let query = supabase
     .from(table)
-    .select('*');
+    .select(options?.columns || '*');
 
   if (options?.orderBy) {
     query = query.order(options.orderBy, { ascending: options.ascending ?? true });
@@ -19,35 +99,44 @@ async function listRows(table: string, options?: {
     query = query.limit(options.limit);
   }
 
-  const { data, error } = await query;
+  const { data, error } = await measureRequest('supabase', `${table}.list`, async () => query);
   if (error) {
     throw error;
   }
 
-  return data || [];
+  return (data || []) as unknown as T[];
 }
 
-async function getSingleRow(table: string, key: string, value: string | number) {
-  const { data, error } = await supabase
+async function getSingleRow<T extends SupabaseRow = SupabaseRow>(
+  table: string,
+  key: string,
+  value: string | number,
+  columns = '*',
+): Promise<T | null> {
+  const query = supabase
     .from(table)
-    .select('*')
+    .select(columns)
     .eq(key, value);
+
+  const { data, error } = await measureRequest('supabase', `${table}.getById`, async () => query);
 
   if (error) {
     console.warn(`Failed to load ${table} row:`, error);
     return null;
   }
 
-  return data && data.length > 0 ? data[0] : null;
+  return data && data.length > 0 ? data[0] as unknown as T : null;
 }
 
 async function updateRow(table: string, key: string, value: string | number, patch: RowPatch) {
-  const { data, error } = await supabase
+  const query = supabase
     .from(table)
     .update(patch)
     .eq(key, value)
     .select()
     .single();
+
+  const { data, error } = await measureRequest('supabase', `${table}.update`, async () => query);
 
   if (error) {
     throw error;
@@ -59,28 +148,46 @@ async function updateRow(table: string, key: string, value: string | number, pat
 export const supabaseApi = {
   circuits: {
     getAll: async (limit = 400) => listRows('circuits', { orderBy: 'name', limit }),
-    getById: async (circuitId: string) => getSingleRow('circuits', 'circuit_id', circuitId),
+    getListMetadata: async (limit = 400) => listRows('circuits', {
+      columns: SUPABASE_COLUMNS.circuitListMetadata,
+      orderBy: 'name',
+      limit,
+    }),
+    getById: async (circuitId: string) =>
+      getSingleRow('circuits', 'circuit_id', circuitId, SUPABASE_COLUMNS.circuitDetail),
     update: async (circuitId: string, patch: RowPatch) => updateRow('circuits', 'circuit_id', circuitId, patch),
   },
 
   drivers: {
     getAll: async (limit = 1000) => listRows('drivers', { orderBy: 'last_name', limit }),
-    getById: async (driverId: string) => getSingleRow('drivers', 'driver_id', driverId),
+    getListMetadata: async (limit = 1000) => listRows('drivers', {
+      columns: SUPABASE_COLUMNS.driverListMetadata,
+      orderBy: 'last_name',
+      limit,
+    }),
+    getById: async (driverId: string) =>
+      getSingleRow('drivers', 'driver_id', driverId, SUPABASE_COLUMNS.driverDetail),
     update: async (driverId: string, patch: RowPatch) => updateRow('drivers', 'driver_id', driverId, patch),
   },
 
   constructors: {
     getAll: async (limit = 300) => listRows('constructors', { orderBy: 'name', limit }),
-    getById: async (constructorId: string) => getSingleRow('constructors', 'constructor_id', constructorId),
+    getListMetadata: async (limit = 300) => listRows('constructors', {
+      columns: SUPABASE_COLUMNS.constructorListMetadata,
+      orderBy: 'name',
+      limit,
+    }),
+    getById: async (constructorId: string) =>
+      getSingleRow('constructors', 'constructor_id', constructorId, SUPABASE_COLUMNS.constructorDetail),
     update: async (constructorId: string, patch: RowPatch) => updateRow('constructors', 'constructor_id', constructorId, patch),
   },
 
   driverHistorySummaries: {
-    getById: async (driverId: string) => getSingleRow('driver_history_summary', 'driver_id', driverId),
+    getById: async (driverId: string) => getSingleRow<DriverHistorySummaryRecord>('driver_history_summary', 'driver_id', driverId),
   },
 
   constructorHistorySummaries: {
-    getById: async (constructorId: string) => getSingleRow('constructor_history_summary', 'constructor_id', constructorId),
+    getById: async (constructorId: string) => getSingleRow<ConstructorHistorySummaryRecord>('constructor_history_summary', 'constructor_id', constructorId),
   },
 
   seasons: {
@@ -91,11 +198,12 @@ export const supabaseApi = {
 
   races: {
     getBySeason: async (season: number) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('races')
         .select('*')
         .eq('season', season)
         .order('round');
+      const { data, error } = await measureRequest('supabase', 'races.getBySeason', async () => query);
 
       if (error) {
         throw error;
@@ -104,12 +212,13 @@ export const supabaseApi = {
       return data || [];
     },
     getAll: async (limit = 300) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('races')
         .select('*')
         .order('season', { ascending: false })
         .order('round')
         .limit(limit);
+      const { data, error } = await measureRequest('supabase', 'races.list', async () => query);
 
       if (error) {
         throw error;
@@ -123,11 +232,12 @@ export const supabaseApi = {
 
   raceResults: {
     getByRace: async (raceId: number) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('race_results')
         .select('*')
         .eq('race_id', raceId)
         .order('position');
+      const { data, error } = await measureRequest('supabase', 'race_results.getByRace', async () => query);
 
       if (error) {
         throw error;
@@ -136,12 +246,13 @@ export const supabaseApi = {
       return data || [];
     },
     getAll: async (limit = 300) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('race_results')
         .select('*')
         .order('race_id', { ascending: false })
         .order('position')
         .limit(limit);
+      const { data, error } = await measureRequest('supabase', 'race_results.list', async () => query);
 
       if (error) {
         throw error;
@@ -155,11 +266,12 @@ export const supabaseApi = {
 
   qualifyingResults: {
     getByRace: async (raceId: number) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('qualifying_results')
         .select('*')
         .eq('race_id', raceId)
         .order('position');
+      const { data, error } = await measureRequest('supabase', 'qualifying_results.getByRace', async () => query);
 
       if (error) {
         throw error;
@@ -168,12 +280,13 @@ export const supabaseApi = {
       return data || [];
     },
     getAll: async (limit = 300) => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('qualifying_results')
         .select('*')
         .order('race_id', { ascending: false })
         .order('position')
         .limit(limit);
+      const { data, error } = await measureRequest('supabase', 'qualifying_results.list', async () => query);
 
       if (error) {
         throw error;

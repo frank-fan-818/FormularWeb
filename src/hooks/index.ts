@@ -7,6 +7,7 @@ export {
   useSeasonRacesCached,
   useSeasonsCached,
 } from './useSeasonDataCached';
+export { useSupabaseMetadata } from './useSupabaseMetadata';
 export { useDriverDetails } from './useF1Data';
 export { useRaceStatus, useRacesByStatus } from './useRaceStatus';
 export { useAsync, useLoadingDelay } from './useAsync';

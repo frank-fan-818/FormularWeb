@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import { useDriverStandingsCached } from '@/hooks';
+import { useDriverStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
@@ -10,7 +10,6 @@ import './Drivers.css';
 
 const TEXT = {
   title: '\u8f66\u624b',
-  loadError: '\u52a0\u8f7d\u8f66\u624b\u5217\u8868\u5931\u8d25:',
   wins: '\u80dc',
   points: '\u79ef\u5206',
   starts: '\u53c2\u8d5b',
@@ -31,6 +30,12 @@ const Drivers = () => {
   const { currentSeason } = useAppStore();
   const { driverStandings, loading: standingsLoading } = useDriverStandingsCached(currentSeason);
   const [drivers, setDrivers] = useState<any[]>([]);
+  const fetchDriverMetadata = useCallback(() => supabaseApi.drivers.getListMetadata(), []);
+  const { data: driverMetadata } = useSupabaseMetadata(
+    'supabase-driver-list-metadata',
+    fetchDriverMetadata,
+    driverStandings.length > 0,
+  );
 
   useEffect(() => {
     const formattedDrivers = driverStandings.map((standing, index) => ({
@@ -51,47 +56,30 @@ const Drivers = () => {
   }, [driverStandings]);
 
   useEffect(() => {
-    if (driverStandings.length === 0) {
+    if (driverStandings.length === 0 || !driverMetadata) {
       return;
     }
 
-    let cancelled = false;
+    const driverMap = new Map(driverMetadata.map((driver) => [driver.driver_id, driver]));
+    const enrichedDrivers = driverStandings.map((standing, index) => {
+      const dbDriver = driverMap.get(standing.Driver.driverId);
+      return {
+        ...standing.Driver,
+        total_wins: dbDriver?.total_wins || null,
+        total_pole_positions: dbDriver?.total_pole_positions || null,
+        total_fastest_laps: dbDriver?.total_fastest_laps || null,
+        total_race_starts: dbDriver?.total_race_starts || null,
+        constructorId: standing.Constructors[0].constructorId,
+        constructorName: standing.Constructors[0].name,
+        position: standing.position,
+        points: standing.points,
+        seasonWins: standing.wins,
+        index,
+      };
+    });
 
-    const enrichDrivers = async () => {
-      try {
-        const supabaseDrivers = await supabaseApi.drivers.getAll();
-        const driverMap = new Map(supabaseDrivers.map((driver) => [driver.driver_id, driver]));
-        const enrichedDrivers = driverStandings.map((standing, index) => {
-          const dbDriver = driverMap.get(standing.Driver.driverId);
-          return {
-            ...standing.Driver,
-            total_wins: dbDriver?.total_wins || null,
-            total_pole_positions: dbDriver?.total_pole_positions || null,
-            total_fastest_laps: dbDriver?.total_fastest_laps || null,
-            total_race_starts: dbDriver?.total_race_starts || null,
-            constructorId: standing.Constructors[0].constructorId,
-            constructorName: standing.Constructors[0].name,
-            position: standing.position,
-            points: standing.points,
-            seasonWins: standing.wins,
-            index,
-          };
-        });
-
-        if (!cancelled) {
-          setDrivers(enrichedDrivers);
-        }
-      } catch (error) {
-        console.error(TEXT.loadError, error);
-      }
-    };
-
-    void enrichDrivers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [driverStandings]);
+    setDrivers(enrichedDrivers);
+  }, [driverMetadata, driverStandings]);
 
   const driverGroups = useMemo(() => {
     const groups = new Map<string, DriverLineupGroup>();

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
-import { useConstructorStandingsCached } from '@/hooks';
+import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
@@ -10,7 +10,6 @@ import './Constructors.css';
 
 const TEXT = {
   title: '\u8f66\u961f',
-  loadError: '\u52a0\u8f7d\u8f66\u961f\u5217\u8868\u5931\u8d25:',
   wins: '\u80dc',
   poles: '\u6746\u4f4d',
   entries: '\u53c2\u8d5b\u573a\u6b21',
@@ -34,6 +33,12 @@ const Constructors = () => {
   const { currentSeason } = useAppStore();
   const { constructorStandings, loading: standingsLoading } = useConstructorStandingsCached(currentSeason);
   const [constructors, setConstructors] = useState<any[]>([]);
+  const fetchConstructorMetadata = useCallback(() => supabaseApi.constructors.getListMetadata(), []);
+  const { data: constructorMetadata } = useSupabaseMetadata(
+    'supabase-constructor-list-metadata',
+    fetchConstructorMetadata,
+    constructorStandings.length > 0,
+  );
 
   useEffect(() => {
     const formattedConstructors = constructorStandings.map((standing, index) => ({
@@ -53,46 +58,29 @@ const Constructors = () => {
   }, [constructorStandings]);
 
   useEffect(() => {
-    if (constructorStandings.length === 0) {
+    if (constructorStandings.length === 0 || !constructorMetadata) {
       return;
     }
 
-    let cancelled = false;
+    const constructorMap = new Map(constructorMetadata.map((constructor) => [constructor.constructor_id, constructor]));
+    const enrichedConstructors = constructorStandings.map((standing, index) => {
+      const dbConstructor = constructorMap.get(standing.Constructor.constructorId);
+      return {
+        ...standing.Constructor,
+        nationality: dbConstructor?.nationality || standing.Constructor.nationality || '',
+        total_wins: dbConstructor?.total_wins || null,
+        total_pole_positions: dbConstructor?.total_pole_positions || null,
+        total_fastest_laps: dbConstructor?.total_fastest_laps || null,
+        total_race_entries: dbConstructor?.total_race_entries || null,
+        position: standing.position,
+        points: standing.points,
+        seasonWins: standing.wins,
+        index,
+      };
+    });
 
-    const enrichConstructors = async () => {
-      try {
-        const supabaseConstructors = await supabaseApi.constructors.getAll();
-        const constructorMap = new Map(supabaseConstructors.map((constructor) => [constructor.constructor_id, constructor]));
-        const enrichedConstructors = constructorStandings.map((standing, index) => {
-          const dbConstructor = constructorMap.get(standing.Constructor.constructorId);
-          return {
-            ...standing.Constructor,
-            nationality: dbConstructor?.nationality || standing.Constructor.nationality || '',
-            total_wins: dbConstructor?.total_wins || null,
-            total_pole_positions: dbConstructor?.total_pole_positions || null,
-            total_fastest_laps: dbConstructor?.total_fastest_laps || null,
-            total_race_entries: dbConstructor?.total_race_entries || null,
-            position: standing.position,
-            points: standing.points,
-            seasonWins: standing.wins,
-            index,
-          };
-        });
-
-        if (!cancelled) {
-          setConstructors(enrichedConstructors);
-        }
-      } catch (error) {
-        console.error(TEXT.loadError, error);
-      }
-    };
-
-    void enrichConstructors();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [constructorStandings]);
+    setConstructors(enrichedConstructors);
+  }, [constructorMetadata, constructorStandings]);
 
   const loading = standingsLoading && constructors.length === 0;
 

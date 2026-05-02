@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { seasonApi } from '@/api/season';
+import { getSeasonCacheDuration } from '@/utils/currentSeason';
 import { useCachedData } from './useCachedData';
 import type { ConstructorStanding, DriverStanding, Race, Season } from '@/types';
 
@@ -68,7 +69,7 @@ export function useSeasonDataCached(season: string): UseSeasonDataCachedReturn {
 
   const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
     cacheKey: `season-data-${season}`,
-    cacheDuration: 60 * 60 * 1000,
+    cacheDuration: getSeasonCacheDuration(season),
   });
 
   return {
@@ -87,7 +88,7 @@ export function useDriverStandingsCached(season: string): UseDriverStandingsCach
 
   const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
     cacheKey: `driver-standings-${season}`,
-    cacheDuration: 60 * 60 * 1000,
+    cacheDuration: getSeasonCacheDuration(season),
   });
 
   return {
@@ -104,7 +105,7 @@ export function useConstructorStandingsCached(season: string): UseConstructorSta
 
   const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
     cacheKey: `constructor-standings-${season}`,
-    cacheDuration: 60 * 60 * 1000,
+    cacheDuration: getSeasonCacheDuration(season),
   });
 
   return {
@@ -121,7 +122,7 @@ export function useSeasonRacesCached(season: string): UseSeasonRacesCachedReturn
 
   const { data, loading, error, isOffline, refetch } = useCachedData(fetchData, {
     cacheKey: `season-races-${season}`,
-    cacheDuration: 60 * 60 * 1000,
+    cacheDuration: getSeasonCacheDuration(season),
   });
 
   return {

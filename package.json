@@ -1,7 +1,7 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.6.4",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "fastf1:export-race": "python scripts/export-fastf1-race-data.py"
+    "fastf1:export-race": "python scripts/export-fastf1-race-data.py",
+    "fastf1:import-sessions": "ts-node-esm ./scripts/import-fastf1-session-analytics.ts",
+    "import:race-sessions": "ts-node-esm ./scripts/import-race-session-results.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",

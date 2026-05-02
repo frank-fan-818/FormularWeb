@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Segmented, Table, Tabs, Tag } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
-import EChartsPanel from '@/components/charts/EChartsPanel';
+import { raceSessionResultsApi } from '@/api/raceSessionResults';
 import {
   useFastF1RaceAnalytics,
   useFastF1SessionAnalytics,
@@ -27,6 +27,7 @@ import type {
   FastF1TrackStatusPeriod,
   FastF1WeatherLapRange,
   FastF1WeatherPoint,
+  Race,
   RaceWeekendMode,
   RecentGrandPrixResult,
   QualifyingResult,
@@ -49,6 +50,7 @@ interface RaceTabItem {
 type TelemetryMetric = 'throttle' | 'brake' | 'gear' | 'rpm';
 
 const DEFERRED_TAB_KEYS = ['fp1', 'fp2', 'fp3', 'sprintQualifying', 'sprint'];
+const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
 const TEXT = {
   loading: '\u52a0\u8f7d\u4e2d...',
@@ -2171,22 +2173,6 @@ const RaceDetail = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { races, loading: seasonLoading } = useSeasonData(currentSeason);
-  const {
-    data: fastF1Analytics,
-    loading: fastF1AnalyticsLoading,
-  } = useFastF1RaceAnalytics(currentSeason, round);
-  const {
-    data: fastF1QualifyingAnalytics,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'Q');
-  const {
-    data: fastF1SprintQualifyingAnalytics,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'SQ');
-  const {
-    data: fastF1SprintShootoutAnalytics,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'SS');
-  const {
-    data: fastF1SprintAnalytics,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'S');
 
   const [qualifyingResults, setQualifyingResults] = useState<QualifyingResult[]>([]);
   const [raceResults, setRaceResults] = useState<Result[]>([]);
@@ -2195,9 +2181,11 @@ const RaceDetail = () => {
   const [fp1Results, setFp1Results] = useState<Result[]>([]);
   const [fp2Results, setFp2Results] = useState<Result[]>([]);
   const [fp3Results, setFp3Results] = useState<Result[]>([]);
+  const [availableDbSessions, setAvailableDbSessions] = useState<string[]>([]);
   const [primaryLoading, setPrimaryLoading] = useState(false);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('sprintQualifying');
+  const [loadingSessionTabs, setLoadingSessionTabs] = useState<string[]>([]);
+  const [loadedSessionTabs, setLoadedSessionTabs] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState('qualifying');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
   const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
@@ -2208,6 +2196,16 @@ const RaceDetail = () => {
   const [selectedWeekendMode, setSelectedWeekendMode] = useState<RaceWeekendMode | null>(null);
 
   const raceInfo = races.find((race) => race.round === round) || null;
+  const isPastRace = useMemo(
+    () => Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day'))),
+    [raceInfo],
+  );
+  const shouldLoadRaceFastF1 = selectedWeekendMode === 'post'
+    || (selectedWeekendMode === null && isPastRace);
+  const {
+    data: fastF1Analytics,
+    loading: fastF1AnalyticsLoading,
+  } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
     [raceInfo],
@@ -2222,9 +2220,24 @@ const RaceDetail = () => {
       return 'pre';
     }
 
-    return dayjs().isAfter(dayjs(raceInfo.date).endOf('day')) && fastF1Analytics ? 'post' : 'pre';
-  }, [fastF1Analytics, raceInfo]);
+    return isPastRace && fastF1Analytics ? 'post' : 'pre';
+  }, [fastF1Analytics, isPastRace, raceInfo]);
   const activeWeekendMode = selectedWeekendMode || defaultWeekendMode;
+  const shouldLoadFastF1Qualifying = activeWeekendMode === 'post' || activeTab === 'qualifying';
+  const shouldLoadFastF1SprintQualifying = activeTab === 'sprintQualifying';
+  const shouldLoadFastF1Sprint = activeTab === 'sprint';
+  const {
+    data: fastF1QualifyingAnalytics,
+  } = useFastF1SessionAnalytics(currentSeason, round, 'Q', shouldLoadFastF1Qualifying);
+  const {
+    data: fastF1SprintQualifyingAnalytics,
+  } = useFastF1SessionAnalytics(currentSeason, round, 'SQ', shouldLoadFastF1SprintQualifying);
+  const {
+    data: fastF1SprintShootoutAnalytics,
+  } = useFastF1SessionAnalytics(currentSeason, round, 'SS', shouldLoadFastF1SprintQualifying);
+  const {
+    data: fastF1SprintAnalytics,
+  } = useFastF1SessionAnalytics(currentSeason, round, 'S', shouldLoadFastF1Sprint);
   const weekendSchedule = useMemo(() => getRaceWeekendSchedule(raceInfo, TEXT), [raceInfo]);
   const lapPaceOption = useMemo(
     () => (fastF1Analytics ? buildLapPaceOption(fastF1Analytics, selectedLapDrivers) : null),
@@ -2302,9 +2315,12 @@ const RaceDetail = () => {
     () => getBestLapByDriver(fastF1QualifyingAnalytics),
     [fastF1QualifyingAnalytics],
   );
+  const activeSprintQualifyingAnalytics = currentSeason === '2023'
+    ? fastF1SprintShootoutAnalytics || fastF1SprintQualifyingAnalytics
+    : fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
   const fastF1SprintQualifyingBestLapByDriver = useMemo(
-    () => getBestLapByDriver(fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics),
-    [fastF1SprintQualifyingAnalytics, fastF1SprintShootoutAnalytics],
+    () => getBestLapByDriver(activeSprintQualifyingAnalytics),
+    [activeSprintQualifyingAnalytics],
   );
   const fastF1SprintLapByDriver = useMemo(
     () => getFastF1SprintLapByDriver(fastF1SprintAnalytics),
@@ -2332,6 +2348,14 @@ const RaceDetail = () => {
     setSelectedTelemetryDrivers([]);
     setSelectedTelemetryMetrics(TELEMETRY_METRICS.map((metric) => metric.key));
     setSelectedWeekendMode(null);
+    setLoadedSessionTabs([]);
+    setLoadingSessionTabs([]);
+    setSprintResults([]);
+    setSprintQualifyingResults([]);
+    setFp1Results([]);
+    setFp2Results([]);
+    setFp3Results([]);
+    setAvailableDbSessions([]);
   }, [currentSeason, round]);
 
   useEffect(() => {
@@ -2341,7 +2365,28 @@ const RaceDetail = () => {
 
     let cancelled = false;
 
-    setActiveTab('sprintQualifying');
+    const loadAvailableSessions = async () => {
+      const sessions = await raceSessionResultsApi.getAvailableSessions(currentSeason, round);
+      if (!cancelled) {
+        setAvailableDbSessions(sessions);
+      }
+    };
+
+    void loadAvailableSessions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSeason, round]);
+
+  useEffect(() => {
+    if (!round) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setActiveTab('qualifying');
     setQualifyingResults([]);
     setRaceResults([]);
     setPrimaryLoading(true);
@@ -2373,48 +2418,71 @@ const RaceDetail = () => {
   }, [currentSeason, round]);
 
   useEffect(() => {
-    if (!round) {
+    if (!round || !DEFERRED_TAB_KEYS.includes(activeTab) || loadedSessionTabs.includes(activeTab)) {
       return;
     }
 
     let cancelled = false;
 
-    setSprintResults([]);
-    setSprintQualifyingResults([]);
-    setFp1Results([]);
-    setFp2Results([]);
-    setFp3Results([]);
-    setSessionsLoading(true);
+    setLoadingSessionTabs((currentTabs) =>
+      currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
+    );
 
-    const loadDeferredSessions = async () => {
-      const [sprintData, sprintQualifyingData, fp1Data, fp2Data, fp3Data] = await Promise.allSettled([
-        seasonApi.getSprintResults(currentSeason, round),
-        seasonApi.getSprintQualifyingResults(currentSeason, round),
-        seasonApi.getPracticeResults(currentSeason, round, 1),
-        seasonApi.getPracticeResults(currentSeason, round, 2),
-        seasonApi.getPracticeResults(currentSeason, round, 3),
-      ]);
+    const loadDeferredSession = async () => {
+      let sessionData: Race | null = null;
+
+      if (activeTab === 'sprint') {
+        sessionData = await raceSessionResultsApi.getSprintResult(currentSeason, round)
+          || await seasonApi.getSprintResults(currentSeason, round);
+      } else if (activeTab === 'sprintQualifying') {
+        sessionData = await raceSessionResultsApi.getSprintQualifyingResult(currentSeason, round)
+          || await seasonApi.getSprintQualifyingResults(currentSeason, round);
+      } else if (activeTab === 'fp1') {
+        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 1)
+          || await seasonApi.getPracticeResults(currentSeason, round, 1);
+      } else if (activeTab === 'fp2') {
+        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 2)
+          || await seasonApi.getPracticeResults(currentSeason, round, 2);
+      } else if (activeTab === 'fp3') {
+        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 3)
+          || await seasonApi.getPracticeResults(currentSeason, round, 3);
+      }
 
       if (cancelled) {
         return;
       }
 
-      setSprintResults(sprintData.status === 'fulfilled' ? sprintData.value?.Results || [] : []);
-      setSprintQualifyingResults(
-        sprintQualifyingData.status === 'fulfilled' ? sprintQualifyingData.value?.QualifyingResults || [] : [],
+      if (activeTab === 'sprint') {
+        setSprintResults(sessionData?.Results || sessionData?.SprintResults || []);
+      } else if (activeTab === 'sprintQualifying') {
+        setSprintQualifyingResults(sessionData?.QualifyingResults || []);
+      } else if (activeTab === 'fp1') {
+        setFp1Results(sessionData?.Results || []);
+      } else if (activeTab === 'fp2') {
+        setFp2Results(sessionData?.Results || []);
+      } else if (activeTab === 'fp3') {
+        setFp3Results(sessionData?.Results || []);
+      }
+
+      setLoadedSessionTabs((currentTabs) =>
+        currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
       );
-      setFp1Results(fp1Data.status === 'fulfilled' ? fp1Data.value?.Results || [] : []);
-      setFp2Results(fp2Data.status === 'fulfilled' ? fp2Data.value?.Results || [] : []);
-      setFp3Results(fp3Data.status === 'fulfilled' ? fp3Data.value?.Results || [] : []);
-      setSessionsLoading(false);
+      setLoadingSessionTabs((currentTabs) => currentTabs.filter((tabKey) => tabKey !== activeTab));
     };
 
-    void loadDeferredSessions();
+    loadDeferredSession().catch(() => {
+      if (!cancelled) {
+        setLoadedSessionTabs((currentTabs) =>
+          currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
+        );
+        setLoadingSessionTabs((currentTabs) => currentTabs.filter((tabKey) => tabKey !== activeTab));
+      }
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [currentSeason, round]);
+  }, [activeTab, currentSeason, loadedSessionTabs, round]);
 
   const getQualifyingColumns = (
     bestLapByDriver: Map<string, FastF1QualifyingBestLap>,
@@ -2581,10 +2649,9 @@ const RaceDetail = () => {
     );
   }
 
-  const hasFp1 = fp1Results.length > 0;
-  const hasFp2 = fp2Results.length > 0;
-  const hasFp3 = fp3Results.length > 0;
-  const sprintQualifyingAnalytics = fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
+  const hasFp1 = Boolean(raceInfo?.FirstPractice) || availableDbSessions.includes('FP1') || fp1Results.length > 0;
+  const hasFp2 = Boolean(raceInfo?.SecondPractice) || availableDbSessions.includes('FP2') || fp2Results.length > 0;
+  const hasFp3 = Boolean(raceInfo?.ThirdPractice) || availableDbSessions.includes('FP3') || fp3Results.length > 0;
   const participantRecords = [
     ...qualifyingResults,
     ...raceResults,
@@ -2596,14 +2663,22 @@ const RaceDetail = () => {
   ];
   const driverByCode = buildDriverLookup(participantRecords);
   const constructorByName = buildConstructorLookup(participantRecords);
-  const sprintQualifyingTableData = sprintQualifyingResults.length
-    ? sprintQualifyingResults
-    : buildFastF1QualifyingRows(sprintQualifyingAnalytics, driverByCode, constructorByName);
+  const fastF1SprintQualifyingRows = buildFastF1QualifyingRows(
+    activeSprintQualifyingAnalytics,
+    driverByCode,
+    constructorByName,
+  );
+  const sprintQualifyingTableData = fastF1SprintQualifyingRows.length
+    ? fastF1SprintQualifyingRows
+    : sprintQualifyingResults;
   const sprintTableData = sprintResults.length
     ? sprintResults
     : buildFastF1SprintRows(fastF1SprintAnalytics, driverByCode, constructorByName);
-  const hasSprintQualifying = sprintQualifyingTableData.length > 0;
-  const hasSprint = sprintTableData.length > 0;
+  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || availableDbSessions.includes('SQ')
+    || availableDbSessions.includes('SS')
+    || sprintQualifyingTableData.length > 0;
+  const hasSprint = Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S') || sprintTableData.length > 0;
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
   const tabItems: RaceTabItem[] = [
@@ -2730,7 +2805,9 @@ const RaceDetail = () => {
       return true;
     }
 
-    return DEFERRED_TAB_KEYS.includes(tabKey) && sessionsLoading && data.length === 0;
+    return DEFERRED_TAB_KEYS.includes(tabKey)
+      && loadingSessionTabs.includes(tabKey)
+      && data.length === 0;
   };
 
   const recentResultColumns = [
@@ -3078,11 +3155,13 @@ const RaceDetail = () => {
                     ))}
                   </div>
                 ) : null}
-                <EChartsPanel
-                  chartKey={`fastf1-laps-${currentSeason}-${round}`}
-                  height={isMobile ? 300 : 430}
-                  option={lapPaceOption}
-                />
+                <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                  <LazyEChartsPanel
+                    chartKey={`fastf1-laps-${currentSeason}-${round}`}
+                    height={isMobile ? 300 : 430}
+                    option={lapPaceOption}
+                  />
+                </Suspense>
               </Card>
               ) : null}
 
@@ -3258,11 +3337,13 @@ const RaceDetail = () => {
                       <span>{TEXT.rainfall} {formatLapRanges(fastF1Analytics.weather.summary.rainLapRanges)}</span>
                     </div>
                   ) : null}
-                  <EChartsPanel
-                    chartKey={`fastf1-weather-${currentSeason}-${round}`}
-                    height={isMobile ? 300 : 360}
-                    option={weatherOption}
-                  />
+                  <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                    <LazyEChartsPanel
+                      chartKey={`fastf1-weather-${currentSeason}-${round}`}
+                      height={isMobile ? 300 : 360}
+                      option={weatherOption}
+                    />
+                  </Suspense>
                 </Card>
               ) : null}
 
@@ -3297,20 +3378,24 @@ const RaceDetail = () => {
                     })}
                   </div>
                   {telemetrySpeedOption ? (
-                    <EChartsPanel
-                      chartKey={`fastf1-telemetry-speed-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
-                      height={isMobile ? 280 : 330}
-                      option={telemetrySpeedOption}
-                    />
+                    <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                      <LazyEChartsPanel
+                        chartKey={`fastf1-telemetry-speed-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
+                        height={isMobile ? 280 : 330}
+                        option={telemetrySpeedOption}
+                      />
+                    </Suspense>
                   ) : null}
                   {telemetryHeatmapOption ? (
                     <div className="telemetry-heatmap-panel">
                       <div className="telemetry-panel-title">{TEXT.speedHeatmap}</div>
-                      <EChartsPanel
-                        chartKey={`fastf1-telemetry-heatmap-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
-                        height={isMobile ? 280 : 360}
-                        option={telemetryHeatmapOption}
-                      />
+                      <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                        <LazyEChartsPanel
+                          chartKey={`fastf1-telemetry-heatmap-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
+                          height={isMobile ? 280 : 360}
+                          option={telemetryHeatmapOption}
+                        />
+                      </Suspense>
                       <div className="telemetry-heat-legend" aria-label={TEXT.speedHeatmap}>
                         <span className="telemetry-heat-low" /> {TEXT.minimum}
                         <span className="telemetry-heat-high" /> {TEXT.speed}
@@ -3337,11 +3422,13 @@ const RaceDetail = () => {
                           );
                         })}
                       </div>
-                      <EChartsPanel
-                        chartKey={`fastf1-telemetry-controls-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}-${selectedTelemetryMetrics.join('-')}`}
-                        height={isMobile ? 300 : 340}
-                        option={telemetryControlOption}
-                      />
+                      <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                        <LazyEChartsPanel
+                          chartKey={`fastf1-telemetry-controls-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}-${selectedTelemetryMetrics.join('-')}`}
+                          height={isMobile ? 300 : 340}
+                          option={telemetryControlOption}
+                        />
+                      </Suspense>
                     </>
                   ) : null}
                   {telemetryCornerRows.length ? (

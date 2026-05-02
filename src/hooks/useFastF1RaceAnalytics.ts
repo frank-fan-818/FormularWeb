@@ -6,13 +6,14 @@ export function useFastF1SessionAnalytics(
   season: string,
   round?: string,
   session = 'R',
+  enabled = true,
 ) {
   const [data, setData] = useState<FastF1RaceAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!season || !round) {
+    if (!enabled || !season || !round) {
       setData(null);
       setLoading(false);
       setError(null);
@@ -43,11 +44,11 @@ export function useFastF1SessionAnalytics(
       });
 
     return () => controller.abort();
-  }, [round, season, session]);
+  }, [enabled, round, season, session]);
 
   return { data, loading, error };
 }
 
-export function useFastF1RaceAnalytics(season: string, round?: string) {
-  return useFastF1SessionAnalytics(season, round, 'R');
+export function useFastF1RaceAnalytics(season: string, round?: string, enabled = true) {
+  return useFastF1SessionAnalytics(season, round, 'R', enabled);
 }

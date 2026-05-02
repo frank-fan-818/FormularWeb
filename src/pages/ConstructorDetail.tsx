@@ -87,6 +87,7 @@ const ConstructorDetail = () => {
   const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
   const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [seasonResultsLoading, setSeasonResultsLoading] = useState(false);
   const [careerStatsLoading, setCareerStatsLoading] = useState(false);
   const [chartHeight, setChartHeight] = useState(400);
   const [isMobile, setIsMobile] = useState(false);
@@ -157,26 +158,35 @@ const ConstructorDetail = () => {
     let cancelled = false;
 
     setLoading(true);
+    setSeasonResultsLoading(true);
     setCareerStatsLoading(false);
     setSeasonRaceResults([]);
     setSeasonSprintResults([]);
 
-    const loadPrimaryData = async () => {
-      const [constructorInfo, sprintResults] = await Promise.allSettled([
-        supabaseApi.constructors.getById(constructorId),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
+    if (currentStanding) {
+      setConstructor({
+        ...currentStanding.Constructor,
+        totalWins: 0,
+        totalPodiums: 0,
+        totalPolePositions: 0,
+        totalFastestLaps: 0,
+        totalRaceEntries: 0,
+      });
+    } else {
+      setConstructor(null);
+    }
 
-      const raceResults = await Promise.allSettled([
-        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
+    const loadPrimaryData = async () => {
+      const constructorInfo = await Promise.allSettled([
+        supabaseApi.constructors.getById(constructorId),
       ]);
 
       if (cancelled) {
         return;
       }
 
-      let baseConstructor = constructorInfo.status === 'fulfilled' && constructorInfo.value
-        ? mapSupabaseConstructor(constructorInfo.value)
+      let baseConstructor = constructorInfo[0].status === 'fulfilled' && constructorInfo[0].value
+        ? mapSupabaseConstructor(constructorInfo[0].value)
         : null;
 
       if (currentStanding) {
@@ -193,27 +203,37 @@ const ConstructorDetail = () => {
       }
 
       setConstructor(baseConstructor);
-
-      if (raceResults[0].status === 'fulfilled') {
-        setSeasonRaceResults(
-          raceResults[0].value.sort(
-            (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-          ),
-        );
-      } else {
-        setSeasonRaceResults([]);
-      }
-
-      if (sprintResults.status === 'fulfilled') {
-        setSeasonSprintResults(sprintResults.value);
-      } else {
-        setSeasonSprintResults([]);
-      }
-
       setLoading(false);
+
+      const [raceResults, sprintResults] = await Promise.allSettled([
+        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
+        seasonApi.getSeasonSprintResults(currentSeason),
+      ]);
+
+      if (!cancelled) {
+        if (raceResults.status === 'fulfilled') {
+          setSeasonRaceResults(
+            raceResults.value.sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            ),
+          );
+        } else {
+          setSeasonRaceResults([]);
+        }
+
+        setSeasonSprintResults(
+          sprintResults.status === 'fulfilled' ? sprintResults.value : [],
+        );
+        setSeasonResultsLoading(false);
+      }
     };
 
-    void loadPrimaryData();
+    void loadPrimaryData().catch(() => {
+      if (!cancelled) {
+        setLoading(false);
+        setSeasonResultsLoading(false);
+      }
+    });
 
     return () => {
       cancelled = true;
@@ -475,7 +495,7 @@ const ConstructorDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={seasonLoading || loading} className="constructor-profile-shell">
+      <Card loading={!constructor && (seasonLoading || loading)} className="constructor-profile-shell">
         <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
           <div className="constructor-profile-copy">
             <div className="constructor-profile-kicker">
@@ -567,6 +587,10 @@ const ConstructorDetail = () => {
                   </div>
                 )}
               </div>
+            </div>
+          ) : seasonResultsLoading ? (
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+              {TEXT.chartLoading}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>

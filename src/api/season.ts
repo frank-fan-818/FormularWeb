@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import type {
   ConstructorStanding,
   DriverStanding,
@@ -14,9 +14,44 @@ const seasonClient = axios.create({
   timeout: 15000,
 });
 
+type TimedAxiosConfig = InternalAxiosRequestConfig & {
+  requestStartedAt?: number;
+};
+
+function getNow() {
+  return typeof performance !== 'undefined' ? performance.now() : Date.now();
+}
+
+function logJolpicaRequest(config: TimedAxiosConfig, status: 'success' | 'error') {
+  if (!import.meta.env.DEV || typeof config.requestStartedAt !== 'number') {
+    return;
+  }
+
+  console.debug('[perf]', {
+    source: 'jolpica',
+    name: config.url || 'unknown',
+    status,
+    durationMs: Math.round(getNow() - config.requestStartedAt),
+  });
+}
+
+seasonClient.interceptors.request.use((config) => {
+  (config as TimedAxiosConfig).requestStartedAt = getNow();
+  return config;
+});
+
 seasonClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => Promise.reject(error),
+  (response) => {
+    logJolpicaRequest(response.config as TimedAxiosConfig, 'success');
+    return response.data;
+  },
+  (error) => {
+    if (error.config) {
+      logJolpicaRequest(error.config as TimedAxiosConfig, 'error');
+    }
+
+    return Promise.reject(error);
+  },
 );
 
 export const seasonApi = {

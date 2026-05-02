@@ -11,6 +11,11 @@ import type {
   DriverHistoryProfile,
 } from '@/types';
 
+const driverHistoryProfileCache = new Map<string, DriverHistoryProfile | null>();
+const constructorHistoryProfileCache = new Map<string, ConstructorHistoryProfile | null>();
+const driverHistoryProfileInFlight = new Map<string, Promise<DriverHistoryProfile | null>>();
+const constructorHistoryProfileInFlight = new Map<string, Promise<ConstructorHistoryProfile | null>>();
+
 function normalizeOptionalText(value: string | null | undefined): string {
   const normalized = (value || '').trim();
   if (!normalized || normalized === '-' || normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'n/a') {
@@ -168,25 +173,67 @@ async function getConstructorSummaryProfile(constructorId: string): Promise<Cons
 }
 
 async function getDriverHistoryProfile(driverId: string): Promise<DriverHistoryProfile | null> {
-  const summaryProfile = await getDriverSummaryProfile(driverId);
-  if (summaryProfile) {
-    return summaryProfile;
+  if (driverHistoryProfileCache.has(driverId)) {
+    return driverHistoryProfileCache.get(driverId) ?? null;
   }
 
-  // Slow fallback: only load the heavy cross-season API path when the summary row is missing.
-  const { historyApi } = await import('@/api/ergast');
-  return historyApi.getDriverHistoryProfile(driverId);
+  const inFlight = driverHistoryProfileInFlight.get(driverId);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = (async () => {
+    const summaryProfile = await getDriverSummaryProfile(driverId);
+    if (summaryProfile) {
+      return summaryProfile;
+    }
+
+    // Slow fallback: only load the heavy cross-season API path when the summary row is missing.
+    const { historyApi } = await import('@/api/ergast');
+    return historyApi.getDriverHistoryProfile(driverId);
+  })()
+    .then((profile) => {
+      driverHistoryProfileCache.set(driverId, profile);
+      return profile;
+    })
+    .finally(() => {
+      driverHistoryProfileInFlight.delete(driverId);
+    });
+
+  driverHistoryProfileInFlight.set(driverId, request);
+  return request;
 }
 
 async function getConstructorHistoryProfile(constructorId: string): Promise<ConstructorHistoryProfile | null> {
-  const summaryProfile = await getConstructorSummaryProfile(constructorId);
-  if (summaryProfile) {
-    return summaryProfile;
+  if (constructorHistoryProfileCache.has(constructorId)) {
+    return constructorHistoryProfileCache.get(constructorId) ?? null;
   }
 
-  // Slow fallback: only load the heavy cross-season API path when the summary row is missing.
-  const { historyApi } = await import('@/api/ergast');
-  return historyApi.getConstructorHistoryProfile(constructorId);
+  const inFlight = constructorHistoryProfileInFlight.get(constructorId);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = (async () => {
+    const summaryProfile = await getConstructorSummaryProfile(constructorId);
+    if (summaryProfile) {
+      return summaryProfile;
+    }
+
+    // Slow fallback: only load the heavy cross-season API path when the summary row is missing.
+    const { historyApi } = await import('@/api/ergast');
+    return historyApi.getConstructorHistoryProfile(constructorId);
+  })()
+    .then((profile) => {
+      constructorHistoryProfileCache.set(constructorId, profile);
+      return profile;
+    })
+    .finally(() => {
+      constructorHistoryProfileInFlight.delete(constructorId);
+    });
+
+  constructorHistoryProfileInFlight.set(constructorId, request);
+  return request;
 }
 
 export const historyProfilesApi = {

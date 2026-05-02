@@ -4,6 +4,8 @@ import { useNetworkStatus } from './useNetworkStatus';
 interface CacheOptions {
   cacheKey: string;
   cacheDuration?: number;
+  enabled?: boolean;
+  refreshOnMount?: boolean;
 }
 
 interface CacheEntry<T> {
@@ -233,7 +235,12 @@ export function useCachedData<T>(
   fetchFn: () => Promise<T>,
   options: CacheOptions
 ): UseCachedDataReturn<T> {
-  const { cacheKey, cacheDuration = 24 * 60 * 60 * 1000 } = options;
+  const {
+    cacheKey,
+    cacheDuration = 24 * 60 * 60 * 1000,
+    enabled = true,
+    refreshOnMount = true,
+  } = options;
   const { connected } = useNetworkStatus();
 
   const [data, setData] = useState<T | null>(null);
@@ -267,6 +274,10 @@ export function useCachedData<T>(
         setData(cached);
       }
 
+      if (cached && !refreshOnMount) {
+        return;
+      }
+
       if (!connected) {
         if (!cached && dataRef.current === null) {
           setError(new Error('No network connection and no cached data is available.'));
@@ -290,11 +301,16 @@ export function useCachedData<T>(
     } finally {
       setLoading(false);
     }
-  }, [cacheKey, connected, fetchFn, getCachedData]);
+  }, [cacheKey, connected, fetchFn, getCachedData, refreshOnMount]);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     void fetchData();
-  }, [fetchData]);
+  }, [enabled, fetchData]);
 
   return {
     data,

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import {
   mapConstructorHistorySummary,
   mapDriverHistorySummary,
@@ -30,9 +30,42 @@ const ergastApi = axios.create({
   timeout: 15000,
 });
 
+type TimedAxiosConfig = InternalAxiosRequestConfig & {
+  requestStartedAt?: number;
+};
+
+function getNow() {
+  return typeof performance !== 'undefined' ? performance.now() : Date.now();
+}
+
+function logJolpicaRequest(config: TimedAxiosConfig, status: 'success' | 'error') {
+  if (!import.meta.env.DEV || typeof config.requestStartedAt !== 'number') {
+    return;
+  }
+
+  console.debug('[perf]', {
+    source: 'jolpica',
+    name: config.url || 'unknown',
+    status,
+    durationMs: Math.round(getNow() - config.requestStartedAt),
+  });
+}
+
+ergastApi.interceptors.request.use((config) => {
+  (config as TimedAxiosConfig).requestStartedAt = getNow();
+  return config;
+});
+
 ergastApi.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    logJolpicaRequest(response.config as TimedAxiosConfig, 'success');
+    return response.data;
+  },
   async (error) => {
+    if (error.config) {
+      logJolpicaRequest(error.config as TimedAxiosConfig, 'error');
+    }
+
     console.error('Jolpica API 请求失败:', error.message);
     // 返回空数据而不是模拟数据，确保用户知道出错了
     return Promise.reject(error);

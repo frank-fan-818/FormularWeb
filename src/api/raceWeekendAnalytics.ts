@@ -7,6 +7,8 @@ import type {
   TrackInterruptionProbability,
 } from '@/types';
 import { supabase } from '@/utils/supabase';
+import { measureRequest } from '@/utils/performance';
+import { getCircuitIdCandidates, getSupabaseCircuitId } from '@/utils/circuitIds';
 
 type RaceSummaryRow = {
   id: number;
@@ -35,9 +37,6 @@ type DriverNameRow = {
   driver_id: string;
   first_name?: string | null;
   last_name?: string | null;
-  given_name?: string | null;
-  family_name?: string | null;
-  name?: string | null;
   code?: string | null;
 };
 
@@ -69,10 +68,10 @@ function formatDriverName(row: DriverNameRow | undefined | null, fallback: strin
     return fallback;
   }
 
-  const firstName = row.first_name || row.given_name || '';
-  const lastName = row.last_name || row.family_name || '';
+  const firstName = row.first_name || '';
+  const lastName = row.last_name || '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
-  return fullName || row.name || row.code || fallback;
+  return fullName || row.code || fallback;
 }
 
 function percentage(count: number, total: number) {
@@ -271,10 +270,11 @@ async function getRowsByIds<T extends { race_id: number }>(table: string, raceId
     return [] as T[];
   }
 
-  const { data, error } = await supabase
+  const query = supabase
     .from(table)
-    .select('*')
+    .select('race_id, driver_id, constructor_id, position')
     .in('race_id', raceIds);
+  const { data, error } = await measureRequest('supabase', `${table}.getRowsByRaceIds`, async () => query);
 
   if (error) {
     throw error;
@@ -287,16 +287,18 @@ async function getNameRows<T>(
   table: string,
   idColumn: string,
   ids: string[],
+  columns: string,
 ) {
   const uniqueIds = [...new Set(ids.filter(Boolean))];
   if (!uniqueIds.length) {
     return [] as T[];
   }
 
-  const { data, error } = await supabase
+  const query = supabase
     .from(table)
-    .select('*')
+    .select(columns)
     .in(idColumn, uniqueIds);
+  const { data, error } = await measureRequest('supabase', `${table}.getNameRows`, async () => query);
 
   if (error) {
     throw error;
@@ -311,11 +313,12 @@ async function getFastF1RowsForRaces(races: RaceSummaryRow[]) {
   }
 
   const filter = races.map((race) => `and(season.eq.${race.season},round.eq.${race.round})`).join(',');
-  const { data, error } = await supabase
+  const query = supabase
     .from('fastf1_session_analytics')
     .select('season, round, payload')
     .eq('session', 'R')
     .or(filter);
+  const { data, error } = await measureRequest('supabase', 'fastf1_session_analytics.getRowsForRaces', async () => query);
 
   if (error) {
     return [];
@@ -337,14 +340,16 @@ export const raceWeekendAnalyticsApi = {
       return null;
     }
 
-    const { data: racesData, error: racesError } = await supabase
+    const circuitIdCandidates = getCircuitIdCandidates(circuitId);
+    const racesQuery = supabase
       .from('races')
       .select('id, season, round, race_name, circuit_id, date')
-      .eq('circuit_id', circuitId)
+      .in('circuit_id', circuitIdCandidates)
       .or(`season.lt.${seasonNumber},and(season.eq.${seasonNumber},round.lt.${roundNumber})`)
       .order('season', { ascending: false })
       .order('round', { ascending: false })
       .limit(4);
+    const { data: racesData, error: racesError } = await measureRequest('supabase', 'races.getRacePreviewHistory', async () => racesQuery);
 
     if (racesError) {
       throw racesError;
@@ -365,14 +370,14 @@ export const raceWeekendAnalyticsApi = {
       .map((result) => result.constructor_id)
       .filter((value): value is string => Boolean(value));
     const [drivers, constructors] = await Promise.all([
-      getNameRows<DriverNameRow>('drivers', 'driver_id', driverIds),
-      getNameRows<ConstructorNameRow>('constructors', 'constructor_id', constructorIds),
+      getNameRows<DriverNameRow>('drivers', 'driver_id', driverIds, 'driver_id, first_name, last_name, code'),
+      getNameRows<ConstructorNameRow>('constructors', 'constructor_id', constructorIds, 'constructor_id, name'),
     ]);
 
     return buildRacePreviewSummary({
       season: seasonNumber,
       round: roundNumber,
-      circuitId,
+      circuitId: getSupabaseCircuitId(circuitId),
       races,
       raceResults,
       qualifyingResults,

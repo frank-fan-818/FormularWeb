@@ -8,4 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase config is missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
+);

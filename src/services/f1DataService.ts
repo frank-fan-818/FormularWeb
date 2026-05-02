@@ -57,7 +57,7 @@ export const f1DataService = {
 
       return {
         ...standing?.Driver,
-        ...driverInfo,
+        ...(driverInfo || {}),
         standing: standing || null,
       };
     } catch (error) {
@@ -80,7 +80,7 @@ export const f1DataService = {
 
       return {
         ...standing?.Constructor,
-        ...constructorInfo,
+        ...(constructorInfo || {}),
         standing: standing || null,
       };
     } catch (error) {

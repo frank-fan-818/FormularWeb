@@ -36,6 +36,16 @@ export function getSupabaseCircuitId(value: string | null | undefined): string {
   return circuitIdAliases[normalizedId] || normalizedId;
 }
 
+export function getCircuitIdCandidates(value: string | null | undefined): string[] {
+  const normalizedId = normalizeCircuitId(value);
+  const canonicalId = getSupabaseCircuitId(normalizedId);
+  const aliases = Object.entries(circuitIdAliases)
+    .filter(([, target]) => target === canonicalId)
+    .map(([alias]) => alias);
+
+  return [...new Set([normalizedId, canonicalId, ...aliases].filter(Boolean))];
+}
+
 export function areCircuitIdsEquivalent(
   left: string | null | undefined,
   right: string | null | undefined,

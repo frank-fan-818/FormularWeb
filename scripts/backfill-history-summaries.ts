@@ -9,6 +9,7 @@ import type {
   SummaryRaceRow,
 } from '../src/utils/historySummaryAggregation.ts';
 import { buildHistorySummaryPayloads } from '../src/utils/historySummaryAggregation.ts';
+import { loadF1DbOfficialStandings } from './f1db-official-standings.ts';
 
 const PAGE_SIZE = 1000;
 
@@ -131,6 +132,7 @@ async function fetchAllRows<T>(params: {
 }
 
 async function loadSourceData(client: ReturnType<typeof createSupabaseAdminClient>): Promise<HistorySummarySourceData> {
+  const officialStandings = loadF1DbOfficialStandings();
   const [drivers, constructors, races, raceResults, qualifyingResults] = await Promise.all([
     fetchAllRows<SummaryDriverRow>({
       client,
@@ -170,6 +172,7 @@ async function loadSourceData(client: ReturnType<typeof createSupabaseAdminClien
     races,
     raceResults,
     qualifyingResults,
+    ...officialStandings,
   };
 }
 
@@ -232,6 +235,7 @@ async function main(): Promise<void> {
   console.log('Loading source data from Supabase...');
   const sourceData = await loadSourceData(client);
   console.log(`Loaded drivers=${sourceData.drivers.length} constructors=${sourceData.constructors.length} races=${sourceData.races.length} race_results=${sourceData.raceResults.length} qualifying_results=${sourceData.qualifyingResults.length}`);
+  console.log(`Loaded official standings drivers=${sourceData.officialDriverStandings?.length || 0} constructors=${sourceData.officialConstructorStandings?.length || 0}`);
 
   const payloads = buildHistorySummaryPayloads(sourceData);
   const driverSummaries = filterDriverSummaries(payloads.driverSummaries, options.driverIds);
