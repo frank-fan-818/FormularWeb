@@ -4,6 +4,7 @@ import { useSeasonRacesCached } from './useSeasonDataCached';
 import type { Circuit, Race } from '@/types';
 import { getCircuitDetails } from '@/utils/circuitData';
 import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitIds';
+import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 
 interface CircuitRouteState {
   circuit?: Circuit & Record<string, unknown>;
@@ -21,6 +22,20 @@ interface UseCircuitDetailDataReturn {
 const circuitDetailsCache = new Map<string, Record<string, any> | null>();
 const circuitDetailsInFlight = new Map<string, Promise<Record<string, any> | null>>();
 
+function hasKnownValue(value: unknown): boolean {
+  const text = String(value ?? '').trim().toLowerCase();
+  return Boolean(text)
+    && text !== '-'
+    && text !== 'n/a'
+    && text !== 'unknown'
+    && text !== '\u672a\u77e5'
+    && text !== '\u8d44\u6599\u5f85\u8865';
+}
+
+function firstKnownValue<T = unknown>(...values: T[]): T | undefined {
+  return values.find((value) => hasKnownValue(value));
+}
+
 function mapSupabaseCircuitToCircuit(circuit: Record<string, any>, fallbackId: string): Circuit {
   return {
     circuitId: circuit.circuit_id || fallbackId,
@@ -36,7 +51,7 @@ function mapSupabaseCircuitToCircuit(circuit: Record<string, any>, fallbackId: s
 }
 
 function deriveCircuitLength(details: Record<string, any>): string | undefined {
-  if (details.length) {
+  if (hasKnownValue(details.length)) {
     return String(details.length);
   }
 
@@ -51,10 +66,18 @@ function deriveCircuitLength(details: Record<string, any>): string | undefined {
   return (totalDistance / raceLaps).toFixed(3);
 }
 
-function normalizeLocalCircuitDetails(details: Record<string, any> | null): Record<string, any> | null {
+function normalizeLocalCircuitDetails(
+  details: Record<string, any> | null,
+  circuitId?: string,
+): Record<string, any> | null {
   if (!details) {
     return null;
   }
+
+  const enhancement = getCircuitEnhancement(circuitId);
+  const derivedTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
+    ? enhancement.leftTurns + enhancement.rightTurns
+    : undefined;
 
   return {
     ...details,
@@ -66,6 +89,8 @@ function normalizeLocalCircuitDetails(details: Record<string, any> | null): Reco
     lap_record_driver: details.lap_record_driver || details.lapRecordDriver,
     lap_record_year: details.lap_record_year || details.lapRecordYear,
     race_laps: details.race_laps || details.raceLaps,
+    turns: firstKnownValue(details.turns, details.turnCount, derivedTurns),
+    direction: firstKnownValue(details.direction, enhancement.direction),
   };
 }
 
@@ -88,19 +113,21 @@ function mergeCircuitDetails(
   return {
     ...fallback,
     ...primary,
-    length: primary.length || fallback.length,
-    total_distance: primary.total_distance || fallback.total_distance,
-    total_races: primary.total_races || fallback.total_races,
-    first_race: primary.first_race || fallback.first_race,
-    lap_record: primary.lap_record || fallback.lap_record,
-    lap_record_driver: primary.lap_record_driver || fallback.lap_record_driver,
-    lap_record_year: primary.lap_record_year || fallback.lap_record_year,
-    race_laps: primary.race_laps || fallback.race_laps,
+    length: firstKnownValue(primary.length, fallback.length),
+    total_distance: firstKnownValue(primary.total_distance, fallback.total_distance),
+    total_races: firstKnownValue(primary.total_races, fallback.total_races),
+    first_race: firstKnownValue(primary.first_race, fallback.first_race),
+    lap_record: firstKnownValue(primary.lap_record, fallback.lap_record),
+    lap_record_driver: firstKnownValue(primary.lap_record_driver, fallback.lap_record_driver),
+    lap_record_year: firstKnownValue(primary.lap_record_year, fallback.lap_record_year),
+    race_laps: firstKnownValue(primary.race_laps, fallback.race_laps),
+    turns: firstKnownValue(primary.turns, fallback.turns),
+    direction: firstKnownValue(primary.direction, fallback.direction),
   };
 }
 
 function getLocalCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {
-  return getCircuitDetails(supabaseId).then(normalizeLocalCircuitDetails).catch(() => null);
+  return getCircuitDetails(supabaseId).then((details) => normalizeLocalCircuitDetails(details, supabaseId)).catch(() => null);
 }
 
 function getCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {

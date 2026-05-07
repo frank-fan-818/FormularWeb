@@ -319,123 +319,6 @@
   --risk-accent: #eab308;
 }
 
-.race-weekend-post-metrics {
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-}
-
-.race-weekend-data-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.race-weekend-data-card {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  background: var(--bg-secondary);
-}
-
-.race-weekend-data-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.race-weekend-data-card-header strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: var(--font-bold);
-  line-height: 1.2;
-}
-
-.race-weekend-data-card-header span {
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: var(--font-semibold);
-  line-height: 1.2;
-}
-
-.race-weekend-data-card-header code {
-  border-radius: var(--radius-sm);
-  padding: 4px 7px;
-  background: #111;
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: var(--font-bold);
-}
-
-.race-weekend-data-list {
-  display: grid;
-  gap: 7px;
-}
-
-.race-weekend-data-row {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-}
-
-.race-weekend-data-position {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-sm);
-  background: #fff;
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: var(--font-bold);
-}
-
-.race-weekend-data-main {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.race-weekend-data-main strong,
-.race-weekend-data-main span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.race-weekend-data-main strong {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: var(--font-bold);
-}
-
-.race-weekend-data-main span {
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: var(--font-semibold);
-}
-
-.race-weekend-data-empty {
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  border: 1px dashed var(--border-secondary);
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: var(--font-semibold);
-}
-
 .results-card {
   overflow: hidden;
 }
@@ -473,6 +356,10 @@
   align-items: stretch;
 }
 
+.race-preview-grid {
+  align-items: start;
+}
+
 .race-weekend-card {
   overflow: hidden;
   border-color: var(--border-secondary);
@@ -482,6 +369,58 @@
 .race-weekend-card .ant-card-head-title {
   color: var(--text-primary);
   font-weight: var(--font-bold);
+}
+
+.data-view-card .ant-card-head {
+  align-items: flex-start;
+}
+
+.data-view-card .ant-card-head-title {
+  min-width: 0;
+}
+
+.data-view-title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.data-view-title span {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-view-title small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-view-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.data-view-actions .ant-segmented {
+  white-space: nowrap;
+}
+
+.data-view-actions .ant-btn {
+  font-weight: var(--font-bold);
+}
+
+.data-view-card .echarts-for-react,
+.data-view-card canvas {
+  border-radius: var(--radius-sm);
 }
 
 .race-weekend-card-description {
@@ -505,6 +444,64 @@
 .race-weekend-driver-cell span {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+.race-history-table .ant-table {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.race-history-table .ant-table-thead > tr > th {
+  background: #f7f7f8;
+  color: var(--text-primary);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.race-history-table .ant-table-tbody > tr > td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.race-history-time-cell,
+.race-history-pole-cell {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  line-height: 1.2;
+}
+
+.race-history-time-cell strong {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: var(--font-bold);
+}
+
+.race-history-time-cell span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.race-history-pole-cell strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--font-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.race-history-pole-cell span {
+  justify-self: start;
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  background: #111827;
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  line-height: 1.1;
 }
 
 .race-weekend-stat-strip {
@@ -1734,8 +1731,7 @@
   }
 
   .race-weekend-metric-grid,
-  .race-weekend-risk-grid,
-  .race-weekend-post-metrics {
+  .race-weekend-risk-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1757,6 +1753,26 @@
 
   .race-weekend-card .ant-card-body {
     padding: 12px;
+  }
+
+  .data-view-card .ant-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .data-view-card .ant-card-extra {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .data-view-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .data-view-title small {
+    white-space: normal;
   }
 
   .fastf1-analytics-heading {
@@ -1888,8 +1904,7 @@
   }
 
   .race-weekend-metric-grid,
-  .race-weekend-risk-grid,
-  .race-weekend-post-metrics {
+  .race-weekend-risk-grid {
     grid-template-columns: 1fr;
   }
 

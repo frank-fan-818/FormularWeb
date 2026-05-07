@@ -2,12 +2,13 @@ export interface CircuitEnhancement {
   leftTurns?: number;
   rightTurns?: number;
   elevationChangeM?: number;
+  direction?: 'CLOCKWISE' | 'ANTI_CLOCKWISE' | 'COUNTER_CLOCKWISE';
 }
 
 const CIRCUIT_ENHANCEMENTS: Record<string, CircuitEnhancement> = {
-  albert_park: { leftTurns: 9, rightTurns: 5, elevationChangeM: 2 },
+  albert_park: { leftTurns: 9, rightTurns: 5, elevationChangeM: 2, direction: 'CLOCKWISE' },
   austin: { leftTurns: 11, rightTurns: 9, elevationChangeM: 41 },
-  bahrain: { leftTurns: 6, rightTurns: 9, elevationChangeM: 18 },
+  bahrain: { leftTurns: 6, rightTurns: 9, elevationChangeM: 18, direction: 'CLOCKWISE' },
   baku: { leftTurns: 8, rightTurns: 12, elevationChangeM: 26 },
   catalunya: { leftTurns: 8, rightTurns: 6, elevationChangeM: 30 },
   hungaroring: { leftTurns: 6, rightTurns: 8, elevationChangeM: 36 },
@@ -17,7 +18,7 @@ const CIRCUIT_ENHANCEMENTS: Record<string, CircuitEnhancement> = {
   las_vegas: { leftTurns: 7, rightTurns: 10, elevationChangeM: 2 },
   lusail: { leftTurns: 6, rightTurns: 10, elevationChangeM: 8 },
   marina_bay: { leftTurns: 12, rightTurns: 7, elevationChangeM: 3 },
-  melbourne: { leftTurns: 9, rightTurns: 5, elevationChangeM: 2 },
+  melbourne: { leftTurns: 9, rightTurns: 5, elevationChangeM: 2, direction: 'CLOCKWISE' },
   mexico_city: { leftTurns: 7, rightTurns: 10, elevationChangeM: 2 },
   miami: { leftTurns: 8, rightTurns: 11, elevationChangeM: 2 },
   monaco: { leftTurns: 7, rightTurns: 12, elevationChangeM: 42 },

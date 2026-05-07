@@ -9,7 +9,6 @@ import { raceSessionResultsApi } from '@/api/raceSessionResults';
 import {
   useFastF1RaceAnalytics,
   useFastF1SessionAnalytics,
-  useCircuitDetailData,
   usePostRaceTelemetrySummary,
   useRacePreviewSummary,
   useSeasonData,
@@ -65,23 +64,10 @@ interface RaceTabItem {
   columns: ColumnsType<Result | QualifyingResult>;
 }
 
-interface WeekendDataRow {
-  position: string;
-  label: string;
-  team: string;
-  meta: string;
-}
-
-interface WeekendDataCardItem {
-  key: string;
-  code: string;
-  title: string;
-  subtitle: string;
-  loading: boolean;
-  rows: WeekendDataRow[];
-}
-
 type TelemetryMetric = 'throttle' | 'brake' | 'gear' | 'rpm';
+type DataViewMode = 'chart' | 'table';
+type DataPanelKey = 'recentResults' | 'interruptionRisk' | 'telemetrySummary';
+type CollapsiblePanelKey = DataPanelKey | 'raceResults';
 type ChartTooltipParam = {
   seriesName?: string;
   name?: string;
@@ -146,19 +132,6 @@ const TEXT = {
   weatherDescription: '\u5c06\u8d5b\u9053\u6e29\u5ea6\u3001\u6c14\u6e29\u3001\u6e7f\u5ea6\u548c\u964d\u96e8\u6620\u5c04\u5230\u5708\u6570\uff0c\u7528\u4e8e\u89e3\u91ca\u5708\u901f\u548c\u8f6e\u80ce\u8868\u73b0\u53d8\u5316\u3002',
   raceStatus: '\u8d5b\u9053\u72b6\u6001',
   raceWeekendMode: '\u8d5b\u5468\u6a21\u5f0f',
-  circuitData: '\u8d5b\u9053\u6570\u636e',
-  circuitDataDescription: '\u8d5b\u9053\u57fa\u7840\u4fe1\u606f\u3001\u8d5b\u7a0b\u5708\u6570\u548c\u5386\u53f2\u7eaa\u5f55\u59cb\u7ec8\u4fdd\u6301\u53ef\u89c1\uff0c\u4fbf\u4e8e\u8d5b\u524d\u5224\u65ad\u548c\u8d5b\u540e\u590d\u76d8\u3002',
-  circuitLocation: '\u5730\u70b9',
-  circuitLength: '\u8d5b\u9053\u957f\u5ea6',
-  circuitTurns: '\u5f2f\u9053\u6570',
-  raceLaps: '\u6b63\u8d5b\u5708\u6570',
-  totalDistance: '\u6bd4\u8d5b\u603b\u91cc\u7a0b',
-  firstRace: '\u9996\u6b21\u529e\u8d5b',
-  totalRaces: '\u5386\u53f2\u573a\u6b21',
-  lapRecord: '\u8d5b\u9053\u7eaa\u5f55',
-  lapRecordHolder: '\u7eaa\u5f55\u4fdd\u6301\u8005',
-  coordinates: '\u5750\u6807',
-  loadingTrackData: '\u8d5b\u9053\u6570\u636e\u8bfb\u53d6\u4e2d',
   noFastF1Analysis: '\u6682\u672a\u8bfb\u53d6\u5230 FastF1 \u6b63\u8d5b\u5206\u6790\uff0c\u5df2\u4fdd\u7559 Jolpica \u7ed3\u679c\u548c\u8d5b\u9053\u57fa\u7840\u6570\u636e\u3002',
   preRace: '\u8d5b\u524d',
   postRace: '\u8d5b\u540e',
@@ -168,14 +141,8 @@ const TEXT = {
   interruptionRisk: '\u8d5b\u9053\u4e2d\u65ad\u6982\u7387',
   poleConversion: '\u6746\u4f4d\u8f6c\u5316',
   historicalRaces: '\u5386\u53f2\u573a\u6b21',
-  completedSessions: '\u5b8c\u6210\u9879\u76ee',
-  fastestLapHolder: '\u6700\u5feb\u5708\u8f66\u624b',
   lapTime: '\u5708\u901f',
   raceControlMessages: 'Race Control',
-  fetchedSessionData: 'FastF1 \u5b9e\u65f6\u6570\u636e',
-  jolpicaSessionData: 'Jolpica \u8d5b\u4e8b\u7ed3\u679c',
-  dataLoading: '\u6570\u636e\u8bfb\u53d6\u4e2d',
-  noSessionData: '\u6682\u672a\u8bfb\u53d6\u5230\u8be5\u9879\u76ee\u6570\u636e',
   postRaceOverview: '\u8d5b\u540e\u603b\u7ed3',
   postRaceDescription: '\u6309\u8f66\u624b\u6c47\u603b\u6700\u5feb\u5708\u9065\u6d4b\u4e2d\u7684\u5c3e\u901f\u3001\u6cb9\u95e8\u3001\u5239\u8f66\u548c DRS \u8868\u73b0\u3002',
   telemetrySummary: '\u9065\u6d4b\u6458\u8981',
@@ -192,6 +159,10 @@ const TEXT = {
   drs: 'DRS',
   noPreviewData: '\u6682\u65e0\u672c\u7ad9\u5386\u53f2\u805a\u5408\u6570\u636e',
   noTelemetrySummary: '\u6682\u65e0\u8d5b\u540e\u9065\u6d4b\u6458\u8981',
+  chart: '\u7edf\u8ba1\u56fe',
+  table: '\u8868\u683c',
+  collapse: '\u6536\u8d77',
+  expand: '\u5c55\u5f00',
   trackTemp: '\u8d5b\u9053\u6e29\u5ea6',
   airTemp: '\u6c14\u6e29',
   humidity: '\u6e7f\u5ea6',
@@ -235,8 +206,6 @@ const TEXT = {
   degradation: '\u8870\u51cf',
   advantage: '\u4f18\u52bf',
 };
-
-const FULL_SESSION_ROW_LIMIT = 24;
 
 const TELEMETRY_METRICS: Array<{ key: TelemetryMetric; label: string }> = [
   { key: 'throttle', label: TEXT.throttle },
@@ -316,89 +285,6 @@ const CHART_TOOLTIP_CSS = [
   'padding: 10px 12px',
 ].join(';');
 
-function buildResultRows(analytics: FastF1RaceAnalytics | null, limit = 3): WeekendDataRow[] {
-  return [...(analytics?.sessionResults || [])]
-    .filter((item) => item.position !== null || item.classifiedPosition || item.driver)
-    .sort((a, b) => (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER))
-    .slice(0, limit)
-    .map((item, index) => ({
-      position: item.position ? `P${item.position}` : item.classifiedPosition || `P${index + 1}`,
-      label: item.fullName || item.driver,
-      team: item.team || '-',
-      meta: item.time || item.status || (item.laps ? `${item.laps} ${TEXT.summaryLaps}` : '-'),
-    }));
-}
-
-function buildResultRowsFromResults(results: Result[], limit = 3): WeekendDataRow[] {
-  return [...results]
-    .filter((item) => item.position || item.Driver?.code)
-    .sort((a, b) => parseInt(a.position || '999', 10) - parseInt(b.position || '999', 10))
-    .slice(0, limit)
-    .map((item, index) => ({
-      position: item.position ? `P${item.position}` : `P${index + 1}`,
-      label: `${item.Driver?.givenName || ''} ${item.Driver?.familyName || item.Driver?.code || ''}`.trim(),
-      team: item.Constructor?.name || '-',
-      meta: item.Time?.time || item.status || (item.laps ? `${item.laps} ${TEXT.summaryLaps}` : '-'),
-    }));
-}
-
-function buildQualifyingRows(analytics: FastF1RaceAnalytics | null, limit = 3): WeekendDataRow[] {
-  return [...(analytics?.qualifyingAnalysis?.bestLaps || [])]
-    .sort((a, b) => a.position - b.position)
-    .slice(0, limit)
-    .map((item) => ({
-      position: `P${item.position}`,
-      label: item.driver,
-      team: item.team || '-',
-      meta: `${formatSessionSeconds(item.lapTimeSeconds)} ${item.compound || ''}`.trim(),
-    }));
-}
-
-function buildQualifyingRowsFromResults(results: QualifyingResult[], limit = 3): WeekendDataRow[] {
-  return [...results]
-    .filter((item) => item.position || item.Driver?.code)
-    .sort((a, b) => parseInt(a.position || '999', 10) - parseInt(b.position || '999', 10))
-    .slice(0, limit)
-    .map((item, index) => {
-      const fastestPhase = [item.Q3, item.Q2, item.Q1].find(Boolean) || '-';
-
-      return {
-        position: item.position ? `P${item.position}` : `P${index + 1}`,
-        label: `${item.Driver?.givenName || ''} ${item.Driver?.familyName || item.Driver?.code || ''}`.trim(),
-        team: item.Constructor?.name || '-',
-        meta: fastestPhase,
-      };
-    });
-}
-
-function withFallbackRows(primary: WeekendDataRow[], fallback: WeekendDataRow[]) {
-  return primary.length ? primary : fallback;
-}
-
-function formatCircuitDetailValue(value: string | number | null | undefined, suffix = '') {
-  if (value === null || value === undefined || value === '') {
-    return '-';
-  }
-
-  const text = String(value);
-  if (!suffix || text.toLowerCase().includes(suffix.trim().toLowerCase())) {
-    return text;
-  }
-
-  return `${text}${suffix}`;
-}
-
-function formatCircuitCoordinates(race: Race | null) {
-  const latitude = race?.Circuit.Location.lat;
-  const longitude = race?.Circuit.Location.long;
-
-  if (!latitude || !longitude) {
-    return '-';
-  }
-
-  return `${latitude}, ${longitude}`;
-}
-
 function formatStatRange(summary?: { min: number | null; max: number | null }) {
   if (!summary || summary.min === null || summary.max === null) {
     return '-';
@@ -413,6 +299,233 @@ function formatSessionSeconds(value: number | null | undefined) {
   }
 
   return formatSeconds(value);
+}
+
+interface RankingChartRow {
+  label: string;
+  value: number;
+  color?: string;
+  displayValue?: string;
+}
+
+function buildRankingBarOption(
+  title: string,
+  yAxisName: string,
+  rows: RankingChartRow[],
+  formatter: (value: number) => string = (value) => String(value),
+) {
+  const values = rows.map((row) => row.value).filter((value) => Number.isFinite(value));
+  const minValue = values.length ? Math.min(...values) : 0;
+  const maxValue = values.length ? Math.max(...values) : 0;
+  const range = Math.max(maxValue - minValue, maxValue * 0.08, 1);
+  const yMin = Math.max(0, Math.floor(minValue - range * 0.28));
+
+  return {
+    backgroundColor: '#050505',
+    color: rows.map((row, index) => row.color || DRIVER_COLORS[index % DRIVER_COLORS.length]),
+    title: {
+      text: title,
+      left: 'center',
+      top: 12,
+      textStyle: {
+        color: '#f8fafc',
+        fontSize: 24,
+        fontWeight: 500,
+      },
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      appendToBody: true,
+      borderWidth: 0,
+      backgroundColor: 'rgba(15, 23, 42, 0.94)',
+      extraCssText: CHART_TOOLTIP_CSS,
+      textStyle: { color: '#fff' },
+      formatter: (params: ChartTooltipInput) => {
+        const item = Array.isArray(params) ? params[0] : params;
+        const row = rows.find((entry) => entry.label === item?.name);
+
+        return `
+          <div class="fastf1-tooltip-row">
+            <span class="fastf1-tooltip-marker" style="background:${item?.color || '#fff'};"></span>
+            <span class="fastf1-tooltip-name">${escapeTooltipText(item?.name || '')}</span>
+            <strong>${row?.displayValue || formatter(Number(item?.value || 0))}</strong>
+          </div>
+        `;
+      },
+    },
+    grid: {
+      top: 86,
+      right: 26,
+      bottom: 58,
+      left: 72,
+    },
+    xAxis: {
+      type: 'category',
+      data: rows.map((row) => row.label),
+      axisLine: { lineStyle: { color: '#3f3f46', width: 2 } },
+      axisTick: { lineStyle: { color: '#d4d4d8' } },
+      axisLabel: {
+        color: '#f4f4f5',
+        fontSize: 13,
+        fontWeight: 700,
+        rotate: rows.length > 8 ? 18 : 0,
+      },
+    },
+    yAxis: {
+      type: 'value',
+      name: yAxisName,
+      min: yMin,
+      nameLocation: 'middle',
+      nameGap: 48,
+      nameTextStyle: {
+        color: '#f4f4f5',
+        fontSize: 15,
+        fontWeight: 700,
+      },
+      axisLine: { show: true, lineStyle: { color: '#3f3f46', width: 2 } },
+      axisLabel: {
+        color: '#f4f4f5',
+        fontSize: 15,
+        fontWeight: 700,
+      },
+      splitLine: {
+        lineStyle: {
+          color: 'rgba(244, 244, 245, 0.18)',
+          type: 'dashed',
+        },
+      },
+      minorSplitLine: {
+        show: true,
+        lineStyle: {
+          color: 'rgba(244, 244, 245, 0.1)',
+          type: 'dashed',
+        },
+      },
+    },
+    series: [{
+      name: yAxisName,
+      type: 'bar',
+      barMaxWidth: 42,
+      itemStyle: {
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1,
+      },
+      label: {
+        show: true,
+        position: 'top',
+        color: '#f8fafc',
+        fontSize: rows.length > 12 ? 12 : 15,
+        fontWeight: 700,
+        formatter: (param: { dataIndex: number; value: number }) =>
+          rows[param.dataIndex]?.displayValue || formatter(Number(param.value || 0)),
+      },
+      labelLayout: {
+        hideOverlap: true,
+      },
+      data: rows.map((row, index) => ({
+        value: row.value,
+        itemStyle: {
+          color: row.color || DRIVER_COLORS[index % DRIVER_COLORS.length],
+        },
+      })),
+    }],
+  };
+}
+
+function getRecentWinnerChartRows(results: RecentGrandPrixResult[]): RankingChartRow[] {
+  const counts = new Map<string, number>();
+  results.forEach((result) => {
+    const label = result.winnerConstructorName || result.winnerName || '-';
+    counts.set(label, (counts.get(label) || 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], index) => ({
+      label,
+      value,
+      color: DRIVER_COLORS[index % DRIVER_COLORS.length],
+    }));
+}
+
+function getInterruptionChartRows(items: TrackInterruptionProbability[]): RankingChartRow[] {
+  return items.map((item, index) => ({
+    label: item.label,
+    value: item.probabilityPct || 0,
+    displayValue: formatProbability(item.probabilityPct),
+    color: DRIVER_COLORS[index % DRIVER_COLORS.length],
+  }));
+}
+
+function getTelemetrySummaryChartRows(items: DriverPostRaceTelemetrySummary[]): RankingChartRow[] {
+  return [...items]
+    .filter((item) => item.maxSpeedKph !== null && item.maxSpeedKph !== undefined)
+    .sort((a, b) => (b.maxSpeedKph || 0) - (a.maxSpeedKph || 0))
+    .map((item, index) => ({
+      label: item.driver,
+      value: item.maxSpeedKph || 0,
+      displayValue: formatNumber(item.maxSpeedKph || 0, 0),
+      color: DRIVER_COLORS[index % DRIVER_COLORS.length],
+    }));
+}
+
+interface DataViewPanelProps {
+  title: string;
+  description?: string;
+  className?: string;
+  loading?: boolean;
+  mode: DataViewMode;
+  collapsed: boolean;
+  onModeChange: (mode: DataViewMode) => void;
+  onToggleCollapse: () => void;
+  chart: JSX.Element;
+  table: JSX.Element;
+}
+
+function DataViewPanel({
+  title,
+  description,
+  className = '',
+  loading = false,
+  mode,
+  collapsed,
+  onModeChange,
+  onToggleCollapse,
+  chart,
+  table,
+}: DataViewPanelProps) {
+  return (
+    <Card
+      className={`race-weekend-card data-view-card ${className}`}
+      loading={loading}
+      title={(
+        <div className="data-view-title">
+          <span>{title}</span>
+          {description ? <small>{description}</small> : null}
+        </div>
+      )}
+      extra={(
+        <div className="data-view-actions">
+          <Segmented<DataViewMode>
+            value={mode}
+            onChange={onModeChange}
+            disabled={collapsed}
+            size="small"
+            options={[
+              { label: TEXT.chart, value: 'chart' },
+              { label: TEXT.table, value: 'table' },
+            ]}
+          />
+          <Button type="text" size="small" onClick={onToggleCollapse}>
+            {collapsed ? TEXT.expand : TEXT.collapse}
+          </Button>
+        </div>
+      )}
+    >
+      {collapsed ? null : mode === 'chart' ? chart : table}
+    </Card>
+  );
 }
 
 function formatLapRange(range: FastF1WeatherLapRange) {
@@ -2261,22 +2374,26 @@ const RaceDetail = () => {
     TELEMETRY_METRICS.map((metric) => metric.key),
   );
   const [selectedWeekendMode, setSelectedWeekendMode] = useState<RaceWeekendMode | null>(null);
+  const [dataViewModes, setDataViewModes] = useState<Record<DataPanelKey, DataViewMode>>({
+    recentResults: 'table',
+    interruptionRisk: 'chart',
+    telemetrySummary: 'chart',
+  });
+  const [collapsedDataPanels, setCollapsedDataPanels] = useState<Record<CollapsiblePanelKey, boolean>>({
+    recentResults: false,
+    interruptionRisk: false,
+    telemetrySummary: false,
+    raceResults: false,
+  });
 
   const raceInfo = races.find((race) => race.round === round) || null;
   const isPastRace = useMemo(
     () => Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day'))),
     [raceInfo],
   );
-  const {
-    circuitDetails,
-    detailsLoading: circuitDetailsLoading,
-  } = useCircuitDetailData(raceInfo?.Circuit.circuitId, currentSeason, null);
   const shouldLoadRaceFastF1 = selectedWeekendMode === 'post'
     || (selectedWeekendMode === null && isPastRace);
-  const {
-    data: fastF1Analytics,
-    loading: fastF1AnalyticsLoading,
-  } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
+  const { data: fastF1Analytics } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
     [raceInfo],
@@ -2297,73 +2414,32 @@ const RaceDetail = () => {
   const shouldLoadFastF1Qualifying = activeWeekendMode === 'post' || activeTab === 'qualifying';
   const shouldLoadFastF1SprintQualifying = activeWeekendMode === 'post' || activeTab === 'sprintQualifying';
   const shouldLoadFastF1Sprint = activeWeekendMode === 'post' || activeTab === 'sprint';
-  const {
-    data: fastF1QualifyingAnalytics,
-    loading: fastF1QualifyingLoading,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'Q', shouldLoadFastF1Qualifying);
-  const {
-    data: fastF1SprintQualifyingAnalytics,
-    loading: fastF1SprintQualifyingLoading,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'SQ', shouldLoadFastF1SprintQualifying);
-  const {
-    data: fastF1SprintShootoutAnalytics,
-    loading: fastF1SprintShootoutLoading,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'SS', shouldLoadFastF1SprintQualifying);
-  const {
-    data: fastF1SprintAnalytics,
-    loading: fastF1SprintLoading,
-  } = useFastF1SessionAnalytics(currentSeason, round, 'S', shouldLoadFastF1Sprint);
+  const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'Q',
+    shouldLoadFastF1Qualifying,
+  );
+  const { data: fastF1SprintQualifyingAnalytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'SQ',
+    shouldLoadFastF1SprintQualifying,
+  );
+  const { data: fastF1SprintShootoutAnalytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'SS',
+    shouldLoadFastF1SprintQualifying,
+  );
+  const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'S',
+    shouldLoadFastF1Sprint,
+  );
   const weekendSchedule = useMemo(() => getRaceWeekendSchedule(raceInfo, TEXT), [raceInfo]);
   const weekendScheduleGroups = useMemo(() => getRaceWeekendScheduleGroups(weekendSchedule), [weekendSchedule]);
-  const circuitDataItems = useMemo(() => {
-    const lapRecordParts = [
-      circuitDetails?.lap_record_driver,
-      circuitDetails?.lap_record_year,
-    ].filter(Boolean);
-
-    return [
-      {
-        label: TEXT.circuitLocation,
-        value: `${raceInfo?.Circuit.Location.locality || '-'}, ${raceInfo?.Circuit.Location.country || '-'}`,
-        detail: raceInfo?.Circuit.circuitName || '-',
-      },
-      {
-        label: TEXT.circuitLength,
-        value: formatCircuitDetailValue(circuitDetails?.length, ' km'),
-        detail: TEXT.circuitData,
-      },
-      {
-        label: TEXT.circuitTurns,
-        value: formatCircuitDetailValue(circuitDetails?.turns),
-        detail: TEXT.corner,
-      },
-      {
-        label: TEXT.raceLaps,
-        value: formatCircuitDetailValue(circuitDetails?.race_laps),
-        detail: TEXT.summaryLaps,
-      },
-      {
-        label: TEXT.totalDistance,
-        value: formatCircuitDetailValue(circuitDetails?.total_distance),
-        detail: TEXT.race,
-      },
-      {
-        label: TEXT.firstRace,
-        value: formatCircuitDetailValue(circuitDetails?.first_race),
-        detail: `${TEXT.totalRaces} ${formatCircuitDetailValue(circuitDetails?.total_races)}`,
-      },
-      {
-        label: TEXT.lapRecord,
-        value: formatCircuitDetailValue(circuitDetails?.lap_record),
-        detail: lapRecordParts.length ? lapRecordParts.join(' / ') : TEXT.lapRecordHolder,
-      },
-      {
-        label: TEXT.coordinates,
-        value: formatCircuitCoordinates(raceInfo),
-        detail: getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
-      },
-    ];
-  }, [circuitDetails, raceInfo]);
   const lapPaceOption = useMemo(
     () => (fastF1Analytics ? buildLapPaceOption(fastF1Analytics, selectedLapDrivers) : null),
     [fastF1Analytics, selectedLapDrivers],
@@ -2424,20 +2500,6 @@ const RaceDetail = () => {
       { label: TEXT.interruptionRisk, value: formatProbability(averageInterruptionRisk), detail: interruptionItems.map((item) => item.type).join(' / ') || '-' },
     ];
   }, [racePreviewSummary]);
-  const postRaceMetrics = useMemo(() => {
-    const weatherSummary = fastF1Summary?.weatherSummary;
-    const fastestLap = fastF1Analytics?.fastestLap;
-
-    return [
-      { label: TEXT.completedSessions, value: fastF1Summary ? String(fastF1Summary.driverCount) : '-', detail: TEXT.drivers },
-      { label: TEXT.summaryLaps, value: fastF1Summary ? String(fastF1Summary.maxLap) : '-', detail: `${fastF1Summary?.stints || 0} ${TEXT.stints}` },
-      { label: TEXT.fastestLapHolder, value: fastestLap?.driver || '-', detail: formatSessionSeconds(fastestLap?.lapTimeSeconds) },
-      { label: TEXT.raceStatus, value: fastF1Summary ? String(fastF1Summary.statusCount) : '-', detail: `${fastF1Analytics?.raceControlMessages?.length || 0} ${TEXT.raceControlMessages}` },
-      { label: TEXT.trackTemp, value: formatStatRange(weatherSummary?.trackTempC), detail: `${TEXT.airTemp} ${formatStatRange(weatherSummary?.airTempC)}` },
-      { label: TEXT.humidity, value: formatPercent(weatherSummary?.humidityPct.average), detail: `${TEXT.rainfall} ${formatLapRanges(weatherSummary?.rainLapRanges || [])}` },
-      { label: TEXT.wind, value: formatWindSpeed(weatherSummary?.maxWindSpeedMps), detail: `${TEXT.drs} / ${TEXT.brake} / ${TEXT.throttle}` },
-    ];
-  }, [fastF1Analytics, fastF1Summary]);
   const driverLegendItems = useMemo(
     () => getDriverLegendItems(fastF1Analytics?.lapTimeSeries || []),
     [fastF1Analytics],
@@ -2469,94 +2531,6 @@ const RaceDetail = () => {
   const activeSprintQualifyingAnalytics = currentSeason === '2023'
     ? fastF1SprintShootoutAnalytics || fastF1SprintQualifyingAnalytics
     : fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
-  const activeSprintQualifyingLoading = fastF1SprintQualifyingLoading || fastF1SprintShootoutLoading;
-  const postFastF1SessionCards = useMemo<WeekendDataCardItem[]>(() => [
-    {
-      key: 'fp1',
-      code: 'FP1',
-      title: TEXT.fp1,
-      subtitle: TEXT.jolpicaSessionData,
-      loading: loadingSessionTabs.includes('fp1'),
-      rows: buildResultRowsFromResults(fp1Results, FULL_SESSION_ROW_LIMIT),
-    },
-    {
-      key: 'fp2',
-      code: 'FP2',
-      title: TEXT.fp2,
-      subtitle: TEXT.jolpicaSessionData,
-      loading: loadingSessionTabs.includes('fp2'),
-      rows: buildResultRowsFromResults(fp2Results, FULL_SESSION_ROW_LIMIT),
-    },
-    {
-      key: 'fp3',
-      code: 'FP3',
-      title: TEXT.fp3,
-      subtitle: TEXT.jolpicaSessionData,
-      loading: loadingSessionTabs.includes('fp3'),
-      rows: buildResultRowsFromResults(fp3Results, FULL_SESSION_ROW_LIMIT),
-    },
-    {
-      key: 'qualifying',
-      code: 'Q',
-      title: TEXT.qualifying,
-      subtitle: fastF1QualifyingAnalytics?.sessionName || TEXT.jolpicaSessionData,
-      loading: fastF1QualifyingLoading,
-      rows: withFallbackRows(
-        buildQualifyingRows(fastF1QualifyingAnalytics, FULL_SESSION_ROW_LIMIT),
-        buildQualifyingRowsFromResults(qualifyingResults, FULL_SESSION_ROW_LIMIT),
-      ),
-    },
-    {
-      key: 'sprintQualifying',
-      code: 'SQ',
-      title: TEXT.sprintQualifying,
-      subtitle: activeSprintQualifyingAnalytics?.sessionName || TEXT.jolpicaSessionData,
-      loading: activeSprintQualifyingLoading || loadingSessionTabs.includes('sprintQualifying'),
-      rows: withFallbackRows(
-        buildQualifyingRows(activeSprintQualifyingAnalytics, FULL_SESSION_ROW_LIMIT),
-        buildQualifyingRowsFromResults(sprintQualifyingResults, FULL_SESSION_ROW_LIMIT),
-      ),
-    },
-    {
-      key: 'sprint',
-      code: 'SPR',
-      title: TEXT.sprint,
-      subtitle: fastF1SprintAnalytics?.sessionName || TEXT.jolpicaSessionData,
-      loading: fastF1SprintLoading || loadingSessionTabs.includes('sprint'),
-      rows: withFallbackRows(
-        buildResultRows(fastF1SprintAnalytics, FULL_SESSION_ROW_LIMIT),
-        buildResultRowsFromResults(sprintResults, FULL_SESSION_ROW_LIMIT),
-      ),
-    },
-    {
-      key: 'race',
-      code: 'R',
-      title: TEXT.race,
-      subtitle: fastF1Analytics?.sessionName || TEXT.jolpicaSessionData,
-      loading: fastF1AnalyticsLoading,
-      rows: withFallbackRows(
-        buildResultRows(fastF1Analytics, FULL_SESSION_ROW_LIMIT),
-        buildResultRowsFromResults(raceResults, FULL_SESSION_ROW_LIMIT),
-      ),
-    },
-  ], [
-    activeSprintQualifyingAnalytics,
-    activeSprintQualifyingLoading,
-    fastF1Analytics,
-    fastF1AnalyticsLoading,
-    fastF1QualifyingAnalytics,
-    fastF1QualifyingLoading,
-    fastF1SprintAnalytics,
-    fastF1SprintLoading,
-    fp1Results,
-    fp2Results,
-    fp3Results,
-    loadingSessionTabs,
-    qualifyingResults,
-    raceResults,
-    sprintQualifyingResults,
-    sprintResults,
-  ]);
   const fastF1SprintQualifyingBestLapByDriver = useMemo(
     () => getBestLapByDriver(activeSprintQualifyingAnalytics),
     [activeSprintQualifyingAnalytics],
@@ -3030,7 +3004,24 @@ const RaceDetail = () => {
   const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'sprintQualifying';
   const currentTabIndex = tabItems.findIndex((item) => item.key === effectiveActiveTab);
   const currentItem = tabItems.find((item) => item.key === effectiveActiveTab);
-
+  const recentResultsChartOption = buildRankingBarOption(
+    TEXT.recentWinners,
+    TEXT.historicalRaces,
+    getRecentWinnerChartRows(racePreviewSummary?.recentResults || []),
+    (value) => formatNumber(value, 0),
+  );
+  const interruptionRiskChartOption = buildRankingBarOption(
+    TEXT.interruptionRisk,
+    TEXT.probability,
+    getInterruptionChartRows(racePreviewSummary?.interruptionProbabilities || []),
+    formatProbability,
+  );
+  const telemetrySummaryChartOption = buildRankingBarOption(
+    TEXT.telemetrySummary,
+    'km/h',
+    getTelemetrySummaryChartRows(postRaceTelemetrySummary),
+    formatSpeed,
+  );
   const handlePrevTab = () => {
     if (currentTabIndex > 0) {
       setActiveTab(tabItems[currentTabIndex - 1].key);
@@ -3041,6 +3032,20 @@ const RaceDetail = () => {
     if (currentTabIndex < tabItems.length - 1) {
       setActiveTab(tabItems[currentTabIndex + 1].key);
     }
+  };
+
+  const handleDataViewModeChange = (key: DataPanelKey, mode: DataViewMode) => {
+    setDataViewModes((currentModes) => ({
+      ...currentModes,
+      [key]: mode,
+    }));
+  };
+
+  const handleDataPanelCollapseToggle = (key: CollapsiblePanelKey) => {
+    setCollapsedDataPanels((currentPanels) => ({
+      ...currentPanels,
+      [key]: !currentPanels[key],
+    }));
   };
 
   const handleLapDriverToggle = (driver: string) => {
@@ -3144,18 +3149,10 @@ const RaceDetail = () => {
     {
       title: TEXT.time,
       key: 'season',
-      width: 92,
+      width: 116,
       render: (_: unknown, record: RecentGrandPrixResult) => (
-        <span>{record.season}</span>
-      ),
-    },
-    {
-      title: TEXT.race,
-      key: 'raceName',
-      width: 190,
-      render: (_: unknown, record: RecentGrandPrixResult) => (
-        <div className="race-weekend-driver-cell">
-          <strong>{record.raceName}</strong>
+        <div className="race-history-time-cell">
+          <strong>{record.season}</strong>
           <span>{formatShortDate(record.date)}</span>
         </div>
       ),
@@ -3175,7 +3172,12 @@ const RaceDetail = () => {
       title: TEXT.pole,
       key: 'pole',
       width: 160,
-      render: (_: unknown, record: RecentGrandPrixResult) => record.poleName || '-',
+      render: (_: unknown, record: RecentGrandPrixResult) => (
+        <div className="race-history-pole-cell">
+          <strong>{record.poleName || '-'}</strong>
+          {record.poleName ? <span>P1</span> : null}
+        </div>
+      ),
     },
     {
       title: TEXT.podium,
@@ -3288,6 +3290,102 @@ const RaceDetail = () => {
     },
   ];
 
+  const racePreviewPanels = (
+    <div className="race-weekend-grid race-preview-grid">
+      <DataViewPanel
+        title={TEXT.recentWinners}
+        description={TEXT.preRaceDescription}
+        loading={racePreviewLoading}
+        mode={dataViewModes.recentResults}
+        collapsed={collapsedDataPanels.recentResults}
+        onModeChange={(mode) => handleDataViewModeChange('recentResults', mode)}
+        onToggleCollapse={() => handleDataPanelCollapseToggle('recentResults')}
+        chart={racePreviewSummary?.recentResults.length ? (
+          <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+            <LazyEChartsPanel
+              chartKey={`race-preview-winners-${currentSeason}-${round}`}
+              height={isMobile ? 260 : 340}
+              option={recentResultsChartOption}
+            />
+          </Suspense>
+        ) : (
+          <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+        )}
+        table={(
+          <>
+            <div className="race-weekend-metric-grid">
+              {racePreviewMetrics.map((item) => (
+                <span key={item.label} className="race-weekend-metric">
+                  <small>{item.label}</small>
+                  <strong>{item.value}</strong>
+                  <em>{item.detail}</em>
+                </span>
+              ))}
+            </div>
+            {racePreviewSummary?.recentResults.length ? (
+              <Table
+                className="race-history-table"
+                columns={recentResultColumns}
+                dataSource={racePreviewSummary.recentResults}
+                rowKey={(record) => record.raceId}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            ) : (
+              <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+            )}
+          </>
+        )}
+      />
+
+      <DataViewPanel
+        title={TEXT.interruptionRisk}
+        loading={racePreviewLoading}
+        mode={dataViewModes.interruptionRisk}
+        collapsed={collapsedDataPanels.interruptionRisk}
+        onModeChange={(mode) => handleDataViewModeChange('interruptionRisk', mode)}
+        onToggleCollapse={() => handleDataPanelCollapseToggle('interruptionRisk')}
+        chart={(racePreviewSummary?.interruptionProbabilities || []).length ? (
+          <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+            <LazyEChartsPanel
+              chartKey={`race-preview-interruptions-${currentSeason}-${round}`}
+              height={isMobile ? 260 : 340}
+              option={interruptionRiskChartOption}
+            />
+          </Suspense>
+        ) : (
+          <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+        )}
+        table={(
+          <>
+            <div className="race-weekend-risk-grid">
+              {(racePreviewSummary?.interruptionProbabilities || []).map((item) => (
+                <span key={item.type} className={`race-weekend-risk-item risk-${item.type.toLowerCase()}`}>
+                  <small>{item.label}</small>
+                  <strong>{formatProbability(item.probabilityPct)}</strong>
+                  <em>
+                    {item.triggeredCount}
+                    /
+                    {item.sampleSize}
+                    {item.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
+                  </em>
+                </span>
+              ))}
+            </div>
+            <Table
+              columns={interruptionColumns}
+              dataSource={racePreviewSummary?.interruptionProbabilities || []}
+              rowKey={(record) => record.type}
+              pagination={false}
+              size="small"
+            />
+          </>
+        )}
+      />
+    </div>
+  );
+
   const shouldShowFastF1Section = activeWeekendMode === 'post';
 
   return (
@@ -3364,26 +3462,6 @@ const RaceDetail = () => {
         </div>
       </Card>
 
-      <Card
-        className="race-weekend-card race-circuit-data-card"
-        loading={circuitDetailsLoading && !circuitDetails}
-        title={TEXT.circuitData}
-      >
-        <p className="race-weekend-card-description">{TEXT.circuitDataDescription}</p>
-        <div className="race-weekend-metric-grid race-circuit-data-grid">
-          {circuitDataItems.map((item) => (
-            <span key={item.label} className="race-weekend-metric">
-              <small>{item.label}</small>
-              <strong>{item.value}</strong>
-              <em>{item.detail}</em>
-            </span>
-          ))}
-        </div>
-        {circuitDetailsLoading && circuitDetails ? (
-          <div className="race-weekend-empty">{TEXT.loadingTrackData}</div>
-        ) : null}
-      </Card>
-
       <section className="race-weekend-mode-section">
         <div className="race-weekend-mode-bar">
           <div>
@@ -3400,121 +3478,46 @@ const RaceDetail = () => {
           />
         </div>
 
-        {activeWeekendMode === 'pre' ? (
-          <div className="race-weekend-grid">
-            <Card
-              className="race-weekend-card"
-              loading={racePreviewLoading}
-              title={TEXT.recentWinners}
-            >
-              <p className="race-weekend-card-description">{TEXT.preRaceDescription}</p>
-              <div className="race-weekend-metric-grid">
-                {racePreviewMetrics.map((item) => (
-                  <span key={item.label} className="race-weekend-metric">
-                    <small>{item.label}</small>
-                    <strong>{item.value}</strong>
-                    <em>{item.detail}</em>
-                  </span>
-                ))}
-              </div>
-              {racePreviewSummary?.recentResults.length ? (
-                <Table
-                  columns={recentResultColumns}
-                  dataSource={racePreviewSummary.recentResults}
-                  rowKey={(record) => record.raceId}
-                  pagination={false}
-                  size="small"
-                  scroll={{ x: 'max-content' }}
-                />
-              ) : (
-                <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
-              )}
-            </Card>
+        {racePreviewPanels}
 
-            <Card
-              className="race-weekend-card"
-              loading={racePreviewLoading}
-              title={TEXT.interruptionRisk}
-            >
-              <div className="race-weekend-risk-grid">
-                {(racePreviewSummary?.interruptionProbabilities || []).map((item) => (
-                  <span key={item.type} className={`race-weekend-risk-item risk-${item.type.toLowerCase()}`}>
-                    <small>{item.label}</small>
-                    <strong>{formatProbability(item.probabilityPct)}</strong>
-                    <em>
-                      {item.triggeredCount}
-                      /
-                      {item.sampleSize}
-                      {item.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
-                    </em>
-                  </span>
-                ))}
-              </div>
-              <Table
-                columns={interruptionColumns}
-                dataSource={racePreviewSummary?.interruptionProbabilities || []}
-                rowKey={(record) => record.type}
-                pagination={false}
-                size="small"
-              />
-            </Card>
-          </div>
-        ) : (
-          <Card className="race-weekend-card race-weekend-post-card" title={TEXT.telemetrySummary}>
-            <p className="race-weekend-card-description">{TEXT.postRaceDescription}</p>
-            <div className="race-weekend-metric-grid race-weekend-post-metrics">
-              {postRaceMetrics.map((item) => (
-                <span key={item.label} className="race-weekend-metric">
-                  <small>{item.label}</small>
-                  <strong>{item.value}</strong>
-                  <em>{item.detail}</em>
-                </span>
-              ))}
-            </div>
-            <div className="race-weekend-data-grid" aria-label={TEXT.fetchedSessionData}>
-              {postFastF1SessionCards.map((item) => (
-                <section key={item.key} className="race-weekend-data-card">
-                  <div className="race-weekend-data-card-header">
-                    <div>
-                      <strong>{item.title}</strong>
-                      <span>{item.subtitle}</span>
-                    </div>
-                    <code>{item.code}</code>
-                  </div>
-                  {item.rows.length ? (
-                    <div className="race-weekend-data-list">
-                      {item.rows.map((row) => (
-                        <div key={`${item.key}-${row.position}-${row.label}`} className="race-weekend-data-row">
-                          <span className="race-weekend-data-position">{row.position}</span>
-                          <span className="race-weekend-data-main">
-                            <strong>{row.label}</strong>
-                            <span>{row.team} / {row.meta}</span>
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="race-weekend-data-empty">
-                      {item.loading ? TEXT.dataLoading : TEXT.noSessionData}
-                    </div>
-                  )}
-                </section>
-              ))}
-            </div>
-            {postRaceTelemetrySummary.length ? (
-              <Table
-                columns={telemetrySummaryColumns}
-                dataSource={postRaceTelemetrySummary}
-                rowKey={(record) => record.driver}
-                pagination={false}
-                size="small"
-                scroll={{ x: 'max-content' }}
-              />
+        {activeWeekendMode === 'post' ? (
+          <DataViewPanel
+            title={TEXT.telemetrySummary}
+            description={TEXT.postRaceDescription}
+            className="race-weekend-post-card"
+            mode={dataViewModes.telemetrySummary}
+            collapsed={collapsedDataPanels.telemetrySummary}
+            onModeChange={(mode) => handleDataViewModeChange('telemetrySummary', mode)}
+            onToggleCollapse={() => handleDataPanelCollapseToggle('telemetrySummary')}
+            chart={postRaceTelemetrySummary.length ? (
+              <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                <LazyEChartsPanel
+                  chartKey={`post-race-telemetry-summary-${currentSeason}-${round}`}
+                  height={isMobile ? 300 : 420}
+                  option={telemetrySummaryChartOption}
+                />
+              </Suspense>
             ) : (
               <div className="race-weekend-empty">{TEXT.noTelemetrySummary}</div>
             )}
-          </Card>
-        )}
+            table={(
+              <>
+                {postRaceTelemetrySummary.length ? (
+                  <Table
+                    columns={telemetrySummaryColumns}
+                    dataSource={postRaceTelemetrySummary}
+                    rowKey={(record) => record.driver}
+                    pagination={false}
+                    size="small"
+                    scroll={{ x: 'max-content' }}
+                  />
+                ) : (
+                  <div className="race-weekend-empty">{TEXT.noTelemetrySummary}</div>
+                )}
+              </>
+            )}
+          />
+        ) : null}
       </section>
 
       {shouldShowFastF1Section ? (
@@ -3904,8 +3907,18 @@ const RaceDetail = () => {
         </section>
       ) : null}
 
-      <Card className="results-card">
-        {isMobile ? (
+      <Card
+        className="results-card race-weekend-card data-view-card"
+        title={<div className="data-view-title"><span>{TEXT.result}</span></div>}
+        extra={(
+          <div className="data-view-actions">
+            <Button type="text" size="small" onClick={() => handleDataPanelCollapseToggle('raceResults')}>
+              {collapsedDataPanels.raceResults ? TEXT.expand : TEXT.collapse}
+            </Button>
+          </div>
+        )}
+      >
+        {collapsedDataPanels.raceResults ? null : isMobile ? (
           <div className="mobile-slider-container">
             <div className="slider-header">
               <Button

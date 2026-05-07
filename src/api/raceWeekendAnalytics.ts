@@ -9,6 +9,7 @@ import type {
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
 import { getCircuitIdCandidates, getSupabaseCircuitId } from '@/utils/circuitIds';
+import { fastF1AnalyticsApi } from './fastf1Analytics';
 
 type RaceSummaryRow = {
   id: number;
@@ -80,6 +81,25 @@ function percentage(count: number, total: number) {
   }
 
   return Math.round((count / total) * 100);
+}
+
+async function getStaticFastF1Row(
+  season: number,
+  round: number,
+): Promise<FastF1SessionAnalyticsRow | null> {
+  const payload = await fastF1AnalyticsApi
+    .getRaceAnalytics(String(season), String(round), 'R')
+    .catch(() => null);
+
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    season,
+    round,
+    payload,
+  };
 }
 
 function average(values: number[]) {
@@ -183,7 +203,7 @@ export function buildInterruptionProbabilities(
       sampleSize,
       triggeredCount,
       probabilityPct: percentage(triggeredCount, sampleSize),
-      status: sampleSize >= 2 ? 'ok' : 'insufficient-data',
+      status: sampleSize >= 1 ? 'ok' : 'insufficient-data',
     };
   });
 }
@@ -312,6 +332,7 @@ async function getFastF1RowsForRaces(races: RaceSummaryRow[]) {
     return [] as FastF1SessionAnalyticsRow[];
   }
 
+  let databaseRows: FastF1SessionAnalyticsRow[] = [];
   const filter = races.map((race) => `and(season.eq.${race.season},round.eq.${race.round})`).join(',');
   const query = supabase
     .from('fastf1_session_analytics')
@@ -320,11 +341,20 @@ async function getFastF1RowsForRaces(races: RaceSummaryRow[]) {
     .or(filter);
   const { data, error } = await measureRequest('supabase', 'fastf1_session_analytics.getRowsForRaces', async () => query);
 
-  if (error) {
-    return [];
+  if (!error) {
+    databaseRows = (data || []) as FastF1SessionAnalyticsRow[];
   }
 
-  return (data || []) as FastF1SessionAnalyticsRow[];
+  const existingKeys = new Set(databaseRows.map((row) => `${row.season}-${row.round}`));
+  const missingRaces = races.filter((race) => !existingKeys.has(`${race.season}-${race.round}`));
+  const staticRows = await Promise.all(missingRaces.map(async (race) => {
+    return getStaticFastF1Row(race.season, race.round);
+  }));
+
+  return [
+    ...databaseRows,
+    ...staticRows.filter((row): row is FastF1SessionAnalyticsRow => Boolean(row)),
+  ];
 }
 
 export const raceWeekendAnalyticsApi = {
@@ -357,10 +387,11 @@ export const raceWeekendAnalyticsApi = {
 
     const races = (racesData || []) as RaceSummaryRow[];
     const raceIds = races.map((race) => race.id);
-    const [raceResults, qualifyingResults, fastF1Rows] = await Promise.all([
+    const [raceResults, qualifyingResults, fastF1Rows, currentFastF1Row] = await Promise.all([
       getRowsByIds<RaceResultSummaryRow>('race_results', raceIds),
       getRowsByIds<QualifyingResultSummaryRow>('qualifying_results', raceIds),
       getFastF1RowsForRaces(races),
+      getStaticFastF1Row(seasonNumber, roundNumber),
     ]);
     const driverIds = [
       ...raceResults.map((result) => result.driver_id),
@@ -383,7 +414,7 @@ export const raceWeekendAnalyticsApi = {
       qualifyingResults,
       drivers,
       constructors,
-      analyticsRows: fastF1Rows,
+      analyticsRows: currentFastF1Row ? [currentFastF1Row, ...fastF1Rows] : fastF1Rows,
     });
   },
 };
