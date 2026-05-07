@@ -1,6 +1,6 @@
 {
   "source": "fastf1",
-  "generatedAt": "2026-04-26T11:59:19.278082+00:00",
+  "generatedAt": "2026-05-05T15:08:09.519482+00:00",
   "season": "2025",
   "round": "19",
   "session": "Q",
@@ -389,168 +389,7 @@
       "endLap": 2
     }
   ],
-  "raceControlMessages": [
-    {
-      "time": "2025-10-18 21:00:00",
-      "category": "Flag",
-      "message": "GREEN LIGHT - PIT EXIT OPEN",
-      "status": "",
-      "flag": "GREEN",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:02:56",
-      "category": "Flag",
-      "message": "DOUBLE YELLOW IN TRACK SECTOR 6",
-      "status": "",
-      "flag": "DOUBLE YELLOW",
-      "scope": "Sector",
-      "sector": 6,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:02:58",
-      "category": "Flag",
-      "message": "YELLOW IN TRACK SECTOR 5",
-      "status": "",
-      "flag": "YELLOW",
-      "scope": "Sector",
-      "sector": 5,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:03:01",
-      "category": "Flag",
-      "message": "YELLOW IN TRACK SECTOR 6",
-      "status": "",
-      "flag": "YELLOW",
-      "scope": "Sector",
-      "sector": 6,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:03:09",
-      "category": "Flag",
-      "message": "RED FLAG",
-      "status": "",
-      "flag": "RED",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:03:09",
-      "category": "Flag",
-      "message": "CLEAR IN TRACK SECTOR 5",
-      "status": "",
-      "flag": "CLEAR",
-      "scope": "Sector",
-      "sector": 5,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:03:09",
-      "category": "Flag",
-      "message": "CLEAR IN TRACK SECTOR 6",
-      "status": "",
-      "flag": "CLEAR",
-      "scope": "Sector",
-      "sector": 6,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:05:56",
-      "category": "Flag",
-      "message": "TRACK CLEAR",
-      "status": "",
-      "flag": "CLEAR",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:07:09",
-      "category": "Flag",
-      "message": "DOUBLE YELLOW IN TRACK SECTOR 6",
-      "status": "",
-      "flag": "DOUBLE YELLOW",
-      "scope": "Sector",
-      "sector": 6,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:09:03",
-      "category": "Flag",
-      "message": "CLEAR IN TRACK SECTOR 6",
-      "status": "",
-      "flag": "CLEAR",
-      "scope": "Sector",
-      "sector": 6,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:14:00",
-      "category": "Flag",
-      "message": "GREEN LIGHT - PIT EXIT OPEN",
-      "status": "",
-      "flag": "GREEN",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:28:51",
-      "category": "Flag",
-      "message": "CHEQUERED FLAG",
-      "status": "",
-      "flag": "CHEQUERED",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:36:00",
-      "category": "Flag",
-      "message": "GREEN LIGHT - PIT EXIT OPEN",
-      "status": "",
-      "flag": "GREEN",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:51:00",
-      "category": "Flag",
-      "message": "CHEQUERED FLAG",
-      "status": "",
-      "flag": "CHEQUERED",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 21:59:00",
-      "category": "Flag",
-      "message": "GREEN LIGHT - PIT EXIT OPEN",
-      "status": "",
-      "flag": "GREEN",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    },
-    {
-      "time": "2025-10-18 22:11:00",
-      "category": "Flag",
-      "message": "CHEQUERED FLAG",
-      "status": "",
-      "flag": "CHEQUERED",
-      "scope": "Track",
-      "sector": null,
-      "lap": null
-    }
-  ],
+  "raceControlMessages": [],
   "lapTimeSeries": [
     {
       "driver": "VER",
@@ -562,63 +401,81 @@
           "lapTimeSeconds": 93.59,
           "compound": "SOFT",
           "stint": 1,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 3,
           "lapTimeSeconds": 104.129,
           "compound": "SOFT",
           "stint": 1,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 93.207,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 120.535,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 92.701,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 126.376,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 92.51,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 104.434,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 128.313,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         }
       ]
     },
@@ -632,98 +489,126 @@
           "lapTimeSeconds": 142.041,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 1
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 120.293,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 93.843,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 141.866,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 4
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.961,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 5
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 116.023,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 6
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 92.876,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 121.772,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 93.136,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 125.171,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 92.904,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 107.686,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 19,
           "lapTimeSeconds": 92.801,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 20,
           "lapTimeSeconds": 125.594,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -737,70 +622,90 @@
           "lapTimeSeconds": 93.525,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 114.189,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 93.535,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 128.247,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 92.869,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 122.035,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 97.314,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 108.778,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 92.807,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 131.803,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -814,84 +719,108 @@
           "lapTimeSeconds": 93.85,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 110.054,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 93.311,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 132.27,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 93.413,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 113.376,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 93.058,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 122.15,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 92.959,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 119.592,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 92.826,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 19,
           "lapTimeSeconds": 137.41,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -905,77 +834,99 @@
           "lapTimeSeconds": 93.685,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 111.546,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 93.694,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 124.882,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 92.914,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 120.218,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 101.529,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 93.68,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 108.002,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 92.912,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 131.206,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -989,91 +940,117 @@
           "lapTimeSeconds": 93.813,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 135.892,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 134.419,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 4
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 126.663,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 5
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.746,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 6
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 121.347,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 7
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 93.228,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 116.148,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 126.604,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 93.475,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 4
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 122.066,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 93.084,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 19,
           "lapTimeSeconds": 127.893,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1087,84 +1064,108 @@
           "lapTimeSeconds": 93.945,
           "compound": "SOFT",
           "stint": 1,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 3,
           "lapTimeSeconds": 111.717,
           "compound": "SOFT",
           "stint": 1,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 93.501,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 136.297,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 93.044,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 124.345,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 93.113,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 124.813,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 93.114,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 119.157,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 93.189,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 133.448,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1178,77 +1179,99 @@
           "lapTimeSeconds": 94.409,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 120.025,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.921,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 132.135,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 93.238,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 126.715,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 130.789,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 93.139,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 4
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 112.382,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 93.378,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 19,
           "lapTimeSeconds": 134.396,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1262,84 +1285,108 @@
           "lapTimeSeconds": 100.331,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 93.739,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 111.811,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 113.011,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 93.124,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 125.111,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 93.18,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 123.465,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 16,
           "lapTimeSeconds": 93.3,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 4
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 113.464,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 19,
           "lapTimeSeconds": 93.15,
           "compound": "SOFT",
           "stint": 8,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 20,
           "lapTimeSeconds": 132.956,
           "compound": "SOFT",
           "stint": 8,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1353,70 +1400,90 @@
           "lapTimeSeconds": 93.741,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 133.735,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 93.237,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 3
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 126.282,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 4
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 100.753,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 131.778,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 93.612,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 15,
           "lapTimeSeconds": 102.771,
           "compound": "SOFT",
           "stint": 6,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 17,
           "lapTimeSeconds": 93.16,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 18,
           "lapTimeSeconds": 132.019,
           "compound": "SOFT",
           "stint": 7,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1430,56 +1497,72 @@
           "lapTimeSeconds": 94.355,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 126.931,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.551,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 126.524,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 93.334,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 126.303,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 93.404,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 129.942,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1493,56 +1576,72 @@
           "lapTimeSeconds": 94.212,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 114.135,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.549,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 125.544,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 93.36,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 117.945,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 93.748,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 130.096,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1556,56 +1655,72 @@
           "lapTimeSeconds": 94.222,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 110.872,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 93.935,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 127.692,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 93.466,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 114.361,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 12,
           "lapTimeSeconds": 93.484,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 125.13,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1619,56 +1734,72 @@
           "lapTimeSeconds": 94.106,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 113.231,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 93.599,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 125.966,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 94.128,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 122.403,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 93.651,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 128.307,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1682,56 +1813,72 @@
           "lapTimeSeconds": 94.671,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 124.849,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 94.039,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 124.625,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 10,
           "lapTimeSeconds": 109.353,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 11,
           "lapTimeSeconds": 106.38,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 13,
           "lapTimeSeconds": 94.044,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 14,
           "lapTimeSeconds": 120.639,
           "compound": "SOFT",
           "stint": 5,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1745,28 +1892,36 @@
           "lapTimeSeconds": 94.734,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 4
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 123.839,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 5
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 94.125,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 131.542,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1780,28 +1935,36 @@
           "lapTimeSeconds": 94.533,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 122.111,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 94.136,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 121.707,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1815,28 +1978,36 @@
           "lapTimeSeconds": 94.54,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 4,
           "lapTimeSeconds": 122.087,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 93.878,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 7,
           "lapTimeSeconds": 124.344,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     },
@@ -1850,35 +2021,45 @@
           "lapTimeSeconds": 99.543,
           "compound": "SOFT",
           "stint": 2,
-          "position": null
+          "position": null,
+          "freshTyre": false,
+          "tyreLife": 6
         },
         {
           "lapNumber": 5,
           "lapTimeSeconds": 94.69,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 6,
           "lapTimeSeconds": 114.74,
           "compound": "SOFT",
           "stint": 3,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         },
         {
           "lapNumber": 8,
           "lapTimeSeconds": 93.67,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 2
         },
         {
           "lapNumber": 9,
           "lapTimeSeconds": 120.1,
           "compound": "SOFT",
           "stint": 4,
-          "position": null
+          "position": null,
+          "freshTyre": true,
+          "tyreLife": 3
         }
       ]
     }
@@ -1894,35 +2075,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 3,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 4,
           "endLap": 6,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 7,
           "endLap": 9,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 10,
           "endLap": 12,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 13,
           "endLap": 14,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         }
       ]
     },
@@ -1936,49 +2132,70 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 2,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 5,
+          "endTyreLife": 5
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 8,
-          "lapCount": 6
+          "lapCount": 6,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 6
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 15,
           "endLap": 17,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 18,
           "endLap": 20,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -1992,49 +2209,70 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 4,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 5,
           "endLap": 7,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 8,
           "endLap": 10,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 11,
           "endLap": 11,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 1
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 15,
           "endLap": 17,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2048,49 +2286,70 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 4,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 5,
           "endLap": 7,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 8,
           "endLap": 10,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 11,
           "endLap": 13,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 14,
           "endLap": 16,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 17,
           "endLap": 19,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2104,49 +2363,70 @@
           "compound": "MEDIUM",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 7,
+          "endTyreLife": 7
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 4,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 5,
           "endLap": 7,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 8,
           "endLap": 10,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 11,
           "endLap": 12,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 13,
           "endLap": 15,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 16,
           "endLap": 18,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2160,42 +2440,60 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 8,
-          "lapCount": 7
+          "lapCount": 7,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 7
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 13,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 14,
           "endLap": 16,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 3,
+          "endTyreLife": 5
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 17,
           "endLap": 19,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2209,42 +2507,60 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 3,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 4,
           "endLap": 6,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 7,
           "endLap": 9,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 10,
           "endLap": 12,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 13,
           "endLap": 15,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 16,
           "endLap": 18,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2258,49 +2574,70 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": false,
+          "startTyreLife": 7,
+          "endTyreLife": 8
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 13,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 14,
           "endLap": 16,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 3,
+          "endTyreLife": 5
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 17,
           "endLap": 19,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2314,56 +2651,80 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 3,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": false,
+          "startTyreLife": 5,
+          "endTyreLife": 6
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 4,
           "endLap": 6,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 7,
           "endLap": 8,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 15,
           "endLap": 17,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 3,
+          "endTyreLife": 5
         },
         {
           "stint": 8,
           "compound": "SOFT",
           "startLap": 18,
           "endLap": 20,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2377,49 +2738,70 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": false,
+          "startTyreLife": 3,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 6,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 1
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 7,
           "endLap": 9,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 2,
+          "endTyreLife": 4
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 10,
           "endLap": 12,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 6,
           "compound": "SOFT",
           "startLap": 13,
           "endLap": 15,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 7,
           "compound": "SOFT",
           "startLap": 16,
           "endLap": 18,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2433,35 +2815,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 6
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2475,35 +2872,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2517,35 +2929,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 8,
+          "endTyreLife": 8
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 4,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 5,
           "endLap": 7,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 8,
           "endLap": 10,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 11,
           "endLap": 13,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2559,35 +2986,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2601,35 +3043,50 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 9,
           "endLap": 11,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 5,
           "compound": "SOFT",
           "startLap": 12,
           "endLap": 14,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2643,21 +3100,30 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": false,
+          "startTyreLife": 3,
+          "endTyreLife": 5
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2671,21 +3137,30 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": false,
+          "startTyreLife": 7,
+          "endTyreLife": 8
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 3,
           "endLap": 5,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 6,
           "endLap": 8,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2699,21 +3174,30 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 7,
+          "endTyreLife": 7
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 4,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 5,
           "endLap": 7,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2727,28 +3211,40 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 1,
-          "lapCount": 1
+          "lapCount": 1,
+          "freshTyre": false,
+          "startTyreLife": 4,
+          "endTyreLife": 4
         },
         {
           "stint": 2,
           "compound": "SOFT",
           "startLap": 2,
           "endLap": 3,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": false,
+          "startTyreLife": 5,
+          "endTyreLife": 6
         },
         {
           "stint": 3,
           "compound": "SOFT",
           "startLap": 4,
           "endLap": 6,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         },
         {
           "stint": 4,
           "compound": "SOFT",
           "startLap": 7,
           "endLap": 9,
-          "lapCount": 3
+          "lapCount": 3,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 3
         }
       ]
     },
@@ -2762,849 +3258,14 @@
           "compound": "SOFT",
           "startLap": 1,
           "endLap": 2,
-          "lapCount": 2
+          "lapCount": 2,
+          "freshTyre": true,
+          "startTyreLife": 1,
+          "endTyreLife": 2
         }
       ]
     }
   ],
-  "weather": {
-    "points": [
-      {
-        "timeSeconds": 819.271,
-        "lapNumber": 1,
-        "airTempC": 33.9,
-        "trackTempC": 48.0,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 96.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 879.286,
-        "lapNumber": 1,
-        "airTempC": 33.9,
-        "trackTempC": 47.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 86.0,
-        "windSpeedMps": 2.4
-      },
-      {
-        "timeSeconds": 939.277,
-        "lapNumber": 1,
-        "airTempC": 33.8,
-        "trackTempC": 47.4,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 103.0,
-        "windSpeedMps": 1.5
-      },
-      {
-        "timeSeconds": 999.297,
-        "lapNumber": 1,
-        "airTempC": 33.8,
-        "trackTempC": 47.4,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 162.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 1059.308,
-        "lapNumber": 1,
-        "airTempC": 33.8,
-        "trackTempC": 47.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 67.0,
-        "windSpeedMps": 0.7
-      },
-      {
-        "timeSeconds": 1119.311,
-        "lapNumber": 1,
-        "airTempC": 33.9,
-        "trackTempC": 47.9,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 303.0,
-        "windSpeedMps": 0.5
-      },
-      {
-        "timeSeconds": 1179.321,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 48.0,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 90.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 1239.338,
-        "lapNumber": 1,
-        "airTempC": 34.1,
-        "trackTempC": 47.7,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 89.0,
-        "windSpeedMps": 2.2
-      },
-      {
-        "timeSeconds": 1299.337,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 47.4,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 144.0,
-        "windSpeedMps": 3.3
-      },
-      {
-        "timeSeconds": 1359.338,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 46.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 149.0,
-        "windSpeedMps": 2.6
-      },
-      {
-        "timeSeconds": 1419.353,
-        "lapNumber": 1,
-        "airTempC": 33.9,
-        "trackTempC": 47.1,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 121.0,
-        "windSpeedMps": 1.5
-      },
-      {
-        "timeSeconds": 1479.363,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 47.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 346.0,
-        "windSpeedMps": 1.3
-      },
-      {
-        "timeSeconds": 1539.383,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 47.1,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 132.0,
-        "windSpeedMps": 1.2
-      },
-      {
-        "timeSeconds": 1599.397,
-        "lapNumber": 1,
-        "airTempC": 34.1,
-        "trackTempC": 47.1,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 118.0,
-        "windSpeedMps": 2.6
-      },
-      {
-        "timeSeconds": 1659.423,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 47.0,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 44.0,
-        "windSpeedMps": 1.5
-      },
-      {
-        "timeSeconds": 1719.423,
-        "lapNumber": 1,
-        "airTempC": 34.0,
-        "trackTempC": 47.1,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 303.0,
-        "windSpeedMps": 2.8
-      },
-      {
-        "timeSeconds": 1779.423,
-        "lapNumber": 1,
-        "airTempC": 33.9,
-        "trackTempC": 46.2,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 297.0,
-        "windSpeedMps": 2.8
-      },
-      {
-        "timeSeconds": 1839.427,
-        "lapNumber": 1,
-        "airTempC": 33.8,
-        "trackTempC": 46.2,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 322.0,
-        "windSpeedMps": 2.2
-      },
-      {
-        "timeSeconds": 1899.432,
-        "lapNumber": 2,
-        "airTempC": 33.8,
-        "trackTempC": 46.1,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 285.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 1959.423,
-        "lapNumber": 2,
-        "airTempC": 33.8,
-        "trackTempC": 46.5,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.6,
-        "rainfall": false,
-        "windDirectionDeg": 297.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 2019.432,
-        "lapNumber": 3,
-        "airTempC": 33.8,
-        "trackTempC": 46.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 323.0,
-        "windSpeedMps": 1.8
-      },
-      {
-        "timeSeconds": 2079.423,
-        "lapNumber": 3,
-        "airTempC": 33.8,
-        "trackTempC": 46.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 76.0,
-        "windSpeedMps": 2.6
-      },
-      {
-        "timeSeconds": 2139.432,
-        "lapNumber": 4,
-        "airTempC": 33.9,
-        "trackTempC": 47.0,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 318.0,
-        "windSpeedMps": 1.5
-      },
-      {
-        "timeSeconds": 2199.427,
-        "lapNumber": 4,
-        "airTempC": 34.0,
-        "trackTempC": 46.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 333.0,
-        "windSpeedMps": 1.8
-      },
-      {
-        "timeSeconds": 2259.428,
-        "lapNumber": 4,
-        "airTempC": 34.0,
-        "trackTempC": 46.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 21.0,
-        "windSpeedMps": 1.1
-      },
-      {
-        "timeSeconds": 2319.429,
-        "lapNumber": 4,
-        "airTempC": 34.0,
-        "trackTempC": 46.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.5,
-        "rainfall": false,
-        "windDirectionDeg": 161.0,
-        "windSpeedMps": 0.7
-      },
-      {
-        "timeSeconds": 2379.434,
-        "lapNumber": 5,
-        "airTempC": 34.0,
-        "trackTempC": 46.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 354.0,
-        "windSpeedMps": 1.2
-      },
-      {
-        "timeSeconds": 2439.432,
-        "lapNumber": 5,
-        "airTempC": 34.0,
-        "trackTempC": 46.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 198.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 2499.429,
-        "lapNumber": 6,
-        "airTempC": 34.2,
-        "trackTempC": 46.5,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 83.0,
-        "windSpeedMps": 1.0
-      },
-      {
-        "timeSeconds": 2559.427,
-        "lapNumber": 6,
-        "airTempC": 34.3,
-        "trackTempC": 46.4,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 273.0,
-        "windSpeedMps": 1.2
-      },
-      {
-        "timeSeconds": 2619.434,
-        "lapNumber": 7,
-        "airTempC": 34.1,
-        "trackTempC": 45.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 333.0,
-        "windSpeedMps": 1.8
-      },
-      {
-        "timeSeconds": 2679.434,
-        "lapNumber": 7,
-        "airTempC": 34.0,
-        "trackTempC": 45.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 299.0,
-        "windSpeedMps": 2.5
-      },
-      {
-        "timeSeconds": 2739.433,
-        "lapNumber": 7,
-        "airTempC": 34.0,
-        "trackTempC": 45.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 319.0,
-        "windSpeedMps": 2.8
-      },
-      {
-        "timeSeconds": 2799.433,
-        "lapNumber": 7,
-        "airTempC": 34.1,
-        "trackTempC": 45.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.1,
-        "rainfall": false,
-        "windDirectionDeg": 312.0,
-        "windSpeedMps": 3.3
-      },
-      {
-        "timeSeconds": 2859.434,
-        "lapNumber": 7,
-        "airTempC": 34.0,
-        "trackTempC": 45.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 213.0,
-        "windSpeedMps": 1.9
-      },
-      {
-        "timeSeconds": 2919.434,
-        "lapNumber": 7,
-        "airTempC": 34.0,
-        "trackTempC": 45.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 104.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 2979.438,
-        "lapNumber": 7,
-        "airTempC": 34.0,
-        "trackTempC": 44.8,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 164.0,
-        "windSpeedMps": 1.9
-      },
-      {
-        "timeSeconds": 3039.435,
-        "lapNumber": 7,
-        "airTempC": 33.8,
-        "trackTempC": 44.2,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 116.0,
-        "windSpeedMps": 0.9
-      },
-      {
-        "timeSeconds": 3099.442,
-        "lapNumber": 7,
-        "airTempC": 33.7,
-        "trackTempC": 44.1,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 356.0,
-        "windSpeedMps": 1.0
-      },
-      {
-        "timeSeconds": 3159.435,
-        "lapNumber": 7,
-        "airTempC": 33.7,
-        "trackTempC": 44.1,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 318.0,
-        "windSpeedMps": 1.8
-      },
-      {
-        "timeSeconds": 3219.453,
-        "lapNumber": 8,
-        "airTempC": 33.7,
-        "trackTempC": 44.0,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 262.0,
-        "windSpeedMps": 2.0
-      },
-      {
-        "timeSeconds": 3279.456,
-        "lapNumber": 8,
-        "airTempC": 33.6,
-        "trackTempC": 44.1,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 291.0,
-        "windSpeedMps": 2.0
-      },
-      {
-        "timeSeconds": 3339.457,
-        "lapNumber": 9,
-        "airTempC": 33.7,
-        "trackTempC": 44.1,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 326.0,
-        "windSpeedMps": 2.2
-      },
-      {
-        "timeSeconds": 3399.473,
-        "lapNumber": 9,
-        "airTempC": 33.8,
-        "trackTempC": 44.3,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 310.0,
-        "windSpeedMps": 2.3
-      },
-      {
-        "timeSeconds": 3459.486,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.7,
-        "humidityPct": 37.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 333.0,
-        "windSpeedMps": 1.9
-      },
-      {
-        "timeSeconds": 3519.49,
-        "lapNumber": 10,
-        "airTempC": 34.2,
-        "trackTempC": 45.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 0.0,
-        "windSpeedMps": 1.2
-      },
-      {
-        "timeSeconds": 3579.494,
-        "lapNumber": 10,
-        "airTempC": 34.2,
-        "trackTempC": 45.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 347.0,
-        "windSpeedMps": 0.7
-      },
-      {
-        "timeSeconds": 3639.494,
-        "lapNumber": 10,
-        "airTempC": 34.3,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 277.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 3699.495,
-        "lapNumber": 10,
-        "airTempC": 34.2,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 334.0,
-        "windSpeedMps": 1.0
-      },
-      {
-        "timeSeconds": 3759.507,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 28.0,
-        "windSpeedMps": 1.4
-      },
-      {
-        "timeSeconds": 3819.532,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.1,
-        "rainfall": false,
-        "windDirectionDeg": 100.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 3879.534,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.7,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 321.0,
-        "windSpeedMps": 2.0
-      },
-      {
-        "timeSeconds": 3939.534,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.7,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 325.0,
-        "windSpeedMps": 2.3
-      },
-      {
-        "timeSeconds": 3999.558,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 333.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 4059.572,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.6,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 99.0,
-        "windSpeedMps": 2.2
-      },
-      {
-        "timeSeconds": 4119.561,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 113.0,
-        "windSpeedMps": 2.6
-      },
-      {
-        "timeSeconds": 4179.573,
-        "lapNumber": 10,
-        "airTempC": 34.1,
-        "trackTempC": 44.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.4,
-        "rainfall": false,
-        "windDirectionDeg": 160.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 4239.572,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 121.0,
-        "windSpeedMps": 1.1
-      },
-      {
-        "timeSeconds": 4299.573,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 96.0,
-        "windSpeedMps": 1.5
-      },
-      {
-        "timeSeconds": 4359.585,
-        "lapNumber": 10,
-        "airTempC": 33.9,
-        "trackTempC": 44.2,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 0.0,
-        "windSpeedMps": 2.1
-      },
-      {
-        "timeSeconds": 4419.601,
-        "lapNumber": 10,
-        "airTempC": 33.9,
-        "trackTempC": 44.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 3.0,
-        "windSpeedMps": 0.6
-      },
-      {
-        "timeSeconds": 4479.623,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.4,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 28.0,
-        "windSpeedMps": 0.6
-      },
-      {
-        "timeSeconds": 4539.621,
-        "lapNumber": 10,
-        "airTempC": 34.0,
-        "trackTempC": 44.3,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 97.0,
-        "windSpeedMps": 1.3
-      },
-      {
-        "timeSeconds": 4599.628,
-        "lapNumber": 11,
-        "airTempC": 34.0,
-        "trackTempC": 44.3,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 260.0,
-        "windSpeedMps": 1.6
-      },
-      {
-        "timeSeconds": 4659.636,
-        "lapNumber": 11,
-        "airTempC": 34.0,
-        "trackTempC": 43.9,
-        "humidityPct": 35.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 301.0,
-        "windSpeedMps": 2.0
-      },
-      {
-        "timeSeconds": 4719.647,
-        "lapNumber": 12,
-        "airTempC": 34.0,
-        "trackTempC": 43.7,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 307.0,
-        "windSpeedMps": 2.7
-      },
-      {
-        "timeSeconds": 4779.648,
-        "lapNumber": 13,
-        "airTempC": 34.0,
-        "trackTempC": 43.4,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 296.0,
-        "windSpeedMps": 2.5
-      },
-      {
-        "timeSeconds": 4839.661,
-        "lapNumber": 13,
-        "airTempC": 34.1,
-        "trackTempC": 43.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 296.0,
-        "windSpeedMps": 2.7
-      },
-      {
-        "timeSeconds": 4899.681,
-        "lapNumber": 13,
-        "airTempC": 34.1,
-        "trackTempC": 43.6,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 297.0,
-        "windSpeedMps": 2.4
-      },
-      {
-        "timeSeconds": 4959.676,
-        "lapNumber": 13,
-        "airTempC": 34.1,
-        "trackTempC": 43.7,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 99.0,
-        "windSpeedMps": 1.9
-      },
-      {
-        "timeSeconds": 5019.662,
-        "lapNumber": 13,
-        "airTempC": 34.1,
-        "trackTempC": 43.7,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.3,
-        "rainfall": false,
-        "windDirectionDeg": 20.0,
-        "windSpeedMps": 1.7
-      },
-      {
-        "timeSeconds": 5079.697,
-        "lapNumber": 14,
-        "airTempC": 34.0,
-        "trackTempC": 43.3,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 319.0,
-        "windSpeedMps": 1.9
-      },
-      {
-        "timeSeconds": 5139.712,
-        "lapNumber": 14,
-        "airTempC": 34.0,
-        "trackTempC": 43.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 289.0,
-        "windSpeedMps": 2.1
-      },
-      {
-        "timeSeconds": 5199.71,
-        "lapNumber": 18,
-        "airTempC": 34.0,
-        "trackTempC": 43.5,
-        "humidityPct": 36.0,
-        "pressureHpa": 989.2,
-        "rainfall": false,
-        "windDirectionDeg": 303.0,
-        "windSpeedMps": 1.2
-      }
-    ],
-    "summary": {
-      "airTempC": {
-        "min": 33.6,
-        "max": 34.3,
-        "average": 33.98
-      },
-      "trackTempC": {
-        "min": 43.3,
-        "max": 48.0,
-        "average": 45.44
-      },
-      "humidityPct": {
-        "min": 35.0,
-        "max": 37.0,
-        "average": 36.05
-      },
-      "rainPointCount": 0,
-      "rainLapRanges": [],
-      "maxWindSpeedMps": 3.3
-    }
-  },
   "qualifyingAnalysis": {
     "sessionType": "QUALIFYING",
     "phaseResults": [
@@ -4247,11 +3908,11 @@
       {
         "driver": "STR",
         "team": "Aston Martin",
-        "lapNumber": 3,
-        "lapTimeSeconds": 94.54,
-        "sector1Seconds": 25.614,
-        "sector2Seconds": 38.008,
-        "sector3Seconds": 30.918,
+        "lapNumber": 6,
+        "lapTimeSeconds": 93.878,
+        "sector1Seconds": 25.463,
+        "sector2Seconds": 37.763,
+        "sector3Seconds": 30.652,
         "compound": "SOFT",
         "isDeleted": false,
         "position": 18
@@ -4259,11 +3920,11 @@
       {
         "driver": "ALB",
         "team": "Williams",
-        "lapNumber": 5,
-        "lapTimeSeconds": 94.69,
-        "sector1Seconds": 25.201,
-        "sector2Seconds": 38.568,
-        "sector3Seconds": 30.921,
+        "lapNumber": 8,
+        "lapTimeSeconds": 93.67,
+        "sector1Seconds": 25.006,
+        "sector2Seconds": 37.895,
+        "sector3Seconds": 30.769,
         "compound": "SOFT",
         "isDeleted": false,
         "position": 19
@@ -4499,72 +4160,7 @@
         "position": 19
       }
     ],
-    "deletedLaps": [
-      {
-        "driver": "NOR",
-        "team": "McLaren",
-        "lapNumber": 4,
-        "lapTimeSeconds": 120.293,
-        "reason": "TRACK LIMITS AT TURN 9 LAP 5 ",
-        "position": 2
-      },
-      {
-        "driver": "BEA",
-        "team": "Haas F1 Team",
-        "lapNumber": 18,
-        "lapTimeSeconds": 93.378,
-        "reason": "TRACK LIMITS AT TURN 15 LAP 19 ",
-        "position": 8
-      },
-      {
-        "driver": "SAI",
-        "team": "Williams",
-        "lapNumber": 13,
-        "lapTimeSeconds": 93.18,
-        "reason": "TRACK LIMITS AT TURN 19 LAP 14 ",
-        "position": 9
-      },
-      {
-        "driver": "HUL",
-        "team": "Kick Sauber",
-        "lapNumber": 13,
-        "lapTimeSeconds": 93.404,
-        "reason": "TRACK LIMITS AT TURN 19 LAP 14 ",
-        "position": 11
-      },
-      {
-        "driver": "LAW",
-        "team": "Racing Bulls",
-        "lapNumber": 13,
-        "lapTimeSeconds": 93.748,
-        "reason": "TRACK LIMITS AT TURN 19 LAP 14 ",
-        "position": 12
-      },
-      {
-        "driver": "GAS",
-        "team": "Alpine",
-        "lapNumber": 10,
-        "lapTimeSeconds": 94.128,
-        "reason": "TRACK LIMITS AT TURN 20 LAP 11 ",
-        "position": 14
-      },
-      {
-        "driver": "STR",
-        "team": "Aston Martin",
-        "lapNumber": 6,
-        "lapTimeSeconds": 93.878,
-        "reason": "TRACK LIMITS AT TURN 12 LAP 7 ",
-        "position": 18
-      },
-      {
-        "driver": "ALB",
-        "team": "Williams",
-        "lapNumber": 8,
-        "lapTimeSeconds": 93.67,
-        "reason": "TRACK LIMITS AT TURN 15 LAP 9 ",
-        "position": 19
-      }
-    ],
+    "deletedLaps": [],
     "sectorRankings": [
       {
         "sector": "s1",
@@ -4615,12 +4211,21 @@
             "deltaToBestSeconds": 0.059
           },
           {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 8,
+            "timeSeconds": 25.006,
+            "isDeleted": false,
+            "rank": 6,
+            "deltaToBestSeconds": 0.092
+          },
+          {
             "driver": "LEC",
             "team": "Ferrari",
             "lapNumber": 16,
             "timeSeconds": 25.042,
             "isDeleted": false,
-            "rank": 6,
+            "rank": 7,
             "deltaToBestSeconds": 0.128
           },
           {
@@ -4629,7 +4234,7 @@
             "lapNumber": 8,
             "timeSeconds": 25.08,
             "isDeleted": false,
-            "rank": 7,
+            "rank": 8,
             "deltaToBestSeconds": 0.166
           },
           {
@@ -4638,7 +4243,7 @@
             "lapNumber": 8,
             "timeSeconds": 25.082,
             "isDeleted": false,
-            "rank": 8,
+            "rank": 9,
             "deltaToBestSeconds": 0.168
           },
           {
@@ -4647,7 +4252,7 @@
             "lapNumber": 13,
             "timeSeconds": 25.144,
             "isDeleted": false,
-            "rank": 9,
+            "rank": 10,
             "deltaToBestSeconds": 0.23
           },
           {
@@ -4656,7 +4261,7 @@
             "lapNumber": 12,
             "timeSeconds": 25.148,
             "isDeleted": false,
-            "rank": 10,
+            "rank": 11,
             "deltaToBestSeconds": 0.234
           },
           {
@@ -4665,7 +4270,7 @@
             "lapNumber": 10,
             "timeSeconds": 25.156,
             "isDeleted": false,
-            "rank": 11,
+            "rank": 12,
             "deltaToBestSeconds": 0.242
           },
           {
@@ -4674,17 +4279,17 @@
             "lapNumber": 18,
             "timeSeconds": 25.168,
             "isDeleted": false,
-            "rank": 12,
+            "rank": 13,
             "deltaToBestSeconds": 0.254
           },
           {
-            "driver": "ALB",
-            "team": "Williams",
-            "lapNumber": 5,
-            "timeSeconds": 25.201,
+            "driver": "HUL",
+            "team": "Kick Sauber",
+            "lapNumber": 13,
+            "timeSeconds": 25.181,
             "isDeleted": false,
-            "rank": 13,
-            "deltaToBestSeconds": 0.287
+            "rank": 14,
+            "deltaToBestSeconds": 0.267
           },
           {
             "driver": "LAW",
@@ -4692,17 +4297,8 @@
             "lapNumber": 10,
             "timeSeconds": 25.207,
             "isDeleted": false,
-            "rank": 14,
-            "deltaToBestSeconds": 0.293
-          },
-          {
-            "driver": "HUL",
-            "team": "Kick Sauber",
-            "lapNumber": 10,
-            "timeSeconds": 25.21,
-            "isDeleted": false,
             "rank": 15,
-            "deltaToBestSeconds": 0.296
+            "deltaToBestSeconds": 0.293
           },
           {
             "driver": "COL",
@@ -4734,11 +4330,11 @@
           {
             "driver": "STR",
             "team": "Aston Martin",
-            "lapNumber": 3,
-            "timeSeconds": 25.614,
+            "lapNumber": 6,
+            "timeSeconds": 25.463,
             "isDeleted": false,
             "rank": 19,
-            "deltaToBestSeconds": 0.7
+            "deltaToBestSeconds": 0.549
           }
         ]
       },
@@ -4809,22 +4405,22 @@
             "deltaToBestSeconds": 0.153
           },
           {
+            "driver": "SAI",
+            "team": "Williams",
+            "lapNumber": 13,
+            "timeSeconds": 37.49,
+            "isDeleted": false,
+            "rank": 8,
+            "deltaToBestSeconds": 0.166
+          },
+          {
             "driver": "LEC",
             "team": "Ferrari",
             "lapNumber": 9,
             "timeSeconds": 37.511,
             "isDeleted": false,
-            "rank": 8,
-            "deltaToBestSeconds": 0.187
-          },
-          {
-            "driver": "SAI",
-            "team": "Williams",
-            "lapNumber": 10,
-            "timeSeconds": 37.526,
-            "isDeleted": false,
             "rank": 9,
-            "deltaToBestSeconds": 0.202
+            "deltaToBestSeconds": 0.187
           },
           {
             "driver": "BEA",
@@ -4872,13 +4468,31 @@
             "deltaToBestSeconds": 0.33
           },
           {
+            "driver": "STR",
+            "team": "Aston Martin",
+            "lapNumber": 6,
+            "timeSeconds": 37.763,
+            "isDeleted": false,
+            "rank": 15,
+            "deltaToBestSeconds": 0.439
+          },
+          {
             "driver": "COL",
             "team": "Alpine",
             "lapNumber": 13,
             "timeSeconds": 37.811,
             "isDeleted": false,
-            "rank": 15,
+            "rank": 16,
             "deltaToBestSeconds": 0.487
+          },
+          {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 8,
+            "timeSeconds": 37.895,
+            "isDeleted": false,
+            "rank": 17,
+            "deltaToBestSeconds": 0.571
           },
           {
             "driver": "OCO",
@@ -4886,17 +4500,8 @@
             "lapNumber": 7,
             "timeSeconds": 37.931,
             "isDeleted": false,
-            "rank": 16,
+            "rank": 18,
             "deltaToBestSeconds": 0.607
-          },
-          {
-            "driver": "STR",
-            "team": "Aston Martin",
-            "lapNumber": 3,
-            "timeSeconds": 38.008,
-            "isDeleted": false,
-            "rank": 17,
-            "deltaToBestSeconds": 0.684
           },
           {
             "driver": "BOR",
@@ -4904,17 +4509,8 @@
             "lapNumber": 7,
             "timeSeconds": 38.036,
             "isDeleted": false,
-            "rank": 18,
-            "deltaToBestSeconds": 0.712
-          },
-          {
-            "driver": "ALB",
-            "team": "Williams",
-            "lapNumber": 5,
-            "timeSeconds": 38.568,
-            "isDeleted": false,
             "rank": 19,
-            "deltaToBestSeconds": 1.244
+            "deltaToBestSeconds": 0.712
           },
           {
             "driver": "HAD",
@@ -5023,11 +4619,11 @@
           {
             "driver": "SAI",
             "team": "Williams",
-            "lapNumber": 19,
-            "timeSeconds": 30.49,
+            "lapNumber": 13,
+            "timeSeconds": 30.466,
             "isDeleted": false,
             "rank": 11,
-            "deltaToBestSeconds": 0.333
+            "deltaToBestSeconds": 0.309
           },
           {
             "driver": "HUL",
@@ -5048,12 +4644,21 @@
             "deltaToBestSeconds": 0.454
           },
           {
+            "driver": "STR",
+            "team": "Aston Martin",
+            "lapNumber": 6,
+            "timeSeconds": 30.652,
+            "isDeleted": false,
+            "rank": 14,
+            "deltaToBestSeconds": 0.495
+          },
+          {
             "driver": "GAS",
             "team": "Alpine",
             "lapNumber": 7,
             "timeSeconds": 30.723,
             "isDeleted": false,
-            "rank": 14,
+            "rank": 15,
             "deltaToBestSeconds": 0.566
           },
           {
@@ -5062,8 +4667,17 @@
             "lapNumber": 7,
             "timeSeconds": 30.763,
             "isDeleted": false,
-            "rank": 15,
+            "rank": 16,
             "deltaToBestSeconds": 0.606
+          },
+          {
+            "driver": "ALB",
+            "team": "Williams",
+            "lapNumber": 8,
+            "timeSeconds": 30.769,
+            "isDeleted": false,
+            "rank": 17,
+            "deltaToBestSeconds": 0.612
           },
           {
             "driver": "OCO",
@@ -5071,7 +4685,7 @@
             "lapNumber": 7,
             "timeSeconds": 30.774,
             "isDeleted": false,
-            "rank": 16,
+            "rank": 18,
             "deltaToBestSeconds": 0.617
           },
           {
@@ -5080,26 +4694,8 @@
             "lapNumber": 7,
             "timeSeconds": 30.842,
             "isDeleted": false,
-            "rank": 17,
-            "deltaToBestSeconds": 0.685
-          },
-          {
-            "driver": "STR",
-            "team": "Aston Martin",
-            "lapNumber": 3,
-            "timeSeconds": 30.918,
-            "isDeleted": false,
-            "rank": 18,
-            "deltaToBestSeconds": 0.761
-          },
-          {
-            "driver": "ALB",
-            "team": "Williams",
-            "lapNumber": 5,
-            "timeSeconds": 30.921,
-            "isDeleted": false,
             "rank": 19,
-            "deltaToBestSeconds": 0.764
+            "deltaToBestSeconds": 0.685
           },
           {
             "driver": "HAD",
@@ -5127,10 +4723,10 @@
         "team": "Aston Martin",
         "driverA": "ALO",
         "driverB": "STR",
-        "fastestLapDeltaSeconds": -1.38,
-        "sector1DeltaSeconds": -0.476,
-        "sector2DeltaSeconds": -0.296,
-        "sector3DeltaSeconds": -0.608
+        "fastestLapDeltaSeconds": -0.718,
+        "sector1DeltaSeconds": -0.325,
+        "sector2DeltaSeconds": -0.051,
+        "sector3DeltaSeconds": -0.342
       },
       {
         "team": "Ferrari",
@@ -5190,10 +4786,10 @@
         "team": "Williams",
         "driverA": "SAI",
         "driverB": "ALB",
-        "fastestLapDeltaSeconds": -1.566,
-        "sector1DeltaSeconds": -0.184,
-        "sector2DeltaSeconds": -1.042,
-        "sector3DeltaSeconds": -0.34
+        "fastestLapDeltaSeconds": -0.546,
+        "sector1DeltaSeconds": 0.011,
+        "sector2DeltaSeconds": -0.369,
+        "sector3DeltaSeconds": -0.188
       }
     ]
   }

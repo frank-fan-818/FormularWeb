@@ -37,8 +37,22 @@ interface FastF1SessionRow {
   payload: FastF1Payload;
 }
 
-const DEFAULT_SESSIONS: FastF1SessionCode[] = ['Q', 'SQ', 'SS', 'S'];
+const DEFAULT_SESSIONS: FastF1SessionCode[] = ['R', 'Q', 'SQ', 'SS', 'S'];
 const VALID_SESSIONS = new Set<FastF1SessionCode>(['R', 'Q', 'SQ', 'SS', 'S']);
+const SESSION_ORDER: Record<FastF1SessionCode, number> = {
+  R: 0,
+  Q: 1,
+  SQ: 2,
+  SS: 3,
+  S: 4,
+};
+
+function consoleText(value: string | null | undefined) {
+  return (value || '').replace(/[^\x20-\x7E]/g, (character) => {
+    const hex = character.codePointAt(0)?.toString(16).padStart(4, '0') || '0000';
+    return `\\u${hex}`;
+  });
+}
 
 function printHelp() {
   console.log(`
@@ -51,7 +65,7 @@ Usage:
 
 Description:
   Imports FastF1 exported JSON payloads into public.fastf1_session_analytics.
-  By default it imports sprint and qualifying-style sessions: Q, SQ, SS, S.
+  By default it imports all supported exported sessions: R, Q, SQ, SS, S.
 
 Environment:
   SUPABASE_URL or VITE_SUPABASE_URL
@@ -295,7 +309,11 @@ async function loadRows(files: string[], args: ParsedArgs) {
     rows.push(normalizePayload(payload, filePath, args));
   }
 
-  return rows;
+  return rows.sort((a, b) =>
+    a.season - b.season
+    || a.round - b.round
+    || SESSION_ORDER[a.session] - SESSION_ORDER[b.session]
+  );
 }
 
 async function main() {
@@ -315,7 +333,7 @@ async function main() {
   const rows = await loadRows(files, args);
   console.log(`Prepared ${rows.length} FastF1 session analytics row(s):`);
   rows.forEach((row) => {
-    console.log(`- ${row.season} round ${row.round} ${row.session}: ${row.event_name || 'Unknown event'}`);
+    console.log(`- ${row.season} round ${row.round} ${row.session}: ${consoleText(row.event_name) || 'Unknown event'}`);
   });
 
   if (args.dryRun) {

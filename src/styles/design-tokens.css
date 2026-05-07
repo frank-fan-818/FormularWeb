@@ -51,6 +51,32 @@
   --accent-orange: #F97316;
 
   /* ========================================
+     Race Control - Data Product Tokens
+     ======================================== */
+  --race-control-ink: #101114;
+  --race-control-panel: #F1F3F5;
+  --race-control-track: #D7DDE3;
+  --race-control-grid: rgba(16, 17, 20, 0.08);
+  --race-control-apex: #00A3A3;
+  --race-control-sector: #6B7A90;
+
+  --chart-driver-1: #FF1801;
+  --chart-driver-2: #2563EB;
+  --chart-driver-3: #00A3A3;
+  --chart-driver-4: #F97316;
+  --chart-driver-5: #7C3AED;
+  --chart-driver-6: #16A34A;
+  --chart-rain: #0EA5E9;
+  --chart-track-temp: #EF4444;
+  --chart-air-temp: #F97316;
+  --chart-humidity: #2563EB;
+
+  --status-sc: #3B82F6;
+  --status-vsc: #F97316;
+  --status-yellow: #EAB308;
+  --status-red-flag: #EF4444;
+
+  /* ========================================
      Semantic Colors
      ======================================== */
   --success: #22C55E;
@@ -99,6 +125,10 @@
   --radius-xl: 16px;
   --radius-2xl: 24px;
   --radius-full: 9999px;
+
+  /* Dense dashboard surfaces should stay tight and scan-friendly. */
+  --radius-panel: 8px;
+  --radius-control: 6px;
 
   /* ========================================
      Typography

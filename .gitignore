@@ -48,3 +48,6 @@ coverage
 
 # Trae IDE rules and skills (local only)
 .trae/
+
+# External assistant skill bundles are reference-only; extract project rules into .trae/skills instead.
+.claude/

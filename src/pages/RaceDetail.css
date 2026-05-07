@@ -47,34 +47,393 @@
 
 .weekend-schedule {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-  gap: 8px;
-  margin-top: 14px;
-  max-width: 760px;
+  gap: 10px;
+  width: min(100%, 960px);
+  margin-top: 16px;
+  border: 1px solid #111;
+  border-top: 4px solid var(--f1-red);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.weekend-schedule-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-secondary);
+  padding-bottom: 10px;
+}
+
+.weekend-schedule-topbar > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weekend-schedule-eyebrow {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+.weekend-schedule-source {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-medium);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekend-time-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 30px;
+  gap: 6px;
+  border: 1px solid #111;
+  border-radius: var(--radius-full);
+  padding: 0 11px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  line-height: 1;
+}
+
+.weekend-time-toggle strong {
+  font-weight: var(--font-bold);
+}
+
+.weekend-schedule-days {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.weekend-schedule-day {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.weekend-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-secondary);
+  background: #f4f4f4;
+}
+
+.weekend-day-name {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+.weekend-day-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.weekend-session-list {
+  display: grid;
+  align-content: start;
 }
 
 .weekend-session {
   min-width: 0;
   display: grid;
-  gap: 3px;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  background: var(--bg-secondary);
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-left: 3px solid var(--session-accent, var(--border-dark));
+  border-bottom: 1px solid var(--border-secondary);
+  padding: 9px 10px;
+  background: #fff;
   color: var(--text-primary);
-  font-size: 12px;
-  font-weight: var(--font-semibold);
-  line-height: 1.2;
 }
 
-.weekend-session strong {
+.weekend-session:last-child {
+  border-bottom: 0;
+}
+
+.weekend-session-practice {
+  --session-accent: #64748b;
+}
+
+.weekend-session-qualifying {
+  --session-accent: #2563eb;
+}
+
+.weekend-session-sprint {
+  --session-accent: #f97316;
+}
+
+.weekend-session-race {
+  --session-accent: var(--f1-red);
+}
+
+.weekend-session-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 26px;
+  border: 1px solid color-mix(in srgb, var(--session-accent) 42%, #fff 58%);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--session-accent) 9%, #fff 91%);
+  color: var(--session-accent);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.weekend-session-main {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.weekend-session-main strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekend-session-main span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekend-session-time {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: var(--font-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.race-weekend-metric-grid,
+.race-weekend-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.race-weekend-metric,
+.race-weekend-risk-item {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: var(--bg-secondary);
+}
+
+.race-weekend-metric small,
+.race-weekend-risk-item small {
   overflow: hidden;
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: var(--font-bold);
+  line-height: 1.2;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
+}
+
+.race-weekend-metric strong,
+.race-weekend-risk-item strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.race-weekend-metric em,
+.race-weekend-risk-item em {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: var(--font-semibold);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.race-weekend-risk-item {
+  border-left: 3px solid var(--risk-accent, var(--border-dark));
+}
+
+.risk-sc {
+  --risk-accent: #2563eb;
+}
+
+.risk-vsc {
+  --risk-accent: #f97316;
+}
+
+.risk-red {
+  --risk-accent: #ef4444;
+}
+
+.risk-yellow {
+  --risk-accent: #eab308;
+}
+
+.race-weekend-post-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+}
+
+.race-weekend-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.race-weekend-data-card {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--bg-secondary);
+}
+
+.race-weekend-data-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.race-weekend-data-card-header strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+.race-weekend-data-card-header span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  line-height: 1.2;
+}
+
+.race-weekend-data-card-header code {
+  border-radius: var(--radius-sm);
+  padding: 4px 7px;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+}
+
+.race-weekend-data-list {
+  display: grid;
+  gap: 7px;
+}
+
+.race-weekend-data-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.race-weekend-data-position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+}
+
+.race-weekend-data-main {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.race-weekend-data-main strong,
+.race-weekend-data-main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.race-weekend-data-main strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--font-bold);
+}
+
+.race-weekend-data-main span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+}
+
+.race-weekend-data-empty {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  border: 1px dashed var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
 }
 
 .results-card {
@@ -1322,6 +1681,64 @@
     padding: 2px 8px;
   }
 
+  .weekend-schedule {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .weekend-schedule-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weekend-schedule-source {
+    white-space: normal;
+  }
+
+  .weekend-time-toggle {
+    min-height: 28px;
+    padding: 0 10px;
+  }
+
+  .weekend-schedule-days {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-schedule-day {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-day-header {
+    min-height: 40px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .weekend-session-list {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-session {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    border-right: 0;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .weekend-session-main strong {
+    font-size: 12px;
+  }
+
+  .weekend-session-time {
+    font-size: 15px;
+  }
+
+  .race-weekend-metric-grid,
+  .race-weekend-risk-grid,
+  .race-weekend-post-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .race-weekend-mode-bar {
     align-items: flex-start;
     flex-direction: column;
@@ -1468,6 +1885,12 @@
 @media (max-width: 375px) {
   .race-title {
     font-size: 18px;
+  }
+
+  .race-weekend-metric-grid,
+  .race-weekend-risk-grid,
+  .race-weekend-post-metrics {
+    grid-template-columns: 1fr;
   }
 
   .tab-dot {

@@ -72,6 +72,39 @@ ergastApi.interceptors.response.use(
   }
 );
 
+export type DriverCareerStandingList = {
+  season: string;
+  round: string;
+  DriverStandings: DriverStanding[];
+  ConstructorStandings: never[];
+};
+export type ConstructorCareerStandingList = {
+  season: string;
+  round: string;
+  DriverStandings: never[];
+  ConstructorStandings: ConstructorStanding[];
+};
+type SupabaseDriverRow = {
+  driver_id: string;
+  permanent_number?: string | null;
+  code?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  date_of_birth?: string | null;
+  nationality?: string | null;
+  total_race_starts?: number | null;
+  total_pole_positions?: number | null;
+  total_podiums?: number | null;
+};
+type SupabaseConstructorRow = {
+  constructor_id: string;
+  name?: string | null;
+  nationality?: string | null;
+  total_race_entries?: number | null;
+  total_pole_positions?: number | null;
+  total_podiums?: number | null;
+};
+
 export const seasonApi = {
   getAllSeasons: async (limit = 100): Promise<Season[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/seasons.json?limit=${limit}`);
@@ -79,7 +112,7 @@ export const seasonApi = {
   },
 
   // 获取单赛季所有冲刺赛结果
-  getSeasonSprintResults: async (season: string): Promise<any[]> => {
+  getSeasonSprintResults: async (season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/sprint.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
   },
@@ -128,8 +161,8 @@ export const seasonApi = {
 let allSeasonIdsPromise: Promise<string[]> | null = null;
 const driverStandingsBySeasonCache = new Map<string, Promise<DriverStanding[]>>();
 const constructorStandingsBySeasonCache = new Map<string, Promise<ConstructorStanding[]>>();
-const driverCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>>>();
-const constructorCareerStandingsCache = new Map<string, Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>>>();
+const driverCareerStandingsCache = new Map<string, Promise<DriverCareerStandingList[]>>();
+const constructorCareerStandingsCache = new Map<string, Promise<ConstructorCareerStandingList[]>>();
 const driverCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
 const constructorCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
 const STANDINGS_BATCH_SIZE = 6;
@@ -253,7 +286,7 @@ function normalizeIdentifierToken(value: string | null | undefined): string {
   return normalizeNameToken(value).replace(/\s+/g, '_');
 }
 
-function getDriverIdCandidates(
+export function getDriverIdCandidates(
   driverId: string,
   identity?: { givenName?: string; familyName?: string },
 ): string[] {
@@ -309,7 +342,7 @@ function findDriverStandingMatch(
 
 async function getDriverCareerStandings(
   params: { driverId: string; givenName?: string; familyName?: string },
-): Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>> {
+): Promise<DriverCareerStandingList[]> {
   const cacheKey = [
     normalizeIdentifierToken(params.driverId),
     normalizeIdentifierToken(params.givenName),
@@ -325,7 +358,7 @@ async function getDriverCareerStandings(
 
 async function loadDriverCareerStandings(
   params: { driverId: string; givenName?: string; familyName?: string },
-): Promise<Array<{ season: string; round: string; DriverStandings: DriverStanding[]; ConstructorStandings: never[] }>> {
+): Promise<DriverCareerStandingList[]> {
   const seasonIds = await getAllSeasonIds();
   const matches = await mapSeasonsInBatches(seasonIds, async (season) => {
     const standings = await getCachedDriverStandingsBySeason(season);
@@ -348,7 +381,7 @@ async function loadDriverCareerStandings(
 
 async function getConstructorCareerStandings(
   constructorId: string,
-): Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>> {
+): Promise<ConstructorCareerStandingList[]> {
   const cacheKey = normalizeIdentifierToken(constructorId);
 
   if (!constructorCareerStandingsCache.has(cacheKey)) {
@@ -360,7 +393,7 @@ async function getConstructorCareerStandings(
 
 async function loadConstructorCareerStandings(
   constructorId: string,
-): Promise<Array<{ season: string; round: string; DriverStandings: never[]; ConstructorStandings: ConstructorStanding[] }>> {
+): Promise<ConstructorCareerStandingList[]> {
   const seasonIds = await getAllSeasonIds();
   const matches = await mapSeasonsInBatches(seasonIds, async (season) => {
     const standings = await getCachedConstructorStandingsBySeason(season);
@@ -424,7 +457,7 @@ export const driverApi = {
   },
 
   // 获取车手单赛季各分站积分
-  getDriverSeasonRaceResults: async (driverId: string, season: string): Promise<any[]> => {
+  getDriverSeasonRaceResults: async (driverId: string, season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/drivers/${driverId}/results.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
   },
@@ -432,7 +465,7 @@ export const driverApi = {
   getDriverCareer: async (
     driverId: string,
     identity?: { givenName?: string; familyName?: string },
-  ): Promise<any[]> => {
+  ): Promise<DriverCareerStandingList[]> => {
     return getDriverCareerStandings({
       driverId,
       givenName: identity?.givenName,
@@ -479,7 +512,7 @@ export const driverApi = {
   // 获取车手生涯总积分
   getDriverTotalPoints: async (driverId: string): Promise<number> => {
     const standings = await driverApi.getDriverCareer(driverId);
-    return standings.reduce((total: number, standingList: any) => {
+    return standings.reduce((total, standingList) => {
       return total + toNumericValue(standingList.DriverStandings?.[0]?.points);
     }, 0);
   },
@@ -502,7 +535,7 @@ export const constructorApi = {
   },
 
   // 获取车队单赛季各分站积分
-  getConstructorSeasonRaceResults: async (constructorId: string, season: string): Promise<any[]> => {
+  getConstructorSeasonRaceResults: async (constructorId: string, season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/constructors/${constructorId}/results.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
   },
@@ -534,7 +567,7 @@ export const constructorApi = {
   // 获取车队生涯总积分
   getConstructorTotalPoints: async (constructorId: string): Promise<number> => {
     const standings = await getConstructorCareerStandings(constructorId);
-    return standings.reduce((total: number, standingList: any) => {
+    return standings.reduce((total, standingList) => {
       return total + toNumericValue(standingList.ConstructorStandings?.[0]?.points);
     }, 0);
   },
@@ -635,7 +668,7 @@ async function getConstructorCareerRaceResults(constructorId: string): Promise<R
   return constructorCareerRaceResultsCache.get(cacheKey)!;
 }
 
-function mapDriverSeasonHistory(standingsLists: any[]): DriverSeasonHistoryItem[] {
+export function mapDriverSeasonHistory(standingsLists: DriverCareerStandingList[]): DriverSeasonHistoryItem[] {
   const seasons = standingsLists
     .map((standingList) => {
       const standing = standingList.DriverStandings?.[0];
@@ -659,7 +692,7 @@ function mapDriverSeasonHistory(standingsLists: any[]): DriverSeasonHistoryItem[
   return sortSeasonsDescending(seasons);
 }
 
-function mapConstructorSeasonHistory(standingsLists: any[]): ConstructorSeasonHistoryItem[] {
+export function mapConstructorSeasonHistory(standingsLists: ConstructorCareerStandingList[]): ConstructorSeasonHistoryItem[] {
   const seasons = standingsLists
     .map((standingList) => {
       const standing = standingList.ConstructorStandings?.[0];
@@ -703,7 +736,7 @@ function buildCareerSummary(params: {
   };
 }
 
-function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
+function mapSupabaseDriverHistoryProfile(driver: SupabaseDriverRow): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
   return {
     driverId: driver.driver_id,
     permanentNumber: driver.permanent_number || '',
@@ -716,7 +749,7 @@ function mapSupabaseDriverHistoryProfile(driver: Record<string, any>): Omit<Driv
   };
 }
 
-function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>): Omit<ConstructorHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons'> {
+function mapSupabaseConstructorHistoryProfile(constructor: SupabaseConstructorRow): Omit<ConstructorHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons'> {
   return {
     constructorId: constructor.constructor_id,
     url: '#',
@@ -725,7 +758,7 @@ function mapSupabaseConstructorHistoryProfile(constructor: Record<string, any>):
   };
 }
 
-function buildDriverFallbackProfile(driverId: string, standingsLists: any[]): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> | null {
+function buildDriverFallbackProfile(driverId: string, standingsLists: DriverCareerStandingList[]): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> | null {
   const latestStanding = sortSeasonsDescending(standingsLists).find((standingList) => standingList.DriverStandings?.[0]);
   const driver = latestStanding?.DriverStandings?.[0]?.Driver;
 
@@ -750,7 +783,7 @@ async function resolveDriverHistoryIdentity(
   identity?: { givenName?: string; familyName?: string },
 ): Promise<{
   resolvedDriverId: string;
-  standingsLists: any[];
+  standingsLists: DriverCareerStandingList[];
 }> {
   const standingsLists = await driverApi.getDriverCareer(driverId, identity);
   const latestStandingDriverId = standingsLists.find((standingList) => standingList.DriverStandings?.[0])
@@ -796,14 +829,14 @@ async function getConstructorHistorySummaryProfile(constructorId: string): Promi
 }
 
 export const historyApi = {
-  getMostDriverChampionships: async (): Promise<any> => {
+  getMostDriverChampionships: async (): Promise<{ count: number; driver: Driver } | null> => {
     const response: ErgastResponse<never> = await ergastApi.get('/driverStandings/1.json?limit=100');
     const standings = response.MRData.StandingsTable?.StandingsLists || [];
-    const driverCounts: Record<string, { count: number; driver: any }> = {};
+    const driverCounts: Record<string, { count: number; driver: Driver }> = {};
 
-    standings.forEach((s: any) => {
-      if (s.DriverStandings && s.DriverStandings[0]) {
-        const driver = s.DriverStandings[0].Driver;
+    standings.forEach((standingList) => {
+      if (standingList.DriverStandings && standingList.DriverStandings[0]) {
+        const driver = standingList.DriverStandings[0].Driver;
         const driverId = driver.driverId;
         if (!driverCounts[driverId]) {
           driverCounts[driverId] = { count: 0, driver };
@@ -816,24 +849,24 @@ export const historyApi = {
     return sorted[0] || null;
   },
 
-  getMostDriverWins: async (): Promise<any> => {
+  getMostDriverWins: async (): Promise<Driver | null> => {
     const response: ErgastResponse<never> = await ergastApi.get('/results/1.json?limit=1');
     return response.MRData.RaceTable?.Races?.[0]?.Results?.[0]?.Driver || null;
   },
 
-  getMostDriverPoles: async (): Promise<any> => {
+  getMostDriverPoles: async (): Promise<Driver | null> => {
     const response: ErgastResponse<never> = await ergastApi.get('/qualifying/1.json?limit=1');
     return response.MRData.RaceTable?.Races?.[0]?.QualifyingResults?.[0]?.Driver || null;
   },
 
-  getMostConstructorChampionships: async (): Promise<any> => {
+  getMostConstructorChampionships: async (): Promise<{ count: number; constructor: Constructor } | null> => {
     const response: ErgastResponse<never> = await ergastApi.get('/constructorStandings/1.json?limit=100');
     const standings = response.MRData.StandingsTable?.StandingsLists || [];
-    const constructorCounts: Record<string, { count: number; constructor: any }> = {};
+    const constructorCounts: Record<string, { count: number; constructor: Constructor }> = {};
 
-    standings.forEach((s: any) => {
-      if (s.ConstructorStandings && s.ConstructorStandings[0]) {
-        const constructor = s.ConstructorStandings[0].Constructor;
+    standings.forEach((standingList) => {
+      if (standingList.ConstructorStandings && standingList.ConstructorStandings[0]) {
+        const constructor = standingList.ConstructorStandings[0].Constructor;
         const constructorId = constructor.constructorId;
         if (!constructorCounts[constructorId]) {
           constructorCounts[constructorId] = { count: 0, constructor };
@@ -846,7 +879,7 @@ export const historyApi = {
     return sorted[0] || null;
   },
 
-  getMostConstructorWins: async (): Promise<any> => {
+  getMostConstructorWins: async (): Promise<Constructor | null> => {
     const response: ErgastResponse<never> = await ergastApi.get('/results/1.json?limit=1');
     return response.MRData.RaceTable?.Races?.[0]?.Results?.[0]?.Constructor || null;
   },
@@ -857,11 +890,11 @@ export const historyApi = {
       return directSummaryProfile;
     }
 
-    const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId);
+    const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId) as SupabaseDriverRow | null;
     const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
       ? {
-        givenName: exactSupabaseDriver.first_name,
-        familyName: exactSupabaseDriver.last_name,
+        givenName: exactSupabaseDriver.first_name || undefined,
+        familyName: exactSupabaseDriver.last_name || undefined,
       }
       : undefined);
 
@@ -880,14 +913,14 @@ export const historyApi = {
       : null;
 
     if (!baseProfile && resolvedDriverId !== driverId) {
-      const resolvedSupabaseDriver = await supabaseApi.drivers.getById(resolvedDriverId);
+      const resolvedSupabaseDriver = await supabaseApi.drivers.getById(resolvedDriverId) as SupabaseDriverRow | null;
       if (resolvedSupabaseDriver) {
         baseProfile = mapSupabaseDriverHistoryProfile(resolvedSupabaseDriver);
       }
     }
 
     if (!baseProfile && standingsLists.length > 0) {
-      const allDrivers = await supabaseApi.drivers.getAll();
+      const allDrivers = await supabaseApi.drivers.getAll() as SupabaseDriverRow[];
       const latestStandingDriver = standingsLists
         .slice()
         .reverse()
@@ -949,7 +982,7 @@ export const historyApi = {
       return summaryProfile;
     }
 
-    const constructorInfo = await supabaseApi.constructors.getById(constructorId);
+    const constructorInfo = await supabaseApi.constructors.getById(constructorId) as SupabaseConstructorRow | null;
     const standingsLists = await getConstructorCareerStandings(constructorId);
     const seasons = mapConstructorSeasonHistory(standingsLists);
 

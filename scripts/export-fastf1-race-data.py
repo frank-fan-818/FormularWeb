@@ -1385,8 +1385,8 @@ def main() -> None:
     cache_dir = Path(args.cache)
     output_root = Path(args.output)
 
-    if cache_dir.exists():
-        fastf1.Cache.enable_cache(str(cache_dir))
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    fastf1.Cache.enable_cache(str(cache_dir))
 
     session = fastf1.get_session(int(args.season), int(args.round), args.session)
     session.load(
