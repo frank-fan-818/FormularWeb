@@ -39,6 +39,7 @@ lerna-debug.log*
 .f1_cache
 f1_cache/
 *.cache
+data/fia-upgrades/raw/
 
 # Testing
 coverage
@@ -46,8 +47,12 @@ coverage
 # Misc
 *.log
 
-# Trae IDE rules and skills (local only)
-.trae/
+# Trae project rules and skills are shared; other Trae IDE state stays local.
+.trae/*
+!.trae/rules/
+!.trae/rules/**
+!.trae/skills/
+!.trae/skills/**
 
 # External assistant skill bundles are reference-only; extract project rules into .trae/skills instead.
 .claude/

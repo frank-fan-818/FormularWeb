@@ -21,6 +21,25 @@ body {
   min-height: 100vh;
 }
 
+button,
+input,
+textarea,
+select,
+.ant-app,
+.ant-layout,
+.ant-menu,
+.ant-btn,
+.ant-card,
+.ant-table,
+.ant-typography,
+.ant-select,
+.ant-dropdown,
+.ant-modal,
+.ant-tag {
+  font-family: var(--font-family) !important;
+  letter-spacing: 0;
+}
+
 /* ========================================
    Typography System
    ======================================== */
@@ -115,14 +134,15 @@ code {
 .ant-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-panel);
   transition: all var(--transition-slow) var(--ease-spring);
+  box-shadow: var(--shadow-sm);
 }
 
 .ant-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-primary);
 }
 
 .ant-card-head {
@@ -138,19 +158,19 @@ code {
 
 /* Buttons - Ferrari Accent */
 .ant-btn {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-control);
   font-weight: var(--font-medium);
   transition: all var(--transition-base);
 }
 
 .ant-btn-primary {
-  background: linear-gradient(135deg, var(--f1-red) 0%, var(--f1-red-light) 100%);
+  background: var(--f1-red);
   border: none;
   box-shadow: var(--shadow-glow);
 }
 
 .ant-btn-primary:hover {
-  background: linear-gradient(135deg, var(--f1-red-light) 0%, var(--f1-red) 100%);
+  background: var(--f1-red-dark);
   transform: translateY(-2px);
   box-shadow: var(--shadow-glow-strong);
 }
@@ -358,18 +378,18 @@ code {
 }
 
 .rank-badge-1 {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #000;
+  background: rgba(183, 121, 31, 0.16);
+  color: var(--accent-gold);
 }
 
 .rank-badge-2 {
-  background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
-  color: #000;
+  background: rgba(107, 114, 128, 0.14);
+  color: var(--accent-silver);
 }
 
 .rank-badge-3 {
-  background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
-  color: #FFF;
+  background: rgba(161, 98, 7, 0.14);
+  color: var(--accent-bronze);
 }
 
 .rank-badge-other {

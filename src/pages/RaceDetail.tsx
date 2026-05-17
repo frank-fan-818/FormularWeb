@@ -3640,11 +3640,11 @@ const RaceDetail = () => {
                       ))}
                       <span className="compound-legend-item tyre-age-legend-item">
                         <span className="tyre-age-line is-new" />
-                        鏂拌儙
+                        {'\u65b0\u80ce'}
                       </span>
                       <span className="compound-legend-item tyre-age-legend-item">
                         <span className="tyre-age-line is-used" />
-                        鏃ц儙
+                        {'\u65e7\u80ce'}
                       </span>
                     </div>
                   ) : null}

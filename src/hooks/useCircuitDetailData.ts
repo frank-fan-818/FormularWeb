@@ -10,17 +10,46 @@ interface CircuitRouteState {
   circuit?: Circuit & Record<string, unknown>;
 }
 
+type CircuitDetails = {
+  circuit_id?: string | null;
+  name?: string | null;
+  locality?: string | null;
+  location?: string | null;
+  country?: string | null;
+  lat?: string | number | null;
+  long?: string | number | null;
+  lng?: string | number | null;
+  length?: string | number | null;
+  total_distance?: string | number | null;
+  totalDistance?: string | number | null;
+  total_races?: string | number | null;
+  totalRaces?: string | number | null;
+  first_race?: string | number | null;
+  firstRace?: string | number | null;
+  lap_record?: string | null;
+  lapRecord?: string | null;
+  lap_record_driver?: string | null;
+  lapRecordDriver?: string | null;
+  lap_record_year?: string | number | null;
+  lapRecordYear?: string | number | null;
+  race_laps?: string | number | null;
+  raceLaps?: string | number | null;
+  turns?: string | number | null;
+  turnCount?: string | number | null;
+  direction?: string | null;
+};
+
 interface UseCircuitDetailDataReturn {
   circuit: Circuit | null;
-  circuitDetails: Record<string, any> | null;
+  circuitDetails: CircuitDetails | null;
   circuitRaces: Race[];
   seasonLoading: boolean;
   detailsLoading: boolean;
   loading: boolean;
 }
 
-const circuitDetailsCache = new Map<string, Record<string, any> | null>();
-const circuitDetailsInFlight = new Map<string, Promise<Record<string, any> | null>>();
+const circuitDetailsCache = new Map<string, CircuitDetails | null>();
+const circuitDetailsInFlight = new Map<string, Promise<CircuitDetails | null>>();
 
 function hasKnownValue(value: unknown): boolean {
   const text = String(value ?? '').trim().toLowerCase();
@@ -36,11 +65,11 @@ function firstKnownValue<T = unknown>(...values: T[]): T | undefined {
   return values.find((value) => hasKnownValue(value));
 }
 
-function mapSupabaseCircuitToCircuit(circuit: Record<string, any>, fallbackId: string): Circuit {
+function mapSupabaseCircuitToCircuit(circuit: CircuitDetails, fallbackId: string): Circuit {
   return {
     circuitId: circuit.circuit_id || fallbackId,
     url: '#',
-    circuitName: circuit.name,
+    circuitName: circuit.name || fallbackId,
     Location: {
       locality: circuit.locality || circuit.location || '',
       country: circuit.country || '',
@@ -50,7 +79,7 @@ function mapSupabaseCircuitToCircuit(circuit: Record<string, any>, fallbackId: s
   };
 }
 
-function deriveCircuitLength(details: Record<string, any>): string | undefined {
+function deriveCircuitLength(details: CircuitDetails): string | undefined {
   if (hasKnownValue(details.length)) {
     return String(details.length);
   }
@@ -67,9 +96,9 @@ function deriveCircuitLength(details: Record<string, any>): string | undefined {
 }
 
 function normalizeLocalCircuitDetails(
-  details: Record<string, any> | null,
+  details: CircuitDetails | null,
   circuitId?: string,
-): Record<string, any> | null {
+): CircuitDetails | null {
   if (!details) {
     return null;
   }
@@ -95,9 +124,9 @@ function normalizeLocalCircuitDetails(
 }
 
 function mergeCircuitDetails(
-  primary: Record<string, any> | null,
-  fallback: Record<string, any> | null,
-): Record<string, any> | null {
+  primary: CircuitDetails | null,
+  fallback: CircuitDetails | null,
+): CircuitDetails | null {
   if (!primary && !fallback) {
     return null;
   }
@@ -126,11 +155,11 @@ function mergeCircuitDetails(
   };
 }
 
-function getLocalCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {
+function getLocalCircuitDetail(supabaseId: string): Promise<CircuitDetails | null> {
   return getCircuitDetails(supabaseId).then((details) => normalizeLocalCircuitDetails(details, supabaseId)).catch(() => null);
 }
 
-function getCircuitDetail(supabaseId: string): Promise<Record<string, any> | null> {
+function getCircuitDetail(supabaseId: string): Promise<CircuitDetails | null> {
   if (circuitDetailsCache.has(supabaseId)) {
     return Promise.resolve(circuitDetailsCache.get(supabaseId) || null);
   }
@@ -141,7 +170,7 @@ function getCircuitDetail(supabaseId: string): Promise<Record<string, any> | nul
   }
 
   const request = Promise.all([
-    supabaseApi.circuits.getById(supabaseId).catch(() => null),
+    supabaseApi.circuits.getById<CircuitDetails>(supabaseId).catch(() => null),
     getLocalCircuitDetail(supabaseId),
   ])
     .then(([databaseDetails, localDetails]) => {
@@ -163,7 +192,7 @@ export function useCircuitDetailData(
   routeState: CircuitRouteState | null,
 ): UseCircuitDetailDataReturn {
   const { races, loading: seasonLoading } = useSeasonRacesCached(season);
-  const [circuitDetails, setCircuitDetails] = useState<Record<string, any> | null>(null);
+  const [circuitDetails, setCircuitDetails] = useState<CircuitDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [fallbackCircuit, setFallbackCircuit] = useState<Circuit | null>(null);
 

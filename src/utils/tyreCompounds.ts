@@ -61,18 +61,18 @@ export function formatCompoundWithCode(
 
 export function getTyreAgeLabel(stint: Pick<FastF1StrategyStint, 'freshTyre' | 'startTyreLife'>): string {
   if (stint.freshTyre === true) {
-    return '新胎';
+    return '\u65b0\u80ce';
   }
 
   if (stint.freshTyre === false) {
-    return '旧胎';
+    return '\u65e7\u80ce';
   }
 
   if (typeof stint.startTyreLife === 'number' && Number.isFinite(stint.startTyreLife)) {
-    return stint.startTyreLife <= 1 ? '新胎' : '旧胎';
+    return stint.startTyreLife <= 1 ? '\u65b0\u80ce' : '\u65e7\u80ce';
   }
 
-  return '新/旧未知';
+  return '\u672a\u77e5';
 }
 
 export function formatTyreLife(stint: Pick<FastF1StrategyStint, 'startTyreLife' | 'endTyreLife'>): string | null {

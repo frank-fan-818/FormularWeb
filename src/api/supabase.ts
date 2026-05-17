@@ -6,7 +6,7 @@ import type {
 } from '@/types';
 
 type RowPatch = Record<string, string | number | boolean | null>;
-type SupabaseRow = Record<string, any>;
+type SupabaseRow = Record<string, unknown>;
 
 export const SUPABASE_COLUMNS = {
   circuitListMetadata: [
@@ -64,11 +64,9 @@ export const SUPABASE_COLUMNS = {
     'circuit_id',
     'name',
     'locality',
-    'location',
     'country',
     'lat',
     'long',
-    'lng',
     'length',
     'turns',
     'first_race',
@@ -81,7 +79,7 @@ export const SUPABASE_COLUMNS = {
   ].join(', '),
 };
 
-async function listRows<T extends SupabaseRow = SupabaseRow>(table: string, options?: {
+async function listRows<T extends object = SupabaseRow>(table: string, options?: {
   columns?: string;
   orderBy?: string;
   ascending?: boolean;
@@ -107,7 +105,7 @@ async function listRows<T extends SupabaseRow = SupabaseRow>(table: string, opti
   return (data || []) as unknown as T[];
 }
 
-async function getSingleRow<T extends SupabaseRow = SupabaseRow>(
+async function getSingleRow<T extends object = SupabaseRow>(
   table: string,
   key: string,
   value: string | number,
@@ -147,38 +145,38 @@ async function updateRow(table: string, key: string, value: string | number, pat
 
 export const supabaseApi = {
   circuits: {
-    getAll: async (limit = 400) => listRows('circuits', { orderBy: 'name', limit }),
-    getListMetadata: async (limit = 400) => listRows('circuits', {
+    getAll: async <T extends object = SupabaseRow>(limit = 400) => listRows<T>('circuits', { orderBy: 'name', limit }),
+    getListMetadata: async <T extends object = SupabaseRow>(limit = 400) => listRows<T>('circuits', {
       columns: SUPABASE_COLUMNS.circuitListMetadata,
       orderBy: 'name',
       limit,
     }),
-    getById: async (circuitId: string) =>
-      getSingleRow('circuits', 'circuit_id', circuitId, SUPABASE_COLUMNS.circuitDetail),
+    getById: async <T extends object = SupabaseRow>(circuitId: string) =>
+      getSingleRow<T>('circuits', 'circuit_id', circuitId, SUPABASE_COLUMNS.circuitDetail),
     update: async (circuitId: string, patch: RowPatch) => updateRow('circuits', 'circuit_id', circuitId, patch),
   },
 
   drivers: {
-    getAll: async (limit = 1000) => listRows('drivers', { orderBy: 'last_name', limit }),
-    getListMetadata: async (limit = 1000) => listRows('drivers', {
+    getAll: async <T extends object = SupabaseRow>(limit = 1000) => listRows<T>('drivers', { orderBy: 'last_name', limit }),
+    getListMetadata: async <T extends object = SupabaseRow>(limit = 1000) => listRows<T>('drivers', {
       columns: SUPABASE_COLUMNS.driverListMetadata,
       orderBy: 'last_name',
       limit,
     }),
-    getById: async (driverId: string) =>
-      getSingleRow('drivers', 'driver_id', driverId, SUPABASE_COLUMNS.driverDetail),
+    getById: async <T extends object = SupabaseRow>(driverId: string) =>
+      getSingleRow<T>('drivers', 'driver_id', driverId, SUPABASE_COLUMNS.driverDetail),
     update: async (driverId: string, patch: RowPatch) => updateRow('drivers', 'driver_id', driverId, patch),
   },
 
   constructors: {
-    getAll: async (limit = 300) => listRows('constructors', { orderBy: 'name', limit }),
-    getListMetadata: async (limit = 300) => listRows('constructors', {
+    getAll: async <T extends object = SupabaseRow>(limit = 300) => listRows<T>('constructors', { orderBy: 'name', limit }),
+    getListMetadata: async <T extends object = SupabaseRow>(limit = 300) => listRows<T>('constructors', {
       columns: SUPABASE_COLUMNS.constructorListMetadata,
       orderBy: 'name',
       limit,
     }),
-    getById: async (constructorId: string) =>
-      getSingleRow('constructors', 'constructor_id', constructorId, SUPABASE_COLUMNS.constructorDetail),
+    getById: async <T extends object = SupabaseRow>(constructorId: string) =>
+      getSingleRow<T>('constructors', 'constructor_id', constructorId, SUPABASE_COLUMNS.constructorDetail),
     update: async (constructorId: string, patch: RowPatch) => updateRow('constructors', 'constructor_id', constructorId, patch),
   },
 

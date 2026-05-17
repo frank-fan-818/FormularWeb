@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
@@ -19,6 +19,13 @@ const TEXT = {
   fastestLaps: '\u6700\u5feb\u5708',
 };
 
+interface ConstructorProfileStat {
+  key: string;
+  icon: ReactNode;
+  value: ReactNode;
+  label: string;
+}
+
 function hasStatValue(value: unknown): boolean {
   if (value === null || value === undefined || value === '') {
     return false;
@@ -32,7 +39,6 @@ const Constructors = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { constructorStandings, loading: standingsLoading } = useConstructorStandingsCached(currentSeason);
-  const [constructors, setConstructors] = useState<any[]>([]);
   const fetchConstructorMetadata = useCallback(() => supabaseApi.constructors.getListMetadata(), []);
   const { data: constructorMetadata } = useSupabaseMetadata(
     'supabase-constructor-list-metadata',
@@ -40,30 +46,10 @@ const Constructors = () => {
     constructorStandings.length > 0,
   );
 
-  useEffect(() => {
-    const formattedConstructors = constructorStandings.map((standing, index) => ({
-      ...standing.Constructor,
-      nationality: standing.Constructor.nationality || '',
-      total_wins: null,
-      total_pole_positions: null,
-      total_fastest_laps: null,
-      total_race_entries: null,
-      position: standing.position,
-      points: standing.points,
-      seasonWins: standing.wins,
-      index,
-    }));
+  const constructors = useMemo(() => {
+    const constructorMap = new Map((constructorMetadata || []).map((constructor) => [constructor.constructor_id, constructor]));
 
-    setConstructors(formattedConstructors);
-  }, [constructorStandings]);
-
-  useEffect(() => {
-    if (constructorStandings.length === 0 || !constructorMetadata) {
-      return;
-    }
-
-    const constructorMap = new Map(constructorMetadata.map((constructor) => [constructor.constructor_id, constructor]));
-    const enrichedConstructors = constructorStandings.map((standing, index) => {
+    return constructorStandings.map((standing, index) => {
       const dbConstructor = constructorMap.get(standing.Constructor.constructorId);
       return {
         ...standing.Constructor,
@@ -78,8 +64,6 @@ const Constructors = () => {
         index,
       };
     });
-
-    setConstructors(enrichedConstructors);
   }, [constructorMetadata, constructorStandings]);
 
   const loading = standingsLoading && constructors.length === 0;
@@ -96,32 +80,43 @@ const Constructors = () => {
         <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);
-            const profileStats = [
-              hasStatValue(constructor.total_race_entries) ? {
+            const profileStats: ConstructorProfileStat[] = [];
+
+            if (hasStatValue(constructor.total_race_entries)) {
+              profileStats.push({
                 key: 'entries',
                 icon: <TeamOutlined />,
-                value: constructor.total_race_entries,
+                value: String(constructor.total_race_entries),
                 label: TEXT.entries,
-              } : null,
-              hasStatValue(constructor.total_wins) ? {
+              });
+            }
+
+            if (hasStatValue(constructor.total_wins)) {
+              profileStats.push({
                 key: 'wins',
                 icon: <TrophyOutlined />,
-                value: constructor.total_wins,
+                value: String(constructor.total_wins),
                 label: TEXT.wins,
-              } : null,
-              hasStatValue(constructor.total_pole_positions) ? {
+              });
+            }
+
+            if (hasStatValue(constructor.total_pole_positions)) {
+              profileStats.push({
                 key: 'poles',
                 icon: <FlagOutlined />,
-                value: constructor.total_pole_positions,
+                value: String(constructor.total_pole_positions),
                 label: TEXT.poles,
-              } : null,
-              hasStatValue(constructor.total_fastest_laps) ? {
+              });
+            }
+
+            if (hasStatValue(constructor.total_fastest_laps)) {
+              profileStats.push({
                 key: 'fastest-laps',
                 icon: <FlagOutlined />,
-                value: constructor.total_fastest_laps,
+                value: String(constructor.total_fastest_laps),
                 label: TEXT.fastestLaps,
-              } : null,
-            ].filter(Boolean);
+              });
+            }
 
             return (
               <Card
@@ -141,18 +136,18 @@ const Constructors = () => {
                 {constructor.nationality ? (
                   <div className="constructor-card-meta">
                     <span>{TEXT.nationality}</span>
-                    <strong>{constructor.nationality}</strong>
+                    <strong>{String(constructor.nationality)}</strong>
                   </div>
                 ) : null}
                 {profileStats.length > 0 ? (
                   <div className="constructor-profile-stats">
-                    {profileStats.map((stat) => stat ? (
+                    {profileStats.map((stat) => (
                       <span key={stat.key}>
                         {stat.icon}
                         <strong>{stat.value}</strong>
                         {stat.label}
                       </span>
-                    ) : null)}
+                    ))}
                   </div>
                 ) : null}
               </Card>

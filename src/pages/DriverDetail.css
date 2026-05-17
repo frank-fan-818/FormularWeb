@@ -44,12 +44,15 @@
 
 .driver-profile-shell {
   border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border-secondary);
+  overflow: visible;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 .driver-profile-shell > .ant-card-body {
   padding: 0;
+  color: var(--text-primary);
 }
 
 .driver-profile-hero {
@@ -64,6 +67,7 @@
     linear-gradient(135deg, rgba(15, 15, 18, 0.94), rgba(35, 35, 42, 0.78)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
   color: #ffffff;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .driver-profile-kicker {
@@ -233,8 +237,73 @@
 }
 
 .history-inline-note {
-  color: #8c8c8c;
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.driver-history-section {
+  margin-top: var(--space-6);
+}
+
+.driver-history-heading {
+  margin-bottom: var(--space-4);
+}
+
+.driver-history-heading h3 {
+  margin: 0 0 var(--space-1);
+  color: var(--text-primary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0;
+}
+
+.driver-career-stat-grid {
+  margin-bottom: var(--space-5);
+}
+
+.driver-career-stat-card {
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.driver-career-stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-primary);
+}
+
+.driver-career-stat-card .ant-card-body {
+  min-height: 112px;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.driver-career-stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.35;
+}
+
+.driver-career-stat-label svg {
+  color: var(--text-tertiary);
+}
+
+.driver-career-stat-value {
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+  letter-spacing: 0;
 }
 
 .driver-history-meta-grid {

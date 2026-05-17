@@ -22,12 +22,61 @@ This repository contains project-specific skills under `.trae/skills/`. When wor
 - Keep `.env` files out of version control
 - Avoid leaving `console.log` in shipped code
 - Avoid complex business logic directly inside JSX
+- Never allow Chinese mojibake in source files
+- Chinese UI copy must render correctly in UTF-8 or use Unicode escape literals
 
 ## Project Skills
 
 Only use skills from `.trae/skills/` as repo-specific skills. Ignore third-party `SKILL.md` files under dependencies such as `node_modules/`.
 
-### 1. `github-security-check`
+### 1. `frontend-quality-review`
+
+Path: `.trae/skills/frontend-quality-review/SKILL.md`
+
+Trigger this skill when:
+- changing route-level pages, dashboard layouts, charts, or visual styling
+- adding or redesigning F1 data product UI
+- touching `src/styles/design-tokens.css` or chart presentation logic
+
+Minimum checks:
+- confirm the page has a clear primary user task
+- reuse `src/styles/design-tokens.css` before adding new visual constants
+- follow `docs/chart-guidelines.md` for chart work
+- verify loading, empty, and error states
+- check mobile and desktop layouts for overlapping text or controls
+
+### 2. `browser-qa-check`
+
+Path: `.trae/skills/browser-qa-check/SKILL.md`
+
+Trigger this skill when:
+- finishing UI, routing, data-loading, or chart changes
+- preparing browser QA evidence for release
+- validating RaceDetail interactions or responsive behavior
+
+Minimum checks:
+- run relevant unit tests first
+- run `npm run build` when production behavior can change
+- check routes listed in `docs/browser-qa-checklist.md`
+- inspect browser console and failed network requests
+- capture desktop and mobile screenshots when layout changed
+
+### 3. `refactor-safety-check`
+
+Path: `.trae/skills/refactor-safety-check/SKILL.md`
+
+Trigger this skill when:
+- splitting large files such as `src/pages/RaceDetail.tsx`
+- extracting hooks, utilities, or components
+- changing API contracts or removing `any`
+
+Minimum checks:
+- inspect `git status` and protect unrelated user changes
+- prefer small behavior-preserving extractions with tests
+- keep API calls in `src/api/`, reusable logic in `src/hooks/`, shared types in `src/types/`, and pure helpers in `src/utils/`
+- run targeted tests before broader checks
+
+### 4. `github-security-check`
 
 Path: `.trae/skills/github-security-check/SKILL.md`
 
@@ -47,7 +96,7 @@ If sensitive material is found:
 - report the risky file or pattern clearly
 - prefer removing it from version control, updating `.gitignore`, and rotating exposed credentials
 
-### 2. `version-manager`
+### 5. `version-manager`
 
 Path: `.trae/skills/version-manager/SKILL.md`
 
@@ -81,5 +130,8 @@ If a task includes both versioning and pushing:
 
 - Detailed project rules: `.trae/rules/project_rules.md`
 - Project-specific skills:
+  - `.trae/skills/frontend-quality-review/SKILL.md`
+  - `.trae/skills/browser-qa-check/SKILL.md`
+  - `.trae/skills/refactor-safety-check/SKILL.md`
   - `.trae/skills/github-security-check/SKILL.md`
   - `.trae/skills/version-manager/SKILL.md`

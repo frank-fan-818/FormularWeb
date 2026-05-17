@@ -35,3 +35,10 @@ Run this after UI, routing, data-loading, or chart changes.
 - Findings:
 - Blocking:
 - Screenshot paths:
+
+## Release Gate Order
+
+1. `npm test -- --run`
+2. `npm run build`
+3. Browser smoke check for changed routes
+4. `.trae/skills/github-security-check` before push or public publishing

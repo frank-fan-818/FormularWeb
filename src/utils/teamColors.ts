@@ -1,68 +1,57 @@
-// F1车队品牌色映射
+// Current and historical F1 constructor brand colors.
 const teamColorMap: Record<string, string> = {
-  // 现役车队
-  'red_bull': '#1e5bc6', // 红牛蓝
-  'ferrari': '#dc0000', // 法拉利红
-  'mercedes': '#00d2be', // 奔驰银/青
-  'mclaren': '#ff8700', // 迈凯伦橙
-  'aston_martin': '#006f62', // 阿斯顿马丁绿
-  'alpine': '#0090ff', //  Alpine 蓝
-  'alphatauri': '#2b4562', // 小红牛 深蓝
-  'alfa': '#900000', // 阿尔法罗密欧 酒红
-  'haas': '#000000', // 哈斯 黑
-  'williams': '#005aff', // 威廉姆斯 蓝
-  'sauber': '#00e700', // 索伯 绿
-  'rb': '#0e4da4', // 小红牛 蓝
-
-  // 历史车队
-  'jordan': '#ffff00',
-  'benetton': '#008856',
-  'renault': '#fff500',
-  'brawn': '#c8c8c8',
-  'lotus': '#ffb800',
+  red_bull: '#1e5bc6',
+  ferrari: '#dc0000',
+  mercedes: '#00d2be',
+  mclaren: '#ff8700',
+  aston_martin: '#006f62',
+  alpine: '#0090ff',
+  alphatauri: '#2b4562',
+  alfa: '#900000',
+  haas: '#000000',
+  williams: '#005aff',
+  sauber: '#00e700',
+  rb: '#0e4da4',
+  jordan: '#ffff00',
+  benetton: '#008856',
+  renault: '#fff500',
+  brawn: '#c8c8c8',
+  lotus: '#ffb800',
 };
 
-// 默认颜色
-const DEFAULT_COLOR = '#8c8c8c';
+const DEFAULT_COLOR = '#334155';
 
-// 获取车队颜色
 export function getTeamColor(constructorId: string, isText = false): string {
   const color = teamColorMap[constructorId.toLowerCase()] || DEFAULT_COLOR;
-  // 如果是文字颜色，对太浅的颜色做深色适配
-  if (isText && (color === '#ffffff' || color === '#ffff00' || color === '#fff500' || color === '#ffb800')) {
-    return '#000000';
+
+  if (isText && ['#ffffff', '#ffff00', '#fff500', '#ffb800', '#00e700', '#c8c8c8'].includes(color)) {
+    return '#111827';
   }
+
   return color;
 }
 
-// 获取车队背景色样式
 export function getTeamBackgroundColor(constructorId: string): React.CSSProperties {
   return {
     backgroundColor: getTeamColor(constructorId),
-    color: getTeamColor(constructorId, true)
+    color: getTeamColor(constructorId, true),
   };
 }
 
-// 将颜色调暗，用于积分徽章背景
 function darkenColor(hexColor: string, factor: number = 0.7): string {
-  // 移除 # 号
   const hex = hexColor.replace('#', '');
-  
-  // 解析 RGB
+
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  
-  // 调暗颜色
+
   const newR = Math.floor(r * factor);
   const newG = Math.floor(g * factor);
   const newB = Math.floor(b * factor);
-  
-  // 转换回 hex
+
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 }
 
-// 获取调暗的车队颜色，用于积分徽章
 export function getTeamDarkColor(constructorId: string): string {
   const baseColor = getTeamColor(constructorId);
   return darkenColor(baseColor, 0.75);

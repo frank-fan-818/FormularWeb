@@ -648,13 +648,15 @@ const DriverDetail = () => {
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
-          headStyle={{
-            background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
-            borderBottom: `2px solid ${teamColor}30`,
-            fontSize: 16,
-            fontWeight: 600,
+          styles={{
+            header: {
+              background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
+              borderBottom: `2px solid ${teamColor}30`,
+              fontSize: 16,
+              fontWeight: 600,
+            },
+            body: { padding: isMobile ? 0 : 24 },
           }}
-          bodyStyle={{ padding: isMobile ? 0 : 24 }}
         >
           {seasonRaceResults.length > 0 ? (
             <div
@@ -703,70 +705,70 @@ const DriverDetail = () => {
         </Card>
 
         {showHistoryOverview ? (
-          <>
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.careerStats}</h3>
+          <section className="driver-history-section">
+            <div className="driver-history-heading">
+              <h3>{TEXT.careerStats}</h3>
               <div className="history-inline-note">
                 {historyLoading ? TEXT.loadingCareerStats : TEXT.loadedCareerStats}
               </div>
             </div>
-            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Row gutter={[16, 16]} className="driver-career-stat-grid">
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <FlagOutlined /> {TEXT.raceEntries}
                   </div>
-                  <div className="stat-value" style={{ color: '#1890ff' }}>
+                  <div className="driver-career-stat-value" style={{ color: teamColor }}>
                     {driverHistory?.careerSummary.raceCount ?? driver?.totalRaceStarts ?? 0}
                   </div>
                 </Card>
               </Col>
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <TrophyOutlined /> {TEXT.raceWins}
                   </div>
-                  <div className="stat-value" style={{ color: '#fa8c16' }}>
+                  <div className="driver-career-stat-value" style={{ color: 'var(--accent-gold)' }}>
                     {driverHistory?.careerSummary.winCount ?? driver?.totalWins ?? 0}
                   </div>
                 </Card>
               </Col>
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <TrophyOutlined /> {TEXT.podiums}
                   </div>
-                  <div className="stat-value" style={{ color: '#722ed1' }}>
+                  <div className="driver-career-stat-value" style={{ color: 'var(--accent-bronze)' }}>
                     {driverHistory?.careerSummary.podiumCount ?? driver?.totalPodiums ?? 0}
                   </div>
                 </Card>
               </Col>
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <FlagOutlined /> {TEXT.poles}
                   </div>
-                  <div className="stat-value" style={{ color: '#13c2c2' }}>
+                  <div className="driver-career-stat-value" style={{ color: 'var(--race-control-apex)' }}>
                     {driverHistory?.careerSummary.poleCount ?? driver?.totalPolePositions ?? 0}
                   </div>
                 </Card>
               </Col>
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <TrophyOutlined /> {TEXT.championships}
                   </div>
-                  <div className="stat-value" style={{ color: '#faad14' }}>
+                  <div className="driver-career-stat-value" style={{ color: 'var(--accent-gold)' }}>
                     {driverHistory ? championshipSeasons.length : 0}
                   </div>
                 </Card>
               </Col>
               <Col xs={24} sm={8}>
-                <Card className="stat-card">
-                  <div className="stat-label">
+                <Card className="driver-career-stat-card">
+                  <div className="driver-career-stat-label">
                     <CarOutlined /> {TEXT.totalPoints}
                   </div>
-                  <div className="stat-value" style={{ color: '#ff1801' }}>
+                  <div className="driver-career-stat-value" style={{ color: 'var(--f1-red)' }}>
                     {formatPoints(driverHistory?.careerSummary.totalPoints ?? 0)}
                   </div>
                 </Card>
@@ -854,7 +856,7 @@ const DriverDetail = () => {
                 </Card>
               ) : null
             )}
-          </>
+          </section>
         ) : null}
 
         <Card title={TEXT.driverInfo}>

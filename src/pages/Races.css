@@ -2,9 +2,9 @@
 
 .item-meta {
   display: flex;
-  gap: 24px;
-  font-size: 14px;
-  color: #8c8c8c;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .date-item {
@@ -16,20 +16,20 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
 }
 
 .status-upcoming {
-  background-color: #8c8c8c;
+  background-color: var(--text-tertiary);
 }
 
 .status-ongoing {
-  background-color: #fa8c16;
+  background-color: var(--accent-orange);
 }
 
 .status-completed {
-  background-color: #52c41a;
+  background-color: var(--accent-green);
 }
 
 @media (max-width: 768px) {

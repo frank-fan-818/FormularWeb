@@ -1,0 +1,5317 @@
+{
+  "generatedAt": "2026-05-17T03:29:19.600Z",
+  "config": {
+    "modelKind": "residual-hybrid",
+    "nonlinearBlend": 0,
+    "residualBlend": 0.18,
+    "residualTrainingMode": "out-of-fold",
+    "sequenceEncoder": "fixed-recurrent",
+    "predictionPhase": "post-quali",
+    "windowSize": 5,
+    "minimumTrainingRaces": 24,
+    "featureCount": 172,
+    "poleFeatureCount": 40,
+    "shortWindowSize": 3,
+    "longWindowSize": 10
+  },
+  "metrics": {
+    "learnedModel": {
+      "raceCount": 24,
+      "top1Accuracy": 0.625,
+      "top3Accuracy": 1,
+      "averageWinnerRank": 1.5416666666666667,
+      "logLoss": 1.0712075811818413,
+      "brierScore": 0.5634351785702468
+    },
+    "trainedPoleModel": {
+      "raceCount": 24,
+      "top1Accuracy": 0.5833333333333334,
+      "top3Accuracy": 1,
+      "averageWinnerRank": 1.625,
+      "logLoss": 1.2987971160247296,
+      "brierScore": 0.6156762699528978
+    },
+    "poleBaseline": {
+      "raceCount": 24,
+      "top1Accuracy": 0.6666666666666666,
+      "top3Accuracy": 0.9583333333333334,
+      "averageWinnerRank": 1.5416666666666667,
+      "logLoss": 1.7608749803270578,
+      "brierScore": 0.6475506583776135
+    },
+    "byEra": {
+      "ground_effect": {
+        "raceCount": 24,
+        "top1Accuracy": 0.625,
+        "top3Accuracy": 1,
+        "averageWinnerRank": 1.5416666666666667,
+        "logLoss": 1.0712075811818413,
+        "brierScore": 0.5634351785702468
+      }
+    }
+  },
+  "model": {
+    "bias": -4.1993659293962753e-17,
+    "weights": {
+      "gridAdvantage": 0.22222962476819683,
+      "gridPole": 0.35797196803907283,
+      "gridFrontRow": 0.3669450134498373,
+      "gridTop3": 0.4566036079433671,
+      "poleModelProbability": 0.13521403804263413,
+      "poleModelRankAdvantage": 0.23329119802081033,
+      "poleModelScore": 0.08141908657823803,
+      "qualifyingAdvantage": 0.233211479869758,
+      "qualifyingPole": 0.3823099693353273,
+      "qualifyingFrontRow": 0.36416710747159664,
+      "qualifyingPaceAdvantage": 0.2843655838671385,
+      "qualifyingPaceSharpAdvantage": 0.431792967024489,
+      "teamMateQualifyingAdvantage": 0.0903492867950785,
+      "fp1Advantage": 0.12833193283001196,
+      "fp2Advantage": 0.05114661687152626,
+      "fp3Advantage": 0.1933050141838996,
+      "fpBestAdvantage": 0.12199381723324129,
+      "fpAverageAdvantage": 0.15086815426411126,
+      "fpBestGapAdvantage": 0.1531333181382865,
+      "fpLapsShare": 0.008457002290864402,
+      "fpTeamMateAdvantage": 0.04772918076407478,
+      "fpConstructorAdvantage": 0.06118074228913041,
+      "driverLongRunPaceForm": -2.090344511999364e-17,
+      "constructorLongRunPaceForm": -2.090344511999364e-17,
+      "driverTyreManagementForm": -2.090344511999364e-17,
+      "constructorTyreManagementForm": -2.090344511999364e-17,
+      "driverStintLengthForm": -2.090344511999364e-17,
+      "constructorStintLengthForm": -2.090344511999364e-17,
+      "driverPitStopForm": 0.010411221068499137,
+      "constructorPitStopForm": 0.027211404929090466,
+      "driverFastestLapForm": 0.16370879554993692,
+      "constructorFastestLapForm": 0.0813772425109545,
+      "driverTelemetrySpeedForm": -2.090344511999364e-17,
+      "constructorTelemetrySpeedForm": -2.090344511999364e-17,
+      "driverGridGainForm": -0.021104487396702558,
+      "constructorGridGainForm": -0.01723069652172849,
+      "driverChaosForm": 0.14769206743514446,
+      "constructorChaosForm": 0.0720649120609716,
+      "driverRestartProxyForm": -0.02175407721215459,
+      "constructorRestartProxyForm": -0.019021469729350947,
+      "driverSafetyCarForm": 0.1282562651418439,
+      "constructorSafetyCarForm": 0.06898136361863522,
+      "driverVirtualSafetyCarForm": 0.16313465920451725,
+      "constructorVirtualSafetyCarForm": 0.08370189401111189,
+      "driverRedFlagForm": 0.14901495787574584,
+      "constructorRedFlagForm": 0.07275455915206344,
+      "driverQualifyingConversionForm": 0.032800601322337364,
+      "constructorQualifyingConversionForm": 0.030517945464471695,
+      "driverTyrePaceBlend": -2.090344511999364e-17,
+      "constructorTyrePaceBlend": -2.090344511999364e-17,
+      "driverPostPitPaceForm": -2.090344511999364e-17,
+      "constructorPostPitPaceForm": -2.090344511999364e-17,
+      "driverStrategyGainForm": -2.090344511999364e-17,
+      "constructorStrategyGainForm": -2.090344511999364e-17,
+      "driverRestartPaceForm": -2.090344511999364e-17,
+      "constructorRestartPaceForm": -2.090344511999364e-17,
+      "driverRestartGainForm": -2.090344511999364e-17,
+      "constructorRestartGainForm": -2.090344511999364e-17,
+      "driverSafetyCarGainForm": -2.090344511999364e-17,
+      "constructorSafetyCarGainForm": -2.090344511999364e-17,
+      "driverHotTrackTyreForm": -2.090344511999364e-17,
+      "constructorHotTrackTyreForm": -2.090344511999364e-17,
+      "driverWetTrackPaceForm": -2.090344511999364e-17,
+      "constructorWetTrackPaceForm": -2.090344511999364e-17,
+      "constructorUpgradeProxy": -0.006696237431676956,
+      "constructorDeclaredUpgradeIntensity": -0.02467146207173989,
+      "constructorDeclaredUpgradeCount": -0.01959061451460753,
+      "constructorPerformanceUpgradeIntent": 0.1264121990956566,
+      "constructorCircuitSpecificUpgradeIntent": -0.14002500051726857,
+      "constructorReliabilityUpgradeIntent": -0.011565222516751695,
+      "declaredUpgradeTrackFit": -0.019317070215971045,
+      "declaredUpgradeConstructorMomentum": -0.009633082725451483,
+      "declaredUpgradeDriverAdaptation": -0.010904469963194536,
+      "declaredUpgradePracticeValidation": 0.004466253962799276,
+      "declaredUpgradeLongRunValidation": -0.012335731035869945,
+      "declaredUpgradeTrackTypeInteraction": -0.04253612858005569,
+      "driverUpgradeAdaptationProxy": -0.0017176219475557764,
+      "driverShortRecentWinRate": 0.038220864438921885,
+      "driverSequenceMomentum": 0.11888252296208816,
+      "driverSequenceConsistency": 0.0873203182344923,
+      "driverSequenceUpside": 0.1602359249086459,
+      "driverFinishTrend": 0.015528325719321365,
+      "driverQualifyingTrend": -0.017502562675092558,
+      "driverWinTrend": -0.02350476781387556,
+      "driverPodiumTrend": 0.048041032802590256,
+      "driverRecentFinishForm": 0.14830336460626717,
+      "driverRecentPodiumRate": 0.2958462668809738,
+      "driverRecentWinRate": 0.04595599124032064,
+      "driverLongRecentWinRate": 0.0628379855079631,
+      "constructorShortRecentWinRate": 0.03452120042329039,
+      "constructorSequenceMomentum": 0.0721392534650427,
+      "constructorSequenceConsistency": 0.06436562105491644,
+      "constructorSequenceUpside": 0.07574963231814026,
+      "constructorFinishTrend": -0.002142585919799244,
+      "constructorQualifyingTrend": -0.02540130572555483,
+      "constructorWinTrend": 0.0022301394652627696,
+      "constructorPodiumTrend": 0.01890731532327777,
+      "constructorRecentFinishForm": 0.07175109726840093,
+      "constructorRecentPodiumRate": 0.16995290665529472,
+      "constructorRecentWinRate": 0.05018907166260731,
+      "constructorLongRecentWinRate": 0.04494948979015557,
+      "driverStandingAdvantage": 0.1592319192048513,
+      "driverStandingPointsShare": 0.22776019267624859,
+      "constructorStandingAdvantage": 0.12369977260250344,
+      "constructorStandingPointsShare": 0.13937183278625828,
+      "driverSeasonWinRate": 0.047692332155190385,
+      "constructorSeasonWinRate": 0.10070664725907054,
+      "sameCircuitDriverWinRate": 0.0588478478424841,
+      "sameCircuitDriverPodiumRate": 0.1557585450473983,
+      "sameCircuitConstructorWinRate": 0.06668398823662319,
+      "sameCircuitPoleWinRate": -1.7256862983622388e-17,
+      "sameCircuitTop3GridWinRate": -2.7182960848461154e-17,
+      "sameCircuitChaosRate": -4.799950131268047e-18,
+      "sameCircuitSafetyCarRate": -1.2081933014727986e-18,
+      "sameCircuitVirtualSafetyCarRate": -9.84409693287642e-20,
+      "sameCircuitRedFlagRate": -2.9565971373540085e-19,
+      "sameCircuitOvertakeUpsetRate": -1.4079974668489633e-17,
+      "circuitStreetTrack": -1.3755340530088012e-17,
+      "circuitLowOvertake": -2.1479437424089816e-17,
+      "circuitTyreStress": -2.537671066332564e-17,
+      "circuitRestartRisk": -2.7646868922362296e-17,
+      "circuitQualifyingImportance": -2.7059346855568673e-17,
+      "weatherRainRisk": -2.361632197006605e-18,
+      "weatherCoolTrack": -4.185352522902426e-18,
+      "weatherHotTrack": -1.42923827567912e-17,
+      "weatherHumidity": -1.1143241139643896e-17,
+      "weatherWind": -5.686438044420139e-18,
+      "weatherTrackAirDelta": -2.148498215839298e-17,
+      "driverSimilarWeatherForm": -0.0012864092156300486,
+      "constructorSimilarWeatherForm": -0.00015639912220784247,
+      "driverRainWeatherForm": -0.00004195369075282048,
+      "constructorRainWeatherForm": 0.00020146523264020334,
+      "driverHotTrackForm": -0.004405306800920209,
+      "constructorHotTrackForm": -0.005938225416725285,
+      "driverCoolTrackForm": -0.0006338209623733119,
+      "constructorCoolTrackForm": -0.00003925945062266337,
+      "driverWindWeatherReliability": 0.0023383095560574017,
+      "constructorWindWeatherReliability": 0.0008222711947469773,
+      "rainDriverInteraction": 0.00012127109463226228,
+      "rainConstructorInteraction": 0.000162482966497953,
+      "hotTrackConstructorInteraction": -0.0042776570985899485,
+      "coolTrackDriverInteraction": -0.0005226141073031012,
+      "windReliabilityInteraction": 0.0005807533581534765,
+      "sprintWeekend": -1.752678910901021e-17,
+      "sprintFinishAdvantage": 0.08313728356829912,
+      "sprintQualifyingAdvantage": 0.05930341920160841,
+      "driverRecentReliability": 0.0688271765406873,
+      "constructorRecentReliability": 0.05636827245416297,
+      "raceRoundProgress": -1.583444888075853e-17,
+      "gridPoleCircuitInteraction": 0.0977945554172086,
+      "gridFrontRowCircuitInteraction": 0.1783068216501321,
+      "gridTop3CircuitInteraction": 0.3814355761390069,
+      "driverCircuitFamiliarityInteraction": 0.019474201491060824,
+      "constructorCircuitFamiliarityInteraction": 0.029096813984839636,
+      "chaosRacecraftInteraction": 0.03832834400979613,
+      "restartRacecraftInteraction": -0.009920161858039522,
+      "safetyCarRacecraftInteraction": 0.02693926089859264,
+      "redFlagRacecraftInteraction": 0.024991830395120252,
+      "tyreStressPaceInteraction": -1.268835533166282e-17,
+      "postPitStrategyInteraction": 0.0019107272354987898,
+      "restartPaceInteraction": -2.256253612436425e-18,
+      "weatherTyreInteraction": -6.189226329141915e-18,
+      "upgradeTrendInteraction": -0.006373070820289135,
+      "upgradePracticeInteraction": 0.028406229974491975,
+      "upgradeRacePaceInteraction": -0.006539379005833309,
+      "upgradeTrackFitInteraction": -0.019363620665429612,
+      "trackTypeFamiliarityInteraction": 0.016216026715960428,
+      "qualifyingConversionInteraction": 0.01976073869572318,
+      "constructorQualifyingInteraction": 0.057253250605615785,
+      "driverTeamMateInteraction": 0.12668681605520152,
+      "driverTrendSeasonInteraction": 0.02928526524636775,
+      "constructorTrendStrengthInteraction": 0.024982942562046303
+    }
+  },
+  "nonlinearModel": {
+    "featureNames": [
+      "gridAdvantage",
+      "gridPole",
+      "gridFrontRow",
+      "gridTop3",
+      "poleModelProbability",
+      "poleModelRankAdvantage",
+      "poleModelScore",
+      "qualifyingAdvantage",
+      "qualifyingPole",
+      "qualifyingFrontRow",
+      "qualifyingPaceAdvantage",
+      "qualifyingPaceSharpAdvantage",
+      "teamMateQualifyingAdvantage",
+      "fp1Advantage",
+      "fp2Advantage",
+      "fp3Advantage",
+      "fpBestAdvantage",
+      "fpAverageAdvantage",
+      "fpBestGapAdvantage",
+      "fpLapsShare",
+      "fpTeamMateAdvantage",
+      "fpConstructorAdvantage",
+      "driverLongRunPaceForm",
+      "constructorLongRunPaceForm",
+      "driverTyreManagementForm",
+      "constructorTyreManagementForm",
+      "driverStintLengthForm",
+      "constructorStintLengthForm",
+      "driverPitStopForm",
+      "constructorPitStopForm",
+      "driverFastestLapForm",
+      "constructorFastestLapForm",
+      "driverTelemetrySpeedForm",
+      "constructorTelemetrySpeedForm",
+      "driverGridGainForm",
+      "constructorGridGainForm",
+      "driverChaosForm",
+      "constructorChaosForm",
+      "driverRestartProxyForm",
+      "constructorRestartProxyForm",
+      "driverSafetyCarForm",
+      "constructorSafetyCarForm",
+      "driverVirtualSafetyCarForm",
+      "constructorVirtualSafetyCarForm",
+      "driverRedFlagForm",
+      "constructorRedFlagForm",
+      "driverQualifyingConversionForm",
+      "constructorQualifyingConversionForm",
+      "driverTyrePaceBlend",
+      "constructorTyrePaceBlend",
+      "driverPostPitPaceForm",
+      "constructorPostPitPaceForm",
+      "driverStrategyGainForm",
+      "constructorStrategyGainForm",
+      "driverRestartPaceForm",
+      "constructorRestartPaceForm",
+      "driverRestartGainForm",
+      "constructorRestartGainForm",
+      "driverSafetyCarGainForm",
+      "constructorSafetyCarGainForm",
+      "driverHotTrackTyreForm",
+      "constructorHotTrackTyreForm",
+      "driverWetTrackPaceForm",
+      "constructorWetTrackPaceForm",
+      "constructorUpgradeProxy",
+      "constructorDeclaredUpgradeIntensity",
+      "constructorDeclaredUpgradeCount",
+      "constructorPerformanceUpgradeIntent",
+      "constructorCircuitSpecificUpgradeIntent",
+      "constructorReliabilityUpgradeIntent",
+      "declaredUpgradeTrackFit",
+      "declaredUpgradeConstructorMomentum",
+      "declaredUpgradeDriverAdaptation",
+      "declaredUpgradePracticeValidation",
+      "declaredUpgradeLongRunValidation",
+      "declaredUpgradeTrackTypeInteraction",
+      "driverUpgradeAdaptationProxy",
+      "driverShortRecentWinRate",
+      "driverSequenceMomentum",
+      "driverSequenceConsistency",
+      "driverSequenceUpside",
+      "driverFinishTrend",
+      "driverQualifyingTrend",
+      "driverWinTrend",
+      "driverPodiumTrend",
+      "driverRecentFinishForm",
+      "driverRecentPodiumRate",
+      "driverRecentWinRate",
+      "driverLongRecentWinRate",
+      "constructorShortRecentWinRate",
+      "constructorSequenceMomentum",
+      "constructorSequenceConsistency",
+      "constructorSequenceUpside",
+      "constructorFinishTrend",
+      "constructorQualifyingTrend",
+      "constructorWinTrend",
+      "constructorPodiumTrend",
+      "constructorRecentFinishForm",
+      "constructorRecentPodiumRate",
+      "constructorRecentWinRate",
+      "constructorLongRecentWinRate",
+      "driverStandingAdvantage",
+      "driverStandingPointsShare",
+      "constructorStandingAdvantage",
+      "constructorStandingPointsShare",
+      "driverSeasonWinRate",
+      "constructorSeasonWinRate",
+      "sameCircuitDriverWinRate",
+      "sameCircuitDriverPodiumRate",
+      "sameCircuitConstructorWinRate",
+      "sameCircuitPoleWinRate",
+      "sameCircuitTop3GridWinRate",
+      "sameCircuitChaosRate",
+      "sameCircuitSafetyCarRate",
+      "sameCircuitVirtualSafetyCarRate",
+      "sameCircuitRedFlagRate",
+      "sameCircuitOvertakeUpsetRate",
+      "circuitStreetTrack",
+      "circuitLowOvertake",
+      "circuitTyreStress",
+      "circuitRestartRisk",
+      "circuitQualifyingImportance",
+      "weatherRainRisk",
+      "weatherCoolTrack",
+      "weatherHotTrack",
+      "weatherHumidity",
+      "weatherWind",
+      "weatherTrackAirDelta",
+      "driverSimilarWeatherForm",
+      "constructorSimilarWeatherForm",
+      "driverRainWeatherForm",
+      "constructorRainWeatherForm",
+      "driverHotTrackForm",
+      "constructorHotTrackForm",
+      "driverCoolTrackForm",
+      "constructorCoolTrackForm",
+      "driverWindWeatherReliability",
+      "constructorWindWeatherReliability",
+      "rainDriverInteraction",
+      "rainConstructorInteraction",
+      "hotTrackConstructorInteraction",
+      "coolTrackDriverInteraction",
+      "windReliabilityInteraction",
+      "sprintWeekend",
+      "sprintFinishAdvantage",
+      "sprintQualifyingAdvantage",
+      "driverRecentReliability",
+      "constructorRecentReliability",
+      "raceRoundProgress",
+      "gridPoleCircuitInteraction",
+      "gridFrontRowCircuitInteraction",
+      "gridTop3CircuitInteraction",
+      "driverCircuitFamiliarityInteraction",
+      "constructorCircuitFamiliarityInteraction",
+      "chaosRacecraftInteraction",
+      "restartRacecraftInteraction",
+      "safetyCarRacecraftInteraction",
+      "redFlagRacecraftInteraction",
+      "tyreStressPaceInteraction",
+      "postPitStrategyInteraction",
+      "restartPaceInteraction",
+      "weatherTyreInteraction",
+      "upgradeTrendInteraction",
+      "upgradePracticeInteraction",
+      "upgradeRacePaceInteraction",
+      "upgradeTrackFitInteraction",
+      "trackTypeFamiliarityInteraction",
+      "qualifyingConversionInteraction",
+      "constructorQualifyingInteraction",
+      "driverTeamMateInteraction",
+      "driverTrendSeasonInteraction",
+      "constructorTrendStrengthInteraction"
+    ],
+    "hiddenSize": 4,
+    "inputWeights": [
+      [
+        0.018854877370313387,
+        -0.03318306572024602,
+        -0.005438427981092854,
+        0.02660788430580446
+      ],
+      [
+        0.004960411520340203,
+        -0.010301557064366364,
+        -0.015591035134216726,
+        0.003533850133408153
+      ],
+      [
+        -0.0038678518127116452,
+        -0.012310611049566511,
+        0.0330788376248449,
+        -0.03634768321499146
+      ],
+      [
+        -0.018456794798009078,
+        0.036106752573378,
+        0.010612636595645871,
+        -0.030361600259294536
+      ],
+      [
+        0.025660101185243183,
+        0.003283410906417102,
+        0.03269227920267756,
+        -0.01828694909315785
+      ],
+      [
+        0.019852954363748693,
+        0.006271586692345162,
+        0.015976948985639058,
+        0.038497324827764946
+      ],
+      [
+        0.0000833770588169962,
+        0.005871578415804562,
+        -0.029406444735037313,
+        -0.005152841160809406
+      ],
+      [
+        0.0015961338257928796,
+        0.006732057056942267,
+        0.02841046906848983,
+        -0.03882383853877673
+      ],
+      [
+        0.0015488986010888705,
+        0.0059989883349951265,
+        -0.03443662715719599,
+        0.0004921461605718216
+      ],
+      [
+        -0.03848860361186905,
+        -0.008918410313723337,
+        -0.016041091148300685,
+        0.006882053906810845
+      ],
+      [
+        0.007070713303760667,
+        0.03393674790844228,
+        0.020219590407185625,
+        0.01964163258451735
+      ],
+      [
+        0.008572083560126365,
+        0.025679982176719643,
+        0.011521798509338661,
+        0.011195079129469388
+      ],
+      [
+        -0.007977665998279483,
+        -0.0237451638204602,
+        -0.028767433365931884,
+        -0.037886341091275574
+      ],
+      [
+        0.027581580924030406,
+        0.02031990064799133,
+        -0.034020903265912124,
+        -0.005759641027365896
+      ],
+      [
+        -0.012842045606016214,
+        0.01364055229777676,
+        -0.022657810364884335,
+        -0.011397183969210488
+      ],
+      [
+        -0.006391421998155675,
+        0.03701189862590567,
+        -3.648172019365003e-7,
+        -0.019897167645639438
+      ],
+      [
+        -0.021089867843620103,
+        -0.002918553413329368,
+        -0.003943810773613864,
+        -0.0021119079931613185
+      ],
+      [
+        0.03858279212513443,
+        0.03448893553023268,
+        -0.026409219541179293,
+        -0.012780700210224798
+      ],
+      [
+        0.01649431739149608,
+        0.0007168168448409237,
+        -0.03690166317668052,
+        0.03216371099092025
+      ],
+      [
+        0.02894803234159828,
+        0.0023441803440379873,
+        -0.028406828364662066,
+        0.02554903543611051
+      ],
+      [
+        0.02791653438279317,
+        0.00010523780951855391,
+        0.010054636998497672,
+        -0.005425153238414166
+      ],
+      [
+        -0.03654194649355517,
+        -0.031185266357229284,
+        0.023722601913221765,
+        0.03678916741225353
+      ],
+      [
+        0.010109233794670347,
+        -0.0328738803906998,
+        -0.024124144232301862,
+        -0.005446999254491325
+      ],
+      [
+        0.03442770511057072,
+        -0.006876197999878204,
+        -0.02556390372542899,
+        0.023340145883116184
+      ],
+      [
+        -0.021728391337431957,
+        0.03028466254944328,
+        -0.031732980392341924,
+        -0.004111058907376865
+      ],
+      [
+        0.021079042053548356,
+        0.006189668193644387,
+        0.03952582028059044,
+        0.03787032160889195
+      ],
+      [
+        -0.027565432024379038,
+        -0.02777772892966975,
+        -0.03375514414680358,
+        -0.007115786574282864
+      ],
+      [
+        0.0327060373962853,
+        0.0037897202267167794,
+        0.024362515771956802,
+        0.0041246114538702056
+      ],
+      [
+        -0.02577884720844521,
+        0.02176231364270637,
+        -0.008503062389153767,
+        0.005049624634531945
+      ],
+      [
+        -0.012585570201298139,
+        -0.03824342243534873,
+        0.02063803411057709,
+        -0.02034413970290374
+      ],
+      [
+        0.004856896184627229,
+        0.010954222060574254,
+        0.027691861612791885,
+        -0.007179931253058394
+      ],
+      [
+        -0.010715803362989397,
+        -0.036346452664770164,
+        0.0004987300182049236,
+        0.038473977142232454
+      ],
+      [
+        -0.007703148272630168,
+        -0.008261488982165534,
+        -0.027235737647803324,
+        -0.03956417275050564
+      ],
+      [
+        0.005499096843711266,
+        -0.02418772550180075,
+        -0.008601454882765243,
+        0.027280832800975284
+      ],
+      [
+        -0.030771004224005517,
+        0.01834207484811188,
+        0.015660644934391184,
+        0.011733731566825143
+      ],
+      [
+        0.011032639606143643,
+        0.017875148041254636,
+        0.034655532219265,
+        0.01905889412259136
+      ],
+      [
+        0.03644943555671791,
+        0.025440801007679537,
+        -0.028019150970056115,
+        -0.018294557413790758
+      ],
+      [
+        -0.020185483410757873,
+        -0.0024645774499821075,
+        0.014419437247542617,
+        0.006164810324618774
+      ],
+      [
+        -0.01902255211827753,
+        -0.004814265920180159,
+        -0.010824038398624376,
+        -0.021897673619179565
+      ],
+      [
+        0.022385884942091254,
+        -0.0055668726862039605,
+        -0.010172493466735348,
+        0.024976842192216037
+      ],
+      [
+        0.02795718276926131,
+        -0.005797633974558258,
+        0.01420369919643853,
+        -0.0036268646751997174
+      ],
+      [
+        0.010941909796665563,
+        -0.03145083718870584,
+        -0.03266087780604322,
+        0.006949390334192328
+      ],
+      [
+        -0.03367002362869057,
+        0.0006830407809927732,
+        -0.034648003260233644,
+        -0.01493845244238832
+      ],
+      [
+        -0.00035034519582959474,
+        -0.00040721742439136545,
+        -0.02022996839297751,
+        -0.027041830129683714
+      ],
+      [
+        0.024348812235361214,
+        0.036184526275816635,
+        -0.00621955466756416,
+        0.030803511789599124
+      ],
+      [
+        0.018789759608277324,
+        -0.020231487270754155,
+        -0.015126949695989505,
+        0.014958803274303675
+      ],
+      [
+        -0.03287945018213273,
+        0.03826047626043715,
+        -0.010029481773349981,
+        0.016111074645704885
+      ],
+      [
+        -0.005433808239271726,
+        0.012215313628995052,
+        -0.007664530775750529,
+        -0.017337728767452414
+      ],
+      [
+        0.038543175962163674,
+        0.02030338929992429,
+        0.009083521378682556,
+        -0.022028670327761533
+      ],
+      [
+        0.032371307856398863,
+        0.010993456494565764,
+        -0.014940693747094766,
+        -0.027686236225923956
+      ],
+      [
+        -0.0015588519792692265,
+        -0.008008148462530595,
+        0.001599815855626232,
+        0.0201798059799995
+      ],
+      [
+        -0.011932610341165838,
+        -0.0052127689639202245,
+        0.008458151264378329,
+        -0.036699225570733233
+      ],
+      [
+        -0.0008004468043245269,
+        -0.02935728791338445,
+        0.007575737249462105,
+        -0.015619543197041452
+      ],
+      [
+        -0.033793074921830216,
+        -0.009400725769792265,
+        0.02906030091087473,
+        -0.017040056802829284
+      ],
+      [
+        0.03258792365466781,
+        0.012034819727125367,
+        0.017312920918714565,
+        0.006053680265536669
+      ],
+      [
+        -0.016506226868881212,
+        0.03243888816916475,
+        -0.030426193211399444,
+        -0.038395850463684225
+      ],
+      [
+        -0.012733324771630543,
+        0.01108797177553289,
+        0.009748471133910402,
+        0.015496051319402208
+      ],
+      [
+        0.009207126139148267,
+        -0.023027775029155925,
+        0.0026771926088318713,
+        0.02638256590657834
+      ],
+      [
+        0.007442729317579086,
+        0.03216662869170279,
+        0.039988707755594384,
+        0.03572700639852661
+      ],
+      [
+        0.0009993759547639936,
+        0.031757215485963414,
+        -0.010735310830423759,
+        -0.005305709671592347
+      ],
+      [
+        -0.017326407266063864,
+        0.030523230580962873,
+        -0.035339765853419774,
+        0.029573114050955463
+      ],
+      [
+        0.034959699287187146,
+        -0.000807936914489453,
+        0.031702584006960466,
+        -0.03730469709913739
+      ],
+      [
+        0.03618653405495271,
+        -0.017224324404115393,
+        0.03669127745553084,
+        0.006297172753672638
+      ],
+      [
+        -0.02878457131821747,
+        0.024264354815706008,
+        0.028231780112644003,
+        0.028867227419772608
+      ],
+      [
+        0.015792258817676076,
+        0.014719513751214112,
+        0.023625068327499,
+        0.0032460387187840853
+      ],
+      [
+        -0.033366298748746984,
+        0.0012565691620545396,
+        -0.012420710042712871,
+        -0.01861421711827674
+      ],
+      [
+        0.038733543971108994,
+        -0.017644165848094757,
+        0.02730527433659194,
+        0.02956180096445153
+      ],
+      [
+        0.002456015835077603,
+        0.017664536115722055,
+        0.021841340191479233,
+        -0.02380104953054655
+      ],
+      [
+        -0.007989249514884913,
+        0.023160447779145,
+        0.025283524735114093,
+        0.02790764172018935
+      ],
+      [
+        0.007758470800466432,
+        0.009057804911347514,
+        -0.03697054154097006,
+        0.010315741316786803
+      ],
+      [
+        -0.004237401508295071,
+        0.013662119388009677,
+        -0.014943244832945204,
+        -0.02848326071131511
+      ],
+      [
+        -0.0028706660256029265,
+        0.023503249943966253,
+        0.0010939458886129261,
+        0.005599681891919249
+      ],
+      [
+        -0.03944497977980459,
+        0.032678419536476315,
+        0.025365313440682123,
+        0.02039101247482746
+      ],
+      [
+        0.01818823491156172,
+        -0.01570495341043538,
+        0.03336246149591428,
+        0.01868998400960567
+      ],
+      [
+        -0.013315134176841189,
+        0.03372051420731378,
+        -0.0077076677630464815,
+        -0.02029713534940834
+      ],
+      [
+        -0.021060399413104194,
+        0.0131627495297557,
+        0.003044763678119146,
+        -0.022348479189955642
+      ],
+      [
+        0.025361546043083258,
+        -0.02500955037318463,
+        0.023565161923740148,
+        -0.02365834911427793
+      ],
+      [
+        0.038152851209346784,
+        0.007726884996109338,
+        -0.008109654636974271,
+        0.003065069777839509
+      ],
+      [
+        -0.018610816453625525,
+        0.03059177464779396,
+        -0.0008658201934244113,
+        -0.0258159320367762
+      ],
+      [
+        -0.0330334098099085,
+        -0.019958491735009694,
+        -0.037490694691532586,
+        0.029267684145069042
+      ],
+      [
+        0.002248301646031858,
+        0.02987303931045633,
+        -0.003010039605557539,
+        -0.037804311682639674
+      ],
+      [
+        -0.009691317264081557,
+        -0.024951140393501242,
+        0.021718864750874128,
+        -0.020527372525713627
+      ],
+      [
+        0.014504179991107459,
+        -0.03735028094928023,
+        0.008805915691637058,
+        0.001155986607673768
+      ],
+      [
+        0.021012366319778472,
+        0.03827778219201569,
+        -0.013942706627313372,
+        -0.029468790242739806
+      ],
+      [
+        0.009567446674327202,
+        0.023999776101763265,
+        0.007366985642800789,
+        0.025122378745655358
+      ],
+      [
+        0.00883806460313891,
+        0.0011333668504338174,
+        0.03427896228151155,
+        0.02767806295808932
+      ],
+      [
+        -0.02969936943100558,
+        0.013060287813006862,
+        -0.00038347173590343056,
+        -0.01605785374071983
+      ],
+      [
+        -0.0033654785526906765,
+        0.03739778065740871,
+        -0.003463378530202562,
+        0.02374696355465025
+      ],
+      [
+        0.006458546527406831,
+        -0.01386726392291198,
+        -0.033893515760908495,
+        -0.009198295498173744
+      ],
+      [
+        -0.026028719766394585,
+        0.021429203822123755,
+        0.03249403085348651,
+        0.03171444594805462
+      ],
+      [
+        -0.01829127270885989,
+        0.022604987962860437,
+        -0.0064528965290764975,
+        0.0007518692889720581
+      ],
+      [
+        0.034422971853909516,
+        -0.028315368053861655,
+        0.007786366642551311,
+        -0.012079018823679335
+      ],
+      [
+        0.009299124066345504,
+        0.012970837725269956,
+        0.018363990058202623,
+        -0.03181705280441541
+      ],
+      [
+        0.012877699272434623,
+        -0.004526943259212194,
+        -0.035618402965802085,
+        -0.023638448841985887
+      ],
+      [
+        0.02713407935993248,
+        0.009948383521316407,
+        0.033973162925954654,
+        -0.03618408607683543
+      ],
+      [
+        -0.0115217250176788,
+        -0.03779767013546428,
+        0.04004134666248712,
+        0.01646414047779312
+      ],
+      [
+        0.02690792632751089,
+        -0.0028267315765096715,
+        0.008865585106738839,
+        -0.001256173528887201
+      ],
+      [
+        -0.003474876812841879,
+        0.03509716464806515,
+        -0.02972129745063833,
+        -0.031185038008100355
+      ],
+      [
+        -0.018611232016981952,
+        0.03579666126043028,
+        -0.000274685329183906,
+        0.007259637892174359
+      ],
+      [
+        0.007030485710405441,
+        -0.037677010830109846,
+        -0.037294183405227846,
+        0.02553573428922644
+      ],
+      [
+        -0.036795104496626235,
+        -0.013731555744706686,
+        -0.013423040881030513,
+        0.00972931478866506
+      ],
+      [
+        -0.011788424186237396,
+        -0.01090988992208014,
+        -0.02556343847657211,
+        -0.028043570998562948
+      ],
+      [
+        0.030078569944457262,
+        0.03175979133468293,
+        0.033798621468091844,
+        0.018629448431907485
+      ],
+      [
+        -0.024653184485506466,
+        0.040236724444116745,
+        -0.0117841252508367,
+        0.028005496294870768
+      ],
+      [
+        0.03237220902486238,
+        0.03377529186833168,
+        0.02185410824579771,
+        -0.020961720499018205
+      ],
+      [
+        0.011838203637220454,
+        0.004555883342797175,
+        -0.0012368801586082904,
+        -0.03352048092826232
+      ],
+      [
+        0.020528001563336864,
+        0.03588954570483258,
+        0.005926334155681704,
+        0.00444548283479399
+      ],
+      [
+        -0.03444662757603979,
+        -0.012947853481778704,
+        -0.011754350843862213,
+        0.0038170136017183663
+      ],
+      [
+        0.013833868817419206,
+        0.03140979083002067,
+        -0.019252684118104182,
+        0.01539258957628302
+      ],
+      [
+        0.03502139275551936,
+        -0.036780527063667794,
+        -0.0014300611607511067,
+        0.031794978715074695
+      ],
+      [
+        0.006037179413895824,
+        -0.018331143763366146,
+        -0.019724637269311656,
+        0.03659268221502618
+      ],
+      [
+        0.0031701384648501296,
+        0.02694354859827745,
+        0.03454608416139317,
+        0.021351651600072023
+      ],
+      [
+        0.010565351908662694,
+        -0.012298205633571513,
+        -0.0383473067401112,
+        -0.007878295863226154
+      ],
+      [
+        0.009527975229206346,
+        -0.014139898418807254,
+        0.0017862679303717083,
+        0.03201209527672607
+      ],
+      [
+        0.036791910408717106,
+        -0.005761854280861002,
+        -0.0008509204285106611,
+        -0.027266506908607414
+      ],
+      [
+        0.033006175252403604,
+        -0.028318382722473414,
+        0.014982663598105883,
+        -0.005391893725210179
+      ],
+      [
+        -0.03744534932454705,
+        -0.0333715003410155,
+        -0.029945843362976406,
+        0.006121480858416305
+      ],
+      [
+        0.02535759586079353,
+        -0.011187468648850007,
+        0.007737441063529798,
+        -0.010198577350202152
+      ],
+      [
+        0.031986905387254363,
+        0.023433328377626517,
+        -0.010208253317980476,
+        -0.026118926404280884
+      ],
+      [
+        -0.014640902899622367,
+        0.01308260055987896,
+        -0.013056563884940902,
+        -0.008552064296404916
+      ],
+      [
+        -0.02807756564061333,
+        0.0025932938141597704,
+        0.010797278403937948,
+        0.033755390268806404
+      ],
+      [
+        0.03958086259565254,
+        0.02121086309054472,
+        0.015541765402061413,
+        0.03581381084802991
+      ],
+      [
+        0.007350054960442977,
+        -0.013711302223290756,
+        -0.03724238617287976,
+        0.00804140233624096
+      ],
+      [
+        0.01851959207567264,
+        0.006099078686229813,
+        0.033118804222597324,
+        -0.03136157351026536
+      ],
+      [
+        0.008180034033305054,
+        0.008005282012512131,
+        0.018336557781564334,
+        -0.026891176582625635
+      ],
+      [
+        0.020330974008746585,
+        0.0063750719625002075,
+        0.010022961828390162,
+        -0.011479559517961115
+      ],
+      [
+        0.007262964689850763,
+        -0.00977362175471543,
+        0.01572307512847208,
+        -0.035874784938682625
+      ],
+      [
+        -0.015512967540576874,
+        -0.029722857155204375,
+        0.021315463973306362,
+        -0.011841046812670586
+      ],
+      [
+        -0.02448439447262171,
+        -0.014253847300836429,
+        0.021359745994020136,
+        0.031050876696346534
+      ],
+      [
+        -0.0328208906430255,
+        -0.008056779023319813,
+        0.009093763842399969,
+        -0.03398392849581817
+      ],
+      [
+        -0.009237334777283076,
+        -0.03508647214977041,
+        0.035775671051301985,
+        0.00910283607657589
+      ],
+      [
+        0.031099497285878328,
+        -0.032991494386073565,
+        0.027779298236634904,
+        -0.023534406612091472
+      ],
+      [
+        -0.007029117461243336,
+        -0.01825967160692981,
+        0.025288491484163955,
+        0.00910556045088272
+      ],
+      [
+        -0.016980629024560788,
+        0.014035341373144735,
+        0.00144441940321394,
+        0.0029134813813618847
+      ],
+      [
+        -0.038844804224678245,
+        -0.026258004488278815,
+        -0.010191252751729645,
+        0.030341463191203105
+      ],
+      [
+        -0.03840646617620295,
+        0.0009329186987009788,
+        0.02142324418619315,
+        0.01750407253297915
+      ],
+      [
+        0.0037327576886893245,
+        -0.010310367143968975,
+        0.00401668026377615,
+        0.0192982167936909
+      ],
+      [
+        0.0015198237757879005,
+        -0.025203277791285138,
+        0.02515996398690635,
+        -0.005323088053702322
+      ],
+      [
+        -0.011376495296774524,
+        0.02288586776948063,
+        0.03565675765130061,
+        0.014231572997971799
+      ],
+      [
+        -0.012935718286708017,
+        -0.0167876362859588,
+        0.020184005448032397,
+        -0.0008511480688948
+      ],
+      [
+        -0.034590934983210156,
+        0.004942799766340118,
+        0.016990200766730038,
+        -0.008841471160488007
+      ],
+      [
+        -0.032710930641785665,
+        -0.003789154371880673,
+        -0.0141291876130737,
+        -0.035541733070561285
+      ],
+      [
+        0.036661399389242635,
+        -0.0367549827886545,
+        0.011146203755014772,
+        -0.011792702860837778
+      ],
+      [
+        -0.03470101714599211,
+        0.013543216506519693,
+        0.023553498614922102,
+        -0.0043277686888468555
+      ],
+      [
+        -0.022768578441629005,
+        0.005056362336891944,
+        0.010759557758131899,
+        0.000013817716709232927
+      ],
+      [
+        0.0023026594173320976,
+        -0.02058244556284647,
+        0.03228124847877283,
+        0.02807409031218184
+      ],
+      [
+        -0.0012925843950096748,
+        0.01661712750585863,
+        0.02417581105489468,
+        0.020382601411333804
+      ],
+      [
+        -0.012824016127314838,
+        0.021784106814441033,
+        0.023194453986522413,
+        -0.008445891141494322
+      ],
+      [
+        -0.032306436969458466,
+        -0.026063429376939486,
+        0.027037276491075166,
+        -0.017643545431829555
+      ],
+      [
+        -0.009330366771569893,
+        0.0037305935503614165,
+        0.03970370655186283,
+        0.008943487173943887
+      ],
+      [
+        0.03353198946697962,
+        0.011203828327207998,
+        0.020345811016525682,
+        0.033072962313727736
+      ],
+      [
+        -0.0033221165846083903,
+        -0.022171824238789654,
+        -0.014499919101370648,
+        -0.0145976945887212
+      ],
+      [
+        -0.02200877632196875,
+        -0.011926622598452277,
+        -0.037943340453011204,
+        0.020401331892787675
+      ],
+      [
+        -0.025597743272069356,
+        0.021645346814962566,
+        -0.011458470413862505,
+        -0.003685658752044461
+      ],
+      [
+        0.03794139236290056,
+        0.034585381347566245,
+        0.01714243649588713,
+        -0.0008814700489654748
+      ],
+      [
+        -0.013070399294689455,
+        -0.005985487613571554,
+        -0.012727191855724584,
+        -0.0016974044565088227
+      ],
+      [
+        -0.024743653667680676,
+        0.013212527897223979,
+        0.018371387269893125,
+        -0.021961433894131233
+      ],
+      [
+        0.0017704002670568153,
+        0.014394755910790907,
+        0.023834555247246435,
+        -0.02295479073745875
+      ],
+      [
+        -0.03470548720481137,
+        0.004303193708706043,
+        -0.004947579084838183,
+        -0.002601079764348861
+      ],
+      [
+        0.0014365822266909352,
+        0.01731588997820859,
+        -0.009259850798752696,
+        0.037835088822592615
+      ],
+      [
+        -0.010255464782345076,
+        0.03202485517903039,
+        -0.024749182846991732,
+        -0.03087111798410545
+      ],
+      [
+        -0.028281672104729975,
+        -0.011473119484496766,
+        -0.011232084022136074,
+        -0.037123951535583496
+      ],
+      [
+        0.02195382327618064,
+        -0.01717388446447611,
+        0.005418965834133455,
+        0.014517918532445415
+      ],
+      [
+        -0.02475524372921295,
+        -0.007766825377379523,
+        0.03955440304285522,
+        0.03166246663384738
+      ],
+      [
+        0.002870850598390875,
+        0.03049784045307052,
+        0.007527163559110399,
+        0.03441632961918075
+      ],
+      [
+        0.03139045405001013,
+        -0.0052354223209697985,
+        -0.01384137999274721,
+        0.020643750940257524
+      ],
+      [
+        0.0342266519726648,
+        -0.004286719381496699,
+        0.010452862638990413,
+        -0.02115709111845672
+      ],
+      [
+        -0.029010509649660825,
+        -0.02605888881761417,
+        -0.025187628647913733,
+        0.028197953357012487
+      ],
+      [
+        0.0372662851024426,
+        0.016726951123517898,
+        -0.02382938680635277,
+        -0.01562779966814872
+      ],
+      [
+        0.018559608009192326,
+        -0.02657352550404845,
+        0.027234049166815863,
+        0.01629021104034214
+      ],
+      [
+        -0.02966780337300349,
+        0.0317664042047236,
+        0.004992930644904896,
+        0.033276989233187684
+      ],
+      [
+        -0.025938599658002267,
+        0.021933991256235748,
+        -0.008925618347083218,
+        0.013376935480100743
+      ]
+    ],
+    "hiddenBiases": [
+      -0.0001725217791806787,
+      0.0004215394655821118,
+      0.0006077771315865859,
+      0.00045735540710573785
+    ],
+    "outputWeights": [
+      -0.008186900215775086,
+      0.035952046876731765,
+      0.034568250222150175,
+      0.024780878478659212
+    ],
+    "outputBias": 0.017981975829696618
+  },
+  "poleModel": {
+    "bias": -2.7381742706555914e-17,
+    "weights": {
+      "qualifyingAdvantage": 0.547677200315658,
+      "qualifyingPaceAdvantage": 0.6604120458988396,
+      "qualifyingPaceSharpAdvantage": 1.1301284330483732,
+      "teamMateQualifyingAdvantage": 0.1644758718111467,
+      "driverQualifyingTrend": 0.0209269791420814,
+      "constructorQualifyingTrend": 0.007378336902188729,
+      "driverStandingAdvantage": 0.34558741701627355,
+      "constructorStandingAdvantage": 0.3246264553546701,
+      "driverRecentFinishForm": 0.24000747054991775,
+      "driverRecentPodiumRate": 0.3534692427904563,
+      "driverRecentWinRate": 0.0959823127998147,
+      "constructorRecentFinishForm": 0.17145148865623636,
+      "constructorRecentPodiumRate": 0.22218418712834587,
+      "constructorRecentWinRate": 0.07743064976678098,
+      "driverSeasonWinRate": 0.134546752156859,
+      "constructorSeasonWinRate": 0.2767018101326692,
+      "sameCircuitDriverWinRate": -0.041829832183791396,
+      "sameCircuitDriverPodiumRate": 0.1975769620414259,
+      "sameCircuitConstructorWinRate": -0.05000636657212802,
+      "sameCircuitPoleWinRate": -9.799246098548193e-18,
+      "weatherRainRisk": -2.175562898935103e-18,
+      "weatherCoolTrack": -2.593837996383321e-18,
+      "weatherHotTrack": -6.0871970016026165e-18,
+      "weatherWind": -5.960105327214126e-18,
+      "driverSimilarWeatherForm": -0.000045841212654394945,
+      "constructorSimilarWeatherForm": -0.0022556671765586625,
+      "driverSequenceMomentum": 0.1800008542363844,
+      "driverSequenceConsistency": 0.10585354581488068,
+      "constructorSequenceMomentum": 0.09537376057147622,
+      "constructorSequenceConsistency": 0.03787975355455103,
+      "sprintWeekend": -1.2207771372758317e-17,
+      "fp1Advantage": 0.23411163595454434,
+      "fp2Advantage": 0.22319168874143935,
+      "fp3Advantage": 0.19270566311719375,
+      "fpBestAdvantage": 0.29014454577827925,
+      "fpAverageAdvantage": 0.2980019682961664,
+      "fpBestGapAdvantage": 0.3518115721079429,
+      "fpLapsShare": -0.024639075202208035,
+      "fpTeamMateAdvantage": 0.05851886007800847,
+      "fpConstructorAdvantage": 0.19331185795441114
+    }
+  },
+  "races": [
+    {
+      "raceKey": "2025-1",
+      "season": 2025,
+      "round": 1,
+      "raceName": "Formula 1 Louis Vuitton Australian Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.3088065678170726,
+      "winnerRank": 1,
+      "winnerProbability": 0.4660377971763644,
+      "brierScore": 0.3386295701183788,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.4660377971763644,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4100207393441726
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4055024714889911
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4005843718391906
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3366489370089498
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.32851822789949336
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.20639152455721368,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4100207393441726
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4055024714889911
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4005843718391906
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.2884207477242171
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.24337228905401104
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.07243238320287826,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4005843718391906
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.2884207477242171
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19728082910586636
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19103769753534616
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.18152838570839513
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.04154397017143497,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20297755363130532
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.17085024537260718
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.15086181049272135
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.12737396095355386
+            },
+            {
+              "feature": "driverRecentFinishForm",
+              "contribution": 0.12705594938364406
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.03820780239523846,
+          "factors": [
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1922065260441831
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18567607445258008
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17909784143938703
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.15902813198719581
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1527440528479245
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-2",
+      "season": 2025,
+      "round": 2,
+      "raceName": "Formula 1 Heineken Chinese Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "lando-norris",
+      "poleRank": 2,
+      "poleProbability": 0.22573830654060997,
+      "winnerRank": 1,
+      "winnerProbability": 0.39729362286514436,
+      "brierScore": 0.45710260757381105,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.39729362286514436,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.40913051937862227
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.40483385505580743
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4007879171961252
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3401447127218878
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.33073672490472844
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.24900076555302053,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.40913051937862227
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.40483385505580743
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4007879171961252
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3037544524875684
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.2467721701698103
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.1690929700276101,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4007879171961252
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3037544524875684
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.2195191164284582
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.20959620051568512
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20635554861611813
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.03794416180957358,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20178341681516998
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18430505665454552
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.17639948732994265
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17330456560141438
+            },
+            {
+              "feature": "driverStandingAdvantage",
+              "contribution": 0.15369769405647057
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "kimi-antonelli",
+          "constructorId": "mercedes",
+          "probability": 0.021127652835851406,
+          "factors": [
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.19060252100256603
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1581957603127987
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.15019729018789246
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.13822879249090914
+            },
+            {
+              "feature": "driverStandingAdvantage",
+              "contribution": 0.1366201724946405
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-3",
+      "season": 2025,
+      "round": 3,
+      "raceName": "Formula 1 Lenovo Japanese Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "lando-norris",
+      "poleRank": 3,
+      "poleProbability": 0.1313191437560734,
+      "winnerRank": 1,
+      "winnerProbability": 0.4281442418545301,
+      "brierScore": 0.47633793020104104,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.4281442418545301,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4441914166795227
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4403823252052814
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42825815437225795
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.39364939101622454
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.36041627073802107
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.376162358728115,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4441914166795227
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4403823252052814
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42825815437225795
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.34529617540722807
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33372074744543173
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.0804565332303237,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42825815437225795
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33372074744543173
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.308005245571296
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2539760530258792
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.21592385321948998
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.026209590464190476,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20321572924117462
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19052104695837352
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18809729077195794
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1738743263680284
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.13705075670851852
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.012558029775785505,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20652997718587893
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20322245008893172
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18546594812589695
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1763412100987106
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1262428328544639
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-4",
+      "season": 2025,
+      "round": 4,
+      "raceName": "Formula 1 Gulf Air Bahrain Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 1,
+      "poleProbability": 0.44901332453805093,
+      "winnerRank": 1,
+      "winnerProbability": 0.7090073647843711,
+      "brierScore": 0.10017824836184269,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.7090073647843711,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4386629871463413
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.4359236168801601
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.43477376653693955
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41773486238676544
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3627880504853187
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.08524313212152548,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4386629871463413
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41773486238676544
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33578155039939755
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.21615818833115982
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.20966548836201349
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.07495002113772854,
+          "factors": [
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.43477376653693955
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41773486238676544
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33578155039939755
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2299127117766691
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.22887337588005158
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.039021544425592025,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20684004594442457
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.18538006940551352
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17801262568448456
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.17410380627117678
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.16307315761489938
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.02561100331433636,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1838578186172663
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1652974381355928
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.15845335541365052
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.15142507492812085
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.13366817415239338
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-5",
+      "season": 2025,
+      "round": 5,
+      "raceName": "Formula 1 stc Saudi Arabian Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 2,
+      "poleProbability": 0.20112351968730668,
+      "winnerRank": 2,
+      "winnerProbability": 0.36385544102384965,
+      "brierScore": 0.6366966971466683,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.4771640460149358,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4312814435162769
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.42714090301338375
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.41570477505951914
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.40882394390922194
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.35731381361281334
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.36385544102384965,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4312814435162769
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.42714090301338375
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.40882394390922194
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3447777958994945
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33913500485076753
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.04326423334749891,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.40882394390922194
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.33913500485076753
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.23866072836138355
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23715968206799543
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.21137152372611903
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.04292679462324693,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22450660602399314
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18709085051248642
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.1849358191450938
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.18323276463867172
+            },
+            {
+              "feature": "driverRecentPodiumRate",
+              "contribution": 0.1574295750790892
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.018584689156854288,
+          "factors": [
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19893790468340614
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1921899658575527
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18482054232501083
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.16508016221689978
+            },
+            {
+              "feature": "constructorPerformanceUpgradeIntent",
+              "contribution": 0.15109588731692497
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-6",
+      "season": 2025,
+      "round": 6,
+      "raceName": "Formula 1 Crypto.com Miami Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 2,
+      "poleProbability": 0.22916164053545518,
+      "winnerRank": 3,
+      "winnerProbability": 0.07787296334088763,
+      "brierScore": 1.1690326724408258,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.508929764134462,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.44038223629322154
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4376092968013139
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41161922801679907
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3512527795299802
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.34260391800293183
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.23616738625236894,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.44038223629322154
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4376092968013139
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41161922801679907
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.27848474345240204
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24190603165864694
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.07787296334088763,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.27848474345240204
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24190603165864694
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.21404068867720727
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.20359832192499566
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19533872445109815
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "kimi-antonelli",
+          "constructorId": "mercedes",
+          "probability": 0.04369443925750708,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41161922801679907
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.27650265403149366
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24156888039501198
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.2075473947292918
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1923878175118887
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.03274591516396287,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22235125836777384
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.1840260939391144
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18313005417290454
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.16975395662813708
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1689794910609531
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-7",
+      "season": 2025,
+      "round": 7,
+      "raceName": "Formula 1 AWS Gran Premio del Made in Italy e dell'Emilia Romagna 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 1,
+      "poleProbability": 0.46556752139721846,
+      "winnerRank": 2,
+      "winnerProbability": 0.10977588116813548,
+      "brierScore": 1.413769672009379,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.7866471551647234,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.38385539141444464
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.37826524277485685
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.35554997822475237
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3505734723030727
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34712438709385285
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.10977588116813548,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.38385539141444464
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.37826524277485685
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3505734723030727
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34712438709385285
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3148943713860347
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.03526845713300549,
+          "factors": [
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3505734723030727
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34712438709385285
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22898176359872818
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.2179749419066381
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20147482740983547
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.033292072572166785,
+          "factors": [
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.24323713100821412
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20294201792168992
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20042744694865547
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1896233669739628
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17625138094146403
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.004939156912468447,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.16505789748712804
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.11868155815091216
+            },
+            {
+              "feature": "driverStandingAdvantage",
+              "contribution": 0.11012896388162564
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.10666314392285407
+            },
+            {
+              "feature": "constructorStandingAdvantage",
+              "contribution": 0.10347615200168606
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-8",
+      "season": 2025,
+      "round": 8,
+      "raceName": "Formula 1 TAG Heuer Grand Prix de Monaco 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.33101608899449814,
+      "winnerRank": 1,
+      "winnerProbability": 0.5915754238905486,
+      "brierScore": 0.2213061471478566,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.5915754238905486,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39903147360472996
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3926002626377729
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36624987924595437
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.36430897756740144
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.36359361846212596
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.18070951329903678,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39903147360472996
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3926002626377729
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36624987924595437
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.36359361846212596
+            },
+            {
+              "feature": "gridFrontRowCircuitInteraction",
+              "contribution": 0.2880689840373013
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.1447365993514302,
+          "factors": [
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36624987924595437
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.36359361846212596
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23316710728670983
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.22039369073535944
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.202480237456869
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.02320773777988988,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19590550287587508
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17865903305017852
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17759733855762175
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.15751721606711092
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1546663083310892
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "lewis-hamilton",
+          "constructorId": "ferrari",
+          "probability": 0.0116009002873056,
+          "factors": [
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19056963525352374
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.18864538793309668
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1836614089461329
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1442978375780677
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.13581462822804133
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-9",
+      "season": 2025,
+      "round": 9,
+      "raceName": "Formula 1 Aramco Gran Premio de España 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 1,
+      "poleProbability": 0.5023899079247098,
+      "winnerRank": 1,
+      "winnerProbability": 0.5576354924680175,
+      "brierScore": 0.27423248650486265,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.5576354924680175,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39924660281792645
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3928521926499878
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.36576965252811916
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36050079420442976
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3544552082521162
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.2702931692925448,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39924660281792645
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3928521926499878
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36050079420442976
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3544552082521162
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2279331615511404
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.06582482970407923,
+          "factors": [
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36050079420442976
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3544552082521162
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21151349925504673
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19856839727418915
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1973426506947951
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.019481774369404778,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21151349925504673
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1868879033168839
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1857342594774542
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17398780267185535
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.13621650765207
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.017504175647970636,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17412586826011334
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.16154829033252688
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.15184642144496818
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1447300393803244
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1413650896708825
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-10",
+      "season": 2025,
+      "round": 10,
+      "raceName": "Formula 1 Pirelli Grand Prix du Canada 2025",
+      "era": "ground_effect",
+      "actualWinner": "george-russell",
+      "predictedWinner": "george-russell",
+      "actualPole": "george-russell",
+      "predictedPole": "george-russell",
+      "poleRank": 1,
+      "poleProbability": 0.23827713882294285,
+      "winnerRank": 1,
+      "winnerProbability": 0.331295629452968,
+      "brierScore": 0.5568526603454284,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.331295629452968,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3897685464193716
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.38420484034996116
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.37919873679004945
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.35545096288433464
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3463521390769089
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.23772856839859396,
+          "factors": [
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.35545096288433464
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3463521390769089
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22603109869890295
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.2183678272786221
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20950380994057596
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.20899057793105386,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3897685464193716
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.38420484034996116
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.35545096288433464
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3463521390769089
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.236811315290486
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.08628385331480623,
+          "factors": [
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.2183678272786221
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1862256088360675
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.17740820697280302
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.16042001675856618
+            },
+            {
+              "feature": "constructorRecentPodiumRate",
+              "contribution": 0.1563882570537086
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.02771348257131503,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1745865082838133
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.15197685798179952
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.13870159555338982
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1366083184474211
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.13050966662272176
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-11",
+      "season": 2025,
+      "round": 11,
+      "raceName": "Formula 1 MSC Cruises Austrian Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.4768900912152995,
+      "winnerRank": 1,
+      "winnerProbability": 0.6413295667892537,
+      "brierScore": 0.15638686528558723,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.6413295667892537,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.40098669772771633
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39943199811594676
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3939410064909741
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36388681857691685
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34826612813588564
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.11523218174038133,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.39943199811594676
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3939410064909741
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36388681857691685
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34826612813588564
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.21449230904456357
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.11209416477260649,
+          "factors": [
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36388681857691685
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.34826612813588564
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.21160892258236283
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20257606965319894
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.19101039048859897
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.02476475348510099,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19985287132778715
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17874359087046965
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.16557533338561414
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.14065345354162687
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.13100060480879647
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.02345556358708065,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1880968200732114
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.15491111208774036
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.14982097971746378
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.14349862226753227
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.1357366936006245
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-12",
+      "season": 2025,
+      "round": 12,
+      "raceName": "Formula 1 Qatar Airways British Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "max-verstappen",
+      "predictedPole": "lando-norris",
+      "poleRank": 3,
+      "poleProbability": 0.1472259281943493,
+      "winnerRank": 3,
+      "winnerProbability": 0.1476756651246545,
+      "brierScore": 0.9926453369404364,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.37320371816114506,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4479482190368004
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4450156347698051
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3683042827900707
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.35824700514083846
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.29211614721836326
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.3536724433705582,
+          "factors": [
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4479482190368004
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4450156347698051
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4220013995436245
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3683042827900707
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.35845662584761906
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.1476756651246545,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3683042827900707
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.35824700514083846
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.2768788536441125
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2618947373419526
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.22063056289669952
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.025637438285502214,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24085977652794802
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.18626147900972506
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18579415822879958
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.17561959461669568
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.16573876985366282
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "lewis-hamilton",
+          "constructorId": "ferrari",
+          "probability": 0.022210951901080207,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2478714301326153
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.21257488892925802
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17757725341463873
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17418202333949961
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.164274471098062
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-13",
+      "season": 2025,
+      "round": 13,
+      "raceName": "Formula 1 Moët & Chandon Belgian Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 2,
+      "poleProbability": 0.3672565528050325,
+      "winnerRank": 2,
+      "winnerProbability": 0.31024347419984943,
+      "brierScore": 0.8031699193334848,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.5702439938863051,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4140551163283121
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3763725919873645
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.37416881930144513
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.367525814043146
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3649867641673573
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.31024347419984943,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3763725919873645
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.367525814043146
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3649867641673573
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3612709535789031
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3294510114989282
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.04007459444770578,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3763725919873645
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.367525814043146
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21516592488318934
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20592694245505347
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19743053174602956
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.015489393980445253,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2146104190530288
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19381359289887384
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18581697105508663
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17219281551291407
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.13398559565662432
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.012950717151959805,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18170024334269425
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1625898496732008
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.15066871357379982
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1496162369239412
+            },
+            {
+              "feature": "constructorPerformanceUpgradeIntent",
+              "contribution": 0.12601493085698087
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-14",
+      "season": 2025,
+      "round": 14,
+      "raceName": "Formula 1 Lenovo Hungarian Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "charles-leclerc",
+      "predictedPole": "lando-norris",
+      "poleRank": 3,
+      "poleProbability": 0.0473317548538482,
+      "winnerRank": 2,
+      "winnerProbability": 0.23336564598684595,
+      "brierScore": 0.8699479582326453,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.5012050661844867,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3757888291247472
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3714733714673476
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3644024720759206
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.36047733770653667
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.33611647189409044
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.23336564598684595,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4032676960370594
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3757888291247472
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3714733714673476
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.27338743019773454
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.23917499454200206
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.17395693362452452,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3757888291247472
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3714733714673476
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3644024720759206
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.36047733770653667
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3150231626397795
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.01564180470922829,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21670510300340554
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1946650625607555
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18188933637029686
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1663247476336672
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.132805587919889
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "lewis-hamilton",
+          "constructorId": "ferrari",
+          "probability": 0.012684326972219034,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17033192974066108
+            },
+            {
+              "feature": "sameCircuitDriverPodiumRate",
+              "contribution": 0.15936734862187577
+            },
+            {
+              "feature": "constructorStandingAdvantage",
+              "contribution": 0.14127806978933055
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1324349644569078
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.12539370131736133
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-15",
+      "season": 2025,
+      "round": 15,
+      "raceName": "Formula 1 Heineken Dutch Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "oscar-piastri",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "lando-norris",
+      "poleRank": 2,
+      "poleProbability": 0.3581072577526308,
+      "winnerRank": 1,
+      "winnerProbability": 0.5408769289776194,
+      "brierScore": 0.3580835960899023,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.5408769289776194,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.439467380278603
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3799376015493537
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3795414917579884
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.30851563906842944
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3081683504198541
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.38255867207017413,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4210309521146362
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3799376015493537
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3795414917579884
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.30851563906842944
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3081683504198541
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.025735388541545223,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3799376015493537
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3795414917579884
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23535799222730236
+            },
+            {
+              "feature": "sameCircuitDriverPodiumRate",
+              "contribution": 0.21545879666569123
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.21402756082392632
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.010393355322647638,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20143770430487182
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.17257049227984173
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1711058720161431
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.15314947811434096
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.14599201949190088
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.008927021578346428,
+          "factors": [
+            {
+              "feature": "sameCircuitDriverPodiumRate",
+              "contribution": 0.21545879666569123
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18884784778581734
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1632474998633993
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.15969881388173357
+            },
+            {
+              "feature": "constructorStandingAdvantage",
+              "contribution": 0.15057315427684903
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-16",
+      "season": 2025,
+      "round": 16,
+      "raceName": "Formula 1 Pirelli Gran Premio d'Italia 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "lando-norris",
+      "actualPole": "max-verstappen",
+      "predictedPole": "lando-norris",
+      "poleRank": 3,
+      "poleProbability": 0.13719378149576833,
+      "winnerRank": 3,
+      "winnerProbability": 0.19583519859722015,
+      "brierScore": 0.8749693609082615,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.4178463007353449,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3638511636228786
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.32243616216642573
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.28445929277089005
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.2835557587598094
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.2712939895747487
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.22544439888033427,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3638511636228786
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.2712939895747487
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2380784744658475
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.23045471786982502
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.21536488761689676
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.19583519859722015,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4244970981786876
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.3638511636228786
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3066661991790399
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.28445929277089005
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.2835557587598094
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.03596753819164066,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23353499212871198
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.19696932914815793
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18701275608937692
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1773437525345746
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.16801045428069453
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.022862677182817096,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2062740981059066
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.16363616157820482
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.15517578346775276
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.14949408913684553
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.14892262163520462
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-17",
+      "season": 2025,
+      "round": 17,
+      "raceName": "Formula 1 Qatar Airways Azerbaijan Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "max-verstappen",
+      "poleRank": 1,
+      "poleProbability": 0.24494751403265694,
+      "winnerRank": 1,
+      "winnerProbability": 0.582495890816573,
+      "brierScore": 0.19984580340404892,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.582495890816573,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4349120650511486
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.39294058906904683
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.359629270681589
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.34492336393200496
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3120547868768235
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.10464459792798975,
+          "factors": [
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.23398696617827552
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.22532338942696392
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21652736280136894
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1912814335380389
+            },
+            {
+              "feature": "driverRecentPodiumRate",
+              "contribution": 0.17309681991452172
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.09772851649975532,
+          "factors": [
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.23398696617827552
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23308639636556333
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.20913939768450832
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.20673235069536625
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20253328256968822
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.03860587934328428,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20914779349558715
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18002958450638953
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17318578854222383
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.15510574048230355
+            },
+            {
+              "feature": "driverStandingAdvantage",
+              "contribution": 0.14247709914909543
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "carlos-sainz-jr",
+          "constructorId": "williams",
+          "probability": 0.03675196603658274,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.39294058906904683
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.359629270681589
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3120547868768235
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3111208643001679
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20782294625066858
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-18",
+      "season": 2025,
+      "round": 18,
+      "raceName": "Formula 1 Singapore Airlines Singapore Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "george-russell",
+      "predictedWinner": "george-russell",
+      "actualPole": "george-russell",
+      "predictedPole": "max-verstappen",
+      "poleRank": 3,
+      "poleProbability": 0.18379766568149922,
+      "winnerRank": 1,
+      "winnerProbability": 0.46536706913676673,
+      "brierScore": 0.38959525880883034,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.46536706913676673,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.45779932571861176
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.398308697595052
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3824514816655136
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.37356826202759214
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.35378224687282905
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.29682272394637316,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.398308697595052
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.37356826202759214
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.35378224687282905
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.35281913786953745
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23918214754948383
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.11783162286074583,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.398308697595052
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.37356826202759214
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.2238236711868615
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.2133657529631606
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20579101314196904
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.03237031865654467,
+          "factors": [
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.20978852348867547
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.20299856162761618
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.19453965263508935
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18965844707836496
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.17871534224948252
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "kimi-antonelli",
+          "constructorId": "mercedes",
+          "probability": 0.013980207235427219,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2034318569066545
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.190629698399448
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17217826895408206
+            },
+            {
+              "feature": "constructorPerformanceUpgradeIntent",
+              "contribution": 0.1681340646584763
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.16595114119356935
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-19",
+      "season": 2025,
+      "round": 19,
+      "raceName": "Formula 1 MSC Cruises United States Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "max-verstappen",
+      "poleRank": 1,
+      "poleProbability": 0.30662712081401655,
+      "winnerRank": 1,
+      "winnerProbability": 0.5772032426321628,
+      "brierScore": 0.22094294346474497,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.5772032426321628,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.48612174054017954
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.4409378127975338
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41053424117808834
+            },
+            {
+              "feature": "gridPole",
+              "contribution": 0.38800152237306357
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3625110178432034
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.18839610807793777,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41053424117808834
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.3625110178432034
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3613009862928135
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22452771858485415
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.22090470127005754
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.052860370627490716,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21988487907731116
+            },
+            {
+              "feature": "constructorPerformanceUpgradeIntent",
+              "contribution": 0.2032782891443387
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19635973446227337
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.1914629736687891
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1743358046645924
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.04745115353391069,
+          "factors": [
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.22056298086919227
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20863221786616545
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.19748913917866684
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.17197077535944919
+            },
+            {
+              "feature": "driverStandingAdvantage",
+              "contribution": 0.16978082674323472
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.022800964490902548,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.41053424117808834
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2234134371030434
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.2034294095230884
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18523179245612942
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.1682994447050681
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-20",
+      "season": 2025,
+      "round": 20,
+      "raceName": "Formula 1 Gran Premio de la Ciudad de México 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.38625594011942294,
+      "winnerRank": 1,
+      "winnerProbability": 0.7232526660062606,
+      "brierScore": 0.09679007944631586,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.7232526660062606,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.49284652580245336
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.48189464655974956
+            },
+            {
+              "feature": "gridPole",
+              "contribution": 0.42856186757223935
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42773836339340715
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.41478657608835773
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.1323681895522985,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42773836339340715
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.41478657608835773
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.41446412912866
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3633269651928209
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2303148937478064
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "lewis-hamilton",
+          "constructorId": "ferrari",
+          "probability": 0.03022211789543917,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.42773836339340715
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3633269651928209
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21357148467082465
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20519588969035202
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18839561110967043
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.029354586421391184,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20422255706733128
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.18901448469125412
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.18629151461862603
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18105519678560472
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.16623142156735626
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.01865208735805773,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.1957118483220468
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19312554323797837
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19220946547513532
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17731351633851333
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.15414966878653913
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-21",
+      "season": 2025,
+      "round": 21,
+      "raceName": "Formula 1 MSC Cruises Grande Prêmio de São Paulo 2025",
+      "era": "ground_effect",
+      "actualWinner": "lando-norris",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.45280367566816654,
+      "winnerRank": 1,
+      "winnerProbability": 0.7597901660650261,
+      "brierScore": 0.06587594051788638,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.7597901660650261,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4992681135839335
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.47703698417635376
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.428903595255869
+            },
+            {
+              "feature": "gridPole",
+              "contribution": 0.42442280158441636
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4148612983796259
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "kimi-antonelli",
+          "constructorId": "mercedes",
+          "probability": 0.07216505590894487,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.428903595255869
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4148612983796259
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.414439668906642
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.26819509492213905
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24893165969132755
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.03374943859942456,
+          "factors": [
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.2214915614129647
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.22140133143538307
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2207719696809952
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19290713137325216
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.18098086920390447
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.026297145801990038,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.428903595255869
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22715483275000475
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.20496382708408042
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18799972114504956
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1845011095294859
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.022454695152860697,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.21232406267789813
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19680118349811826
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.16879373995159563
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.15934169044932686
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1548232997665114
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-22",
+      "season": 2025,
+      "round": 22,
+      "raceName": "Formula 1 Heineken Las Vegas Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "lando-norris",
+      "actualPole": "lando-norris",
+      "predictedPole": "lando-norris",
+      "poleRank": 1,
+      "poleProbability": 0.45320346034594455,
+      "winnerRank": 2,
+      "winnerProbability": 0.149271166251311,
+      "brierScore": 1.3312099836857143,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.7790546489013395,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.5142466701158139
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.49269024120130606
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.44103124287126616
+            },
+            {
+              "feature": "gridPole",
+              "contribution": 0.4402870648763788
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.41948703101312995
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.149271166251311,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.44103124287126616
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.41948703101312995
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.41702229657555
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.364991481182482
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2295449315009482
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.013971187243579215,
+          "factors": [
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.21207953951387443
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19792906319986012
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18880985698236658
+            },
+            {
+              "feature": "fpBestGapAdvantage",
+              "contribution": 0.17924241511297284
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.1509901044390986
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "carlos-sainz-jr",
+          "constructorId": "williams",
+          "probability": 0.012100931025204202,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.44103124287126616
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.364991481182482
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.22193893971799655
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.2102996296498514
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.20061047304376448
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.008856391929846894,
+          "factors": [
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.2058955969624072
+            },
+            {
+              "feature": "constructorStandingPointsShare",
+              "contribution": 0.19515584608166783
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18555849674986888
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17700924092096867
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.17465373842319068
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-23",
+      "season": 2025,
+      "round": 23,
+      "raceName": "Formula 1 Qatar Airways Qatar Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "oscar-piastri",
+      "actualPole": "oscar-piastri",
+      "predictedPole": "oscar-piastri",
+      "poleRank": 1,
+      "poleProbability": 0.32008594619213077,
+      "winnerRank": 3,
+      "winnerProbability": 0.05990082303035532,
+      "brierScore": 1.3253250228043363,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.6091887279854367,
+          "factors": [
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.4625089737808071
+            },
+            {
+              "feature": "gridTop3",
+              "contribution": 0.443599612069584
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.4311688613211656
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4260163529862079
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4237241485745381
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.2644167715942374,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.443599612069584
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.4260163529862079
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.4237241485745381
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36755459806140384
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.3144898096350684
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.05990082303035532,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.443599612069584
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.36755459806140384
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.2372754447120289
+            },
+            {
+              "feature": "driverRecentPodiumRate",
+              "contribution": 0.21647318605797766
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.21014333579068498
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.015267277033496967,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.23516377004225977
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19778196309711527
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19460740680092795
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.18783163604148886
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.17321318210625292
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "kimi-antonelli",
+          "constructorId": "mercedes",
+          "probability": 0.011555329703279842,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.19984121192979007
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18542059040354558
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.18244444387586997
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1760921587888958
+            },
+            {
+              "feature": "driverFastestLapForm",
+              "contribution": 0.12260315169346564
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceKey": "2025-24",
+      "season": 2025,
+      "round": 24,
+      "raceName": "Formula 1 Etihad Airways Abu Dhabi Grand Prix 2025",
+      "era": "ground_effect",
+      "actualWinner": "max-verstappen",
+      "predictedWinner": "max-verstappen",
+      "actualPole": "max-verstappen",
+      "predictedPole": "max-verstappen",
+      "poleRank": 1,
+      "poleProbability": 0.39524843339110394,
+      "winnerRank": 1,
+      "winnerProbability": 0.640663498573809,
+      "brierScore": 0.19351752491363622,
+      "top3Hit": true,
+      "top5": [
+        {
+          "rank": 1,
+          "driverId": "max-verstappen",
+          "constructorId": "red-bull",
+          "probability": 0.640663498573809,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4566036079433671
+            },
+            {
+              "feature": "qualifyingPaceSharpAdvantage",
+              "contribution": 0.431792967024489
+            },
+            {
+              "feature": "qualifyingPole",
+              "contribution": 0.3823099693353273
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3814355761390069
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3669450134498373
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "driverId": "lando-norris",
+          "constructorId": "mclaren",
+          "probability": 0.24857415749963963,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4566036079433671
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3814355761390069
+            },
+            {
+              "feature": "gridFrontRow",
+              "contribution": 0.3669450134498373
+            },
+            {
+              "feature": "qualifyingFrontRow",
+              "contribution": 0.36416710747159664
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24626059562894048
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "driverId": "oscar-piastri",
+          "constructorId": "mclaren",
+          "probability": 0.04606181191702213,
+          "factors": [
+            {
+              "feature": "gridTop3",
+              "contribution": 0.4566036079433671
+            },
+            {
+              "feature": "gridTop3CircuitInteraction",
+              "contribution": 0.3814355761390069
+            },
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.24076286100750985
+            },
+            {
+              "feature": "driverStandingPointsShare",
+              "contribution": 0.21814498665297688
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.20873422980809345
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "driverId": "george-russell",
+          "constructorId": "mercedes",
+          "probability": 0.015169442317639831,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.20133083337793362
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.19645574570173502
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.19638861462716461
+            },
+            {
+              "feature": "fp3Advantage",
+              "contribution": 0.1933050141838996
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.1871407366469026
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "driverId": "charles-leclerc",
+          "constructorId": "ferrari",
+          "probability": 0.010745974310757269,
+          "factors": [
+            {
+              "feature": "qualifyingPaceAdvantage",
+              "contribution": 0.18521678362546093
+            },
+            {
+              "feature": "poleModelRankAdvantage",
+              "contribution": 0.1841772615953766
+            },
+            {
+              "feature": "qualifyingAdvantage",
+              "contribution": 0.18411432621296683
+            },
+            {
+              "feature": "gridAdvantage",
+              "contribution": 0.17544444060647119
+            },
+            {
+              "feature": "sameCircuitDriverPodiumRate",
+              "contribution": 0.1557585450473983
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

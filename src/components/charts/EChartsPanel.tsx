@@ -6,6 +6,7 @@ import {
   MarkAreaComponent,
   MarkLineComponent,
   MarkPointComponent,
+  TitleComponent,
   TooltipComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -16,6 +17,7 @@ echarts.use([
   LineChart,
   LinesChart,
   ScatterChart,
+  TitleComponent,
   TooltipComponent,
   LegendComponent,
   MarkAreaComponent,

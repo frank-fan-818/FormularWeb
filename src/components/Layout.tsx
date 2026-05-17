@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSeasons } from '@/hooks';
 import { useAppStore } from '@/store';
@@ -183,7 +183,6 @@ const LayoutComponent = () => {
   const [touchEndX, setTouchEndX] = useState(0);
   const [searchActivated, setSearchActivated] = useState(false);
   const { seasons } = useSeasons();
-  const initialCheckDone = useRef(false);
   const activeNavKey = resolveActiveNavKey(location.pathname);
 
   useEffect(() => {
@@ -197,22 +196,6 @@ const LayoutComponent = () => {
 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (initialCheckDone.current) {
-      return;
-    }
-
-    initialCheckDone.current = true;
-
-    const navigationEntries = performance.getEntriesByType('navigation');
-    if (navigationEntries.length > 0) {
-      const navType = (navigationEntries[0] as PerformanceNavigationTiming).type;
-      if (navType === 'navigate' && location.pathname !== '/') {
-        navigate('/', { replace: true });
-      }
-    }
-  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const connection = (navigator as NavigatorWithConnection).connection;

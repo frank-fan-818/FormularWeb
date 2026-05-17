@@ -1,34 +1,31 @@
 .constructor-detail-container {
-  padding: 24px;
+  padding: var(--space-5);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .back-button {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
   animation: slideUp 0.4s ease-out;
 }
 
 .page-title {
-  font-size: 42px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-2);
+  letter-spacing: 0;
   animation: slideUp 0.4s ease-out 0.05s backwards;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-family);
 }
 
 .page-title span {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--f1-red);
 }
 
 .page-subtitle {
-  color: #8c8c8c;
-  font-size: 18px;
-  margin-bottom: 32px;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-6);
   animation: slideUp 0.4s ease-out 0.1s backwards;
 }
 
@@ -41,11 +38,11 @@
 
 .constructor-info-card {
   animation: slideUp 0.6s ease-out 0.15s backwards;
-  border-radius: 16px;
+  border-radius: var(--radius-panel);
   overflow: hidden;
-  border: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
+  border: 1px solid var(--border-secondary);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-5);
 }
 
 .constructor-profile-shell {
@@ -66,10 +63,8 @@
   min-height: 260px;
   padding: var(--space-7);
   border-top: 8px solid var(--f1-red);
-  background:
-    linear-gradient(135deg, rgba(15, 15, 18, 0.94), rgba(35, 35, 42, 0.78)),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
-  color: #ffffff;
+  background: var(--surface-strong);
+  color: var(--bg-card);
 }
 
 .constructor-profile-kicker {
@@ -92,7 +87,7 @@
 
 .constructor-profile-name {
   margin: 0;
-  color: #ffffff;
+  color: var(--bg-card);
   font-size: clamp(3rem, 8vw, 6.5rem);
   line-height: 0.92;
   letter-spacing: 0;
@@ -126,7 +121,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   background: var(--border-secondary);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
 }
 
 .constructor-current-stat-card {
@@ -142,8 +137,8 @@
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 @media (max-width: 1024px) {
@@ -160,39 +155,39 @@
 
 .stat-card {
   animation: slideUp 0.6s ease-out backwards;
-  border-radius: 16px;
+  border-radius: var(--radius-panel);
   overflow: hidden;
-  border: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid var(--border-secondary);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px) scale(1.005);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #8c8c8c;
-  margin-bottom: 4px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
-  letter-spacing: -0.02em;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  font-family: var(--font-family);
+  letter-spacing: 0;
 }
 
 .section-title {
-  font-size: 28px;
-  font-weight: 600;
-  margin: 40px 0 24px 0;
-  color: #262626;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  margin: var(--space-7) 0 var(--space-5) 0;
+  color: var(--text-primary);
   animation: slideUp 0.6s ease-out 0.4s backwards;
-  font-family: 'DM Sans', sans-serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-family);
+  letter-spacing: 0;
 }
 
 @keyframes slideUp {
@@ -213,7 +208,7 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: #d9d9d9 transparent;
+  scrollbar-color: var(--border-primary) transparent;
 }
 
 .chart-scroll-container::-webkit-scrollbar {
@@ -225,12 +220,12 @@
 }
 
 .chart-scroll-container::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 3px;
+  background: var(--border-primary);
+  border-radius: var(--radius-sm);
 }
 
 .chart-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
+  background: var(--border-dark);
 }
 
 .chart-scroll-content {

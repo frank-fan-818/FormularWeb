@@ -543,13 +543,15 @@ const ConstructorDetail = () => {
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
-          headStyle={{
-            background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
-            borderBottom: `2px solid ${teamColor}30`,
-            fontSize: 16,
-            fontWeight: 600,
+          styles={{
+            header: {
+              background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
+              borderBottom: `2px solid ${teamColor}30`,
+              fontSize: 16,
+              fontWeight: 600,
+            },
+            body: { padding: isMobile ? 0 : 24 },
           }}
-          bodyStyle={{ padding: isMobile ? 0 : 24 }}
         >
           {seasonRaceResults.length > 0 ? (
             <div
@@ -601,7 +603,7 @@ const ConstructorDetail = () => {
           <>
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 20, marginBottom: 6 }}>{TEXT.historicalStats}</h3>
-              <div style={{ color: '#8c8c8c', fontSize: 13 }}>
+              <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>
                 {careerStatsLoading ? TEXT.loadingHistoricalStats : TEXT.loadedHistoricalStats}
               </div>
             </div>
@@ -611,7 +613,7 @@ const ConstructorDetail = () => {
                   <div className="stat-label">
                     <FlagOutlined /> {TEXT.raceEntries}
                   </div>
-                  <div className="stat-value" style={{ color: '#1890ff' }}>
+                  <div className="stat-value" style={{ color: teamColor }}>
                     {careerStats.raceCount}
                   </div>
                 </Card>
@@ -621,7 +623,7 @@ const ConstructorDetail = () => {
                   <div className="stat-label">
                     <TrophyOutlined /> {TEXT.raceWins}
                   </div>
-                  <div className="stat-value" style={{ color: '#fa8c16' }}>
+                  <div className="stat-value" style={{ color: 'var(--accent-gold)' }}>
                     {careerStats.winCount}
                   </div>
                 </Card>
@@ -631,7 +633,7 @@ const ConstructorDetail = () => {
                   <div className="stat-label">
                     <TrophyOutlined /> {TEXT.podiums}
                   </div>
-                  <div className="stat-value" style={{ color: '#722ed1' }}>
+                  <div className="stat-value" style={{ color: 'var(--accent-bronze)' }}>
                     {careerStats.podiumCount}
                   </div>
                 </Card>
@@ -641,7 +643,7 @@ const ConstructorDetail = () => {
                   <div className="stat-label">
                     <FlagOutlined /> {TEXT.poles}
                   </div>
-                  <div className="stat-value" style={{ color: '#13c2c2' }}>
+                  <div className="stat-value" style={{ color: 'var(--race-control-apex)' }}>
                     {careerStats.poleCount}
                   </div>
                 </Card>

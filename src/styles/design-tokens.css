@@ -43,12 +43,15 @@
   /* ========================================
      Linear - Accent Colors
      ======================================== */
-  --accent-purple: #8B5CF6;
+  --accent-purple: #7C3AED;
   --accent-purple-light: #A78BFA;
-  --accent-blue: #3B82F6;
-  --accent-green: #22C55E;
-  --accent-yellow: #EAB308;
-  --accent-orange: #F97316;
+  --accent-blue: #2563EB;
+  --accent-green: #16A34A;
+  --accent-yellow: #D97706;
+  --accent-orange: #EA580C;
+  --accent-gold: #B7791F;
+  --accent-silver: #6B7280;
+  --accent-bronze: #A16207;
 
   /* ========================================
      Race Control - Data Product Tokens
@@ -59,6 +62,8 @@
   --race-control-grid: rgba(16, 17, 20, 0.08);
   --race-control-apex: #00A3A3;
   --race-control-sector: #6B7A90;
+  --surface-strong: #111827;
+  --surface-strong-muted: #334155;
 
   --chart-driver-1: #FF1801;
   --chart-driver-2: #2563EB;
@@ -133,7 +138,7 @@
   /* ========================================
      Typography
      ======================================== */
-  --font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Font Sizes */
@@ -159,7 +164,7 @@
   --leading-relaxed: 1.75;
 
   /* Letter Spacing */
-  --tracking-tight: -0.02em;
+  --tracking-tight: 0;
   --tracking-normal: 0;
   --tracking-wide: 0.02em;
 

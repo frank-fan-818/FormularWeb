@@ -5,12 +5,12 @@
 }
 
 .page-title {
-  font-size: 2.75rem;
+  font-size: var(--text-4xl);
   font-weight: var(--font-bold);
   margin-bottom: var(--space-6);
   color: var(--text-primary);
   font-family: var(--font-family);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .page-title span {
@@ -84,7 +84,7 @@
   gap: var(--space-3);
   font-family: var(--font-family);
   flex-wrap: wrap;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .position-badge {
@@ -96,15 +96,15 @@
 }
 
 .position-1 {
-  color: #faad14;
+  color: var(--accent-gold);
 }
 
 .position-2 {
-  color: #8c8c8c;
+  color: var(--accent-silver);
 }
 
 .position-3 {
-  color: #d48806;
+  color: var(--accent-bronze);
 }
 
 .position-other {
@@ -156,12 +156,12 @@
 
 .points-badge {
   text-align: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #ffffff;
+  background: var(--surface-strong);
+  color: var(--bg-card);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   min-width: 100px;
-  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .points-value {

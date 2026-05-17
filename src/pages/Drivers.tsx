@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
@@ -29,7 +29,6 @@ const Drivers = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { driverStandings, loading: standingsLoading } = useDriverStandingsCached(currentSeason);
-  const [drivers, setDrivers] = useState<any[]>([]);
   const fetchDriverMetadata = useCallback(() => supabaseApi.drivers.getListMetadata(), []);
   const { data: driverMetadata } = useSupabaseMetadata(
     'supabase-driver-list-metadata',
@@ -37,31 +36,10 @@ const Drivers = () => {
     driverStandings.length > 0,
   );
 
-  useEffect(() => {
-    const formattedDrivers = driverStandings.map((standing, index) => ({
-      ...standing.Driver,
-      total_wins: null,
-      total_pole_positions: null,
-      total_fastest_laps: null,
-      total_race_starts: null,
-      constructorId: standing.Constructors[0].constructorId,
-      constructorName: standing.Constructors[0].name,
-      position: standing.position,
-      points: standing.points,
-      seasonWins: standing.wins,
-      index,
-    }));
+  const drivers = useMemo(() => {
+    const driverMap = new Map((driverMetadata || []).map((driver) => [driver.driver_id, driver]));
 
-    setDrivers(formattedDrivers);
-  }, [driverStandings]);
-
-  useEffect(() => {
-    if (driverStandings.length === 0 || !driverMetadata) {
-      return;
-    }
-
-    const driverMap = new Map(driverMetadata.map((driver) => [driver.driver_id, driver]));
-    const enrichedDrivers = driverStandings.map((standing, index) => {
+    return driverStandings.map((standing, index) => {
       const dbDriver = driverMap.get(standing.Driver.driverId);
       return {
         ...standing.Driver,
@@ -77,8 +55,6 @@ const Drivers = () => {
         index,
       };
     });
-
-    setDrivers(enrichedDrivers);
   }, [driverMetadata, driverStandings]);
 
   const driverGroups = useMemo(() => {

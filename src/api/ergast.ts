@@ -22,7 +22,7 @@ import type {
   BestFinishSummary,
 } from '@/types';
 
-// 根据环境选择 baseURL
+// Use the local Vite proxy in development and Jolpica directly in production.
 const baseURL = import.meta.env.DEV ? '/f1-api' : 'https://api.jolpi.ca/ergast/f1';
 
 const ergastApi = axios.create({
@@ -66,8 +66,8 @@ ergastApi.interceptors.response.use(
       logJolpicaRequest(error.config as TimedAxiosConfig, 'error');
     }
 
-    console.error('Jolpica API 请求失败:', error.message);
-    // 返回空数据而不是模拟数据，确保用户知道出错了
+    console.error('Jolpica API request failed:', error.message);
+    // Keep fallback handling in consumers so API callers can decide how to recover.
     return Promise.reject(error);
   }
 );
@@ -111,7 +111,7 @@ export const seasonApi = {
     return response.MRData.SeasonTable?.Seasons || [];
   },
 
-  // 获取单赛季所有冲刺赛结果
+  // Sprint results for a season.
   getSeasonSprintResults: async (season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/sprint.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
@@ -421,7 +421,7 @@ export const circuitApi = {
       .select('*')
       .limit(limit);
 
-    // 转换为原来的格式
+    // Map Supabase circuit rows into the Ergast-shaped UI type.
     return (data || []).map(circuit => ({
       circuitId: circuit.circuit_id,
       url: '#',
@@ -443,7 +443,7 @@ export const driverApi = {
       .select('*')
       .limit(limit);
 
-    // 转换为原来的格式
+    // Map Supabase driver rows into the Ergast-shaped UI type.
     return (data || []).map(driver => ({
       driverId: driver.driver_id,
       permanentNumber: driver.permanent_number || '',
@@ -456,7 +456,7 @@ export const driverApi = {
     }));
   },
 
-  // 获取车手单赛季各分站积分
+  // Race results for one driver in one season.
   getDriverSeasonRaceResults: async (driverId: string, season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/drivers/${driverId}/results.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
@@ -473,19 +473,19 @@ export const driverApi = {
     });
   },
 
-  // 获取车手总参赛场数
+  // Total race starts for a driver.
   getDriverRaceCount: async (driverId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/drivers/${driverId}/results.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
   },
 
-  // 获取车手总杆位数
+  // Total pole positions for a driver.
   getDriverPoleCount: async (driverId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/drivers/${driverId}/qualifying/1.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
   },
 
-  // 获取车手总分冠数
+  // Total race wins for a driver.
   getDriverWinCount: async (driverId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/drivers/${driverId}/results/1.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
@@ -503,13 +503,13 @@ export const driverApi = {
       .reduce((total, value) => total + value, 0);
   },
 
-  // 获取车手世界冠军数
+  // Total championship-winning seasons for a driver.
   getDriverChampionshipCount: async (driverId: string): Promise<number> => {
     const standings = await driverApi.getDriverCareer(driverId);
     return standings.filter((standing) => standing.DriverStandings?.[0]?.position === '1').length;
   },
 
-  // 获取车手生涯总积分
+  // Total career points for a driver.
   getDriverTotalPoints: async (driverId: string): Promise<number> => {
     const standings = await driverApi.getDriverCareer(driverId);
     return standings.reduce((total, standingList) => {
@@ -525,7 +525,7 @@ export const constructorApi = {
       .select('*')
       .limit(limit);
 
-    // 转换为原来的格式
+    // Map Supabase constructor rows into the Ergast-shaped UI type.
     return (data || []).map(constructor => ({
       constructorId: constructor.constructor_id,
       url: '#',
@@ -534,37 +534,37 @@ export const constructorApi = {
     }));
   },
 
-  // 获取车队单赛季各分站积分
+  // Race results for one constructor in one season.
   getConstructorSeasonRaceResults: async (constructorId: string, season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/constructors/${constructorId}/results.json?limit=100`);
     return response.MRData.RaceTable?.Races || [];
   },
 
-  // 获取车队总参赛场数
+  // Total race entries for a constructor.
   getConstructorRaceCount: async (constructorId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/constructors/${constructorId}/results.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
   },
 
-  // 获取车队总杆位数
+  // Total pole positions for a constructor.
   getConstructorPoleCount: async (constructorId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/constructors/${constructorId}/qualifying/1.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
   },
 
-  // 获取车队总分冠数
+  // Total race wins for a constructor.
   getConstructorWinCount: async (constructorId: string): Promise<number> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/constructors/${constructorId}/results/1.json?limit=1000`);
     return parseInt(response.MRData.total || '0', 10);
   },
 
-  // 获取车队世界冠军数
+  // Total championship-winning seasons for a constructor.
   getConstructorChampionshipCount: async (constructorId: string): Promise<number> => {
     const standings = await getConstructorCareerStandings(constructorId);
     return standings.filter((standing) => standing.ConstructorStandings?.[0]?.position === '1').length;
   },
 
-  // 获取车队生涯总积分
+  // Total career points for a constructor.
   getConstructorTotalPoints: async (constructorId: string): Promise<number> => {
     const standings = await getConstructorCareerStandings(constructorId);
     return standings.reduce((total, standingList) => {
@@ -890,7 +890,7 @@ export const historyApi = {
       return directSummaryProfile;
     }
 
-    const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId) as SupabaseDriverRow | null;
+    const exactSupabaseDriver = await supabaseApi.drivers.getById<SupabaseDriverRow>(driverId);
     const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
       ? {
         givenName: exactSupabaseDriver.first_name || undefined,
@@ -913,14 +913,14 @@ export const historyApi = {
       : null;
 
     if (!baseProfile && resolvedDriverId !== driverId) {
-      const resolvedSupabaseDriver = await supabaseApi.drivers.getById(resolvedDriverId) as SupabaseDriverRow | null;
+      const resolvedSupabaseDriver = await supabaseApi.drivers.getById<SupabaseDriverRow>(resolvedDriverId);
       if (resolvedSupabaseDriver) {
         baseProfile = mapSupabaseDriverHistoryProfile(resolvedSupabaseDriver);
       }
     }
 
     if (!baseProfile && standingsLists.length > 0) {
-      const allDrivers = await supabaseApi.drivers.getAll() as SupabaseDriverRow[];
+      const allDrivers = await supabaseApi.drivers.getAll<SupabaseDriverRow>();
       const latestStandingDriver = standingsLists
         .slice()
         .reverse()
@@ -982,7 +982,7 @@ export const historyApi = {
       return summaryProfile;
     }
 
-    const constructorInfo = await supabaseApi.constructors.getById(constructorId) as SupabaseConstructorRow | null;
+    const constructorInfo = await supabaseApi.constructors.getById<SupabaseConstructorRow>(constructorId);
     const standingsLists = await getConstructorCareerStandings(constructorId);
     const seasons = mapConstructorSeasonHistory(standingsLists);
 

@@ -291,7 +291,8 @@
   overflow: hidden;
   border: 1px solid var(--border-secondary);
   box-shadow: var(--shadow-sm);
-  background: linear-gradient(135deg, #fff7e6 0%, #ffefd6 100%);
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent-orange);
 }
 
 .lap-record-content {
