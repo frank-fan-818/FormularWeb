@@ -545,6 +545,83 @@
   border-color: color-mix(in srgb, var(--border-primary) 82%, #2563eb 18%);
 }
 
+.upgrade-summary-card {
+  grid-column: 1 / -1;
+}
+
+.upgrade-summary-card .ant-card-body {
+  display: grid;
+  gap: 12px;
+}
+
+.upgrade-metric-grid {
+  margin-bottom: 0;
+}
+
+.upgrade-team-name {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.upgrade-intensity-pill {
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+}
+
+.upgrade-intensity-high {
+  border-color: rgba(255, 24, 1, 0.24);
+  background: rgba(255, 24, 1, 0.08);
+  color: var(--f1-red);
+}
+
+.upgrade-component-tags {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.upgrade-component-tags span {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.upgrade-source-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  line-height: 1.4;
+}
+
+.upgrade-source-list a,
+.upgrade-source-list span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .fastf1-analytics-section {
   margin-bottom: 16px;
 }
@@ -1753,6 +1830,11 @@
 
   .race-weekend-card .ant-card-body {
     padding: 12px;
+  }
+
+  .upgrade-source-list a,
+  .upgrade-source-list span {
+    white-space: normal;
   }
 
   .data-view-card .ant-card-head {

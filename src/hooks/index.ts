@@ -13,5 +13,6 @@ export { useRaceStatus, useRacesByStatus } from './useRaceStatus';
 export { useAsync, useLoadingDelay } from './useAsync';
 export { useGlobalSearch } from './useGlobalSearch';
 export { useFastF1RaceAnalytics, useFastF1SessionAnalytics } from './useFastF1RaceAnalytics';
+export { useFiaRaceUpgrades } from './useFiaCarUpgrades';
 export { usePostRaceTelemetrySummary, useRacePreviewSummary } from './useRaceWeekendAnalytics';
 export { useCircuitDetailData } from './useCircuitDetailData';

@@ -58,6 +58,9 @@ const INTERRUPTION_LABELS: Record<TrackInterruptionProbability['type'], string> 
   RED: 'Red Flag',
   YELLOW: 'Yellow Flag',
 };
+const RECENT_RESULTS_HISTORY_LIMIT = 5;
+const INTERRUPTION_HISTORY_LIMIT = 12;
+const INTERRUPTION_LOOKBACK_SEASONS = 10;
 
 function toPositionNumber(value: number | string | null | undefined) {
   const numberValue = Number(value);
@@ -357,6 +360,37 @@ async function getFastF1RowsForRaces(races: RaceSummaryRow[]) {
   ];
 }
 
+async function getCircuitHistoryRaces(params: {
+  circuitIdCandidates: string[];
+  seasonNumber: number;
+  roundNumber: number;
+  limit: number;
+  minSeason?: number;
+}) {
+  let query = supabase
+    .from('races')
+    .select('id, season, round, race_name, circuit_id, date')
+    .in('circuit_id', params.circuitIdCandidates)
+    .or(`season.lt.${params.seasonNumber},and(season.eq.${params.seasonNumber},round.lt.${params.roundNumber})`);
+
+  if (typeof params.minSeason === 'number') {
+    query = query.gte('season', params.minSeason);
+  }
+
+  query = query
+    .order('season', { ascending: false })
+    .order('round', { ascending: false })
+    .limit(params.limit);
+
+  const { data, error } = await measureRequest('supabase', 'races.getRacePreviewHistory', async () => query);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []) as RaceSummaryRow[];
+}
+
 export const raceWeekendAnalyticsApi = {
   async getRacePreviewSummary(
     season: string,
@@ -371,26 +405,26 @@ export const raceWeekendAnalyticsApi = {
     }
 
     const circuitIdCandidates = getCircuitIdCandidates(circuitId);
-    const racesQuery = supabase
-      .from('races')
-      .select('id, season, round, race_name, circuit_id, date')
-      .in('circuit_id', circuitIdCandidates)
-      .or(`season.lt.${seasonNumber},and(season.eq.${seasonNumber},round.lt.${roundNumber})`)
-      .order('season', { ascending: false })
-      .order('round', { ascending: false })
-      .limit(4);
-    const { data: racesData, error: racesError } = await measureRequest('supabase', 'races.getRacePreviewHistory', async () => racesQuery);
-
-    if (racesError) {
-      throw racesError;
-    }
-
-    const races = (racesData || []) as RaceSummaryRow[];
+    const [races, interruptionRaces] = await Promise.all([
+      getCircuitHistoryRaces({
+        circuitIdCandidates,
+        seasonNumber,
+        roundNumber,
+        limit: RECENT_RESULTS_HISTORY_LIMIT,
+      }),
+      getCircuitHistoryRaces({
+        circuitIdCandidates,
+        seasonNumber,
+        roundNumber,
+        limit: INTERRUPTION_HISTORY_LIMIT,
+        minSeason: seasonNumber - INTERRUPTION_LOOKBACK_SEASONS,
+      }),
+    ]);
     const raceIds = races.map((race) => race.id);
     const [raceResults, qualifyingResults, fastF1Rows, currentFastF1Row] = await Promise.all([
       getRowsByIds<RaceResultSummaryRow>('race_results', raceIds),
       getRowsByIds<QualifyingResultSummaryRow>('qualifying_results', raceIds),
-      getFastF1RowsForRaces(races),
+      getFastF1RowsForRaces(interruptionRaces),
       getStaticFastF1Row(seasonNumber, roundNumber),
     ]);
     const driverIds = [

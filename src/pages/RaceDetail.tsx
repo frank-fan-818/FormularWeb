@@ -7,12 +7,14 @@ import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
 import { raceSessionResultsApi } from '@/api/raceSessionResults';
 import {
+  useFiaRaceUpgrades,
   useFastF1RaceAnalytics,
   useFastF1SessionAnalytics,
   usePostRaceTelemetrySummary,
   useRacePreviewSummary,
   useSeasonData,
 } from '@/hooks';
+import type { FiaRaceUpgradeTeamSummary } from '@/api/fiaCarUpgrades';
 import { useAppStore } from '@/store';
 import type {
   Constructor,
@@ -36,6 +38,7 @@ import type {
   TrackInterruptionProbability,
   DriverPostRaceTelemetrySummary,
 } from '@/types';
+import type { FiaUpgradeReason } from '@/utils/fiaCarUpgrades';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import { formatRaceDateTimeFull, getRaceWeekendSchedule, getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
 import {
@@ -136,8 +139,8 @@ const TEXT = {
   preRace: '\u8d5b\u524d',
   postRace: '\u8d5b\u540e',
   preRaceOverview: '\u8d5b\u524d\u60c5\u62a5',
-  preRaceDescription: '\u805a\u5408\u672c\u7ad9\u8fd1\u56db\u6b21\u529e\u8d5b\u7684\u51a0\u519b\u3001\u6746\u4f4d\u3001\u9886\u5956\u53f0\u548c\u8d5b\u9053\u72b6\u6001\u98ce\u9669\u3002',
-  recentWinners: '\u8fd1\u56db\u6b21\u51a0\u519b',
+  preRaceDescription: '\u805a\u5408\u672c\u7ad9\u8fd1\u4e94\u6b21\u529e\u8d5b\u7684\u51a0\u519b\u3001\u6746\u4f4d\u3001\u9886\u5956\u53f0\u548c\u8d5b\u9053\u72b6\u6001\u98ce\u9669\u3002',
+  recentWinners: '\u8fd1\u4e94\u6b21\u51a0\u519b',
   interruptionRisk: '\u8d5b\u9053\u4e2d\u65ad\u6982\u7387',
   poleConversion: '\u6746\u4f4d\u8f6c\u5316',
   historicalRaces: '\u5386\u53f2\u573a\u6b21',
@@ -205,6 +208,31 @@ const TEXT = {
   stintPace: 'Stint Pace',
   degradation: '\u8870\u51cf',
   advantage: '\u4f18\u52bf',
+  carUpgrades: '\u5206\u7ad9\u5347\u7ea7\u60c5\u51b5',
+  carUpgradesDescription: '\u6309\u8f66\u961f\u6c47\u603b\u672c\u7ad9 FIA \u8f66\u4f53\u5347\u7ea7\u7533\u62a5\uff0c\u91cd\u70b9\u770b\u6570\u91cf\u3001\u5f3a\u5ea6\u548c\u4e3b\u8981\u610f\u56fe\u3002',
+  noCarUpgrades: '\u6682\u65e0\u672c\u7ad9 FIA \u5347\u7ea7\u7533\u62a5\u6570\u636e',
+  carUpgradesLoadFailed: '\u5347\u7ea7\u6570\u636e\u8bfb\u53d6\u5931\u8d25',
+  upgradeTotal: '\u603b\u5347\u7ea7\u6570',
+  upgradeIntensity: '\u5347\u7ea7\u5f3a\u5ea6',
+  upgradeTeams: '\u7533\u62a5\u8f66\u961f',
+  upgradeIntent: '\u4e3b\u8981\u610f\u56fe',
+  upgradeComponents: '\u91cd\u70b9\u90e8\u4ef6',
+  upgradeSource: '\u6765\u6e90',
+  performance: '\u6027\u80fd',
+  circuitSpecific: '\u8d5b\u9053\u9002\u914d',
+  reliability: '\u53ef\u9760\u6027',
+  cooling: '\u51b7\u5374',
+  other: '\u5176\u4ed6',
+  unknown: '\u672a\u77e5',
+};
+
+const UPGRADE_REASON_LABELS: Record<FiaUpgradeReason, string> = {
+  Performance: TEXT.performance,
+  'Circuit specific': TEXT.circuitSpecific,
+  Reliability: TEXT.reliability,
+  Cooling: TEXT.cooling,
+  Other: TEXT.other,
+  Unknown: TEXT.unknown,
 };
 
 const TELEMETRY_METRICS: Array<{ key: TelemetryMetric; label: string }> = [
@@ -2402,6 +2430,11 @@ const RaceDetail = () => {
     data: racePreviewSummary,
     loading: racePreviewLoading,
   } = useRacePreviewSummary(currentSeason, round, previewCircuitId);
+  const {
+    data: raceUpgradeSummary,
+    loading: raceUpgradeLoading,
+    error: raceUpgradeError,
+  } = useFiaRaceUpgrades(currentSeason, round);
   const postRaceTelemetrySummary = usePostRaceTelemetrySummary(fastF1Analytics);
   const defaultWeekendMode: RaceWeekendMode = useMemo(() => {
     if (!raceInfo) {
@@ -2500,6 +2533,23 @@ const RaceDetail = () => {
       { label: TEXT.interruptionRisk, value: formatProbability(averageInterruptionRisk), detail: interruptionItems.map((item) => item.type).join(' / ') || '-' },
     ];
   }, [racePreviewSummary]);
+  const raceUpgradeMetrics = useMemo(() => [
+    {
+      label: TEXT.upgradeTotal,
+      value: String(raceUpgradeSummary?.totalDeclaredUpgradeCount || 0),
+      detail: raceUpgradeSummary?.grandPrix || '-',
+    },
+    {
+      label: TEXT.upgradeIntensity,
+      value: String(raceUpgradeSummary?.totalDeclaredUpgradeIntensity || 0),
+      detail: raceUpgradeSummary?.source || '-',
+    },
+    {
+      label: TEXT.upgradeTeams,
+      value: String(raceUpgradeSummary?.teams.length || 0),
+      detail: raceUpgradeSummary?.sourceDocuments[0]?.title || '-',
+    },
+  ], [raceUpgradeSummary]);
   const driverLegendItems = useMemo(
     () => getDriverLegendItems(fastF1Analytics?.lapTimeSeries || []),
     [fastF1Analytics],
@@ -3290,6 +3340,67 @@ const RaceDetail = () => {
     },
   ];
 
+  const raceUpgradeColumns: ColumnsType<FiaRaceUpgradeTeamSummary> = [
+    {
+      title: TEXT.constructor,
+      dataIndex: 'team',
+      key: 'team',
+      fixed: 'left' as const,
+      width: 150,
+      render: (team: string) => <strong className="upgrade-team-name">{team}</strong>,
+    },
+    {
+      title: TEXT.upgradeTotal,
+      dataIndex: 'declaredUpgradeCount',
+      key: 'declaredUpgradeCount',
+      width: 96,
+      sorter: (a, b) => a.declaredUpgradeCount - b.declaredUpgradeCount,
+    },
+    {
+      title: TEXT.upgradeIntensity,
+      dataIndex: 'declaredUpgradeIntensity',
+      key: 'declaredUpgradeIntensity',
+      width: 96,
+      sorter: (a, b) => a.declaredUpgradeIntensity - b.declaredUpgradeIntensity,
+      render: (value: number, record) => (
+        <span className={`upgrade-intensity-pill upgrade-intensity-${record.maxComponentImportance >= 4 ? 'high' : 'normal'}`}>
+          {value}
+        </span>
+      ),
+    },
+    {
+      title: TEXT.upgradeIntent,
+      key: 'dominantReason',
+      width: 120,
+      render: (_: unknown, record) => (
+        <Tag color={record.dominantReason === 'Performance' ? 'red' : 'blue'}>
+          {UPGRADE_REASON_LABELS[record.dominantReason]}
+        </Tag>
+      ),
+    },
+    {
+      title: TEXT.upgradeComponents,
+      key: 'componentNames',
+      render: (_: unknown, record) => (
+        <div className="upgrade-component-tags">
+          {record.componentNames.length ? record.componentNames.map((component) => (
+            <span key={`${record.team}-${component}`}>{component}</span>
+          )) : '-'}
+        </div>
+      ),
+    },
+    {
+      title: TEXT.upgradeSource,
+      key: 'source',
+      width: 120,
+      render: (_: unknown, record) => record.documentUrl ? (
+        <a href={record.documentUrl} target="_blank" rel="noreferrer">
+          FIA
+        </a>
+      ) : 'FIA',
+    },
+  ];
+
   const racePreviewPanels = (
     <div className="race-weekend-grid race-preview-grid">
       <DataViewPanel
@@ -3383,6 +3494,50 @@ const RaceDetail = () => {
           </>
         )}
       />
+
+      <Card
+        className="race-weekend-card upgrade-summary-card"
+        title={<div className="data-view-title"><span>{TEXT.carUpgrades}</span><small>{TEXT.carUpgradesDescription}</small></div>}
+        loading={raceUpgradeLoading}
+      >
+        <div className="race-weekend-metric-grid upgrade-metric-grid">
+          {raceUpgradeMetrics.map((item) => (
+            <span key={item.label} className="race-weekend-metric">
+              <small>{item.label}</small>
+              <strong>{item.value}</strong>
+              <em>{item.detail}</em>
+            </span>
+          ))}
+        </div>
+        {raceUpgradeSummary?.teams.length ? (
+          <>
+            <Table
+              className="upgrade-summary-table"
+              columns={raceUpgradeColumns}
+              dataSource={raceUpgradeSummary.teams}
+              rowKey={(record) => record.team}
+              pagination={false}
+              size="small"
+              scroll={{ x: 'max-content' }}
+            />
+            {raceUpgradeSummary.sourceDocuments.length ? (
+              <div className="upgrade-source-list">
+                {raceUpgradeSummary.sourceDocuments.slice(0, 2).map((document) => document.url ? (
+                  <a key={`${document.title}-${document.url}`} href={document.url} target="_blank" rel="noreferrer">
+                    {document.title}
+                  </a>
+                ) : (
+                  <span key={document.title}>{document.title}</span>
+                ))}
+              </div>
+            ) : null}
+          </>
+        ) : raceUpgradeError ? (
+          <div className="race-weekend-empty">{TEXT.carUpgradesLoadFailed}: {raceUpgradeError.message}</div>
+        ) : (
+          <div className="race-weekend-empty">{TEXT.noCarUpgrades}</div>
+        )}
+      </Card>
     </div>
   );
 
