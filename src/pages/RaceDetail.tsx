@@ -36,6 +36,7 @@ import type {
   QualifyingResult,
   Result,
   TrackInterruptionProbability,
+  TrackInterruptionSample,
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import type { FiaUpgradeReason } from '@/utils/fiaCarUpgrades';
@@ -69,8 +70,8 @@ interface RaceTabItem {
 
 type TelemetryMetric = 'throttle' | 'brake' | 'gear' | 'rpm';
 type DataViewMode = 'chart' | 'table';
-type DataPanelKey = 'recentResults' | 'interruptionRisk' | 'telemetrySummary';
-type CollapsiblePanelKey = DataPanelKey | 'raceResults';
+type DataPanelKey = 'telemetrySummary';
+type CollapsiblePanelKey = DataPanelKey | 'recentResults' | 'interruptionRisk' | 'raceResults';
 type ChartTooltipParam = {
   seriesName?: string;
   name?: string;
@@ -106,6 +107,7 @@ const TEXT = {
   scheduleTimezoneValue: '\u5317\u4eac\u65f6\u95f4',
   scheduleSourceHint: '\u6309\u5b98\u65b9\u8d5b\u7a0b\u7ed3\u6784\u5c55\u793a',
   mobileHint: '\u70b9\u51fb\u4e0a\u65b9\u5706\u70b9\u5207\u6362\u4f1a\u8bdd',
+  season: '\u8d5b\u5b63',
   fp1: '\u7ec3\u4e60\u8d5b 1',
   fp2: '\u7ec3\u4e60\u8d5b 2',
   fp3: '\u7ec3\u4e60\u8d5b 3',
@@ -153,7 +155,9 @@ const TEXT = {
   pole: '\u6746\u4f4d',
   podium: '\u9886\u5956\u53f0',
   sampleSize: '\u6837\u672c',
+  sampleYears: '\u6837\u672c\u5e74\u4efd',
   insufficientData: '\u6570\u636e\u4e0d\u8db3',
+  noInterruption: '\u65e0\u8bb0\u5f55',
   probability: '\u6982\u7387',
   maxSpeed: '\u6700\u9ad8\u5c3e\u901f',
   averageSpeed: '\u5e73\u5747\u901f\u5ea6',
@@ -461,31 +465,6 @@ function buildRankingBarOption(
   };
 }
 
-function getRecentWinnerChartRows(results: RecentGrandPrixResult[]): RankingChartRow[] {
-  const counts = new Map<string, number>();
-  results.forEach((result) => {
-    const label = result.winnerConstructorName || result.winnerName || '-';
-    counts.set(label, (counts.get(label) || 0) + 1);
-  });
-
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .map(([label, value], index) => ({
-      label,
-      value,
-      color: DRIVER_COLORS[index % DRIVER_COLORS.length],
-    }));
-}
-
-function getInterruptionChartRows(items: TrackInterruptionProbability[]): RankingChartRow[] {
-  return items.map((item, index) => ({
-    label: item.label,
-    value: item.probabilityPct || 0,
-    displayValue: formatProbability(item.probabilityPct),
-    color: DRIVER_COLORS[index % DRIVER_COLORS.length],
-  }));
-}
-
 function getTelemetrySummaryChartRows(items: DriverPostRaceTelemetrySummary[]): RankingChartRow[] {
   return [...items]
     .filter((item) => item.maxSpeedKph !== null && item.maxSpeedKph !== undefined)
@@ -552,6 +531,46 @@ function DataViewPanel({
       )}
     >
       {collapsed ? null : mode === 'chart' ? chart : table}
+    </Card>
+  );
+}
+
+interface TableOnlyPanelProps {
+  title: string;
+  description?: string;
+  className?: string;
+  loading?: boolean;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  children: JSX.Element;
+}
+
+function TableOnlyPanel({
+  title,
+  description,
+  className = '',
+  loading = false,
+  collapsed,
+  onToggleCollapse,
+  children,
+}: TableOnlyPanelProps) {
+  return (
+    <Card
+      className={`race-weekend-card data-view-card ${className}`}
+      loading={loading}
+      title={(
+        <div className="data-view-title">
+          <span>{title}</span>
+          {description ? <small>{description}</small> : null}
+        </div>
+      )}
+      extra={(
+        <Button type="text" size="small" onClick={onToggleCollapse}>
+          {collapsed ? TEXT.expand : TEXT.collapse}
+        </Button>
+      )}
+    >
+      {collapsed ? null : children}
     </Card>
   );
 }
@@ -1340,6 +1359,9 @@ function TyreStrategyTimeline({
               const ageLabel = getTyreAgeLabel(stint);
               const compoundLabel = formatCompoundWithCode(season, round, stint.compound);
               const tyreLife = formatTyreLife(stint);
+              const stintLabel = `Stint ${stint.stint}`;
+              const lapRangeLabel = `L${stint.startLap}-L${stint.endLap}`;
+              const tyreTooltipLabel = `${strategy.driver} ${compoundLabel} ${ageLabel} ${lapRangeLabel}${tyreLife ? ` ${tyreLife}` : ''}`;
 
               const endLabelClassName = stint.stint % 2 === 0
                 ? 'tyre-stint-end-label is-below'
@@ -1354,11 +1376,39 @@ function TyreStrategyTimeline({
                     width: `${Math.max(widthPct, 0.8)}%`,
                     ['--compound-color' as string]: getCompoundColor(stint.compound),
                   }}
-                  title={`${strategy.driver} ${compoundLabel} ${ageLabel} L${stint.startLap}-L${stint.endLap}${tyreLife ? ` ${tyreLife}` : ''}`}
+                  aria-label={tyreTooltipLabel}
+                  tabIndex={0}
                 >
                   <span className="tyre-stint-segment tyre-stint-segment-left" />
                   <span className="tyre-stint-segment tyre-stint-segment-right" />
                   <span className={endLabelClassName}>{stint.endLap}</span>
+                  <span className="tyre-stint-tooltip" role="tooltip">
+                    <span className="tyre-stint-tooltip-header">
+                      <span className="tyre-stint-tooltip-compound">
+                        <span className="tyre-stint-tooltip-swatch" />
+                        <span>
+                          <strong>{compoundLabel}</strong>
+                          <em>{ageLabel}</em>
+                        </span>
+                      </span>
+                      <span className="tyre-stint-tooltip-stint">{stintLabel}</span>
+                    </span>
+                    <span className="tyre-stint-tooltip-driver">{strategy.driver}</span>
+                    <span className="tyre-stint-tooltip-grid">
+                      <span>
+                        <small>{'\u5708\u6bb5'}</small>
+                        <strong>{lapRangeLabel}</strong>
+                      </span>
+                      <span>
+                        <small>{'\u5708\u6570'}</small>
+                        <strong>{stint.lapCount}</strong>
+                      </span>
+                      <span>
+                        <small>{TEXT.tyreLife}</small>
+                        <strong>{tyreLife || '-'}</strong>
+                      </span>
+                    </span>
+                  </span>
                 </div>
               );
             })}
@@ -2403,8 +2453,6 @@ const RaceDetail = () => {
   );
   const [selectedWeekendMode, setSelectedWeekendMode] = useState<RaceWeekendMode | null>(null);
   const [dataViewModes, setDataViewModes] = useState<Record<DataPanelKey, DataViewMode>>({
-    recentResults: 'table',
-    interruptionRisk: 'chart',
     telemetrySummary: 'chart',
   });
   const [collapsedDataPanels, setCollapsedDataPanels] = useState<Record<CollapsiblePanelKey, boolean>>({
@@ -3054,18 +3102,6 @@ const RaceDetail = () => {
   const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'sprintQualifying';
   const currentTabIndex = tabItems.findIndex((item) => item.key === effectiveActiveTab);
   const currentItem = tabItems.find((item) => item.key === effectiveActiveTab);
-  const recentResultsChartOption = buildRankingBarOption(
-    TEXT.recentWinners,
-    TEXT.historicalRaces,
-    getRecentWinnerChartRows(racePreviewSummary?.recentResults || []),
-    (value) => formatNumber(value, 0),
-  );
-  const interruptionRiskChartOption = buildRankingBarOption(
-    TEXT.interruptionRisk,
-    TEXT.probability,
-    getInterruptionChartRows(racePreviewSummary?.interruptionProbabilities || []),
-    formatProbability,
-  );
   const telemetrySummaryChartOption = buildRankingBarOption(
     TEXT.telemetrySummary,
     'km/h',
@@ -3266,6 +3302,45 @@ const RaceDetail = () => {
     },
   ];
 
+  const interruptionSampleColumns = [
+    {
+      title: TEXT.season,
+      key: 'season',
+      width: 92,
+      render: (_: unknown, record: TrackInterruptionSample) => (
+        <strong>{record.season}</strong>
+      ),
+    },
+    {
+      title: TEXT.race,
+      key: 'race',
+      render: (_: unknown, record: TrackInterruptionSample) => (
+        <span>
+          {record.raceName}
+          {' '}
+          R
+          {record.round}
+        </span>
+      ),
+    },
+    {
+      title: TEXT.raceStatus,
+      key: 'statusTypes',
+      width: 240,
+      render: (_: unknown, record: TrackInterruptionSample) => (
+        <div className="race-weekend-status-tags">
+          {record.statusLabels.length ? record.statusLabels.map((label, index) => (
+            <Tag key={`${record.season}-${record.statusTypes[index]}`} color="default">
+              {label}
+            </Tag>
+          )) : (
+            <Tag>{TEXT.noInterruption}</Tag>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   const telemetrySummaryColumns = [
     {
       title: TEXT.driver,
@@ -3403,97 +3478,80 @@ const RaceDetail = () => {
 
   const racePreviewPanels = (
     <div className="race-weekend-grid race-preview-grid">
-      <DataViewPanel
+      <TableOnlyPanel
         title={TEXT.recentWinners}
         description={TEXT.preRaceDescription}
         loading={racePreviewLoading}
-        mode={dataViewModes.recentResults}
         collapsed={collapsedDataPanels.recentResults}
-        onModeChange={(mode) => handleDataViewModeChange('recentResults', mode)}
         onToggleCollapse={() => handleDataPanelCollapseToggle('recentResults')}
-        chart={racePreviewSummary?.recentResults.length ? (
-          <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
-            <LazyEChartsPanel
-              chartKey={`race-preview-winners-${currentSeason}-${round}`}
-              height={isMobile ? 260 : 340}
-              option={recentResultsChartOption}
-            />
-          </Suspense>
-        ) : (
-          <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
-        )}
-        table={(
-          <>
-            <div className="race-weekend-metric-grid">
-              {racePreviewMetrics.map((item) => (
-                <span key={item.label} className="race-weekend-metric">
-                  <small>{item.label}</small>
-                  <strong>{item.value}</strong>
-                  <em>{item.detail}</em>
-                </span>
-              ))}
-            </div>
-            {racePreviewSummary?.recentResults.length ? (
-              <Table
-                className="race-history-table"
-                columns={recentResultColumns}
-                dataSource={racePreviewSummary.recentResults}
-                rowKey={(record) => record.raceId}
-                pagination={false}
-                size="small"
-                scroll={{ x: 'max-content' }}
-              />
-            ) : (
-              <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
-            )}
-          </>
-        )}
-      />
-
-      <DataViewPanel
-        title={TEXT.interruptionRisk}
-        loading={racePreviewLoading}
-        mode={dataViewModes.interruptionRisk}
-        collapsed={collapsedDataPanels.interruptionRisk}
-        onModeChange={(mode) => handleDataViewModeChange('interruptionRisk', mode)}
-        onToggleCollapse={() => handleDataPanelCollapseToggle('interruptionRisk')}
-        chart={(racePreviewSummary?.interruptionProbabilities || []).length ? (
-          <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
-            <LazyEChartsPanel
-              chartKey={`race-preview-interruptions-${currentSeason}-${round}`}
-              height={isMobile ? 260 : 340}
-              option={interruptionRiskChartOption}
-            />
-          </Suspense>
-        ) : (
-          <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
-        )}
-        table={(
-          <>
-            <div className="race-weekend-risk-grid">
-              {(racePreviewSummary?.interruptionProbabilities || []).map((item) => (
-                <span key={item.type} className={`race-weekend-risk-item risk-${item.type.toLowerCase()}`}>
-                  <small>{item.label}</small>
-                  <strong>{formatProbability(item.probabilityPct)}</strong>
-                  <em>
-                    {item.triggeredCount}
-                    /
-                    {item.sampleSize}
-                    {item.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
-                  </em>
-                </span>
-              ))}
-            </div>
+      >
+        <>
+          <div className="race-weekend-metric-grid">
+            {racePreviewMetrics.map((item) => (
+              <span key={item.label} className="race-weekend-metric">
+                <small>{item.label}</small>
+                <strong>{item.value}</strong>
+                <em>{item.detail}</em>
+              </span>
+            ))}
+          </div>
+          {racePreviewSummary?.recentResults.length ? (
             <Table
-              columns={interruptionColumns}
-              dataSource={racePreviewSummary?.interruptionProbabilities || []}
-              rowKey={(record) => record.type}
+              className="race-history-table"
+              columns={recentResultColumns}
+              dataSource={racePreviewSummary.recentResults}
+              rowKey={(record) => record.raceId}
               pagination={false}
               size="small"
+              scroll={{ x: 'max-content' }}
             />
-          </>
-        )}
-      />
+          ) : (
+            <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+          )}
+        </>
+      </TableOnlyPanel>
+
+      <TableOnlyPanel
+        title={TEXT.interruptionRisk}
+        loading={racePreviewLoading}
+        collapsed={collapsedDataPanels.interruptionRisk}
+        onToggleCollapse={() => handleDataPanelCollapseToggle('interruptionRisk')}
+      >
+        <>
+          <div className="race-weekend-risk-grid">
+            {(racePreviewSummary?.interruptionProbabilities || []).map((item) => (
+              <span key={item.type} className={`race-weekend-risk-item risk-${item.type.toLowerCase()}`}>
+                <small>{item.label}</small>
+                <strong>{formatProbability(item.probabilityPct)}</strong>
+                <em>
+                  {item.triggeredCount}
+                  /
+                  {item.sampleSize}
+                  {item.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
+                </em>
+              </span>
+            ))}
+          </div>
+          <Table
+            columns={interruptionColumns}
+            dataSource={racePreviewSummary?.interruptionProbabilities || []}
+            rowKey={(record) => record.type}
+            pagination={false}
+            size="small"
+          />
+          <div className="race-weekend-subtable">
+            <h4>{TEXT.sampleYears}</h4>
+            <Table
+              columns={interruptionSampleColumns}
+              dataSource={racePreviewSummary?.interruptionSamples || []}
+              rowKey={(record) => `${record.season}-${record.round}`}
+              pagination={false}
+              size="small"
+              scroll={{ x: 'max-content' }}
+            />
+          </div>
+        </>
+      </TableOnlyPanel>
 
       <Card
         className="race-weekend-card upgrade-summary-card"

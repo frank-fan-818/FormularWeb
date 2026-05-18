@@ -5,6 +5,7 @@ import type {
   RacePreviewSummary,
   RecentGrandPrixResult,
   TrackInterruptionProbability,
+  TrackInterruptionSample,
 } from '@/types';
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
@@ -51,6 +52,8 @@ type FastF1SessionAnalyticsRow = {
   round: number;
   payload: FastF1RaceAnalytics;
 };
+
+type InterruptionAnalyticsRow = Pick<FastF1SessionAnalyticsRow, 'season' | 'round' | 'payload'>;
 
 const INTERRUPTION_LABELS: Record<TrackInterruptionProbability['type'], string> = {
   SC: 'Safety Car',
@@ -211,6 +214,28 @@ export function buildInterruptionProbabilities(
   });
 }
 
+export function buildInterruptionSamples(
+  analyticsRows: InterruptionAnalyticsRow[],
+): TrackInterruptionSample[] {
+  const validTypes = new Set(Object.keys(INTERRUPTION_LABELS));
+
+  return [...analyticsRows]
+    .sort((a, b) => b.season - a.season || b.round - a.round)
+    .map((row) => {
+      const statusTypes = [...new Set((row.payload.trackStatusPeriods || [])
+        .map((period) => period.type)
+        .filter((type): type is TrackInterruptionProbability['type'] => validTypes.has(type)))];
+
+      return {
+        season: row.season,
+        round: row.round,
+        raceName: row.payload.eventName || `${row.season} Round ${row.round}`,
+        statusTypes,
+        statusLabels: statusTypes.map((type) => INTERRUPTION_LABELS[type]),
+      };
+    });
+}
+
 export function buildRacePreviewSummary(params: {
   season: number;
   round: number;
@@ -220,7 +245,7 @@ export function buildRacePreviewSummary(params: {
   qualifyingResults: QualifyingResultSummaryRow[];
   drivers?: DriverNameRow[];
   constructors?: ConstructorNameRow[];
-  analyticsRows?: Array<Pick<FastF1SessionAnalyticsRow, 'payload'>>;
+  analyticsRows?: InterruptionAnalyticsRow[];
 }): RacePreviewSummary {
   const recentResults = buildRecentGrandPrixResults(
     params.races,
@@ -240,6 +265,7 @@ export function buildRacePreviewSummary(params: {
     circuitId: params.circuitId,
     recentResults,
     interruptionProbabilities: buildInterruptionProbabilities(params.analyticsRows || []),
+    interruptionSamples: buildInterruptionSamples(params.analyticsRows || []),
     poleWinConversionPct: percentage(poleWinCount, poleSamples),
     sampleSize: recentResults.length,
   };

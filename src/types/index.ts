@@ -122,12 +122,21 @@ export interface TrackInterruptionProbability {
   status: 'ok' | 'insufficient-data';
 }
 
+export interface TrackInterruptionSample {
+  season: number;
+  round: number;
+  raceName: string;
+  statusTypes: TrackInterruptionProbability['type'][];
+  statusLabels: string[];
+}
+
 export interface RacePreviewSummary {
   season: number;
   round: number;
   circuitId: string;
   recentResults: RecentGrandPrixResult[];
   interruptionProbabilities: TrackInterruptionProbability[];
+  interruptionSamples: TrackInterruptionSample[];
   poleWinConversionPct: number | null;
   sampleSize: number;
 }

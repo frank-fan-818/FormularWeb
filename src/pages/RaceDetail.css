@@ -898,7 +898,7 @@
 
 .tyre-broadcast-timeline {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-radius: var(--radius-md);
   padding: 12px 18px 14px;
   background:
@@ -969,7 +969,20 @@
   min-width: 12px;
   height: 24px;
   z-index: 1;
+  outline: none;
   filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--compound-color) 24%, transparent));
+}
+
+.tyre-stint-line:hover,
+.tyre-stint-line:focus-visible {
+  z-index: 80;
+}
+
+.tyre-stint-line:focus-visible .tyre-stint-segment {
+  box-shadow:
+    0 -1px 0 rgba(15, 23, 42, 0.1),
+    0 1px 0 rgba(15, 23, 42, 0.1),
+    0 0 0 4px color-mix(in srgb, var(--compound-color) 22%, transparent);
 }
 
 .tyre-stint-line[style*="#f4f4f5"],
@@ -1025,11 +1038,183 @@
   box-shadow: 0 0 0 7px #fff, 0 1px 5px rgba(15, 23, 42, 0.16);
 }
 
+.tyre-stint-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: var(--z-tooltip);
+  display: grid;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 32px));
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
+  border-radius: var(--radius-panel);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--compound-color) 9%, #ffffff) 0%, #ffffff 48%),
+    var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.88) inset;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.tyre-stint-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
+  border-bottom: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
+  background: #fff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.tyre-stint-line:hover .tyre-stint-tooltip,
+.tyre-stint-line:focus-visible .tyre-stint-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.tyre-stint-tooltip-header,
+.tyre-stint-tooltip-compound,
+.tyre-stint-tooltip-grid,
+.tyre-stint-tooltip-grid > span {
+  display: flex;
+}
+
+.tyre-stint-tooltip-header {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tyre-stint-tooltip-compound {
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tyre-stint-tooltip-compound strong,
+.tyre-stint-tooltip-driver,
+.tyre-stint-tooltip-grid strong {
+  letter-spacing: 0;
+}
+
+.tyre-stint-tooltip-compound strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.tyre-stint-tooltip-compound em {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tyre-stint-tooltip-swatch {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border-radius: 999px;
+  background: var(--compound-color);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--compound-color) 18%, transparent);
+}
+
+.tyre-stint-tooltip-stint {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: color-mix(in srgb, var(--compound-color) 10%, #ffffff);
+  color: var(--surface-strong);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.tyre-stint-tooltip-driver {
+  overflow: hidden;
+  color: var(--surface-strong);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tyre-stint-tooltip-grid {
+  gap: 8px;
+}
+
+.tyre-stint-tooltip-grid > span {
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: var(--radius-control);
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.045);
+}
+
+.tyre-stint-tooltip-grid small {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tyre-stint-tooltip-grid strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .tyre-timeline-finish {
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 900;
   text-align: right;
+}
+
+.race-weekend-subtable {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.race-weekend-subtable h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.race-weekend-status-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.race-weekend-status-tags .ant-tag {
+  margin: 0;
+  border-radius: var(--radius-control);
+  font-weight: 800;
 }
 
 .duel-summary-pills {

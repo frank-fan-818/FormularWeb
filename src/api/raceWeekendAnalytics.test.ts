@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildDriverTelemetrySummary,
   buildInterruptionProbabilities,
+  buildInterruptionSamples,
   buildRacePreviewSummary,
 } from '@/api/raceWeekendAnalytics';
 
@@ -35,7 +36,10 @@ describe('race weekend analytics', () => {
         { constructor_id: 'mclaren', name: 'McLaren' },
         { constructor_id: 'ferrari', name: 'Ferrari' },
       ],
-      analyticsRows: [],
+      analyticsRows: [
+        { season: 2026, round: 19, payload: { eventName: 'United States Grand Prix', trackStatusPeriods: [{ type: 'SC' }] } as never },
+        { season: 2025, round: 19, payload: { eventName: 'United States Grand Prix', trackStatusPeriods: [] } as never },
+      ],
     });
 
     expect(summary.recentResults).toHaveLength(2);
@@ -50,6 +54,11 @@ describe('race weekend analytics', () => {
       'Charles Leclerc',
     ]);
     expect(summary.poleWinConversionPct).toBe(50);
+    expect(summary.interruptionProbabilities.find((item) => item.type === 'SC')).toMatchObject({
+      sampleSize: 2,
+      triggeredCount: 1,
+    });
+    expect(summary.interruptionSamples.map((sample) => sample.season)).toEqual([2026, 2025]);
   });
 
   it('marks interruption probabilities as insufficient when FastF1 samples are missing', () => {
@@ -71,6 +80,23 @@ describe('race weekend analytics', () => {
     expect(probabilities.find((item) => item.type === 'SC')?.probabilityPct).toBe(50);
     expect(probabilities.find((item) => item.type === 'VSC')?.probabilityPct).toBe(50);
     expect(probabilities.find((item) => item.type === 'YELLOW')?.probabilityPct).toBe(50);
+  });
+
+  it('builds visible interruption sample rows by season', () => {
+    const samples = buildInterruptionSamples([
+      { season: 2024, round: 6, payload: { eventName: 'Miami Grand Prix', trackStatusPeriods: [{ type: 'SC' }, { type: 'YELLOW' }] } as never },
+      { season: 2023, round: 5, payload: { eventName: 'Miami Grand Prix', trackStatusPeriods: [] } as never },
+      { season: 2025, round: 6, payload: { eventName: 'Miami Grand Prix', trackStatusPeriods: [{ type: 'VSC' }] } as never },
+    ]);
+
+    expect(samples.map((sample) => sample.season)).toEqual([2025, 2024, 2023]);
+    expect(samples[0]).toMatchObject({
+      round: 6,
+      raceName: 'Miami Grand Prix',
+      statusTypes: ['VSC'],
+      statusLabels: ['Virtual Safety Car'],
+    });
+    expect(samples[2].statusLabels).toEqual([]);
   });
 
   it('builds telemetry summaries and tolerates empty samples', () => {
