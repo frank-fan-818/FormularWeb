@@ -3623,13 +3623,14 @@ const RaceDetail = () => {
               {' - '}
               {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}
             </p>
-            <Tag color="blue" className="race-date">
+            <span className="race-date">
+              <CalendarOutlined />
               {formatRaceDateTimeFull(raceInfo)}
-            </Tag>
+            </span>
             {isSprintWeekend ? (
-              <Tag color="orange" className="sprint-tag">
+              <span className="sprint-tag">
                 {TEXT.sprintWeekend}
-              </Tag>
+              </span>
             ) : null}
             {weekendScheduleGroups.length ? (
               <div className="weekend-schedule" aria-label={TEXT.weekendSchedule}>
