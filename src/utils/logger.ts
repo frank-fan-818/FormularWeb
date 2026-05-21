@@ -89,6 +89,19 @@ function emit(level: LogLevel, payload: LogPayload): void {
   }
 
   feedMonitor(level, payload);
+
+  // Production error reporting: send error/warn to Supabase
+  const errorMsg = payload.error;
+  if ((level === 'error' || level === 'warn') && errorMsg) {
+    import('@/utils/errorReporter')
+      .then((mod) => mod.reportError({
+        module: payload.module,
+        function: payload.function,
+        error: errorMsg,
+        level,
+      }))
+      .catch(() => { /* reporter unavailable */ });
+  }
 }
 
 export const logger = {
