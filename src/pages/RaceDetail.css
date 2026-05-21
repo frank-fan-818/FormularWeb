@@ -6,35 +6,49 @@
   margin-bottom: 16px;
 }
 
+/* --------------- Race Hero Header --------------- */
+
 .race-info-card {
-  margin-bottom: 16px;
-}
-
-.race-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.race-title {
-  font-size: 28px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.race-flag-icon {
-  color: var(--f1-red);
-}
-
-.race-circuit {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
   margin-bottom: var(--space-4);
 }
 
-.race-date {
+.race-hero {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.race-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.race-hero-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.race-hero-flag {
+  color: var(--f1-red);
+  font-size: var(--text-2xl);
+}
+
+.race-hero-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.race-hero-date {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -45,10 +59,10 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-full);
-  line-height: var(--leading-tight);
+  white-space: nowrap;
 }
 
-.sprint-tag {
+.race-hero-sprint {
   display: inline-flex;
   align-items: center;
   font-size: var(--text-sm);
@@ -58,8 +72,17 @@
   background: rgba(255, 24, 1, 0.08);
   border: 1px solid rgba(255, 24, 1, 0.24);
   border-radius: var(--radius-full);
-  margin-left: var(--space-2);
-  line-height: var(--leading-tight);
+  white-space: nowrap;
+}
+
+.race-hero-circuit {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.race-hero-circuit span {
+  color: var(--text-tertiary);
 }
 
 .weekend-schedule {
@@ -1930,18 +1953,17 @@
     margin-bottom: 12px;
   }
 
-  .race-title {
-    font-size: 20px;
-    flex-wrap: wrap;
-    gap: 8px;
+  .race-hero-title {
+    font-size: var(--text-2xl);
   }
 
-  .race-circuit {
-    font-size: 14px;
+  .race-hero-top {
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
-  .race-date,
-  .sprint-tag {
+  .race-hero-date,
+  .race-hero-sprint {
     font-size: var(--text-xs);
     padding: var(--space-1) var(--space-2);
   }
@@ -2142,10 +2164,8 @@
     gap: 8px 10px;
   }
 
-  .sprint-tag {
-    margin-left: 4px;
-    margin-top: 4px;
-    display: inline-block;
+  .race-hero-sprint {
+    display: inline-flex;
   }
 
   /* 表格移动端优化 */
@@ -2172,8 +2192,8 @@
 
 /* 小屏幕手机适配 */
 @media (max-width: 375px) {
-  .race-title {
-    font-size: 18px;
+  .race-hero-title {
+    font-size: var(--text-xl);
   }
 
   .race-weekend-metric-grid,

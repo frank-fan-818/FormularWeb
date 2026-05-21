@@ -3612,26 +3612,28 @@ const RaceDetail = () => {
       </Button>
 
       <Card loading={seasonLoading || primaryLoading} className="race-info-card">
-        <div className="race-header">
-          <div>
-            <h1 className="race-title">
-              <FlagOutlined className="race-flag-icon" />
-              {raceInfo.raceName}
+        <div className="race-hero">
+          <div className="race-hero-top">
+            <h1 className="race-hero-title">
+              <FlagOutlined className="race-hero-flag" />
+              <span>{raceInfo.raceName}</span>
             </h1>
-            <p className="race-circuit">
-              {raceInfo.Circuit.circuitName}
-              {' - '}
-              {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}
-            </p>
-            <span className="race-date">
-              <CalendarOutlined />
-              {formatRaceDateTimeFull(raceInfo)}
-            </span>
-            {isSprintWeekend ? (
-              <span className="sprint-tag">
-                {TEXT.sprintWeekend}
+            <div className="race-hero-badges">
+              <span className="race-hero-date">
+                <CalendarOutlined />
+                {formatRaceDateTimeFull(raceInfo)}
               </span>
-            ) : null}
+              {isSprintWeekend ? (
+                <span className="race-hero-sprint">
+                  {TEXT.sprintWeekend}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <p className="race-hero-circuit">
+            {raceInfo.Circuit.circuitName}
+            <span> — {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}</span>
+          </p>
             {weekendScheduleGroups.length ? (
               <div className="weekend-schedule" aria-label={TEXT.weekendSchedule}>
                 <div className="weekend-schedule-topbar">
@@ -3672,7 +3674,6 @@ const RaceDetail = () => {
                 </div>
               </div>
             ) : null}
-          </div>
         </div>
       </Card>
 
