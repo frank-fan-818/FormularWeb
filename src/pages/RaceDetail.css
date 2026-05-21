@@ -25,24 +25,24 @@
 }
 
 .race-flag-icon {
-  color: #ff1801;
+  color: var(--f1-red);
 }
 
 .race-circuit {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 16px;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
 }
 
 .race-date {
-  font-size: 14px;
-  padding: 4px 12px;
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-3);
 }
 
 .sprint-tag {
-  font-size: 14px;
-  padding: 4px 12px;
-  margin-left: 8px;
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-3);
+  margin-left: var(--space-2);
 }
 
 .weekend-schedule {
@@ -50,11 +50,11 @@
   gap: 10px;
   width: min(100%, 960px);
   margin-top: 16px;
-  border: 1px solid #111;
+  border: 1px solid var(--surface-dark);
   border-top: 4px solid var(--f1-red);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   padding: 12px;
-  background: #fff;
+  background: var(--bg-card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -96,11 +96,11 @@
   flex: 0 0 auto;
   min-height: 30px;
   gap: 6px;
-  border: 1px solid #111;
+  border: 1px solid var(--surface-dark);
   border-radius: var(--radius-full);
   padding: 0 11px;
-  background: #111;
-  color: #fff;
+  background: var(--surface-dark);
+  color: var(--surface-dark-text);
   font-size: 12px;
   font-weight: var(--font-semibold);
   line-height: 1;
@@ -136,7 +136,7 @@
   min-height: 40px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-secondary);
-  background: #f4f4f4;
+  background: var(--bg-tertiary);
 }
 
 .weekend-day-name {
@@ -171,7 +171,7 @@
   border-left: 3px solid var(--session-accent, var(--border-dark));
   border-bottom: 1px solid var(--border-secondary);
   padding: 9px 10px;
-  background: #fff;
+  background: var(--bg-card);
   color: var(--text-primary);
 }
 
@@ -180,15 +180,15 @@
 }
 
 .weekend-session-practice {
-  --session-accent: #64748b;
+  --session-accent: var(--session-practice);
 }
 
 .weekend-session-qualifying {
-  --session-accent: #2563eb;
+  --session-accent: var(--session-qualifying);
 }
 
 .weekend-session-sprint {
-  --session-accent: #f97316;
+  --session-accent: var(--session-sprint);
 }
 
 .weekend-session-race {
@@ -201,9 +201,9 @@
   justify-content: center;
   min-width: 0;
   height: 26px;
-  border: 1px solid color-mix(in srgb, var(--session-accent) 42%, #fff 58%);
+  border: 1px solid color-mix(in srgb, var(--session-accent) 42%, var(--bg-card) 58%);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--session-accent) 9%, #fff 91%);
+  background: color-mix(in srgb, var(--session-accent) 9%, var(--bg-card) 91%);
   color: var(--session-accent);
   font-size: 11px;
   font-weight: var(--font-bold);
@@ -303,21 +303,10 @@
   border-left: 3px solid var(--risk-accent, var(--border-dark));
 }
 
-.risk-sc {
-  --risk-accent: #2563eb;
-}
-
-.risk-vsc {
-  --risk-accent: #f97316;
-}
-
-.risk-red {
-  --risk-accent: #ef4444;
-}
-
-.risk-yellow {
-  --risk-accent: #eab308;
-}
+.risk-sc      { --risk-accent: var(--risk-low); }
+.risk-vsc     { --risk-accent: var(--risk-medium); }
+.risk-red     { --risk-accent: var(--risk-high); }
+.risk-yellow  { --risk-accent: var(--risk-extreme); }
 
 .results-card {
   overflow: hidden;
@@ -452,7 +441,7 @@
 }
 
 .race-history-table .ant-table-thead > tr > th {
-  background: #f7f7f8;
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   font-size: 12px;
   letter-spacing: 0;
@@ -497,8 +486,8 @@
   justify-self: start;
   border-radius: var(--radius-sm);
   padding: 2px 7px;
-  background: #111827;
-  color: #fff;
+  background: var(--surface-dark);
+  color: var(--surface-dark-text);
   font-size: 11px;
   font-weight: var(--font-bold);
   line-height: 1.1;
@@ -808,7 +797,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #475569;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: var(--font-bold);
   line-height: 1.2;
@@ -909,7 +898,7 @@
       transparent 1px,
       transparent 18px
     ),
-    linear-gradient(180deg, #ffffff, #f8fafc);
+    linear-gradient(180deg, var(--bg-card), #f8fafc);
   color: var(--text-primary);
   box-shadow: inset 0 0 0 1px var(--border-secondary);
 }
@@ -1029,13 +1018,13 @@
   border-radius: 999px;
   min-width: 30px;
   padding: 2px 8px;
-  background: #fff;
+  background: var(--bg-card);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 900;
   text-align: center;
   line-height: 1;
-  box-shadow: 0 0 0 7px #fff, 0 1px 5px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 0 0 7px var(--bg-card), 0 1px 5px rgba(15, 23, 42, 0.16);
 }
 
 .tyre-stint-tooltip {
@@ -1052,7 +1041,7 @@
   border: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
   border-radius: var(--radius-panel);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--compound-color) 9%, #ffffff) 0%, #ffffff 48%),
+    linear-gradient(135deg, color-mix(in srgb, var(--compound-color) 9%, var(--bg-card)) 0%, var(--bg-card) 48%),
     var(--bg-card);
   color: var(--text-primary);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.88) inset;
@@ -1071,7 +1060,7 @@
   height: 12px;
   border-right: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
   border-bottom: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
-  background: #fff;
+  background: var(--bg-card);
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -1138,7 +1127,7 @@
   border: 1px solid color-mix(in srgb, var(--compound-color) 26%, var(--border-secondary));
   border-radius: 999px;
   padding: 3px 8px;
-  background: color-mix(in srgb, var(--compound-color) 10%, #ffffff);
+  background: color-mix(in srgb, var(--compound-color) 10%, var(--bg-card));
   color: var(--surface-strong);
   font-size: 11px;
   font-weight: 900;
@@ -1454,7 +1443,7 @@
   border-color: var(--border-secondary);
   padding: 0 10px;
   background: var(--bg-card);
-  color: #64748b;
+  color: var(--text-secondary);
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
 }
 
@@ -1485,7 +1474,7 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--f1-red);
-  color: #fff;
+  color: var(--bg-card);
   font-size: 11px;
   font-weight: var(--font-bold);
   line-height: 1;
@@ -1772,7 +1761,7 @@
 }
 
 .fastf1-tooltip-row strong {
-  color: #fff;
+  color: var(--bg-card);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1801,14 +1790,14 @@
 }
 
 .fastf1-tooltip-driver strong {
-  color: #fff;
+  color: var(--bg-card);
   font-variant-numeric: tabular-nums;
 }
 
 /* 车手和车队名称样式 */
 .driver-name {
   font-weight: 500;
-  color: #1890ff;
+  color: var(--accent-blue);
   cursor: pointer;
 }
 
@@ -1818,11 +1807,11 @@
 
 .driver-code {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .constructor-name {
-  color: #1890ff;
+  color: var(--accent-blue);
   cursor: pointer;
 }
 
@@ -1831,18 +1820,18 @@
 }
 
 .fastest-lap {
-  color: #faad14;
+  color: var(--warning);
   font-weight: bold;
 }
 
 .fastf1-deleted-lap {
-  color: #d48806;
+  color: var(--accent-gold);
   font-weight: var(--font-semibold);
 }
 
 .points {
   font-weight: bold;
-  color: #ff1801;
+  color: var(--f1-red);
 }
 
 /* 移动端滑动容器样式 */
@@ -1879,26 +1868,26 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #d9d9d9;
+  background-color: var(--border-primary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .tab-dot.active {
-  background-color: #1890ff;
+  background-color: var(--accent-blue);
   width: 20px;
   border-radius: 4px;
 }
 
 .current-tab-label {
   text-align: center;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 500;
-  color: #1890ff;
-  margin-bottom: 12px;
-  padding: 8px;
+  color: var(--accent-blue);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
   background: linear-gradient(135deg, #e6f7ff 0%, #f0f5ff 100%);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .slider-content {
@@ -1909,9 +1898,9 @@
 .swipe-hint {
   text-align: center;
   font-size: 12px;
-  color: #999;
-  margin-top: 12px;
-  padding: 8px;
+  color: var(--text-tertiary);
+  margin-top: var(--space-3);
+  padding: var(--space-2);
 }
 
 /* 移动端适配 */
