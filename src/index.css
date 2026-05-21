@@ -453,6 +453,34 @@ code {
   }
 }
 
+/* ========================================
+   Accessibility - Reduced Motion
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================
+   Accessibility - Focus Visible
+   ======================================== */
+:focus-visible {
+  outline: 2px solid var(--f1-red);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .animate-slide-up {
   animation: slideUp 0.6s var(--ease-out-expo) forwards;
 }

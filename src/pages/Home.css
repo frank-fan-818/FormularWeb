@@ -114,7 +114,7 @@
   border: 1px solid var(--border-secondary);
   border-top: 3px solid var(--f1-red);
   border-radius: var(--radius-md);
-  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
@@ -319,7 +319,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(251, 191, 36, 0.16);
-  color: #a16207;
+  color: var(--accent-yellow-dark, #a16207);
   border: 1px solid rgba(251, 191, 36, 0.28);
   font-weight: var(--font-semibold);
   padding: var(--space-2) var(--space-4);
@@ -361,7 +361,7 @@
 }
 
 .ongoing-tag {
-  background: linear-gradient(135deg, var(--accent-orange) 0%, #fbbf24 100%);
+  background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-yellow) 100%);
   border: none;
   color: white;
   font-weight: var(--font-semibold);

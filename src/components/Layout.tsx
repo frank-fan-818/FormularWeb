@@ -135,6 +135,16 @@ type WindowWithIdleCallback = Window & typeof globalThis & {
   cancelIdleCallback?: (handle: number) => void;
 };
 
+const MonitorIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <circle cx="6.5" cy="9.5" r="2.5" />
+    <path d="M4 17.5a4.5 4.5 0 0 1 5-4.4" />
+    <path d="M12 7.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Z" />
+    <path d="M13.5 15.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Z" />
+    <path d="m11 21.5 4-3.5 4 3.5" />
+  </IconBase>
+);
+
 const navItems = [
   { key: '/', icon: HomeIcon, label: TEXT.home },
   { key: '/seasons', icon: SeasonIcon, label: TEXT.seasonStandings },
@@ -142,6 +152,9 @@ const navItems = [
   { key: '/drivers', icon: DriverIcon, label: TEXT.drivers },
   { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
   { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
+  ...(import.meta.env.DEV
+    ? [{ key: '/monitor', icon: MonitorIcon, label: '\u8fd0\u884c\u76d1\u63a7' }]
+    : []),
 ];
 
 const resolveActiveNavKey = (pathname: string) => {
@@ -167,6 +180,10 @@ const resolveActiveNavKey = (pathname: string) => {
 
   if (pathname.startsWith('/seasons')) {
     return '/seasons';
+  }
+
+  if (pathname.startsWith('/monitor')) {
+    return '/monitor';
   }
 
   return '';

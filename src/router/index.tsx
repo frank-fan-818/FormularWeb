@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Home from '@/pages/Home';
 
 const Seasons = lazy(() => import('@/pages/Seasons'));
@@ -13,6 +14,7 @@ const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
 const Circuits = lazy(() => import('@/pages/Circuits'));
 const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
+import Monitor from '@/pages/Monitor';
 
 function withSuspense(element: JSX.Element) {
   return (
@@ -48,7 +50,7 @@ function withSuspense(element: JSX.Element) {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <ErrorBoundary><Layout /></ErrorBoundary>,
     children: [
       {
         path: '/',
@@ -98,6 +100,12 @@ const router = createBrowserRouter([
         path: '/circuits/:circuitId',
         element: withSuspense(<CircuitDetail />),
       },
+      ...(import.meta.env.DEV
+        ? [{
+            path: '/monitor',
+            element: <Monitor />,
+          }]
+        : []),
     ],
   },
 ]);

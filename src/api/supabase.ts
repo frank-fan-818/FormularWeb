@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
+import { logger } from '@/utils/logger';
 import type {
   ConstructorHistorySummaryRecord,
   DriverHistorySummaryRecord,
@@ -119,7 +120,13 @@ async function getSingleRow<T extends object = SupabaseRow>(
   const { data, error } = await measureRequest('supabase', `${table}.getById`, async () => query);
 
   if (error) {
-    console.warn(`Failed to load ${table} row:`, error);
+    logger.warn({
+      event: 'exit',
+      module: 'supabase',
+      function: `${table}.getById`,
+      status: 'failed',
+      error: `加载 ${table} 行数据失败`,
+    });
     return null;
   }
 

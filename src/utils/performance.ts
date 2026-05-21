@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 interface PerformanceDetails {
   source: 'supabase' | 'jolpica' | 'fetch';
   name: string;
@@ -14,7 +16,7 @@ export async function measureRequest<T>(
   name: string,
   request: () => Promise<T>,
 ): Promise<T> {
-  if (!import.meta.env.DEV || import.meta.env.MODE === 'test') {
+  if (import.meta.env.MODE === 'test') {
     return request();
   }
 
@@ -26,20 +28,22 @@ export async function measureRequest<T>(
       && result !== null
       && 'error' in result
       && Boolean((result as { error?: unknown }).error);
-    console.debug('[perf]', {
-      source,
-      name,
-      status: hasResponseError ? 'error' : 'success',
+    logger.debug({
+      event: 'step',
+      module: source,
+      function: name,
+      status: hasResponseError ? 'failed' : 'success',
       durationMs: Math.round(getNow() - startedAt),
-    } satisfies PerformanceDetails);
+    });
     return result;
   } catch (error) {
-    console.debug('[perf]', {
-      source,
-      name,
-      status: 'error',
+    logger.debug({
+      event: 'step',
+      module: source,
+      function: name,
+      status: 'failed',
       durationMs: Math.round(getNow() - startedAt),
-    } satisfies PerformanceDetails);
+    });
     throw error;
   }
 }

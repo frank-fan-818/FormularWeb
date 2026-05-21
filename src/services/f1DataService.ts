@@ -1,5 +1,6 @@
 import { seasonApi } from '@/api/ergast';
 import { supabaseApi } from '@/api/supabase';
+import { logger } from '@/utils/logger';
 import type { DriverStanding, ConstructorStanding, Race, Season } from '@/types';
 
 interface SeasonData {
@@ -11,7 +12,7 @@ interface SeasonData {
 
 /**
  * F1 数据服务 - 统一数据获取入口
- * 
+ *
  * 策略：
  * 1. 优先从 Supabase 获取静态数据（车手、车队、赛道详情）
  * 2. 从 Ergast API 获取实时数据（比赛结果、积分榜）
@@ -23,7 +24,6 @@ export const f1DataService = {
    */
   getSeasonData: async (season: string): Promise<SeasonData> => {
     try {
-      // 并行获取所有数据
       const [driverStandings, constructorStandings, races, seasons] = await Promise.all([
         seasonApi.getDriverStandings(season),
         seasonApi.getConstructorStandings(season),
@@ -38,7 +38,14 @@ export const f1DataService = {
         seasons,
       };
     } catch (error) {
-      console.error('获取赛季数据失败:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error({
+        event: 'exit',
+        module: 'f1DataService',
+        function: 'getSeasonData',
+        status: 'failed',
+        error: `获取赛季数据失败: ${message}`,
+      });
       throw error;
     }
   },
@@ -61,7 +68,14 @@ export const f1DataService = {
         standing: standing || null,
       };
     } catch (error) {
-      console.error('获取车手详情失败:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error({
+        event: 'exit',
+        module: 'f1DataService',
+        function: 'getDriverDetails',
+        status: 'failed',
+        error: `获取车手详情失败: ${message}`,
+      });
       throw error;
     }
   },
@@ -84,7 +98,14 @@ export const f1DataService = {
         standing: standing || null,
       };
     } catch (error) {
-      console.error('获取车队详情失败:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error({
+        event: 'exit',
+        module: 'f1DataService',
+        function: 'getConstructorDetails',
+        status: 'failed',
+        error: `获取车队详情失败: ${message}`,
+      });
       throw error;
     }
   },
@@ -97,7 +118,14 @@ export const f1DataService = {
       const circuitInfo = await supabaseApi.circuits.getById(circuitId);
       return circuitInfo;
     } catch (error) {
-      console.error('获取赛道详情失败:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error({
+        event: 'exit',
+        module: 'f1DataService',
+        function: 'getCircuitDetails',
+        status: 'failed',
+        error: `获取赛道详情失败: ${message}`,
+      });
       throw error;
     }
   },

@@ -20,7 +20,7 @@ This repository contains project-specific skills under `.trae/skills/`. When wor
 - Shared types belong in `src/types/`
 - Never hardcode secrets, tokens, passwords, or connection strings
 - Keep `.env` files out of version control
-- Avoid leaving `console.log` in shipped code
+- Use `src/utils/logger.ts` for structured JSON logging; avoid leaving `console.log` in shipped code
 - Avoid complex business logic directly inside JSX
 - Never allow Chinese mojibake in source files
 - Chinese UI copy must render correctly in UTF-8 or use Unicode escape literals
@@ -128,6 +128,7 @@ If a task includes both versioning and pushing:
 
 ## Source Of Truth
 
+- Engineering specification: `docs/engineering-specification.md`
 - Detailed project rules: `.trae/rules/project_rules.md`
 - Project-specific skills:
   - `.trae/skills/frontend-quality-review/SKILL.md`
@@ -135,3 +136,4 @@ If a task includes both versioning and pushing:
   - `.trae/skills/refactor-safety-check/SKILL.md`
   - `.trae/skills/github-security-check/SKILL.md`
   - `.trae/skills/version-manager/SKILL.md`
+  - `.trae/skills/f1-scoring-rules/SKILL.md`

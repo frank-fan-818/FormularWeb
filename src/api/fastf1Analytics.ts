@@ -1,5 +1,6 @@
 import type { FastF1RaceAnalytics } from '@/types';
 import { measureRequest } from '@/utils/performance';
+import { logger } from '@/utils/logger';
 import { supabase } from '@/utils/supabase';
 
 const PUBLIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -80,7 +81,13 @@ export const fastF1AnalyticsApi = {
         throw error;
       }
       if (import.meta.env.DEV && !isMissingAnalyticsTableError(error)) {
-        console.warn('FastF1 analytics database lookup failed; falling back to static JSON.', error);
+        logger.warn({
+          event: 'exit',
+          module: 'fastf1Analytics',
+          function: 'getDatabaseAnalytics',
+          status: 'failed',
+          error: 'FastF1 数据库查询失败，降级到静态 JSON',
+        });
       }
     }
 

@@ -5,6 +5,7 @@ import {
 } from '@/api/historySummaries';
 import { supabaseApi } from '@/api/supabase';
 import { supabase } from '@/utils/supabase';
+import { logger } from '@/utils/logger';
 import type {
   ErgastResponse,
   Season,
@@ -38,14 +39,15 @@ function getNow() {
   return typeof performance !== 'undefined' ? performance.now() : Date.now();
 }
 
-function logJolpicaRequest(config: TimedAxiosConfig, status: 'success' | 'error') {
+function logJolpicaRequest(config: TimedAxiosConfig, status: 'success' | 'failed') {
   if (!import.meta.env.DEV || typeof config.requestStartedAt !== 'number') {
     return;
   }
 
-  console.debug('[perf]', {
-    source: 'jolpica',
-    name: config.url || 'unknown',
+  logger.debug({
+    event: 'step',
+    module: 'jolpica',
+    function: config.url || 'unknown',
     status,
     durationMs: Math.round(getNow() - config.requestStartedAt),
   });
@@ -63,10 +65,30 @@ ergastApi.interceptors.response.use(
   },
   async (error) => {
     if (error.config) {
-      logJolpicaRequest(error.config as TimedAxiosConfig, 'error');
+      logJolpicaRequest(error.config as TimedAxiosConfig, 'failed');
     }
 
-    console.error('Jolpica API request failed:', error.message);
+    const status = error.response?.status;
+    const url = (error.config as TimedAxiosConfig)?.url || 'unknown';
+
+    // 4xx = data not available yet (expected), 5xx/timeout = real problem
+    if (status && status >= 400 && status < 500) {
+      logger.warn({
+        event: 'exit',
+        module: 'jolpica',
+        function: url,
+        status: 'failed',
+        error: `数据暂不可用 (HTTP ${status})`,
+      });
+    } else {
+      logger.error({
+        event: 'exit',
+        module: 'jolpica',
+        function: url,
+        status: 'failed',
+        error: `Jolpica API 请求失败: ${error.message}`,
+      });
+    }
     // Keep fallback handling in consumers so API callers can decide how to recover.
     return Promise.reject(error);
   }
