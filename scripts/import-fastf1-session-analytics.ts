@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-type FastF1SessionCode = 'R' | 'Q' | 'SQ' | 'SS' | 'S';
+type FastF1SessionCode = 'R' | 'Q' | 'SQ' | 'SS' | 'S' | 'FP1' | 'FP2' | 'FP3';
 
 interface ParsedArgs {
   season?: number;
@@ -37,14 +37,17 @@ interface FastF1SessionRow {
   payload: FastF1Payload;
 }
 
-const DEFAULT_SESSIONS: FastF1SessionCode[] = ['R', 'Q', 'SQ', 'SS', 'S'];
-const VALID_SESSIONS = new Set<FastF1SessionCode>(['R', 'Q', 'SQ', 'SS', 'S']);
+const DEFAULT_SESSIONS: FastF1SessionCode[] = ['R', 'Q', 'SQ', 'SS', 'S', 'FP1', 'FP2', 'FP3'];
+const VALID_SESSIONS = new Set<FastF1SessionCode>(['R', 'Q', 'SQ', 'SS', 'S', 'FP1', 'FP2', 'FP3']);
 const SESSION_ORDER: Record<FastF1SessionCode, number> = {
-  R: 0,
-  Q: 1,
-  SQ: 2,
-  SS: 3,
-  S: 4,
+  FP1: 0,
+  FP2: 1,
+  FP3: 2,
+  R: 3,
+  Q: 4,
+  SQ: 5,
+  SS: 6,
+  S: 7,
 };
 
 function consoleText(value: string | null | undefined) {
@@ -65,7 +68,7 @@ Usage:
 
 Description:
   Imports FastF1 exported JSON payloads into public.fastf1_session_analytics.
-  By default it imports all supported exported sessions: R, Q, SQ, SS, S.
+  By default it imports all supported exported sessions: R, Q, SQ, SS, S, FP1, FP2, FP3.
 
 Environment:
   SUPABASE_URL or VITE_SUPABASE_URL

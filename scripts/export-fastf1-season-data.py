@@ -26,8 +26,8 @@ import fastf1
 import pandas as pd
 
 
-DEFAULT_SESSIONS = ["R", "Q", "SQ", "SS", "S"]
-VALID_SESSIONS = {"R", "Q", "SQ", "SS", "S"}
+DEFAULT_SESSIONS = ["R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"]
+VALID_SESSIONS = {"R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"}
 
 
 @dataclass
@@ -122,6 +122,13 @@ def session_codes_for_event(event: pd.Series, requested_sessions: list[str] | No
 
     if any(name == "sprint shootout" for name in session_names):
         sessions.append("SS")
+
+    if any(name == "practice 1" for name in session_names):
+        sessions.append("FP1")
+    if any(name == "practice 2" for name in session_names):
+        sessions.append("FP2")
+    if any(name == "practice 3" for name in session_names):
+        sessions.append("FP3")
 
     return sessions
 

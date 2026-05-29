@@ -41,11 +41,11 @@ import type {
 } from '@/types';
 import type { FiaUpgradeReason } from '@/utils/fiaCarUpgrades';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
+import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
 import { formatRaceDateTimeFull, getRaceWeekendSchedule, getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
 import {
   escapeTooltipText,
   formatNumber,
-  formatPodium,
   formatPercent,
   formatProbability,
   formatRpm,
@@ -86,8 +86,16 @@ function hasNumericTooltipValue(param: ChartTooltipParam): param is ChartTooltip
   return Number.isFinite(param.value?.[1]);
 }
 
+function driverIdToCode(driverId: string): string {
+  const parts = driverId.split('_').filter(Boolean);
+  const last = parts[parts.length - 1] || driverId;
+  return last.slice(0, 3).toUpperCase();
+}
+
 const DEFERRED_TAB_KEYS = ['fp1', 'fp2', 'fp3', 'sprintQualifying', 'sprint'];
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const LIGHT_TAG_COLORS = new Set(['#ffffff', '#ffff00', '#fff500', '#ffb800', '#00e700', '#c8c8c8']);
+const DEFAULT_TAG_COLOR = '#334155';
 
 const TEXT = {
   loading: '\u52a0\u8f7d\u4e2d...',
@@ -2302,6 +2310,75 @@ function getFastF1SprintLapByDriver(analytics: FastF1RaceAnalytics | null) {
   return new Map(summaries.map((summary) => [summary.driver, summary]));
 }
 
+interface PracticeRankingItem {
+  driver: string;
+  team: string;
+  constructorId: string;
+  bestTimeSeconds: number;
+  bestTime: string;
+  gap: string;
+  gapSeconds: number | null;
+  sector1: string;
+  sector2: string;
+  sector3: string;
+  compound: string;
+  laps: number;
+  lapNumber: number | null;
+}
+
+function buildPracticeRanking(analytics: FastF1RaceAnalytics | null): PracticeRankingItem[] {
+  if (!analytics?.lapTimeSeries?.length) {
+    return [];
+  }
+
+  const teamsByDriver = new Map<string, string>(
+    (analytics.sessionResults || []).map((r) => [r.driver, r.team || '']),
+  );
+
+  const items = analytics.lapTimeSeries
+    .map((series) => {
+      const fastest = series.laps
+        .filter((lap) => Number.isFinite(lap.lapTimeSeconds))
+        .sort((a, b) => (a.lapTimeSeconds ?? Infinity) - (b.lapTimeSeconds ?? Infinity))[0];
+
+      const lapCount = series.laps.filter((lap) => Number.isFinite(lap.lapTimeSeconds)).length;
+
+      if (!fastest) {
+        return null;
+      }
+
+      return {
+        driver: series.driver,
+        team: teamsByDriver.get(series.driver) || '',
+        constructorId: normalizeConstructorId(teamsByDriver.get(series.driver) || ''),
+        bestTimeSeconds: fastest.lapTimeSeconds!,
+        bestTime: formatSessionSeconds(fastest.lapTimeSeconds),
+        gap: '',
+        gapSeconds: null as number | null,
+        sector1: formatSessionSeconds(fastest.sector1TimeSeconds),
+        sector2: formatSessionSeconds(fastest.sector2TimeSeconds),
+        sector3: formatSessionSeconds(fastest.sector3TimeSeconds),
+        compound: fastest.compound || '',
+        laps: lapCount,
+        lapNumber: fastest.lapNumber ?? null,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .sort((a, b) => a.bestTimeSeconds - b.bestTimeSeconds);
+
+  if (!items.length) {
+    return [];
+  }
+
+  const bestTime = items[0].bestTimeSeconds;
+  items.forEach((item, index) => {
+    item.gapSeconds = index === 0 ? null : item.bestTimeSeconds - bestTime;
+    item.gap = index === 0 ? '-' : `+${formatSessionSeconds(item.gapSeconds)}`;
+  });
+
+  return items;
+}
+
 function buildFallbackDriver(
   code: string,
   driverByCode: Map<string, Driver> = new Map(),
@@ -2519,6 +2596,25 @@ const RaceDetail = () => {
     'S',
     shouldLoadFastF1Sprint,
   );
+  const shouldLoadFastF1Practice = activeWeekendMode === 'post';
+  const { data: fastF1Practice1Analytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'FP1',
+    shouldLoadFastF1Practice || activeTab === 'fp1',
+  );
+  const { data: fastF1Practice2Analytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'FP2',
+    shouldLoadFastF1Practice || activeTab === 'fp2',
+  );
+  const { data: fastF1Practice3Analytics } = useFastF1SessionAnalytics(
+    currentSeason,
+    round,
+    'FP3',
+    shouldLoadFastF1Practice || activeTab === 'fp3',
+  );
   const weekendSchedule = useMemo(() => getRaceWeekendSchedule(raceInfo, TEXT), [raceInfo]);
   const weekendScheduleGroups = useMemo(() => getRaceWeekendScheduleGroups(weekendSchedule), [weekendSchedule]);
   const lapPaceOption = useMemo(
@@ -2636,6 +2732,18 @@ const RaceDetail = () => {
   const fastF1SprintLapByDriver = useMemo(
     () => getFastF1SprintLapByDriver(fastF1SprintAnalytics),
     [fastF1SprintAnalytics],
+  );
+  const practice1Ranking = useMemo(
+    () => buildPracticeRanking(fastF1Practice1Analytics),
+    [fastF1Practice1Analytics],
+  );
+  const practice2Ranking = useMemo(
+    () => buildPracticeRanking(fastF1Practice2Analytics),
+    [fastF1Practice2Analytics],
+  );
+  const practice3Ranking = useMemo(
+    () => buildPracticeRanking(fastF1Practice3Analytics),
+    [fastF1Practice3Analytics],
   );
   const hasLapDriverFilter = selectedLapDrivers.length > 0;
   const hasRaceAnalysisSection = Boolean(
@@ -2913,29 +3021,31 @@ const RaceDetail = () => {
       {
         title: TEXT.driver,
         key: 'driver',
-        render: (_: unknown, record: QualifyingResult) => (
-          <div>
-            <div
-              className="driver-name"
-              onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-            >
-              {record.Driver.givenName} {record.Driver.familyName}
-            </div>
-            <div className="driver-code">{record.Driver.code}</div>
-          </div>
-        ),
-      },
-      {
-        title: TEXT.constructor,
-        key: 'constructor',
-        render: (_: unknown, record: QualifyingResult) => (
-          <span
-            className="constructor-name"
-            onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
-          >
-            {record.Constructor.name}
-          </span>
-        ),
+        render: (_: unknown, record: QualifyingResult) => {
+          const color = getTeamColor(record.Constructor.constructorId);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: color,
+                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  minWidth: 36,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
+              >
+                {record.Driver.code}
+              </span>
+              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+                          </div>
+          );
+        },
       },
       { title: `${phasePrefix}1`, dataIndex: 'Q1', key: 'Q1', width: 80 },
       { title: `${phasePrefix}2`, dataIndex: 'Q2', key: 'Q2', width: 80 },
@@ -2969,29 +3079,31 @@ const RaceDetail = () => {
       {
         title: TEXT.driver,
         key: 'driver',
-        render: (_: unknown, record: Result) => (
-          <div>
-            <div
-              className="driver-name"
-              onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-            >
-              {record.Driver.givenName} {record.Driver.familyName}
-            </div>
-            <div className="driver-code">{record.Driver.code}</div>
-          </div>
-        ),
-      },
-      {
-        title: TEXT.constructor,
-        key: 'constructor',
-        render: (_: unknown, record: Result) => (
-          <span
-            className="constructor-name"
-            onClick={() => navigate(`/constructors/${record.Constructor.constructorId}`)}
-          >
-            {record.Constructor.name}
-          </span>
-        ),
+        render: (_: unknown, record: Result) => {
+          const color = getTeamColor(record.Constructor.constructorId);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: color,
+                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  minWidth: 36,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
+              >
+                {record.Driver.code}
+              </span>
+              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+                          </div>
+          );
+        },
       },
       { title: TEXT.laps, dataIndex: 'laps', key: 'laps', width: 60 },
       {
@@ -3025,6 +3137,120 @@ const RaceDetail = () => {
     ];
   };
 
+  const getPracticeColumns = (data: PracticeRankingItem[]) => {
+    const bestTime = data[0]?.bestTimeSeconds ?? 0;
+
+    return [
+      { title: TEXT.rank, key: 'rank', width: 50, render: (_: unknown, __: unknown, index: number) => index + 1 },
+      {
+        title: TEXT.driver,
+        key: 'driver',
+        render: (_: unknown, record: PracticeRankingItem) => {
+          const color = getTeamColor(record.constructorId);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: color,
+                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  minWidth: 36,
+                  textAlign: 'center',
+                }}
+              >
+                {record.driver}
+              </span>
+                          </div>
+          );
+        },
+      },
+      {
+        title: TEXT.result,
+        key: 'bestTime',
+        width: 90,
+        render: (_: unknown, record: PracticeRankingItem) => (
+          <span style={{ fontWeight: record.bestTimeSeconds === bestTime ? 700 : 400, color: record.bestTimeSeconds === bestTime ? '#a855f7' : undefined }}>
+            {record.bestTime}
+          </span>
+        ),
+      },
+      {
+        title: 'Gap',
+        key: 'gap',
+        width: 80,
+        render: (_: unknown, record: PracticeRankingItem) => (
+          <span style={{ color: record.gapSeconds === null ? '#22c55e' : undefined }}>
+            {record.gap}
+          </span>
+        ),
+      },
+      {
+        title: 'S1',
+        key: 'sector1',
+        width: 75,
+        render: (_: unknown, record: PracticeRankingItem) => <span style={{ color: '#f59e0b' }}>{record.sector1}</span>,
+      },
+      {
+        title: 'S2',
+        key: 'sector2',
+        width: 75,
+        render: (_: unknown, record: PracticeRankingItem) => <span style={{ color: '#3b82f6' }}>{record.sector2}</span>,
+      },
+      {
+        title: 'S3',
+        key: 'sector3',
+        width: 75,
+        render: (_: unknown, record: PracticeRankingItem) => <span style={{ color: '#10b981' }}>{record.sector3}</span>,
+      },
+      { title: TEXT.laps, dataIndex: 'laps', key: 'laps', width: 55 },
+    ] as ColumnsType<PracticeRankingItem>;
+  };
+
+  const driverInfoByDriverId = useMemo(() => {
+    const map = new Map<string, { code: string; constructorId: string; constructorName: string }>();
+    // From current race results (may be empty in pre-race mode)
+    [...raceResults, ...qualifyingResults, ...sprintResults].forEach((r) => {
+      if (r.Driver?.driverId && r.Driver?.code) {
+        map.set(r.Driver.driverId, {
+          code: r.Driver.code,
+          constructorId: r.Constructor?.constructorId || '',
+          constructorName: r.Constructor?.name || '',
+        });
+      }
+    });
+    // From recent historical results (always available pre and post race)
+    (racePreviewSummary?.recentResults || []).forEach((item) => {
+      if (item.winnerDriverId && item.winnerName && !map.has(item.winnerDriverId)) {
+        map.set(item.winnerDriverId, {
+          code: driverIdToCode(item.winnerDriverId),
+          constructorId: item.winnerConstructorId || '',
+          constructorName: item.winnerConstructorName || '',
+        });
+      }
+      if (item.poleDriverId && item.poleName && !map.has(item.poleDriverId)) {
+        map.set(item.poleDriverId, {
+          code: driverIdToCode(item.poleDriverId),
+          constructorId: '',
+          constructorName: '',
+        });
+      }
+      (item.podium || []).forEach((p) => {
+        if (p.driverId && !map.has(p.driverId)) {
+          map.set(p.driverId, {
+            code: driverIdToCode(p.driverId),
+            constructorId: p.constructorId || '',
+            constructorName: p.constructorName || '',
+          });
+        }
+      });
+    });
+    return map;
+  }, [raceResults, qualifyingResults, sprintResults, racePreviewSummary]);
+
   if ((seasonLoading || primaryLoading) && !raceInfo) {
     return <div>{TEXT.loading}</div>;
   }
@@ -3047,9 +3273,9 @@ const RaceDetail = () => {
     );
   }
 
-  const hasFp1 = Boolean(raceInfo?.FirstPractice) || availableDbSessions.includes('FP1') || fp1Results.length > 0;
-  const hasFp2 = Boolean(raceInfo?.SecondPractice) || availableDbSessions.includes('FP2') || fp2Results.length > 0;
-  const hasFp3 = Boolean(raceInfo?.ThirdPractice) || availableDbSessions.includes('FP3') || fp3Results.length > 0;
+  const hasFp1 = Boolean(raceInfo?.FirstPractice) || availableDbSessions.includes('FP1') || fp1Results.length > 0 || practice1Ranking.length > 0;
+  const hasFp2 = Boolean(raceInfo?.SecondPractice) || availableDbSessions.includes('FP2') || fp2Results.length > 0 || practice2Ranking.length > 0;
+  const hasFp3 = Boolean(raceInfo?.ThirdPractice) || availableDbSessions.includes('FP3') || fp3Results.length > 0 || practice3Ranking.length > 0;
   const participantRecords = [
     ...qualifyingResults,
     ...raceResults,
@@ -3080,6 +3306,9 @@ const RaceDetail = () => {
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
   const tabItems: RaceTabItem[] = [
+    hasFp1 && { key: 'fp1', label: TEXT.fp1, data: practice1Ranking, columns: getPracticeColumns(practice1Ranking) },
+    hasFp2 && { key: 'fp2', label: TEXT.fp2, data: practice2Ranking, columns: getPracticeColumns(practice2Ranking) },
+    hasFp3 && { key: 'fp3', label: TEXT.fp3, data: practice3Ranking, columns: getPracticeColumns(practice3Ranking) },
     hasSprintQualifying && {
       key: 'sprintQualifying',
       label: TEXT.sprintQualifying,
@@ -3094,12 +3323,9 @@ const RaceDetail = () => {
       columns: getQualifyingColumns(fastF1QualifyingBestLapByDriver),
     },
     { key: 'race', label: TEXT.race, data: raceResults, columns: getRaceColumns(raceResults) },
-    hasFp1 && { key: 'fp1', label: TEXT.fp1, data: fp1Results, columns: getRaceColumns(fp1Results) },
-    hasFp2 && { key: 'fp2', label: TEXT.fp2, data: fp2Results, columns: getRaceColumns(fp2Results) },
-    hasFp3 && { key: 'fp3', label: TEXT.fp3, data: fp3Results, columns: getRaceColumns(fp3Results) },
   ].filter(Boolean) as RaceTabItem[];
 
-  const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'sprintQualifying';
+  const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'race';
   const currentTabIndex = tabItems.findIndex((item) => item.key === effectiveActiveTab);
   const currentItem = tabItems.find((item) => item.key === effectiveActiveTab);
   const telemetrySummaryChartOption = buildRankingBarOption(
@@ -3221,7 +3447,7 @@ const RaceDetail = () => {
     });
   }
 
-  const getTableLoading = (tabKey: string, data: Array<Result | QualifyingResult>) => {
+  const getTableLoading = (tabKey: string, data: Array<Result | QualifyingResult | PracticeRankingItem>) => {
     if (seasonLoading || primaryLoading) {
       return true;
     }
@@ -3246,29 +3472,92 @@ const RaceDetail = () => {
     {
       title: TEXT.winner,
       key: 'winner',
-      width: 180,
-      render: (_: unknown, record: RecentGrandPrixResult) => (
-        <div className="race-weekend-driver-cell">
-          <strong>{record.winnerName || '-'}</strong>
-          <span>{record.winnerConstructorName || '-'}</span>
-        </div>
-      ),
+      width: 200,
+      render: (_: unknown, record: RecentGrandPrixResult) => {
+        const info = record.winnerDriverId ? driverInfoByDriverId.get(record.winnerDriverId) : null;
+        const color = record.winnerConstructorId
+          ? getTeamColor(record.winnerConstructorId)
+          : (info?.constructorId ? getTeamColor(info.constructorId) : DEFAULT_TAG_COLOR);
+        const code = info?.code || (record.winnerDriverId ? driverIdToCode(record.winnerDriverId) : '');
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                display: 'inline-block',
+                backgroundColor: color,
+                color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                fontWeight: 700,
+                fontSize: 12,
+                padding: '2px 6px',
+                borderRadius: 3,
+                textAlign: 'center',
+              }}
+            >
+              {code || record.winnerName || '-'}
+            </span>
+          </div>
+        );
+      },
     },
     {
       title: TEXT.pole,
       key: 'pole',
       width: 160,
-      render: (_: unknown, record: RecentGrandPrixResult) => (
-        <div className="race-history-pole-cell">
-          <strong>{record.poleName || '-'}</strong>
-          {record.poleName ? <span>P1</span> : null}
-        </div>
-      ),
+      render: (_: unknown, record: RecentGrandPrixResult) => {
+        const info = record.poleDriverId ? driverInfoByDriverId.get(record.poleDriverId) : null;
+        if (!info) {
+          return <strong>{record.poleName || '-'}</strong>;
+        }
+        const color = info.constructorId ? getTeamColor(info.constructorId) : DEFAULT_TAG_COLOR;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              display: 'inline-block',
+              backgroundColor: color,
+              color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+              fontWeight: 700, fontSize: 12,
+              padding: '2px 6px', borderRadius: 3,
+              textAlign: 'center', minWidth: 36,
+            }}>
+              {info.code}
+            </span>
+            <span style={{ fontSize: 12, color: '#94a3b8' }}>P1</span>
+          </div>
+        );
+      },
     },
     {
       title: TEXT.podium,
       key: 'podium',
-      render: (_: unknown, record: RecentGrandPrixResult) => formatPodium(record),
+      render: (_: unknown, record: RecentGrandPrixResult) => {
+        if (!record.podium.length) return '-';
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {record.podium.map((item) => {
+              const info = driverInfoByDriverId.get(item.driverId);
+              const code = info?.code || driverIdToCode(item.driverId);
+              const color = item.constructorId
+                ? getTeamColor(item.constructorId)
+                : (info?.constructorId ? getTeamColor(info.constructorId) : DEFAULT_TAG_COLOR);
+              return (
+                <span key={item.position} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>P{item.position}</span>
+                  <span style={{
+                    display: 'inline-block',
+                    backgroundColor: color,
+                    color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                    fontWeight: 700, fontSize: 11,
+                    padding: '1px 5px', borderRadius: 3,
+                    textAlign: 'center',
+                  }}>
+                    {code}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        );
+      },
     },
   ];
 
@@ -3347,12 +3636,28 @@ const RaceDetail = () => {
       key: 'driver',
       fixed: 'left' as const,
       width: 120,
-      render: (_: unknown, record: DriverPostRaceTelemetrySummary) => (
-        <div className="race-weekend-driver-cell">
-          <strong>{record.driver}</strong>
-          <span>{record.team}</span>
-        </div>
-      ),
+      render: (_: unknown, record: DriverPostRaceTelemetrySummary) => {
+        const color = record.team ? getTeamColor(normalizeConstructorId(record.team)) : DEFAULT_TAG_COLOR;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                display: 'inline-block',
+                backgroundColor: color,
+                color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                fontWeight: 700,
+                fontSize: 12,
+                padding: '2px 6px',
+                borderRadius: 3,
+                minWidth: 36,
+                textAlign: 'center',
+              }}
+            >
+              {record.driver}
+            </span>
+                      </div>
+        );
+      },
     },
     {
       title: TEXT.lap,
@@ -4163,7 +4468,7 @@ const RaceDetail = () => {
               <Table
                 columns={currentItem?.columns}
                 dataSource={currentItem?.data}
-                rowKey={(record) => record.Driver.driverId}
+                rowKey={(record: any) => record.Driver?.driverId || record.driver || ''}
                 pagination={false}
                 loading={currentItem ? getTableLoading(currentItem.key, currentItem.data) : false}
                 scroll={{ x: 'max-content' }}
@@ -4183,7 +4488,7 @@ const RaceDetail = () => {
                 <Table
                   columns={item.columns}
                   dataSource={item.data}
-                  rowKey={(record) => record.Driver.driverId}
+                  rowKey={(record: any) => record.Driver?.driverId || record.driver || ''}
                   pagination={false}
                   loading={getTableLoading(item.key, item.data)}
                 />
