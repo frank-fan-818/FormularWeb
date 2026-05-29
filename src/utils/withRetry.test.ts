@@ -17,6 +17,7 @@ describe('withTimeout', () => {
     const promise = withTimeout(slow, 100);
     vi.advanceTimersByTime(200);
     await expect(promise).rejects.toThrow(/超时/);
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 });
@@ -46,6 +47,7 @@ describe('withRetry', () => {
     expect(result).toBe('recovered');
     expect(fn).toHaveBeenCalledTimes(2);
 
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -57,12 +59,13 @@ describe('withRetry', () => {
 
     const promise = withRetry(fn, { maxRetries: 2, baseDelayMs: 100, timeoutMs: 50 });
 
-    // Advance enough to cover 3 attempts + backoffs (50 + 100 + 50 + 200 + 50 = 450ms)
-    await vi.advanceTimersByTimeAsync(500);
+    // Run all timers to completion so no pending timers leak
+    await vi.runAllTimersAsync();
 
     await expect(promise).rejects.toThrow(/超时/);
     expect(fn).toHaveBeenCalledTimes(3); // initial + 2 retries
 
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -103,6 +106,7 @@ describe('withRetry', () => {
     expect(result).toBe('ok');
     expect(fn).toHaveBeenCalledTimes(2);
 
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -126,6 +130,7 @@ describe('withRetry', () => {
     expect(result).toBe('recovered');
     expect(fn).toHaveBeenCalledTimes(2);
 
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -147,6 +152,7 @@ describe('withRetry', () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
     expect(onRetry).toHaveBeenCalledWith(1, expect.any(Error));
 
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 

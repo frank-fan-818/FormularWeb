@@ -323,6 +323,9 @@ export interface FastF1LapPoint {
   position: number | null;
   freshTyre?: boolean | null;
   tyreLife?: number | null;
+  sector1TimeSeconds?: number | null;
+  sector2TimeSeconds?: number | null;
+  sector3TimeSeconds?: number | null;
 }
 
 export interface FastF1DriverLapSeries {

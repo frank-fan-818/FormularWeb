@@ -21,8 +21,39 @@ const teamColorMap: Record<string, string> = {
 
 const DEFAULT_COLOR = '#334155';
 
+const fastF1TeamToConstructorId: Record<string, string> = {
+  'red bull racing': 'red_bull',
+  ferrari: 'ferrari',
+  mercedes: 'mercedes',
+  mclaren: 'mclaren',
+  'aston martin': 'aston_martin',
+  alpine: 'alpine',
+  alphatauri: 'alphatauri',
+  'alfa romeo': 'alfa',
+  'haas f1 team': 'haas',
+  williams: 'williams',
+  sauber: 'sauber',
+  'kick sauber': 'sauber',
+  rb: 'rb',
+  'racing bulls': 'rb',
+  jordan: 'jordan',
+  benetton: 'benetton',
+  renault: 'renault',
+  brawn: 'brawn',
+  lotus: 'lotus',
+};
+
+export function normalizeConstructorId(raw: string): string {
+  const key = raw.toLowerCase().replace(/\s+/g, '_');
+  if (teamColorMap[key]) {
+    return key;
+  }
+  return fastF1TeamToConstructorId[raw.toLowerCase().trim()] || key;
+}
+
 export function getTeamColor(constructorId: string, isText = false): string {
-  const color = teamColorMap[constructorId.toLowerCase()] || DEFAULT_COLOR;
+  const normalized = normalizeConstructorId(constructorId);
+  const color = teamColorMap[normalized] || DEFAULT_COLOR;
 
   if (isText && ['#ffffff', '#ffff00', '#fff500', '#ffb800', '#00e700', '#c8c8c8'].includes(color)) {
     return '#111827';
