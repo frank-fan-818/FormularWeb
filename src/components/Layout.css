@@ -181,6 +181,30 @@
   height: 20px;
 }
 
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 24, 1, 0.1);
+  color: var(--f1-red);
+}
+
+.theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .season-label {
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
