@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSeasons } from '@/hooks';
 import { useAppStore } from '@/store';
 import './Layout.css';
@@ -117,6 +118,34 @@ const MenuUnfoldIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
+const SunIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m6.34 17.66-1.41 1.41" />
+    <path d="m19.07 4.93-1.41 1.41" />
+  </IconBase>
+);
+
+const MoonIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </IconBase>
+);
+
+const SystemIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <rect x="3" y="4" width="18" height="13" rx="2" />
+    <path d="M8 21h8" />
+    <path d="M12 17v4" />
+  </IconBase>
+);
+
 const SearchIcon = ({ className }: IconProps) => (
   <IconBase className={className}>
     <circle cx="11" cy="11" r="5.2" />
@@ -192,7 +221,7 @@ const resolveActiveNavKey = (pathname: string) => {
 const LayoutComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentSeason, setCurrentSeason, sidebarCollapsed, toggleSidebar } = useAppStore();
+  const { currentSeason, setCurrentSeason, sidebarCollapsed, toggleSidebar, theme, setTheme } = useAppStore();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -200,6 +229,7 @@ const LayoutComponent = () => {
   const [touchEndX, setTouchEndX] = useState(0);
   const [searchActivated, setSearchActivated] = useState(false);
   const { seasons } = useSeasons();
+  const { i18n } = useTranslation();
   const activeNavKey = resolveActiveNavKey(location.pathname);
 
   useEffect(() => {
@@ -295,6 +325,42 @@ const LayoutComponent = () => {
     </label>
   );
 
+  const langSwitcher = (
+    <label className="season-switcher lang-switcher">
+      <select
+        value={i18n.language}
+        onChange={(event) => {
+          i18n.changeLanguage(event.target.value);
+          localStorage.setItem('i18nextLng', event.target.value);
+        }}
+        className="season-select-native"
+      >
+        <option value="zh-CN">中文</option>
+        <option value="en">EN</option>
+      </select>
+    </label>
+  );
+
+  const cycleTheme = () => {
+    const order: Array<'system' | 'light' | 'dark'> = ['system', 'light', 'dark'];
+    const currentIndex = order.indexOf(theme);
+    const nextTheme = order[(currentIndex + 1) % order.length];
+    setTheme(nextTheme);
+  };
+
+  const themeIcon = theme === 'dark' ? <MoonIcon /> : theme === 'light' ? <SunIcon /> : <SystemIcon />;
+
+  const themeToggle = (
+    <button
+      type="button"
+      onClick={cycleTheme}
+      className="theme-toggle-btn"
+      aria-label={`Theme: ${theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System'}`}
+    >
+      {themeIcon}
+    </button>
+  );
+
   const menuButton = (
     <button
       type="button"
@@ -361,7 +427,9 @@ const LayoutComponent = () => {
               {isMobile ? (
                 <>
                   {seasonSwitcher}
+                  {langSwitcher}
                   <div className="header-mobile-actions">
+                    {themeToggle}
                     {!searchActivated ? searchTrigger : null}
                     {menuButton}
                   </div>
@@ -370,6 +438,8 @@ const LayoutComponent = () => {
                 <>
                   {menuButton}
                   {seasonSwitcher}
+                  {langSwitcher}
+                  {themeToggle}
                 </>
               )}
             </div>

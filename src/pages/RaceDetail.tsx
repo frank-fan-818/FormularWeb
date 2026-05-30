@@ -1,5 +1,6 @@
 ﻿import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, Segmented, Table, Tabs, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -197,6 +198,7 @@ function formatCornerSpeedSet(driverSpeed?: {
 }
 
 const RaceDetail = () => {
+  const { t } = useTranslation();
   const { round } = useParams<{ round: string }>();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
@@ -365,24 +367,24 @@ const RaceDetail = () => {
       : null;
 
     return [
-      { label: TEXT.historicalRaces, value: String(racePreviewSummary?.sampleSize || 0), detail: TEXT.sampleSize },
-      { label: TEXT.poleConversion, value: formatProbability(racePreviewSummary?.poleWinConversionPct), detail: TEXT.pole },
-      { label: TEXT.interruptionRisk, value: formatProbability(averageInterruptionRisk), detail: interruptionItems.map((item) => item.type).join(' / ') || '-' },
+      { label: t('historicalRaces'), value: String(racePreviewSummary?.sampleSize || 0), detail: t('sampleSize') },
+      { label: t('poleConversion'), value: formatProbability(racePreviewSummary?.poleWinConversionPct), detail: t('pole') },
+      { label: t('interruptionRisk'), value: formatProbability(averageInterruptionRisk), detail: interruptionItems.map((item) => item.type).join(' / ') || '-' },
     ];
   }, [racePreviewSummary]);
   const raceUpgradeMetrics = useMemo(() => [
     {
-      label: TEXT.upgradeTotal,
+      label: t('upgradeTotal'),
       value: String(raceUpgradeSummary?.totalDeclaredUpgradeCount || 0),
       detail: raceUpgradeSummary?.grandPrix || '-',
     },
     {
-      label: TEXT.upgradeIntensity,
+      label: t('upgradeIntensity'),
       value: String(raceUpgradeSummary?.totalDeclaredUpgradeIntensity || 0),
       detail: raceUpgradeSummary?.source || '-',
     },
     {
-      label: TEXT.upgradeTeams,
+      label: t('upgradeTeams'),
       value: String(raceUpgradeSummary?.teams.length || 0),
       detail: raceUpgradeSummary?.sourceDocuments[0]?.title || '-',
     },
@@ -690,7 +692,7 @@ const RaceDetail = () => {
     const hasFastF1Laps = bestLapByDriver.size > 0;
     const fastF1Columns = hasFastF1Laps ? [
       {
-        title: TEXT.fastestLap,
+        title: t('fastestLap'),
         key: 'fastf1FastestLap',
         width: 110,
         render: (_: unknown, record: QualifyingResult) => {
@@ -710,9 +712,9 @@ const RaceDetail = () => {
     ] : [];
 
     return [
-      { title: TEXT.rank, dataIndex: 'position', key: 'position', width: 60 },
+      { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
       {
-        title: TEXT.driver,
+        title: t('driver'),
         key: 'driver',
         render: (_: unknown, record: QualifyingResult) => {
           const color = getTeamColor(record.Constructor.constructorId);
@@ -767,10 +769,10 @@ const RaceDetail = () => {
     });
 
     return [
-      { title: TEXT.rank, dataIndex: 'position', key: 'position', width: 60 },
-      { title: TEXT.grid, dataIndex: 'grid', key: 'grid', width: 60 },
+      { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
+      { title: t('grid'), dataIndex: 'grid', key: 'grid', width: 60 },
       {
-        title: TEXT.driver,
+        title: t('driver'),
         key: 'driver',
         render: (_: unknown, record: Result) => {
           const color = getTeamColor(record.Constructor.constructorId);
@@ -798,14 +800,14 @@ const RaceDetail = () => {
           );
         },
       },
-      { title: TEXT.laps, dataIndex: 'laps', key: 'laps', width: 60 },
+      { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 60 },
       {
-        title: TEXT.result,
+        title: t('result'),
         key: 'time',
         render: (_: unknown, record: Result) => record.Time?.time || record.status,
       },
       {
-        title: TEXT.fastestLap,
+        title: t('fastestLap'),
         key: 'fastestLap',
         render: (_: unknown, record: Result) => {
           const fastF1Lap = fastF1LapByDriver.get(record.Driver.code);
@@ -821,7 +823,7 @@ const RaceDetail = () => {
         },
       },
       {
-        title: TEXT.points,
+        title: t('points'),
         dataIndex: 'points',
         key: 'points',
         width: 60,
@@ -834,9 +836,9 @@ const RaceDetail = () => {
     const bestTime = data[0]?.bestTimeSeconds ?? 0;
 
     return [
-      { title: TEXT.rank, key: 'rank', width: 50, render: (_: unknown, __: unknown, index: number) => index + 1 },
+      { title: t('rank'), key: 'rank', width: 50, render: (_: unknown, __: unknown, index: number) => index + 1 },
       {
-        title: TEXT.driver,
+        title: t('driver'),
         key: 'driver',
         render: (_: unknown, record: PracticeRankingItem) => {
           const color = getTeamColor(record.constructorId);
@@ -862,7 +864,7 @@ const RaceDetail = () => {
         },
       },
       {
-        title: TEXT.result,
+        title: t('result'),
         key: 'bestTime',
         width: 90,
         render: (_: unknown, record: PracticeRankingItem) => (
@@ -899,7 +901,7 @@ const RaceDetail = () => {
         width: 75,
         render: (_: unknown, record: PracticeRankingItem) => <span style={{ color: '#10b981' }}>{record.sector3}</span>,
       },
-      { title: TEXT.laps, dataIndex: 'laps', key: 'laps', width: 55 },
+      { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 55 },
     ] as ColumnsType<PracticeRankingItem>;
   };
 
@@ -945,7 +947,7 @@ const RaceDetail = () => {
   }, [raceResults, qualifyingResults, sprintResults, racePreviewSummary]);
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
-    return <div>{TEXT.loading}</div>;
+    return <div>{t('loading')}</div>;
   }
 
   if (!raceInfo) {
@@ -956,11 +958,11 @@ const RaceDetail = () => {
           onClick={() => navigate(-1)}
           className="back-button"
         >
-          {TEXT.back}
+          {t('back')}
         </Button>
 
         <Card>
-          <p>{TEXT.notFound}</p>
+          <p>{t('notFound')}</p>
         </Card>
       </div>
     );
@@ -999,30 +1001,30 @@ const RaceDetail = () => {
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
   const tabItems: RaceTabItem[] = [
-    hasFp1 && { key: 'fp1', label: TEXT.fp1, data: practice1Ranking, columns: getPracticeColumns(practice1Ranking) },
-    hasFp2 && { key: 'fp2', label: TEXT.fp2, data: practice2Ranking, columns: getPracticeColumns(practice2Ranking) },
-    hasFp3 && { key: 'fp3', label: TEXT.fp3, data: practice3Ranking, columns: getPracticeColumns(practice3Ranking) },
+    hasFp1 && { key: 'fp1', label: t('fp1'), data: practice1Ranking, columns: getPracticeColumns(practice1Ranking) },
+    hasFp2 && { key: 'fp2', label: t('fp2'), data: practice2Ranking, columns: getPracticeColumns(practice2Ranking) },
+    hasFp3 && { key: 'fp3', label: t('fp3'), data: practice3Ranking, columns: getPracticeColumns(practice3Ranking) },
     hasSprintQualifying && {
       key: 'sprintQualifying',
-      label: TEXT.sprintQualifying,
+      label: t('sprintQualifying'),
       data: sprintQualifyingTableData,
       columns: getQualifyingColumns(fastF1SprintQualifyingBestLapByDriver, 'SQ'),
     },
-    hasSprint && { key: 'sprint', label: TEXT.sprint, data: sprintTableData, columns: getRaceColumns(sprintTableData, fastF1SprintLapByDriver) },
+    hasSprint && { key: 'sprint', label: t('sprint'), data: sprintTableData, columns: getRaceColumns(sprintTableData, fastF1SprintLapByDriver) },
     {
       key: 'qualifying',
-      label: TEXT.qualifying,
+      label: t('qualifying'),
       data: qualifyingResults,
       columns: getQualifyingColumns(fastF1QualifyingBestLapByDriver),
     },
-    { key: 'race', label: TEXT.race, data: raceResults, columns: getRaceColumns(raceResults) },
+    { key: 'race', label: t('race'), data: raceResults, columns: getRaceColumns(raceResults) },
   ].filter(Boolean) as RaceTabItem[];
 
   const effectiveActiveTab = tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'race';
   const currentTabIndex = tabItems.findIndex((item) => item.key === effectiveActiveTab);
   const currentItem = tabItems.find((item) => item.key === effectiveActiveTab);
   const telemetrySummaryChartOption = buildRankingBarOption(
-    TEXT.telemetrySummary,
+    t('telemetrySummary'),
     'km/h',
     getTelemetrySummaryChartRows(postRaceTelemetrySummary),
     formatSpeed,
@@ -1110,7 +1112,7 @@ const RaceDetail = () => {
   type TelemetryCornerRow = ReturnType<typeof getCornerSpeedRows>[number];
   const telemetryCornerColumns: ColumnsType<TelemetryCornerRow> = [
     {
-      title: TEXT.corner,
+      title: t('corner'),
       key: 'corner',
       fixed: 'left' as const,
       width: 86,
@@ -1122,7 +1124,7 @@ const RaceDetail = () => {
       ),
     },
     ...activeTelemetryDrivers.map((driver) => ({
-      title: `${driver.driver} (${TEXT.entry}/${TEXT.minimum}/${TEXT.exit})`,
+      title: `${driver.driver} (${t('entry')}/${t('minimum')}/${t('exit')})`,
       key: `corner-${driver.driver}`,
       width: 150,
       render: (_: unknown, record: TelemetryCornerRow) =>
@@ -1132,7 +1134,7 @@ const RaceDetail = () => {
 
   if (activeTelemetryDrivers.length === 2) {
     telemetryCornerColumns.push({
-      title: `${TEXT.delta} ${TEXT.minimum}`,
+      title: `${t('delta')} ${t('minimum')}`,
       key: 'minSpeedDelta',
       width: 92,
       render: (_: unknown, record: TelemetryCornerRow) =>
@@ -1152,7 +1154,7 @@ const RaceDetail = () => {
 
   const recentResultColumns = [
     {
-      title: TEXT.time,
+      title: t('time'),
       key: 'season',
       width: 116,
       render: (_: unknown, record: RecentGrandPrixResult) => (
@@ -1163,7 +1165,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.winner,
+      title: t('winner'),
       key: 'winner',
       width: 200,
       render: (_: unknown, record: RecentGrandPrixResult) => {
@@ -1193,7 +1195,7 @@ const RaceDetail = () => {
       },
     },
     {
-      title: TEXT.pole,
+      title: t('pole'),
       key: 'pole',
       width: 160,
       render: (_: unknown, record: RecentGrandPrixResult) => {
@@ -1220,7 +1222,7 @@ const RaceDetail = () => {
       },
     },
     {
-      title: TEXT.podium,
+      title: t('podium'),
       key: 'podium',
       render: (_: unknown, record: RecentGrandPrixResult) => {
         if (!record.podium.length) return '-';
@@ -1256,13 +1258,13 @@ const RaceDetail = () => {
 
   const interruptionColumns = [
     {
-      title: TEXT.raceStatus,
+      title: t('raceStatus'),
       dataIndex: 'label',
       key: 'label',
       width: 160,
     },
     {
-      title: TEXT.probability,
+      title: t('probability'),
       key: 'probability',
       width: 120,
       render: (_: unknown, record: TrackInterruptionProbability) => (
@@ -1270,7 +1272,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.sampleSize,
+      title: t('sampleSize'),
       key: 'sampleSize',
       width: 140,
       render: (_: unknown, record: TrackInterruptionProbability) => (
@@ -1278,7 +1280,7 @@ const RaceDetail = () => {
           {record.triggeredCount}
           /
           {record.sampleSize}
-          {record.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
+          {record.status === 'insufficient-data' ? ` ${t('insufficientData')}` : ''}
         </span>
       ),
     },
@@ -1286,7 +1288,7 @@ const RaceDetail = () => {
 
   const interruptionSampleColumns = [
     {
-      title: TEXT.season,
+      title: t('season'),
       key: 'season',
       width: 92,
       render: (_: unknown, record: TrackInterruptionSample) => (
@@ -1294,7 +1296,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.race,
+      title: t('race'),
       key: 'race',
       render: (_: unknown, record: TrackInterruptionSample) => (
         <span>
@@ -1306,7 +1308,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.raceStatus,
+      title: t('raceStatus'),
       key: 'statusTypes',
       width: 240,
       render: (_: unknown, record: TrackInterruptionSample) => (
@@ -1316,7 +1318,7 @@ const RaceDetail = () => {
               {label}
             </Tag>
           )) : (
-            <Tag>{TEXT.noInterruption}</Tag>
+            <Tag>{t('noInterruption')}</Tag>
           )}
         </div>
       ),
@@ -1325,7 +1327,7 @@ const RaceDetail = () => {
 
   const telemetrySummaryColumns = [
     {
-      title: TEXT.driver,
+      title: t('driver'),
       key: 'driver',
       fixed: 'left' as const,
       width: 120,
@@ -1353,21 +1355,21 @@ const RaceDetail = () => {
       },
     },
     {
-      title: TEXT.lap,
+      title: t('lap'),
       key: 'lapNumber',
       width: 82,
       render: (_: unknown, record: DriverPostRaceTelemetrySummary) =>
         record.lapNumber ? `L${record.lapNumber}` : '-',
     },
     {
-      title: TEXT.lapTime,
+      title: t('lapTime'),
       key: 'lapTimeSeconds',
       width: 110,
       render: (_: unknown, record: DriverPostRaceTelemetrySummary) =>
         formatSessionSeconds(record.lapTimeSeconds),
     },
     {
-      title: TEXT.maxSpeed,
+      title: t('maxSpeed'),
       dataIndex: 'maxSpeedKph',
       key: 'maxSpeedKph',
       width: 120,
@@ -1377,35 +1379,35 @@ const RaceDetail = () => {
       defaultSortOrder: 'descend' as const,
     },
     {
-      title: TEXT.averageSpeed,
+      title: t('averageSpeed'),
       dataIndex: 'avgSpeedKph',
       key: 'avgSpeedKph',
       width: 120,
       render: formatSpeed,
     },
     {
-      title: TEXT.fullThrottle,
+      title: t('fullThrottle'),
       dataIndex: 'fullThrottlePct',
       key: 'fullThrottlePct',
       width: 110,
       render: formatPercent,
     },
     {
-      title: TEXT.averageThrottle,
+      title: t('averageThrottle'),
       dataIndex: 'avgThrottlePct',
       key: 'avgThrottlePct',
       width: 110,
       render: formatPercent,
     },
     {
-      title: TEXT.brake,
+      title: t('brake'),
       dataIndex: 'brakePct',
       key: 'brakePct',
       width: 90,
       render: formatPercent,
     },
     {
-      title: TEXT.drs,
+      title: t('drs'),
       dataIndex: 'drsPct',
       key: 'drsPct',
       width: 90,
@@ -1415,7 +1417,7 @@ const RaceDetail = () => {
 
   const raceUpgradeColumns: ColumnsType<FiaRaceUpgradeTeamSummary> = [
     {
-      title: TEXT.constructor,
+      title: t('constructor'),
       dataIndex: 'team',
       key: 'team',
       fixed: 'left' as const,
@@ -1423,14 +1425,14 @@ const RaceDetail = () => {
       render: (team: string) => <strong className="upgrade-team-name">{team}</strong>,
     },
     {
-      title: TEXT.upgradeTotal,
+      title: t('upgradeTotal'),
       dataIndex: 'declaredUpgradeCount',
       key: 'declaredUpgradeCount',
       width: 96,
       sorter: (a, b) => a.declaredUpgradeCount - b.declaredUpgradeCount,
     },
     {
-      title: TEXT.upgradeIntensity,
+      title: t('upgradeIntensity'),
       dataIndex: 'declaredUpgradeIntensity',
       key: 'declaredUpgradeIntensity',
       width: 96,
@@ -1442,7 +1444,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.upgradeIntent,
+      title: t('upgradeIntent'),
       key: 'dominantReason',
       width: 120,
       render: (_: unknown, record) => (
@@ -1452,7 +1454,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.upgradeComponents,
+      title: t('upgradeComponents'),
       key: 'componentNames',
       render: (_: unknown, record) => (
         <div className="upgrade-component-tags">
@@ -1463,7 +1465,7 @@ const RaceDetail = () => {
       ),
     },
     {
-      title: TEXT.upgradeSource,
+      title: t('upgradeSource'),
       key: 'source',
       width: 120,
       render: (_: unknown, record) => record.documentUrl ? (
@@ -1477,8 +1479,8 @@ const RaceDetail = () => {
   const racePreviewPanels = (
     <div className="race-weekend-grid race-preview-grid">
       <TableOnlyPanel
-        title={TEXT.recentWinners}
-        description={TEXT.preRaceDescription}
+        title={t('recentWinners')}
+        description={t('preRaceDescription')}
         loading={racePreviewLoading}
         collapsed={collapsedDataPanels.recentResults}
         onToggleCollapse={() => handleDataPanelCollapseToggle('recentResults')}
@@ -1504,13 +1506,13 @@ const RaceDetail = () => {
               scroll={{ x: 'max-content' }}
             />
           ) : (
-            <div className="race-weekend-empty">{TEXT.noPreviewData}</div>
+            <div className="race-weekend-empty">{t('noPreviewData')}</div>
           )}
         </>
       </TableOnlyPanel>
 
       <TableOnlyPanel
-        title={TEXT.interruptionRisk}
+        title={t('interruptionRisk')}
         loading={racePreviewLoading}
         collapsed={collapsedDataPanels.interruptionRisk}
         onToggleCollapse={() => handleDataPanelCollapseToggle('interruptionRisk')}
@@ -1525,7 +1527,7 @@ const RaceDetail = () => {
                   {item.triggeredCount}
                   /
                   {item.sampleSize}
-                  {item.status === 'insufficient-data' ? ` ${TEXT.insufficientData}` : ''}
+                  {item.status === 'insufficient-data' ? ` ${t('insufficientData')}` : ''}
                 </em>
               </span>
             ))}
@@ -1538,7 +1540,7 @@ const RaceDetail = () => {
             size="small"
           />
           <div className="race-weekend-subtable">
-            <h4>{TEXT.sampleYears}</h4>
+            <h4>{t('sampleYears')}</h4>
             <Table
               columns={interruptionSampleColumns}
               dataSource={racePreviewSummary?.interruptionSamples || []}
@@ -1553,7 +1555,7 @@ const RaceDetail = () => {
 
       <Card
         className="race-weekend-card upgrade-summary-card"
-        title={<div className="data-view-title"><span>{TEXT.carUpgrades}</span><small>{TEXT.carUpgradesDescription}</small></div>}
+        title={<div className="data-view-title"><span>{t('carUpgrades')}</span><small>{t('carUpgradesDescription')}</small></div>}
         loading={raceUpgradeLoading}
       >
         <div className="race-weekend-metric-grid upgrade-metric-grid">
@@ -1589,9 +1591,9 @@ const RaceDetail = () => {
             ) : null}
           </>
         ) : raceUpgradeError ? (
-          <div className="race-weekend-empty">{TEXT.carUpgradesLoadFailed}: {raceUpgradeError.message}</div>
+          <div className="race-weekend-empty">{t('carUpgradesLoadFailed')}: {raceUpgradeError.message}</div>
         ) : (
-          <div className="race-weekend-empty">{TEXT.noCarUpgrades}</div>
+          <div className="race-weekend-empty">{t('noCarUpgrades')}</div>
         )}
       </Card>
     </div>
@@ -1606,7 +1608,7 @@ const RaceDetail = () => {
         onClick={() => navigate(-1)}
         className="back-button"
       >
-        {TEXT.back}
+        {t('back')}
       </Button>
 
       <Card loading={seasonLoading || primaryLoading} className="race-info-card">
@@ -1623,7 +1625,7 @@ const RaceDetail = () => {
               </span>
               {isSprintWeekend ? (
                 <span className="race-hero-sprint">
-                  {TEXT.sprintWeekend}
+                  {t('sprintWeekend')}
                 </span>
               ) : null}
             </div>
@@ -1633,16 +1635,16 @@ const RaceDetail = () => {
             <span> — {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}</span>
           </p>
             {weekendScheduleGroups.length ? (
-              <div className="weekend-schedule" aria-label={TEXT.weekendSchedule}>
+              <div className="weekend-schedule" aria-label={t('weekendSchedule')}>
                 <div className="weekend-schedule-topbar">
                   <div>
-                    <span className="weekend-schedule-eyebrow">{TEXT.weekendSchedule}</span>
-                    <span className="weekend-schedule-source">{TEXT.scheduleSourceHint}</span>
+                    <span className="weekend-schedule-eyebrow">{t('weekendSchedule')}</span>
+                    <span className="weekend-schedule-source">{t('scheduleSourceHint')}</span>
                   </div>
-                  <span className="weekend-time-toggle" aria-label={`${TEXT.scheduleTimezone} ${TEXT.scheduleTimezoneValue}`}>
+                  <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${t('scheduleTimezoneValue')}`}>
                     <ClockCircleOutlined />
-                    <strong>{TEXT.scheduleTimezone}</strong>
-                    {TEXT.scheduleTimezoneValue}
+                    <strong>{t('scheduleTimezone')}</strong>
+                    {t('scheduleTimezoneValue')}
                   </span>
                 </div>
                 <div className="weekend-schedule-days">
@@ -1661,7 +1663,7 @@ const RaceDetail = () => {
                             <span className="weekend-session-code">{item.code}</span>
                             <span className="weekend-session-main">
                               <strong>{item.label}</strong>
-                              <span>{TEXT.scheduleTimezoneValue}</span>
+                              <span>{t('scheduleTimezoneValue')}</span>
                             </span>
                             <time className="weekend-session-time">{item.timeLabel}</time>
                           </div>
@@ -1678,15 +1680,15 @@ const RaceDetail = () => {
       <section className="race-weekend-mode-section">
         <div className="race-weekend-mode-bar">
           <div>
-            <span className="fastf1-eyebrow">{TEXT.raceWeekendMode}</span>
-            <h2>{activeWeekendMode === 'pre' ? TEXT.preRaceOverview : TEXT.postRaceOverview}</h2>
+            <span className="fastf1-eyebrow">{t('raceWeekendMode')}</span>
+            <h2>{activeWeekendMode === 'pre' ? t('preRaceOverview') : t('postRaceOverview')}</h2>
           </div>
           <Segmented<RaceWeekendMode>
             value={activeWeekendMode}
             onChange={(value) => setSelectedWeekendMode(value)}
             options={[
-              { label: TEXT.preRace, value: 'pre' },
-              { label: TEXT.postRace, value: 'post' },
+              { label: t('preRace'), value: 'pre' },
+              { label: t('postRace'), value: 'post' },
             ]}
           />
         </div>
@@ -1695,15 +1697,15 @@ const RaceDetail = () => {
 
         {activeWeekendMode === 'post' ? (
           <DataViewPanel
-            title={TEXT.telemetrySummary}
-            description={TEXT.postRaceDescription}
+            title={t('telemetrySummary')}
+            description={t('postRaceDescription')}
             className="race-weekend-post-card"
             mode={dataViewModes.telemetrySummary}
             collapsed={collapsedDataPanels.telemetrySummary}
             onModeChange={(mode) => handleDataViewModeChange('telemetrySummary', mode)}
             onToggleCollapse={() => handleDataPanelCollapseToggle('telemetrySummary')}
             chart={postRaceTelemetrySummary.length ? (
-              <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                 <LazyEChartsPanel
                   chartKey={`post-race-telemetry-summary-${currentSeason}-${round}`}
                   height={isMobile ? 300 : 420}
@@ -1711,7 +1713,7 @@ const RaceDetail = () => {
                 />
               </Suspense>
             ) : (
-              <div className="race-weekend-empty">{TEXT.noTelemetrySummary}</div>
+              <div className="race-weekend-empty">{t('noTelemetrySummary')}</div>
             )}
             table={(
               <>
@@ -1725,7 +1727,7 @@ const RaceDetail = () => {
                     scroll={{ x: 'max-content' }}
                   />
                 ) : (
-                  <div className="race-weekend-empty">{TEXT.noTelemetrySummary}</div>
+                  <div className="race-weekend-empty">{t('noTelemetrySummary')}</div>
                 )}
               </>
             )}
@@ -1737,20 +1739,20 @@ const RaceDetail = () => {
         <section className="fastf1-analytics-section">
           <div className="fastf1-analytics-heading">
             <div>
-              <span className="fastf1-eyebrow">{TEXT.fastF1Source}</span>
-              <h2>{TEXT.fastF1Analysis}</h2>
+              <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
+              <h2>{t('fastF1Analysis')}</h2>
             </div>
             {fastF1Analytics && fastF1Summary ? (
-              <div className="fastf1-summary-strip" aria-label={TEXT.fastF1Analysis}>
-                <span>{fastF1Summary.driverCount} {TEXT.drivers}</span>
-                <span>{fastF1Summary.maxLap} {TEXT.summaryLaps}</span>
-                <span>{fastF1Summary.stints} {TEXT.stints}</span>
-                <span>{fastF1Summary.statusCount} {TEXT.raceStatus}</span>
+              <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
+                <span>{fastF1Summary.driverCount} {t('drivers')}</span>
+                <span>{fastF1Summary.maxLap} {t('summaryLaps')}</span>
+                <span>{fastF1Summary.stints} {t('stints')}</span>
+                <span>{fastF1Summary.statusCount} {t('raceStatus')}</span>
                 {fastF1Summary.weatherSummary ? (
                   <>
-                    <span>{TEXT.trackTemp} {formatStatRange(fastF1Summary.weatherSummary.trackTempC)}</span>
-                    <span>{TEXT.airTemp} {formatStatRange(fastF1Summary.weatherSummary.airTempC)}</span>
-                    <span>{TEXT.humidity} {formatPercent(fastF1Summary.weatherSummary.humidityPct.average)}</span>
+                    <span>{t('trackTemp')} {formatStatRange(fastF1Summary.weatherSummary.trackTempC)}</span>
+                    <span>{t('airTemp')} {formatStatRange(fastF1Summary.weatherSummary.airTempC)}</span>
+                    <span>{t('humidity')} {formatPercent(fastF1Summary.weatherSummary.humidityPct.average)}</span>
                   </>
                 ) : null}
               </div>
@@ -1762,9 +1764,9 @@ const RaceDetail = () => {
               <div className="fastf1-analysis-group fastf1-race-group">
                 <div className="fastf1-analysis-group-header">
                   <div>
-                    <span>{TEXT.race}</span>
-                    <h3>{TEXT.raceAnalysisGroup}</h3>
-                    <p>{TEXT.lapPaceDescription}</p>
+                    <span>{t('race')}</span>
+                    <h3>{t('raceAnalysisGroup')}</h3>
+                    <p>{t('lapPaceDescription')}</p>
                   </div>
                 </div>
                 <div className="fastf1-analytics-grid">
@@ -1772,13 +1774,13 @@ const RaceDetail = () => {
                 <Card className="fastf1-chart-card">
                 <div className="fastf1-chart-header">
                   <div>
-                    <h3 className="fastf1-chart-title">{TEXT.lapPace}</h3>
-                    <p>{TEXT.lapPaceDescription}</p>
+                    <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
+                    <p>{t('lapPaceDescription')}</p>
                   </div>
                   <div className="fastf1-chart-badges">
                     {fastF1Analytics.fastestLap ? (
                       <span className="fastf1-fastest-lap-badge">
-                        {TEXT.fastestLap}
+                        {t('fastestLap')}
                         {' '}
                         {fastF1Analytics.fastestLap.driver}
                         {' '}
@@ -1789,7 +1791,7 @@ const RaceDetail = () => {
                     ) : null}
                   </div>
                 </div>
-                <div className="driver-legend" aria-label={TEXT.driver}>
+                <div className="driver-legend" aria-label={t('driver')}>
                   {driverLegendItems.map((item) => {
                     const isActive = !hasLapDriverFilter || selectedLapDrivers.includes(item.driver);
 
@@ -1811,7 +1813,7 @@ const RaceDetail = () => {
                   })}
                 </div>
                 {fastF1Analytics.trackStatusPeriods?.length ? (
-                  <div className="track-status-legend" aria-label={TEXT.raceStatus}>
+                  <div className="track-status-legend" aria-label={t('raceStatus')}>
                     {fastF1Analytics.trackStatusPeriods.map((period, index) => (
                       <span key={`${period.type}-${period.startLap}-${index}`}>
                         <span
@@ -1823,7 +1825,7 @@ const RaceDetail = () => {
                     ))}
                   </div>
                 ) : null}
-                <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                   <LazyEChartsPanel
                     chartKey={`fastf1-laps-${currentSeason}-${round}`}
                     height={isMobile ? 300 : 430}
@@ -1837,11 +1839,11 @@ const RaceDetail = () => {
               <Card className="fastf1-chart-card">
                 <div className="fastf1-chart-header">
                   <div>
-                    <h3 className="fastf1-chart-title">{TEXT.tyreStrategy}</h3>
-                    <p>{TEXT.tyreStrategyDescription}</p>
+                    <h3 className="fastf1-chart-title">{t('tyreStrategy')}</h3>
+                    <p>{t('tyreStrategyDescription')}</p>
                   </div>
                   {fastF1Summary ? (
-                    <div className="compound-legend" aria-label={TEXT.tyreStrategy}>
+                    <div className="compound-legend" aria-label={t('tyreStrategy')}>
                       {fastF1Summary.compounds.map((compound) => (
                         <span key={compound} className="compound-legend-item">
                           <span
@@ -1875,11 +1877,11 @@ const RaceDetail = () => {
               <Card className="fastf1-chart-card driver-duel-card">
                 <div className="fastf1-chart-header">
                   <div>
-                    <h3 className="fastf1-chart-title">{TEXT.driverDuel}</h3>
-                    <p>{TEXT.driverDuelDescription}</p>
+                    <h3 className="fastf1-chart-title">{t('driverDuel')}</h3>
+                    <p>{t('driverDuelDescription')}</p>
                   </div>
                   {duelTyreSummaryItems.length ? (
-                    <div className="duel-summary-pills" aria-label={TEXT.driverDuel}>
+                    <div className="duel-summary-pills" aria-label={t('driverDuel')}>
                       {duelTyreSummaryItems.map((item) => (
                         <span key={item.driver} className="duel-stint-pill">
                           <strong>{item.driver}</strong>
@@ -1902,7 +1904,7 @@ const RaceDetail = () => {
                     </div>
                   ) : null}
                 </div>
-                <div className="driver-legend" aria-label={TEXT.driverDuel}>
+                <div className="driver-legend" aria-label={t('driverDuel')}>
                   {duelDriverItems.map((item) => {
                     const isActive = selectedDuelDrivers.includes(item.driver);
                     const isMuted = selectedDuelDrivers.length === 2 && !isActive;
@@ -1934,7 +1936,7 @@ const RaceDetail = () => {
                     <div className="duel-grid">
                       {duelSectorGapItems.length ? (
                         <div className="duel-sector-panel">
-                          <div className="telemetry-panel-title">{TEXT.qualifying} Gap</div>
+                          <div className="telemetry-panel-title">{t('qualifying')} Gap</div>
                           <div className="duel-sector-gap-grid">
                             {duelSectorGapItems.map((item) => (
                               <div
@@ -1951,7 +1953,7 @@ const RaceDetail = () => {
                       ) : null}
                       {duelCornerRows.length ? (
                         <div className="duel-corner-panel">
-                          <div className="telemetry-panel-title">{TEXT.cornerSpeed}</div>
+                          <div className="telemetry-panel-title">{t('cornerSpeed')}</div>
                           <div className="duel-corner-grid">
                             {duelCornerRows.map((row) => (
                               <div key={row.key} className="duel-corner-card">
@@ -1968,7 +1970,7 @@ const RaceDetail = () => {
                                   <span>{formatSpeed(row.secondMinSpeed)}</span>
                                 </div>
                                 <div className="duel-corner-row is-delta">
-                                  <strong>{TEXT.delta}</strong>
+                                  <strong>{t('delta')}</strong>
                                   <span>{formatSignedNumber(row.delta, 1)}</span>
                                 </div>
                               </div>
@@ -1980,7 +1982,7 @@ const RaceDetail = () => {
                   </>
                 ) : (
                   <div className="duel-empty-state">
-                    {TEXT.driverDuel}: {TEXT.driver} 2
+                    {t('driverDuel')}: {t('driver')} 2
                   </div>
                 )}
               </Card>
@@ -1990,22 +1992,22 @@ const RaceDetail = () => {
                 <Card className="fastf1-chart-card">
                   <div className="fastf1-chart-header">
                     <div>
-                      <h3 className="fastf1-chart-title">{TEXT.weatherTrend}</h3>
-                      <p>{TEXT.weatherDescription}</p>
+                      <h3 className="fastf1-chart-title">{t('weatherTrend')}</h3>
+                      <p>{t('weatherDescription')}</p>
                     </div>
-                    <div className="weather-summary-pills" aria-label={TEXT.weatherTrend}>
-                      <span>{TEXT.trackTemp} {formatStatRange(fastF1Analytics.weather.summary.trackTempC)}</span>
-                      <span>{TEXT.airTemp} {formatStatRange(fastF1Analytics.weather.summary.airTempC)}</span>
-                      <span>{TEXT.wind} {formatWindSpeed(fastF1Analytics.weather.summary.maxWindSpeedMps)}</span>
+                    <div className="weather-summary-pills" aria-label={t('weatherTrend')}>
+                      <span>{t('trackTemp')} {formatStatRange(fastF1Analytics.weather.summary.trackTempC)}</span>
+                      <span>{t('airTemp')} {formatStatRange(fastF1Analytics.weather.summary.airTempC)}</span>
+                      <span>{t('wind')} {formatWindSpeed(fastF1Analytics.weather.summary.maxWindSpeedMps)}</span>
                     </div>
                   </div>
                   {fastF1Analytics.weather.summary.rainLapRanges.length ? (
-                    <div className="weather-rain-legend" aria-label={TEXT.rainfall}>
+                    <div className="weather-rain-legend" aria-label={t('rainfall')}>
                       <span className="weather-rain-swatch" />
-                      <span>{TEXT.rainfall} {formatLapRanges(fastF1Analytics.weather.summary.rainLapRanges)}</span>
+                      <span>{t('rainfall')} {formatLapRanges(fastF1Analytics.weather.summary.rainLapRanges)}</span>
                     </div>
                   ) : null}
-                  <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                  <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                     <LazyEChartsPanel
                       chartKey={`fastf1-weather-${currentSeason}-${round}`}
                       height={isMobile ? 300 : 360}
@@ -2019,11 +2021,11 @@ const RaceDetail = () => {
                 <Card className="fastf1-chart-card telemetry-card">
                   <div className="fastf1-chart-header">
                     <div>
-                      <h3 className="fastf1-chart-title">{TEXT.telemetryComparison}</h3>
-                      <p>{TEXT.telemetryDescription}</p>
+                      <h3 className="fastf1-chart-title">{t('telemetryComparison')}</h3>
+                      <p>{t('telemetryDescription')}</p>
                     </div>
                   </div>
-                  <div className="telemetry-driver-strip" aria-label={TEXT.telemetryComparison}>
+                  <div className="telemetry-driver-strip" aria-label={t('telemetryComparison')}>
                     {telemetryDriverItems.map((item) => {
                       const isActive = selectedTelemetryDrivers.includes(item.driver);
                       const isMuted = selectedTelemetryDrivers.length > 0 && !isActive;
@@ -2046,7 +2048,7 @@ const RaceDetail = () => {
                     })}
                   </div>
                   {telemetrySpeedOption ? (
-                    <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                    <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                       <LazyEChartsPanel
                         chartKey={`fastf1-telemetry-speed-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
                         height={isMobile ? 280 : 330}
@@ -2056,24 +2058,24 @@ const RaceDetail = () => {
                   ) : null}
                   {telemetryHeatmapOption ? (
                     <div className="telemetry-heatmap-panel">
-                      <div className="telemetry-panel-title">{TEXT.speedHeatmap}</div>
-                      <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                      <div className="telemetry-panel-title">{t('speedHeatmap')}</div>
+                      <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                         <LazyEChartsPanel
                           chartKey={`fastf1-telemetry-heatmap-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}`}
                           height={isMobile ? 280 : 360}
                           option={telemetryHeatmapOption}
                         />
                       </Suspense>
-                      <div className="telemetry-heat-legend" aria-label={TEXT.speedHeatmap}>
-                        <span className="telemetry-heat-low" /> {TEXT.minimum}
-                        <span className="telemetry-heat-high" /> {TEXT.speed}
+                      <div className="telemetry-heat-legend" aria-label={t('speedHeatmap')}>
+                        <span className="telemetry-heat-low" /> {t('minimum')}
+                        <span className="telemetry-heat-high" /> {t('speed')}
                       </div>
                     </div>
                   ) : null}
                   {telemetryControlOption ? (
                     <>
                       <div className="telemetry-chart-divider" />
-                      <div className="telemetry-metric-strip" aria-label={TEXT.telemetryComparison}>
+                      <div className="telemetry-metric-strip" aria-label={t('telemetryComparison')}>
                         {TELEMETRY_METRICS.map((metric) => {
                           const isActive = selectedTelemetryMetrics.includes(metric.key);
 
@@ -2090,7 +2092,7 @@ const RaceDetail = () => {
                           );
                         })}
                       </div>
-                      <Suspense fallback={<div className="race-weekend-empty">{TEXT.loading}</div>}>
+                      <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
                         <LazyEChartsPanel
                           chartKey={`fastf1-telemetry-controls-${currentSeason}-${round}-${activeTelemetryDrivers.map((driver) => driver.driver).join('-')}-${selectedTelemetryMetrics.join('-')}`}
                           height={isMobile ? 300 : 340}
@@ -2101,7 +2103,7 @@ const RaceDetail = () => {
                   ) : null}
                   {telemetryCornerRows.length ? (
                     <div className="telemetry-corner-table">
-                      <div className="telemetry-panel-title">{TEXT.cornerSpeed}</div>
+                      <div className="telemetry-panel-title">{t('cornerSpeed')}</div>
                       <Table
                         columns={telemetryCornerColumns}
                         dataSource={telemetryCornerRows}
@@ -2122,11 +2124,11 @@ const RaceDetail = () => {
 
       <Card
         className="results-card race-weekend-card data-view-card"
-        title={<div className="data-view-title"><span>{TEXT.result}</span></div>}
+        title={<div className="data-view-title"><span>{t('result')}</span></div>}
         extra={(
           <div className="data-view-actions">
             <Button type="text" size="small" onClick={() => handleDataPanelCollapseToggle('raceResults')}>
-              {collapsedDataPanels.raceResults ? TEXT.expand : TEXT.collapse}
+              {collapsedDataPanels.raceResults ? t('expand') : t('collapse')}
             </Button>
           </div>
         )}
@@ -2168,7 +2170,7 @@ const RaceDetail = () => {
                 size="small"
               />
             </div>
-            <div className="swipe-hint">{TEXT.mobileHint}</div>
+            <div className="swipe-hint">{t('mobileHint')}</div>
           </div>
         ) : (
           <Tabs

@@ -259,3 +259,91 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-primary);
 }
+
+/* ========================================
+   Dark Mode - Override All Color Variables
+   ======================================== */
+
+/* Auto dark mode via system preference (fallback before JS loads) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.dark-mode):not(.light-mode) {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-elevated: #1e293b;
+    --bg-card: #1e293b;
+
+    --bg-light: #0f172a;
+    --bg-light-secondary: #1e293b;
+    --bg-light-tertiary: #334155;
+
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
+    --text-muted: #475569;
+
+    --text-dark-primary: #e2e8f0;
+    --text-dark-secondary: #94a3b8;
+    --text-dark-tertiary: #64748b;
+
+    --border-primary: #334155;
+    --border-secondary: #1e293b;
+    --border-light: #475569;
+    --border-dark: #64748b;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+    --surface-strong: #e2e8f0;
+    --surface-strong-muted: #94a3b8;
+
+    --race-control-ink: #e2e8f0;
+    --race-control-panel: #1e293b;
+    --race-control-track: #334155;
+    --race-control-grid: rgba(226, 232, 240, 0.08);
+  }
+}
+
+/* ========================================
+   Explicit Dark Mode Class (always wins)
+   ======================================== */
+.dark-mode {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-elevated: #1e293b;
+  --bg-card: #1e293b;
+
+  --bg-light: #0f172a;
+  --bg-light-secondary: #1e293b;
+  --bg-light-tertiary: #334155;
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-muted: #475569;
+
+  --text-dark-primary: #e2e8f0;
+  --text-dark-secondary: #94a3b8;
+  --text-dark-tertiary: #64748b;
+
+  --border-primary: #334155;
+  --border-secondary: #1e293b;
+  --border-light: #475569;
+  --border-dark: #64748b;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --surface-strong: #e2e8f0;
+  --surface-strong-muted: #94a3b8;
+
+  --race-control-ink: #e2e8f0;
+  --race-control-panel: #1e293b;
+  --race-control-track: #334155;
+  --race-control-grid: rgba(226, 232, 240, 0.08);
+}
