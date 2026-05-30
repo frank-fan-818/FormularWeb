@@ -1,12 +1,16 @@
 import { Suspense, lazy } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Home from '@/pages/Home';
 
 const Seasons = lazy(() => import('@/pages/Seasons'));
 const Races = lazy(() => import('@/pages/Races'));
-const RaceDetail = lazy(() => import('@/pages/RaceDetail'));
+const RaceLayout = lazy(() => import('@/pages/Race/RaceLayout'));
+const RaceOverview = lazy(() => import('@/pages/Race/RaceOverview'));
+const RaceAnalytics = lazy(() => import('@/pages/Race/RaceAnalytics'));
+const RaceSessions = lazy(() => import('@/pages/Race/RaceSessions'));
+const RacePreview = lazy(() => import('@/pages/Race/RacePreview'));
 const Drivers = lazy(() => import('@/pages/Drivers'));
 const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
 const Constructors = lazy(() => import('@/pages/Constructors'));
@@ -14,7 +18,9 @@ const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
 const Circuits = lazy(() => import('@/pages/Circuits'));
 const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
-import Monitor from '@/pages/Monitor';
+const Monitor = lazy(() => import('@/pages/Monitor'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const Login = lazy(() => import('@/pages/Login'));
 
 function withSuspense(element: JSX.Element) {
   return (
@@ -66,7 +72,14 @@ const router = createBrowserRouter([
       },
       {
         path: '/races/:round',
-        element: withSuspense(<RaceDetail />),
+        element: withSuspense(<RaceLayout />),
+        children: [
+          { index: true, element: <Navigate to="overview" replace /> },
+          { path: 'overview', element: withSuspense(<RaceOverview />) },
+          { path: 'analytics', element: withSuspense(<RaceAnalytics />) },
+          { path: 'sessions', element: withSuspense(<RaceSessions />) },
+          { path: 'preview', element: withSuspense(<RacePreview />) },
+        ],
       },
       {
         path: '/drivers',
@@ -100,10 +113,18 @@ const router = createBrowserRouter([
         path: '/circuits/:circuitId',
         element: withSuspense(<CircuitDetail />),
       },
+      {
+        path: '/settings',
+        element: withSuspense(<Settings />),
+      },
+      {
+        path: '/login',
+        element: withSuspense(<Login />),
+      },
       ...(import.meta.env.DEV
         ? [{
             path: '/monitor',
-            element: <Monitor />,
+            element: withSuspense(<Monitor />),
           }]
         : []),
     ],
