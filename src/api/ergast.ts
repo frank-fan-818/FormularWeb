@@ -6,6 +6,8 @@ import {
 import { supabaseApi } from '@/api/supabase';
 import { supabase } from '@/utils/supabase';
 import { logger } from '@/utils/logger';
+import { validateOrWarn } from '@/api/validation';
+import { RaceSchema } from '@/api/schemas';
 import type {
   ErgastResponse,
   Season,
@@ -141,7 +143,8 @@ export const seasonApi = {
 
   getSeasonRaces: async (season: string): Promise<Race[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}.json`);
-    return response.MRData.RaceTable?.Races || [];
+    const races = response.MRData.RaceTable?.Races || [];
+    return races.map((r) => validateOrWarn(RaceSchema, r, `race-${r.season}-${r.round}`) as Race);
   },
 
   getDriverStandings: async (season: string): Promise<DriverStanding[]> => {

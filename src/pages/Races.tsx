@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import { useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Race } from '@/types';
@@ -47,6 +48,10 @@ const Races = () => {
 
   return (
     <div className="list-page-container">
+      <Helmet>
+        <title>&#x6bd4;&#x8d5b;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
+        <meta name="description" content="F1&#x6bd4;&#x8d5b;&#x65e5;&#x7a0b;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x7ad9;&#x6bd4;&#x8d5b;&#x4fe1;&#x606f;" />
+      </Helmet>
       <h1 className="page-title"><span>{currentSeason} 赛季赛历</span></h1>
 
       {loading ? (

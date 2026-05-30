@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import { useDriverStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
@@ -77,6 +78,10 @@ const Drivers = () => {
 
   return (
     <div className="list-page-container drivers-lineup-page">
+      <Helmet>
+        <title>&#x8f66;&#x624b;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
+        <meta name="description" content="F1&#x8f66;&#x624b;&#x5217;&#x8868;&#xff0c;&#x67e5;&#x770b;&#x672c;&#x8d5b;&#x5b63;&#x8f66;&#x624b;&#x9635;&#x5bb9;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
+      </Helmet>
       <h1 className="page-title"><span>{currentSeason} {TEXT.title}</span></h1>
 
       {loading ? (

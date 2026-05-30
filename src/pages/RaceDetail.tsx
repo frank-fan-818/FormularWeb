@@ -1,6 +1,7 @@
 ﻿import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { Button, Card, Segmented, Table, Tabs, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, FlagOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -1603,6 +1604,10 @@ const RaceDetail = () => {
 
   return (
     <div className="race-detail-page">
+      <Helmet>
+        <title>{raceInfo ? `${raceInfo.raceName} \u2014 F1 Dashboard` : 'Race \u2014 F1 Dashboard'}</title>
+        <meta name="description" content={`${raceInfo?.raceName || 'F1'} \u6bd4\u8d5b\u8be6\u60c5, \u5305\u62ec\u6392\u4f4d\u8d5b\u7ed3\u679c\u3001\u6b63\u8d5b\u7ed3\u679c\u3001\u9065\u6d4b\u6570\u636e\u548c\u6280\u672f\u5206\u6790`} />
+      </Helmet>
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}

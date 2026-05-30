@@ -6,6 +6,7 @@ import {
   ClockCircleOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import { useRuntimeMonitor } from '@/hooks/useRuntimeMonitor';
 import './Monitor.css';
 
@@ -42,6 +43,10 @@ const Monitor = () => {
 
   return (
     <div className="page-container monitor-page">
+      <Helmet>
+        <title>&#x7cfb;&#x7edf;&#x76d1;&#x63a7; &#8212; F1 Dashboard</title>
+        <meta name="description" content="F1 Dashboard &#x7cfb;&#x7edf;&#x8fd0;&#x884c;&#x76d1;&#x63a7;, API&#x8c03;&#x7528;&#x3001;&#x9519;&#x8bef;&#x548c;&#x6027;&#x80fd;&#x5b9e;&#x65f6;&#x8ffd;&#x8e2a;" />
+      </Helmet>
       <header className="monitor-header">
         <h2><ClockCircleOutlined style={{ marginRight: 10, color: 'var(--f1-red)' }} />{TEXT.title}</h2>
         <p className="monitor-description">{TEXT.description}</p>

@@ -8,6 +8,7 @@ import {
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, ConstructorHistoryProfile } from '@/types';
@@ -118,6 +119,10 @@ const ConstructorHistoryDetail = () => {
   if (!loading && !constructor) {
     return (
       <div className="history-detail-container">
+        <Helmet>
+          <title>&#x8f66;&#x961f;&#x5386;&#x53f2; &#8212; F1 Dashboard</title>
+          <meta name="description" content="F1&#x8f66;&#x961f;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x8d5b;&#x5b63;&#x56de;&#x987e;" />
+        </Helmet>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
           Back
         </Button>
@@ -130,6 +135,10 @@ const ConstructorHistoryDetail = () => {
 
   return (
     <div className="history-detail-container" style={accentStyle}>
+      <Helmet>
+        <title>{constructor?.name ? `${constructor.name} &#x5386;&#x53f2;&#x6863;&#x6848; &#8212; F1 Dashboard` : '&#x8f66;&#x961f;&#x5386;&#x53f2; &#8212; F1 Dashboard'}</title>
+        <meta name="description" content={`${constructor?.name || ''} F1&#x8f66;&#x961f;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x8d5b;&#x5b63;&#x56de;&#x987e;`} />
+      </Helmet>
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
         Back
       </Button>

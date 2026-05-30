@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin, Tabs } from 'antd';
+import { Helmet } from 'react-helmet-async';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
@@ -140,6 +141,10 @@ const Seasons = () => {
 
   return (
     <div className="list-page-container season-standings-page">
+      <Helmet>
+        <title>&#x5b63;&#x8282;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
+        <meta name="description" content="F1&#x8d5b;&#x5b63;&#x79ef;&#x5206;&#x699c;, &#x67e5;&#x770b;&#x8f66;&#x624b;&#x548c;&#x8f66;&#x961f;&#x6392;&#x540d;" />
+      </Helmet>
       <h1 className="page-title"><span>{currentSeason} {TEXT.seasonStandings}</span></h1>
 
       {loading ? (
