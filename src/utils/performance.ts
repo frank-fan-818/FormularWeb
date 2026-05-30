@@ -1,4 +1,5 @@
 import { logger } from '@/utils/logger';
+import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
 interface PerformanceDetails {
   source: 'supabase' | 'jolpica' | 'fetch';
@@ -46,4 +47,22 @@ export async function measureRequest<T>(
     });
     throw error;
   }
+}
+
+// Report Web Vitals (LCP, INP, CLS, FCP, TTFB) to analytics
+function sendToAnalytics(metric: { name: string; value: number; rating: string }) {
+  // Log to console in dev, send to Supabase in prod
+  const body = { name: metric.name, value: Math.round(metric.value), rating: metric.rating };
+  if (import.meta.env.DEV) {
+    console.log('[Web Vitals]', body);
+  }
+  // Can be extended to send to Supabase later
+}
+
+export function initWebVitals() {
+  onCLS(sendToAnalytics);
+  onINP(sendToAnalytics);
+  onLCP(sendToAnalytics);
+  onFCP(sendToAnalytics);
+  onTTFB(sendToAnalytics);
 }

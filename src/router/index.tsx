@@ -121,12 +121,10 @@ const router = createBrowserRouter([
         path: '/login',
         element: withSuspense(<Login />),
       },
-      ...(import.meta.env.DEV
-        ? [{
-            path: '/monitor',
-            element: withSuspense(<Monitor />),
-          }]
-        : []),
+      {
+        path: '/monitor',
+        element: withSuspense(<Monitor />),
+      },
     ],
   },
 ]);

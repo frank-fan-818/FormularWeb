@@ -9,6 +9,7 @@ import type {
 } from '@/types';
 import type { FiaRaceUpgradeTeamSummary } from '@/api/fiaCarUpgrades';
 import { getTeamColor } from '@/utils/teamColors';
+import { isFeatureEnabled } from '@/utils/featureFlags';
 import {
   formatProbability,
   formatShortDate,
@@ -83,6 +84,9 @@ const RacePreview = () => {
     });
     return map;
   }, [raceResults, qualifyingResults, sprintResults, racePreviewSummary]);
+
+  // Feature flag checks
+  const predictionsEnabled = isFeatureEnabled('race-predictions');
 
   // ---- Recent winners columns ----
 
@@ -396,7 +400,7 @@ const RacePreview = () => {
       </TableOnlyPanel>
 
       {/* Interruption Risk */}
-      <TableOnlyPanel
+      {predictionsEnabled ? <TableOnlyPanel
         title={t('interruptionRisk')}
         loading={racePreviewLoading}
         collapsed={false}
@@ -436,7 +440,7 @@ const RacePreview = () => {
             />
           </div>
         </>
-      </TableOnlyPanel>
+      </TableOnlyPanel> : null}
 
       {/* FIA Car Upgrades */}
       <Card
