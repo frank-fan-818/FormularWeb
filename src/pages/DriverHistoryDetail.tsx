@@ -8,6 +8,7 @@ import {
   FlagOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
@@ -123,6 +124,10 @@ const DriverHistoryDetail = () => {
   if (!loading && !driver) {
     return (
       <div className="history-detail-container">
+        <Helmet>
+          <title>&#x8f66;&#x624b;&#x5386;&#x53f2; &#8212; F1 Dashboard</title>
+          <meta name="description" content="F1&#x8f66;&#x624b;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x751f;&#x6daf;&#x56de;&#x987e;" />
+        </Helmet>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
           Back
         </Button>
@@ -135,6 +140,10 @@ const DriverHistoryDetail = () => {
 
   return (
     <div className="history-detail-container" style={accentStyle}>
+      <Helmet>
+        <title>{driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} &#x5386;&#x53f2;&#x6863;&#x6848; &#8212; F1 Dashboard` : '&#x8f66;&#x624b;&#x5386;&#x53f2; &#8212; F1 Dashboard'}</title>
+        <meta name="description" content={`${driver?.givenName || ''} ${driver?.familyName || ''} F1&#x8f66;&#x624b;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x751f;&#x6daf;&#x56de;&#x987e;`} />
+      </Helmet>
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
         Back
       </Button>

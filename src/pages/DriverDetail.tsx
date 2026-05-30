@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Empty, Row, Tag } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Helmet } from 'react-helmet-async';
 import dayjs from 'dayjs';
 import { driverApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
@@ -580,6 +581,10 @@ const DriverDetail = () => {
   if (!driver && !loading && !seasonLoading) {
     return (
       <div className="driver-detail-container">
+        <Helmet>
+          <title>&#x8f66;&#x624b;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
+          <meta name="description" content="F1&#x8f66;&#x624b;&#x8be6;&#x60c5;&#xff0c;&#x8d5b;&#x5b63;&#x6570;&#x636e;&#x3001;&#x751f;&#x6daf;&#x7edf;&#x8ba1;&#x548c;&#x79ef;&#x5206;&#x8d70;&#x52bf;" />
+        </Helmet>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
           {TEXT.back}
         </Button>
@@ -592,6 +597,10 @@ const DriverDetail = () => {
 
   return (
     <div className="driver-detail-container">
+      <Helmet>
+        <title>{driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} \u2014 F1 Dashboard` : '\u8f66\u624b\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
+        <meta name="description" content={`${driver?.givenName || ''} ${driver?.familyName || ''} F1\u8f66\u624b\u8be6\u60c5, \u8d5b\u5b63\u6570\u636e\u3001\u751f\u6daf\u7edf\u8ba1\u548c\u79ef\u5206\u8d70\u52bf`} />
+      </Helmet>
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
         {TEXT.back}
       </Button>

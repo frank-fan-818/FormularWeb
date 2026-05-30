@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { CSSProperties } from 'react';
 import dayjs from 'dayjs';
+import { Helmet } from 'react-helmet-async';
 import { useSeasonData, useRacesByStatus } from '@/hooks';
 import { useAppStore } from '@/store';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
@@ -43,6 +44,10 @@ const Home = () => {
   if (loading) {
     return (
       <div className="page-container">
+        <Helmet>
+          <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
+          <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
+        </Helmet>
         <div className="page-loader">
           <div className="page-loader-spinner" />
           <span>{TEXT.loading}</span>
@@ -96,6 +101,10 @@ const Home = () => {
 
   return (
     <div className="page-container">
+      <Helmet>
+        <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
+        <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
+      </Helmet>
       {nextRace ? (
         <section className="next-race-section animate-slide-up">
           <h2 className="section-title-f1">
