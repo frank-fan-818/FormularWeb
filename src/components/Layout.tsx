@@ -18,6 +18,7 @@ const TEXT = {
   searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
   appName: 'F1 \u6570\u636e\u4e2d\u5fc3',
   currentSeason: '\u5f53\u524d\u8d5b\u5b63',
+  settings: '\u8bbe\u7f6e',
 };
 
 interface IconProps {
@@ -174,6 +175,13 @@ const MonitorIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
+const SettingIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+    <circle cx="12" cy="12" r="3" />
+  </IconBase>
+);
+
 const navItems = [
   { key: '/', icon: HomeIcon, label: TEXT.home },
   { key: '/seasons', icon: SeasonIcon, label: TEXT.seasonStandings },
@@ -181,6 +189,7 @@ const navItems = [
   { key: '/drivers', icon: DriverIcon, label: TEXT.drivers },
   { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
   { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
+  { key: '/settings', icon: SettingIcon, label: TEXT.settings },
   { key: '/monitor', icon: MonitorIcon, label: '\u8fd0\u884c\u76d1\u63a7' },
 ];
 
