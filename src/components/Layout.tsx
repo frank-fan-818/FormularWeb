@@ -181,9 +181,7 @@ const navItems = [
   { key: '/drivers', icon: DriverIcon, label: TEXT.drivers },
   { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
   { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
-  ...(import.meta.env.DEV
-    ? [{ key: '/monitor', icon: MonitorIcon, label: '\u8fd0\u884c\u76d1\u63a7' }]
-    : []),
+  { key: '/monitor', icon: MonitorIcon, label: '\u8fd0\u884c\u76d1\u63a7' },
 ];
 
 const resolveActiveNavKey = (pathname: string) => {
