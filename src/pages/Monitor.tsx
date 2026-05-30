@@ -1,14 +1,20 @@
-import { Tag } from 'antd';
+import { useState } from 'react';
+import { Tag, Input, Button } from 'antd';
 import {
   CheckCircleOutlined,
   WarningOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
+  LockOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { useRuntimeMonitor } from '@/hooks/useRuntimeMonitor';
 import './Monitor.css';
+
+const STORAGE_KEY = 'monitor_auth';
+const PASSWORD = import.meta.env.VITE_MONITOR_PASSWORD || 'f1-monitor';
 
 const TEXT = {
   title: '系统运行监控',
@@ -23,6 +29,10 @@ const TEXT = {
   entries: '条',
   avgDuration: '平均耗时',
   errors: '错误',
+  passwordPlaceholder: '请输入监控密码',
+  passwordSubmit: '进入',
+  passwordError: '密码错误',
+  logout: '退出',
 };
 
 const HEALTH_CONFIG = {
@@ -32,14 +42,66 @@ const HEALTH_CONFIG = {
 };
 
 const LEVEL_COLORS: Record<string, string> = {
-  info: '#52c41a',
-  warn: '#faad14',
-  error: '#ff4d4f',
+  info: 'var(--accent-green)',
+  warn: 'var(--status-yellow)',
+  error: 'var(--f1-red)',
 };
 
 const Monitor = () => {
   const { entries, moduleHealth, clearLogs } = useRuntimeMonitor();
   const healthList = Array.from(moduleHealth.values());
+  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem(STORAGE_KEY) === '1');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  if (!authenticated) {
+    return (
+      <div className="page-container monitor-page">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 300,
+          gap: 16,
+        }}>
+          <LockOutlined style={{ fontSize: 48, color: 'var(--f1-red)' }} />
+          <h2>{TEXT.title}</h2>
+          <Input.Password
+            placeholder={TEXT.passwordPlaceholder}
+            value={passwordInput}
+            onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(''); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (passwordInput === PASSWORD) {
+                  sessionStorage.setItem(STORAGE_KEY, '1');
+                  setAuthenticated(true);
+                } else {
+                  setPasswordError(TEXT.passwordError);
+                }
+              }
+            }}
+            style={{ width: 260 }}
+            status={passwordError ? 'error' : undefined}
+          />
+          {passwordError && <span style={{ color: 'var(--f1-red)', fontSize: 13 }}>{passwordError}</span>}
+          <Button
+            type="primary"
+            onClick={() => {
+              if (passwordInput === PASSWORD) {
+                sessionStorage.setItem(STORAGE_KEY, '1');
+                setAuthenticated(true);
+              } else {
+                setPasswordError(TEXT.passwordError);
+              }
+            }}
+          >
+            {TEXT.passwordSubmit}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container monitor-page">
@@ -49,7 +111,28 @@ const Monitor = () => {
       </Helmet>
       <header className="monitor-header">
         <h2><ClockCircleOutlined style={{ marginRight: 10, color: 'var(--f1-red)' }} />{TEXT.title}</h2>
-        <p className="monitor-description">{TEXT.description}</p>
+        <p className="monitor-description">{TEXT.description}
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem(STORAGE_KEY);
+              setAuthenticated(false);
+            }}
+            style={{
+              marginLeft: 16,
+              background: 'none',
+              border: '1px solid var(--border-color, #d9d9d9)',
+              borderRadius: 4,
+              padding: '2px 10px',
+              cursor: 'pointer',
+              fontSize: 12,
+              color: 'var(--text-secondary, #666)',
+              verticalAlign: 'middle',
+            }}
+          >
+            <LogoutOutlined style={{ marginRight: 4 }} />{TEXT.logout}
+          </button>
+        </p>
       </header>
 
       <section className="monitor-section">

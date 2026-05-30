@@ -4,6 +4,7 @@ import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
 import { TEXT, TRACK_STATUS_STYLES, LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/RaceDetail/constants';
+import { isFeatureEnabled } from '@/utils/featureFlags';
 import { buildLapPaceOption } from '@/pages/RaceDetail/charts/lapPace';
 import { buildTyreStrategyOption } from '@/pages/RaceDetail/charts/tyreStrategy';
 import { buildWeatherOption } from '@/pages/RaceDetail/charts/weather';
@@ -154,6 +155,11 @@ const RaceAnalytics = () => {
   ]);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [telemetrySummaryMode, setTelemetrySummaryMode] = useState<DataViewMode>('chart');
+
+  // Feature flag checks
+  const telemetryEnabled = isFeatureEnabled('fastf1-telemetry');
+  const weatherEnabled = isFeatureEnabled('fastf1-weather');
+  const duelEnabled = isFeatureEnabled('fastf1-duel');
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -529,7 +535,7 @@ const RaceAnalytics = () => {
       </div>
 
       {/* Telemetry Summary */}
-      {postRaceTelemetrySummary.length ? (
+      {telemetryEnabled && postRaceTelemetrySummary.length ? (
         <DataViewPanel
           title={t('telemetrySummary')}
           description={t('postRaceDescription')}
@@ -711,7 +717,7 @@ const RaceAnalytics = () => {
             ) : null}
 
             {/* ========== 3. Driver Duel ========== */}
-            {fastF1Analytics ? (
+            {duelEnabled && fastF1Analytics ? (
               <Card
                 className="fastf1-chart-card driver-duel-card"
                 title={
@@ -884,7 +890,7 @@ const RaceAnalytics = () => {
             ) : null}
 
             {/* ========== 5. Weather Trend ========== */}
-            {fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
+            {weatherEnabled && fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
               <Card
                 className="fastf1-chart-card"
                 title={
@@ -943,7 +949,7 @@ const RaceAnalytics = () => {
             ) : null}
 
             {/* ========== 6. Telemetry Comparison + Speed Heatmap ========== */}
-            {fastF1Analytics?.telemetry ? (
+            {telemetryEnabled && fastF1Analytics?.telemetry ? (
               <Card
                 className="fastf1-chart-card telemetry-card"
                 title={

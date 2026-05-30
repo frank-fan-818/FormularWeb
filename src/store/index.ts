@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getDefaultCurrentSeason } from '@/utils/currentSeason';
+import type { FeatureFlag } from '@/utils/featureFlags';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -11,6 +12,8 @@ interface AppState {
   toggleSidebar: () => void;
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
+  features: Partial<Record<FeatureFlag, boolean>>;
+  setFeature: (feature: FeatureFlag, enabled: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -22,20 +25,30 @@ export const useAppStore = create<AppState>()(
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       theme: 'system' as ThemeMode,
       setTheme: (theme) => set({ theme }),
+      features: {},
+      setFeature: (feature, enabled) =>
+        set((state) => ({ features: { ...state.features, [feature]: enabled } })),
     }),
     {
       name: 'f1-dashboard-storage',
-      version: 2,
-      migrate: (persistedState) => {
+      version: 3,
+      migrate: (persistedState, version) => {
         const state = persistedState as Partial<AppState> | undefined;
         const defaultCurrentSeason = getDefaultCurrentSeason();
 
-        return {
+        const migrated = {
           ...state,
           currentSeason: !state?.currentSeason || state.currentSeason === '2025'
             ? defaultCurrentSeason
             : state.currentSeason,
         } as AppState;
+
+        // Version 2 -> 3: add features field
+        if (version < 3) {
+          migrated.features = {};
+        }
+
+        return migrated;
       },
     }
   )
