@@ -1,132 +1,140 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Avatar } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { useState } from 'react';
 
 /**
- * Map of F1 driver IDs to their Wikipedia page titles.
- * The Wikipedia REST API Summary endpoint returns a `thumbnail.source` URL
- * for the page's representative image, which for drivers is typically a
- * portrait / headshot photo.
+ * F1 driver headshots from the official Formula 1 CDN.
+ * These are the clean, studio-lit portraits used on formula1.com.
  */
-const DRIVER_WIKI_PAGE: Record<string, string> = {
-  // Ergast short format (most common)
-  hamilton: 'Lewis_Hamilton',
-  bottas: 'Valtteri_Bottas',
-  russell: 'George_Russell_(racing_driver)',
-  max_verstappen: 'Max_Verstappen',
-  perez: 'Sergio_Perez',
-  leclerc: 'Charles_Leclerc',
-  sainz: 'Carlos_Sainz_Jr.',
-  norris: 'Lando_Norris',
-  piastri: 'Oscar_Piastri',
-  alonso: 'Fernando_Alonso',
-  stroll: 'Lance_Stroll',
-  gasly: 'Pierre_Gasly',
-  ocon: 'Esteban_Ocon',
-  tsunoda: 'Yuki_Tsunoda',
-  albon: 'Alexander_Albon',
-  hulkenberg: 'Nico_Hulkenberg',
-  magnussen: 'Kevin_Magnussen',
-  ricciardo: 'Daniel_Ricciardo',
-  sargeant: 'Logan_Sargeant',
-  zhou: 'Zhou_Guanyu',
-  bearman: 'Oliver_Bearman',
-  lawson: 'Liam_Lawson',
-  colapinto: 'Franco_Colapinto',
-  doohan: 'Jack_Doohan',
-  hadjar: 'Isack_Hadjar',
-  bortoleto: 'Gabriel_Bortoleto',
-  de_vries: 'Nyck_de_Vries',
-  kimi_antonelli: 'Andrea_Kimi_Antonelli',
-  // Full name aliases (for display pages using different format)
-  checo_perez: 'Sergio_Perez',
-  lewis_hamilton: 'Lewis_Hamilton',
-  george_russell: 'George_Russell_(racing_driver)',
-  charles_leclerc: 'Charles_Leclerc',
-  carlos_sainz: 'Carlos_Sainz_Jr.',
-  carlos_sainz_jr: 'Carlos_Sainz_Jr.',
-  lando_norris: 'Lando_Norris',
-  oscar_piastri: 'Oscar_Piastri',
-  fernando_alonso: 'Fernando_Alonso',
-  lance_stroll: 'Lance_Stroll',
-  pierre_gasly: 'Pierre_Gasly',
-  jack_doohan: 'Jack_Doohan',
-  yuki_tsunoda: 'Yuki_Tsunoda',
-  isack_hadjar: 'Isack_Hadjar',
-  alex_albon: 'Alexander_Albon',
-  nico_hulkenberg: 'Nico_Hulkenberg',
-  gabriel_bortoleto: 'Gabriel_Bortoleto',
-  esteban_ocon: 'Esteban_Ocon',
-  oliver_bearman: 'Oliver_Bearman',
-  antonelli: 'Andrea_Kimi_Antonelli',
-  liam_lawson: 'Liam_Lawson',
-  franco_colapinto: 'Franco_Colapinto',
-  valtteri_bottas: 'Valtteri_Bottas',
-  zhou_guanyu: 'Zhou_Guanyu',
-  kevin_magnussen: 'Kevin_Magnussen',
-  daniel_ricciardo: 'Daniel_Ricciardo',
-  logan_sargeant: 'Logan_Sargeant',
-  nyck_de_vries: 'Nyck_de_Vries',
+const DRIVER_PHOTO_URLS: Record<string, string> = {
+  // 2025 F1 drivers — Ergast short IDs mapped to F1 CDN headshots
+  max_verstappen:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png',
+  perez:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png',
+  hamilton:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png',
+  russell:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png',
+  leclerc:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png',
+  sainz:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png',
+  norris:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png',
+  piastri:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png',
+  alonso:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png',
+  stroll:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png',
+  gasly:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png',
+  ocon:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png',
+  tsunoda:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png',
+  albon:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alex_Albon/alealb01.png',
+  hulkenberg:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png',
+  magnussen:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png',
+  ricciardo:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png',
+  bottas:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png',
+  zhou:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Z/ZHOGUA01_Zhou_Guanyu/zhogua01.png',
+  bearman:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OLIBEA01_Oliver_Bearman/olibea01.png',
+  lawson:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LIALAW01_Liam_Lawson/lialaw01.png',
+  doohan:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/J/JACDOO01_Jack_Doohan/jacdoo01.png',
+  hadjar:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/I/ISAHAD01_Isack_Hadjar/isahad01.png',
+  bortoleto:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GABBOR01_Gabriel_Bortoleto/gabbor01.png',
+  colapinto:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FRACOL01_Franco_Colapinto/fracol01.png',
+  kimi_antonelli:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ANDKIM01_Andrea_Kimi_Antonelli/andkim01.png',
+  sargeant:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LOGSAR01_Logan_Sargeant/logsar01.png',
+  de_vries:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NYCDEV01_Nyck_de_Vries/nycdev01.png',
+
+  // Full-name aliases
+  checo_perez:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png',
+  lewis_hamilton:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png',
+  george_russell:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png',
+  charles_leclerc:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png',
+  carlos_sainz:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png',
+  lando_norris:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png',
+  oscar_piastri:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png',
+  fernando_alonso:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png',
+  lance_stroll:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png',
+  pierre_gasly:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png',
+  esteban_ocon:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png',
+  yuki_tsunoda:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png',
+  alex_albon:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alex_Albon/alealb01.png',
+  nico_hulkenberg:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png',
+  kevin_magnussen:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png',
+  daniel_ricciardo:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png',
+  valtteri_bottas:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png',
+  zhou_guanyu:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Z/ZHOGUA01_Zhou_Guanyu/zhogua01.png',
+  oliver_bearman:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OLIBEA01_Oliver_Bearman/olibea01.png',
+  liam_lawson:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LIALAW01_Liam_Lawson/lialaw01.png',
+  jack_doohan:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/J/JACDOO01_Jack_Doohan/jacdoo01.png',
+  isack_hadjar:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/I/ISAHAD01_Isack_Hadjar/isahad01.png',
+  gabriel_bortoleto:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GABBOR01_Gabriel_Bortoleto/gabbor01.png',
+  franco_colapinto:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FRACOL01_Franco_Colapinto/fracol01.png',
+  antonelli:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ANDKIM01_Andrea_Kimi_Antonelli/andkim01.png',
+  logan_sargeant:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LOGSAR01_Logan_Sargeant/logsar01.png',
+  nyck_de_vries:
+    'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NYCDEV01_Nyck_de_Vries/nycdev01.png',
 };
 
-/**
- * In-memory cache that stores fetched thumbnail URLs per driver ID.
- * - Missing key: never fetched
- * - null value: fetched but no thumbnail available
- * - string value: the thumbnail URL
- */
-const thumbnailCache = new Map<string, string | null>();
-
-/** Shape returned by the Wikipedia REST API Summary endpoint. */
-interface WikipediaSummaryResponse {
-  thumbnail?: {
-    source?: string;
-  };
-}
-
-/**
- * Returns the Wikipedia page title for a given driver ID.
- */
-export function getDriverWikipediaPage(driverId: string): string | null {
-  return DRIVER_WIKI_PAGE[driverId] ?? null;
-}
-
-/**
- * Returns the Wikipedia REST API summary URL for a driver.
- * The JSON response contains a `thumbnail.source` field with the actual
- * headshot image URL.
- *
- * Example response shape:
- * ```json
- * { "thumbnail": { "source": "https://upload.wikimedia.org/..." } }
- * ```
- */
 export function getDriverImageUrl(driverId: string): string | null {
-  const page = getDriverWikipediaPage(driverId);
-  if (!page) return null;
-  return `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page)}`;
+  return DRIVER_PHOTO_URLS[driverId] ?? null;
 }
 
-/**
- * Derives initials (up to two characters) from the driver's given and family
- * names. Falls back to "?" when neither name is available.
- */
 function getInitials(givenName?: string, familyName?: string): string {
   const first = givenName ? givenName.charAt(0) : '';
   const last = familyName ? familyName.charAt(0) : '';
   return (first + last).toUpperCase() || '?';
 }
 
-/**
- * Deterministically picks a hue / background colour for a driver based on
- * their ID so the same driver always gets the same colour.
- */
 function getDriverColor(driverId: string): string {
   const palette = [
-    '#e80020', '#1e5bc6', '#dc0000', '#00d2be', '#ff8700',
+    '#dc0000', '#1e5bc6', '#ff8700', '#00d2be', '#e80020',
     '#006f62', '#0090ff', '#2b4562', '#900000', '#005aff',
-    '#00e700', '#520073', '#004225', '#e69a00', '#8b4513',
-    '#2e8b57', '#4169e1', '#ba55d3', '#daa520', '#ff69b4',
+    '#00e700', '#520073', '#e69a00', '#8b4513', '#4169e1',
   ];
   let hash = 0;
   for (let i = 0; i < driverId.length; i++) {
@@ -136,120 +144,62 @@ function getDriverColor(driverId: string): string {
 }
 
 export interface DriverAvatarProps {
-  /** Ergast / internal F1 driver ID (e.g. "max_verstappen"). */
   driverId: string;
-  /** Diameter of the avatar in pixels. Default 40. */
   size?: number;
-  /** Driver's given name, used to compute fallback initials. */
   givenName?: string;
-  /** Driver's family name, used to compute fallback initials. */
   familyName?: string;
+  className?: string;
 }
 
-/**
- * Renders a driver's headshot photo obtained from Wikipedia.
- *
- * - **Loading:** displays a generic user icon on a coloured background.
- * - **Success:** displays the Wikipedia thumbnail image.
- * - **Error / no image:** falls back to the driver's initials on a
- *   deterministic coloured background.
- *
- * Fetched thumbnail URLs are cached in-memory so subsequent renders for the
- * same driver ID are instant.
- */
 export const DriverAvatar: React.FC<DriverAvatarProps> = ({
   driverId,
   size = 40,
   givenName,
   familyName,
+  className,
 }) => {
-  const [imgSrc, setImgSrc] = useState<string | null>(() => {
-    return thumbnailCache.has(driverId) ? thumbnailCache.get(driverId)! : null;
-  });
-  const [loading, setLoading] = useState(!thumbnailCache.has(driverId));
-  const [imgError, setImgError] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const url = getDriverImageUrl(driverId);
 
-  useEffect(() => {
-    setImgError(false);
-
-    // Return immediately when the result is already cached.
-    if (thumbnailCache.has(driverId)) {
-      const cached = thumbnailCache.get(driverId);
-      setImgSrc(cached ?? null);
-      setLoading(false);
-      return;
-    }
-
-    const apiUrl = getDriverImageUrl(driverId);
-    if (!apiUrl) {
-      thumbnailCache.set(driverId, null);
-      setImgSrc(null);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-
-    fetch(apiUrl)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Wikipedia API returned ${res.status}`);
-        return res.json() as Promise<WikipediaSummaryResponse>;
-      })
-      .then((data) => {
-        if (cancelled) return;
-        const url = data?.thumbnail?.source ?? null;
-        thumbnailCache.set(driverId, url);
-        setImgSrc(url);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        thumbnailCache.set(driverId, null);
-        setImgSrc(null);
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [driverId]);
-
-  const handleImgError = useCallback(() => {
-    setImgError(true);
-    return false;
-  }, []);
-
-  const bgColor = getDriverColor(driverId);
-
-  if (loading) {
-    return (
-      <Avatar
-        size={size}
-        icon={<UserOutlined />}
-        style={{ backgroundColor: bgColor }}
-      />
-    );
-  }
-
-  if (!imgSrc || imgError) {
+  if (!url || errored) {
     const initials = getInitials(givenName, familyName);
+    const bgColor = getDriverColor(driverId);
     return (
-      <Avatar
-        size={size}
-        style={{ backgroundColor: bgColor, verticalAlign: 'middle' }}
+      <span
+        className={className}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          background: bgColor,
+          color: '#fff',
+          fontSize: size * 0.38,
+          fontWeight: 700,
+          flexShrink: 0,
+        }}
       >
         {initials}
-      </Avatar>
+      </span>
     );
   }
 
   return (
-    <Avatar
-      size={size}
-      src={imgSrc}
-      onError={handleImgError}
+    <img
+      src={url}
       alt={`${givenName ?? ''} ${familyName ?? ''}`.trim() || driverId}
+      className={className}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        objectFit: 'cover',
+        flexShrink: 0,
+      }}
+      loading="lazy"
+      onError={() => setErrored(true)}
     />
   );
 };
