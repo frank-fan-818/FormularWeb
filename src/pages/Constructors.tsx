@@ -7,6 +7,7 @@ import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
+import { ConstructorLogo } from '@/utils/constructorLogos';
 import './Constructors.css';
 
 const TEXT = {
@@ -137,7 +138,10 @@ const Constructors = () => {
                     {TEXT.season} P{constructor.position || '-'} / {constructor.points || '0'} {TEXT.points}
                   </span>
                 </div>
-                <h2 className="constructor-card-name">{constructor.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <ConstructorLogo constructorId={constructor.constructorId} size={48} />
+                  <h2 className="constructor-card-name" style={{ margin: 0 }}>{constructor.name}</h2>
+                </div>
                 {constructor.nationality ? (
                   <div className="constructor-card-meta">
                     <span>{TEXT.nationality}</span>

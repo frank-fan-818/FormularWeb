@@ -7,6 +7,8 @@ import { useDriverStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
+import { DriverAvatar } from '@/utils/driverImages';
+import { ConstructorLogo } from '@/utils/constructorLogos';
 import './Drivers.css';
 
 const TEXT = {
@@ -123,13 +125,19 @@ const Drivers = () => {
                           {TEXT.season} P{driver.position || '-'} / {driver.points || '0'} {TEXT.points}
                         </span>
                       </div>
-                      <h3 className="driver-card-name">
-                        <span>{driver.givenName}</span>
-                        <strong>{driver.familyName}</strong>
-                      </h3>
-                      <div className="driver-card-meta">
-                        <span>{driver.code || '-'}</span>
-                        <span>{driver.nationality || '-'}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                        <DriverAvatar driverId={driver.driverId} size={48} />
+                        <div style={{ flex: 1 }}>
+                          <h3 className="driver-card-name" style={{ margin: 0 }}>
+                            <span>{driver.givenName}</span>
+                            <strong>{driver.familyName}</strong>
+                          </h3>
+                          <div className="driver-card-meta" style={{ marginTop: 2 }}>
+                            <span>{driver.code || '-'}</span>
+                            <span>{driver.nationality || '-'}</span>
+                            <ConstructorLogo constructorId={driver.constructorId} size={20} />
+                          </div>
+                        </div>
                       </div>
                       <div className="driver-card-stats">
                         {driver.total_race_starts ? <span><CarOutlined /> {driver.total_race_starts} {TEXT.starts}</span> : null}

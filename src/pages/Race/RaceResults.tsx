@@ -5,6 +5,8 @@ import { Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { QualifyingResult, Result } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
+import { DriverAvatar } from '@/utils/driverImages';
+import { ConstructorLogo } from '@/utils/constructorLogos';
 import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/RaceDetail/constants';
 import { useRaceData } from './RaceContext';
 import '../RaceDetail.css';
@@ -70,6 +72,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <DriverAvatar driverId={record.Driver.driverId} size={32} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -87,7 +90,7 @@ const RaceResults = () => {
               >
                 {record.Driver.code}
               </span>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
             </div>
           );
         },
@@ -132,6 +135,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <DriverAvatar driverId={record.Driver.driverId} size={32} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -149,7 +153,7 @@ const RaceResults = () => {
               >
                 {record.Driver.code}
               </span>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
             </div>
           );
         },
@@ -172,6 +176,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <DriverAvatar driverId={record.Driver.driverId} size={32} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -189,7 +194,7 @@ const RaceResults = () => {
               >
                 {record.Driver.code}
               </span>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
             </div>
           );
         },
@@ -212,6 +217,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <DriverAvatar driverId={record.Driver.driverId} size={32} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -229,7 +235,7 @@ const RaceResults = () => {
               >
                 {record.Driver.code}
               </span>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
             </div>
           );
         },
@@ -262,6 +268,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <DriverAvatar driverId={record.Driver.driverId} size={32} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -279,7 +286,7 @@ const RaceResults = () => {
               >
                 {record.Driver.code}
               </span>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
             </div>
           );
         },

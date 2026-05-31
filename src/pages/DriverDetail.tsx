@@ -13,6 +13,8 @@ import type { BestFinishSummary, DriverHistoryProfile, DriverStanding } from '@/
 import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
+import { DriverAvatar } from '@/utils/driverImages';
+import { ConstructorLogo } from '@/utils/constructorLogos';
 import './DriverDetail.css';
 
 interface DriverProfile {
@@ -607,19 +609,22 @@ const DriverDetail = () => {
 
       <Card loading={!driver && (seasonLoading || loading)} className="driver-profile-shell">
         <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div className="driver-profile-copy">
-            <div className="driver-profile-kicker">
-              <span className="driver-profile-swatch" style={{ backgroundColor: teamColor }} />
-              <span>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</span>
-            </div>
-            <h1 className="driver-profile-name">
-              <span>{driver?.givenName || '-'}</span>
-              <strong>{driver?.familyName || ''}</strong>
-            </h1>
-            <div className="driver-profile-tags">
-              {driver?.code ? <Tag color="default">{driver.code}</Tag> : null}
-              <Tag color="default">{driver?.nationality || '-'}</Tag>
-              <Tag color="default">{currentSeason}</Tag>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+            <DriverAvatar driverId={driver?.driverId || resolvedDriverId || driverId || ''} size={96} />
+            <div className="driver-profile-copy">
+              <div className="driver-profile-kicker">
+                <ConstructorLogo constructorId={currentStanding?.Constructors[0]?.constructorId || driverHistory?.recentConstructorId || ''} size={20} />
+                <span style={{ marginLeft: 6 }}>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</span>
+              </div>
+              <h1 className="driver-profile-name">
+                <span>{driver?.givenName || '-'}</span>
+                <strong>{driver?.familyName || ''}</strong>
+              </h1>
+              <div className="driver-profile-tags">
+                {driver?.code ? <Tag color="default">{driver.code}</Tag> : null}
+                <Tag color="default">{driver?.nationality || '-'}</Tag>
+                <Tag color="default">{currentSeason}</Tag>
+              </div>
             </div>
           </div>
           <div className="driver-profile-number" style={{ color: teamColor }}>

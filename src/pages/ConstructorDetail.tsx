@@ -10,6 +10,7 @@ import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { HistoryCareerSummary } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
+import { ConstructorLogo } from '@/utils/constructorLogos';
 import './ConstructorDetail.css';
 
 interface ConstructorProfile {
@@ -506,15 +507,18 @@ const ConstructorDetail = () => {
 
       <Card loading={!constructor && (seasonLoading || loading)} className="constructor-profile-shell">
         <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div className="constructor-profile-copy">
-            <div className="constructor-profile-kicker">
-              <span className="constructor-profile-swatch" style={{ backgroundColor: teamColor }} />
-              <span>{constructor?.nationality || '-'}</span>
-            </div>
-            <h1 className="constructor-profile-name">{constructor?.name || '-'}</h1>
-            <div className="constructor-profile-tags">
-              <span>{currentSeason}</span>
-              <span>{TEXT.seasonKeyStats}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+            <ConstructorLogo constructorId={constructorId || ''} size={96} />
+            <div className="constructor-profile-copy">
+              <div className="constructor-profile-kicker">
+                <span className="constructor-profile-swatch" style={{ backgroundColor: teamColor }} />
+                <span>{constructor?.nationality || '-'}</span>
+              </div>
+              <h1 className="constructor-profile-name">{constructor?.name || '-'}</h1>
+              <div className="constructor-profile-tags">
+                <span>{currentSeason}</span>
+                <span>{TEXT.seasonKeyStats}</span>
+              </div>
             </div>
           </div>
           <div className="constructor-profile-rank" style={{ color: teamColor }}>
