@@ -229,12 +229,14 @@ export interface TrainWinnerModelOptions {
   featureNames?: readonly WinnerPredictionFeatureName[];
   iterations?: number;
   learningRate?: number;
+  l1?: number;
   l2?: number;
 }
 
 const DEFAULT_TRAINING_OPTIONS = {
   iterations: 240,
   learningRate: 0.08,
+  l1: 0,
   l2: 0.002,
 };
 
@@ -334,6 +336,7 @@ export function trainWinnerPredictionModel(
   const iterations = options.iterations ?? DEFAULT_TRAINING_OPTIONS.iterations;
   const learningRate = options.learningRate ?? DEFAULT_TRAINING_OPTIONS.learningRate;
   const l2 = options.l2 ?? DEFAULT_TRAINING_OPTIONS.l2;
+  const l1 = options.l1 ?? DEFAULT_TRAINING_OPTIONS.l1;
   const weights: Partial<Record<WinnerPredictionFeatureName, number>> = {};
   let bias = 0;
 
@@ -375,7 +378,7 @@ export function trainWinnerPredictionModel(
 
     featureNames.forEach((featureName) => {
       const currentWeight = weights[featureName] || 0;
-      const regularizedGradient = (gradient[featureName] || 0) * scale + l2 * currentWeight;
+      const regularizedGradient = (gradient[featureName] || 0) * scale + l2 * currentWeight + l1 * Math.sign(currentWeight);
       weights[featureName] = currentWeight - learningRate * regularizedGradient;
     });
   }

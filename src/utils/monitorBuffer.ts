@@ -39,8 +39,11 @@ export function subscribeMonitor(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** Get a snapshot copy of the current buffer. */
-export function getMonitorEntries(): MonitorEntry[] {
+/** Get a snapshot copy of the current buffer, optionally limited to the last N entries. */
+export function getMonitorEntries(maxCount?: number): MonitorEntry[] {
+  if (maxCount != null && maxCount < globalBuffer.length) {
+    return globalBuffer.slice(-maxCount);
+  }
   return [...globalBuffer];
 }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   type MonitorEntry,
   getMonitorEntries,
@@ -64,14 +64,12 @@ function computeModuleHealth(entries: MonitorEntry[]): Map<string, ModuleHealth>
 
 export function useRuntimeMonitor() {
   const [entries, setEntries] = useState<MonitorEntry[]>([]);
-  const [moduleHealth, setModuleHealth] = useState<Map<string, ModuleHealth>>(new Map());
-  const [, forceUpdate] = useState(0);
   const pollingRef = useRef<ReturnType<typeof setInterval>>();
 
+  const moduleHealth = useMemo(() => computeModuleHealth(entries), [entries]);
+
   const refresh = useCallback(() => {
-    const snapshot = getMonitorEntries();
-    setEntries(snapshot);
-    setModuleHealth(computeModuleHealth(snapshot));
+    setEntries(getMonitorEntries());
   }, []);
 
   useEffect(() => {
@@ -82,11 +80,7 @@ export function useRuntimeMonitor() {
 
   const startPolling = useCallback((intervalMs = 5000) => {
     stopPolling();
-    pollingRef.current = setInterval(() => {
-      forceUpdate((n) => n + 1);
-      refresh();
-    }, intervalMs);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    pollingRef.current = setInterval(refresh, intervalMs);
   }, [refresh]);
 
   const stopPolling = useCallback(() => {

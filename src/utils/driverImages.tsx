@@ -3,9 +3,18 @@ import { useState } from 'react';
 // Local cache fallback — if image fails, show initials
 const FALLBACK_IDS = new Set<string>();
 
+const ALIASES: Record<string, string> = {
+  antonelli: 'kimi_antonelli',
+};
+
+function resolveId(driverId: string): string {
+  return ALIASES[driverId] || driverId;
+}
+
 export function getDriverImageUrl(driverId: string): string | null {
-  if (FALLBACK_IDS.has(driverId)) return null;
-  return `/images/drivers/${driverId}.png`;
+  const resolved = resolveId(driverId);
+  if (FALLBACK_IDS.has(resolved)) return null;
+  return `/images/drivers/${resolved}.png`;
 }
 
 function getInitials(givenName?: string, familyName?: string): string {
@@ -41,7 +50,8 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
   familyName,
   className,
 }) => {
-  const [errored, setErrored] = useState(() => FALLBACK_IDS.has(driverId));
+  const resolvedId = resolveId(driverId);
+  const [errored, setErrored] = useState(() => FALLBACK_IDS.has(resolvedId));
 
   if (errored) {
     const initials = getInitials(givenName, familyName);
@@ -63,7 +73,7 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
 
   return (
     <img
-      src={`/images/drivers/${driverId}.png`}
+      src={`/images/drivers/${resolvedId}.png`}
       alt={`${givenName ?? ''} ${familyName ?? ''}`.trim() || driverId}
       className={className}
       style={{
@@ -71,7 +81,7 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
         objectFit: 'cover', flexShrink: 0,
       }}
       loading="lazy"
-      onError={() => { FALLBACK_IDS.add(driverId); setErrored(true); }}
+      onError={() => { FALLBACK_IDS.add(resolvedId); setErrored(true); }}
     />
   );
 };

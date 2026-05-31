@@ -6,6 +6,10 @@
 
 import type { MonitorEntry } from '@/utils/monitorBuffer';
 
+export function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 type LogEvent = 'entry' | 'step' | 'exit';
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -36,6 +40,7 @@ function shouldLog(level: LogLevel): boolean {
 // ---- Monitor feed ----
 let _pushMonitorEntry: ((entry: Omit<MonitorEntry, 'id'>) => void) | null = null;
 let _monitorImportStarted = false;
+const _pendingMonitorEntries: Array<Omit<MonitorEntry, 'id'>> = [];
 
 function toMonitorEntry(level: LogLevel, payload: LogPayload): Omit<MonitorEntry, 'id'> {
   return {
@@ -54,19 +59,32 @@ function feedMonitor(level: LogLevel, payload: LogPayload): void {
   // Monitor is dev-only — tree-shaken in production builds
   if (!import.meta.env.DEV) return;
 
+  const entry = toMonitorEntry(level, payload);
+
   if (!_pushMonitorEntry) {
     if (!_monitorImportStarted) {
       _monitorImportStarted = true;
       import('@/utils/monitorBuffer')
         .then((mod) => {
           _pushMonitorEntry = mod.pushMonitorEntry;
-          _pushMonitorEntry(toMonitorEntry(level, payload));
+          // Flush pending entries first, then the current one
+          for (const e of _pendingMonitorEntries) {
+            _pushMonitorEntry(e);
+          }
+          _pendingMonitorEntries.length = 0;
+          _pushMonitorEntry(entry);
         })
         .catch(() => { /* monitor unavailable */ });
+    } else {
+      // Import in progress — buffer this entry
+      _pendingMonitorEntries.push(entry);
+      if (_pendingMonitorEntries.length > 100) {
+        _pendingMonitorEntries.splice(0, _pendingMonitorEntries.length - 100);
+      }
     }
     return;
   }
-  _pushMonitorEntry(toMonitorEntry(level, payload));
+  _pushMonitorEntry(entry);
 }
 // ----
 
@@ -163,7 +181,7 @@ export async function withLogging<T>(
 
     return result;
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = getErrorMessage(error);
 
     logger.error({
       event: 'exit',

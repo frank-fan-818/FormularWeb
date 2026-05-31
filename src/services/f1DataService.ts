@@ -1,6 +1,6 @@
 import { seasonApi } from '@/api/ergast';
 import { supabaseApi } from '@/api/supabase';
-import { logger } from '@/utils/logger';
+import { logger, getErrorMessage } from '@/utils/logger';
 import type { DriverStanding, ConstructorStanding, Race, Season } from '@/types';
 
 interface SeasonData {
@@ -38,7 +38,7 @@ export const f1DataService = {
         seasons,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error);
       logger.error({
         event: 'exit',
         module: 'f1DataService',
@@ -68,7 +68,7 @@ export const f1DataService = {
         standing: standing || null,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error);
       logger.error({
         event: 'exit',
         module: 'f1DataService',
@@ -98,7 +98,7 @@ export const f1DataService = {
         standing: standing || null,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error);
       logger.error({
         event: 'exit',
         module: 'f1DataService',
@@ -118,7 +118,7 @@ export const f1DataService = {
       const circuitInfo = await supabaseApi.circuits.getById(circuitId);
       return circuitInfo;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error);
       logger.error({
         event: 'exit',
         module: 'f1DataService',
