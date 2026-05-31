@@ -1,0 +1,631 @@
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, Table, Tabs } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useRaceData } from './RaceContext';
+import {
+  LIGHT_TAG_COLORS,
+} from '@/pages/RaceDetail/constants';
+import { buildLapPaceOption } from '@/pages/RaceDetail/charts/lapPace';
+import { buildTyreStrategyOption } from '@/pages/RaceDetail/charts/tyreStrategy';
+import { buildRankingBarOption } from '@/pages/RaceDetail/charts/rankingBar';
+import { getCompoundColor, formatSessionSeconds } from '@/pages/RaceDetail/charts/helpers';
+import {
+  buildFastF1Summary,
+  buildFastF1QualifyingRows,
+  buildFastF1SprintRows,
+  buildDriverLookup,
+  buildConstructorLookup,
+  getBestLapByDriver,
+  getDriverLegendItems,
+  buildPracticeRanking,
+} from '@/pages/RaceDetail/sessionData';
+import type { PracticeRankingItem } from '@/pages/RaceDetail/sessionData';
+import { getTeamColor } from '@/utils/teamColors';
+import { formatCompoundWithCode } from '@/utils/tyreCompounds';
+import { formatSeconds } from '@/utils/raceDetailFormatters';
+import type { QualifyingResult, Result } from '@/types';
+import '../RaceDetail.css';
+
+const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+
+const RaceSprint = () => {
+  const { t } = useTranslation();
+  const {
+    season,
+    round,
+    sprintResults,
+    sprintQualifyingResults,
+    fastF1SprintAnalytics,
+    fastF1SprintQualifyingAnalytics,
+    fastF1SprintShootoutAnalytics,
+    primaryLoading,
+    isMobile,
+  } = useRaceData();
+
+  // Local UI state for sprint-specific filtering
+  const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
+
+  const handleLapDriverToggle = (driver: string) => {
+    setSelectedLapDrivers((current) => {
+      if (!current.length) {
+        return [driver];
+      }
+      if (current.includes(driver)) {
+        return current.filter((d) => d !== driver);
+      }
+      return [...current, driver];
+    });
+  };
+
+  // ---- Determine which sprint qualifying analytics to use ----
+  const activeSprintQualifyingAnalytics = season === '2023'
+    ? fastF1SprintShootoutAnalytics || fastF1SprintQualifyingAnalytics
+    : fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
+
+  // ---- Build driver / constructor lookups ----
+  const participantRecords = useMemo(
+    () => [...sprintQualifyingResults, ...sprintResults],
+    [sprintQualifyingResults, sprintResults],
+  );
+
+  const driverByCode = useMemo(
+    () => buildDriverLookup(participantRecords),
+    [participantRecords],
+  );
+
+  const constructorByName = useMemo(
+    () => buildConstructorLookup(participantRecords),
+    [participantRecords],
+  );
+
+  // ---- Sprint qualifying rows ----
+  const sprintQualifyingTableData = useMemo(() => {
+    const fastF1Rows = buildFastF1QualifyingRows(
+      activeSprintQualifyingAnalytics,
+      driverByCode,
+      constructorByName,
+    );
+    return fastF1Rows.length > 0 ? fastF1Rows : sprintQualifyingResults;
+  }, [activeSprintQualifyingAnalytics, driverByCode, constructorByName, sprintQualifyingResults]);
+
+  // ---- Sprint race rows ----
+  const sprintRaceTableData = useMemo(() => {
+    if (sprintResults.length > 0) {
+      return sprintResults;
+    }
+    return buildFastF1SprintRows(fastF1SprintAnalytics, driverByCode, constructorByName);
+  }, [sprintResults, fastF1SprintAnalytics, driverByCode, constructorByName]);
+
+  // ---- Best laps ----
+  const fastF1SprintQualifyingBestLapByDriver = useMemo(
+    () => getBestLapByDriver(activeSprintQualifyingAnalytics),
+    [activeSprintQualifyingAnalytics],
+  );
+
+  // ---- Sprint qualifying ranking bar (use buildPracticeRanking as sector time ranking) ----
+  const sprintQualifyingRanking = useMemo(
+    () => buildPracticeRanking(activeSprintQualifyingAnalytics),
+    [activeSprintQualifyingAnalytics],
+  );
+
+  const sprintQualifyingRankingBarOption = useMemo(() => {
+    if (!sprintQualifyingRanking.length) {
+      return null;
+    }
+    return buildRankingBarOption(
+      t('sprintQualifying'),
+      t('lapTime'),
+      sprintQualifyingRanking.map((item, _idx) => ({
+        label: item.driver,
+        value: item.bestTimeSeconds,
+        displayValue: item.bestTime,
+        color: getTeamColor(item.constructorId),
+      })),
+      (value: number) => formatSessionSeconds(value),
+    );
+  }, [sprintQualifyingRanking, t]);
+
+  // ---- Sprint race charts ----
+  const hasFastF1Sprint = Boolean(fastF1SprintAnalytics?.lapTimeSeries?.length);
+
+  const fastF1SprintSummary = useMemo(
+    () => (hasFastF1Sprint ? buildFastF1Summary(fastF1SprintAnalytics) : null),
+    [fastF1SprintAnalytics, hasFastF1Sprint],
+  );
+
+  const lapPaceOption = useMemo(
+    () => (hasFastF1Sprint
+      ? buildLapPaceOption(fastF1SprintAnalytics!, selectedLapDrivers)
+      : null),
+    [fastF1SprintAnalytics, hasFastF1Sprint, selectedLapDrivers],
+  );
+
+  const tyreStrategyOption = useMemo(
+    () => (hasFastF1Sprint && fastF1SprintAnalytics!.tyreStrategies.length > 0
+      ? buildTyreStrategyOption(fastF1SprintAnalytics!, [], season, round)
+      : null),
+    [fastF1SprintAnalytics, hasFastF1Sprint, season, round],
+  );
+
+  const driverLegendItems = useMemo(
+    () => getDriverLegendItems(fastF1SprintAnalytics?.lapTimeSeries || []),
+    [fastF1SprintAnalytics],
+  );
+
+  const hasLapDriverFilter = selectedLapDrivers.length > 0;
+
+  // ---- Qualifying table columns ----
+  const qualifyingColumns: ColumnsType<QualifyingResult> = useMemo(() => {
+    const phasePrefix = season === '2023' ? 'S' : 'SQ';
+
+    // FastF1 best lap column (if data available)
+    const fastF1Col = fastF1SprintQualifyingBestLapByDriver.size > 0
+      ? [{
+          title: t('fastestLap'),
+          key: 'fastestLap',
+          width: 90,
+          render: (_: unknown, record: QualifyingResult) => {
+            const lap = fastF1SprintQualifyingBestLapByDriver.get(record.Driver.code);
+            if (!lap) {
+              return '-';
+            }
+            return (
+              <span className={lap.isDeleted ? 'fastf1-deleted-lap' : undefined}>
+                {formatSessionSeconds(lap.lapTimeSeconds)}
+                {lap.isDeleted ? ' *' : ''}
+              </span>
+            );
+          },
+        }]
+      : [];
+
+    return [
+      { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
+      {
+        title: t('driver'),
+        key: 'driver',
+        width: 160,
+        render: (_: unknown, record: QualifyingResult) => {
+          const color = getTeamColor(record.Constructor.constructorId);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: color,
+                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  minWidth: 36,
+                  textAlign: 'center',
+                }}
+              >
+                {record.Driver.code}
+              </span>
+              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+            </div>
+          );
+        },
+      },
+      { title: `${phasePrefix}1`, dataIndex: 'Q1', key: 'Q1', width: 80 },
+      { title: `${phasePrefix}2`, dataIndex: 'Q2', key: 'Q2', width: 80 },
+      { title: `${phasePrefix}3`, dataIndex: 'Q3', key: 'Q3', width: 80 },
+      ...fastF1Col,
+    ];
+  }, [t, season, fastF1SprintQualifyingBestLapByDriver]);
+
+  // ---- Sprint race table columns ----
+  const raceColumns: ColumnsType<Result> = useMemo(() => {
+    let fastestLapTime = '';
+    sprintRaceTableData.forEach((result) => {
+      if (result.FastestLap?.Time?.time) {
+        if (!fastestLapTime || result.FastestLap.Time.time < fastestLapTime) {
+          fastestLapTime = result.FastestLap.Time.time;
+        }
+      }
+    });
+
+    return [
+      { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
+      { title: t('grid'), dataIndex: 'grid', key: 'grid', width: 60 },
+      {
+        title: t('driver'),
+        key: 'driver',
+        width: 160,
+        render: (_: unknown, record: Result) => {
+          const color = getTeamColor(record.Constructor.constructorId);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: color,
+                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  minWidth: 36,
+                  textAlign: 'center',
+                }}
+              >
+                {record.Driver.code}
+              </span>
+              <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+            </div>
+          );
+        },
+      },
+      { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 60 },
+      {
+        title: t('result'),
+        key: 'time',
+        render: (_: unknown, record: Result) => record.Time?.time || record.status,
+      },
+      {
+        title: t('fastestLap'),
+        key: 'fastestLap',
+        render: (_: unknown, record: Result) => {
+          const time = record.FastestLap?.Time?.time;
+          if (!time) {
+            return '-';
+          }
+          return time === fastestLapTime ? (
+            <span className="fastest-lap">{time} *</span>
+          ) : time;
+        },
+      },
+      {
+        title: t('points'),
+        dataIndex: 'points',
+        key: 'points',
+        width: 60,
+        render: (points: string) => <span className="points">{points}</span>,
+      },
+    ];
+  }, [t, sprintRaceTableData]);
+
+  // ---- No sprint data guard ----
+  const hasSprintData = sprintQualifyingTableData.length > 0
+    || sprintRaceTableData.length > 0
+    || Boolean(activeSprintQualifyingAnalytics)
+    || Boolean(fastF1SprintAnalytics);
+
+  if (!primaryLoading && !hasSprintData) {
+    return (
+      <div className="fastf1-analytics-section">
+        <Card>
+          <p>{'\u672C\u573A\u6BD4\u8D5B\u65E0\u51B2\u523A\u8D5B'}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // ---- Tab items ----
+  const tabItems = [
+    {
+      key: 'sprintQualifying',
+      label: t('sprintQualifying'),
+      children: (
+        <div className="fastf1-analysis-stack">
+          {/* Qualifying results table */}
+          {sprintQualifyingTableData.length > 0 && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{t('sprintQualifying')}</h3>
+                  </div>
+                </div>
+              }
+            >
+              <Table
+                columns={qualifyingColumns}
+                dataSource={sprintQualifyingTableData}
+                rowKey={(record) => `${record.Driver.code}-${record.position}`}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </Card>
+          )}
+
+          {/* Best sector times / ranking bar chart */}
+          {sprintQualifyingRankingBarOption && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
+                    <p>{t('lapPaceDescription')}</p>
+                  </div>
+                </div>
+              }
+            >
+              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+                <LazyEChartsPanel
+                  chartKey={`sprint-qualifying-ranking-${season}-${round}`}
+                  height={isMobile ? 340 : 440}
+                  option={sprintQualifyingRankingBarOption}
+                />
+              </Suspense>
+            </Card>
+          )}
+
+          {/* Sector best times table from FastF1 ranking */}
+          {sprintQualifyingRanking.length > 0 && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{'\u6700\u4F73\u622A\u65AD\u65F6\u95F4'}</h3>
+                  </div>
+                </div>
+              }
+            >
+              <Table
+                columns={[
+                  { title: t('rank'), key: 'rank', width: 50, render: (_: unknown, __: unknown, index: number) => index + 1 },
+                  {
+                    title: t('driver'),
+                    key: 'driver',
+                    render: (_: unknown, record: PracticeRankingItem) => {
+                      const color = getTeamColor(record.constructorId);
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              backgroundColor: color,
+                              color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                              fontWeight: 700,
+                              fontSize: 12,
+                              padding: '2px 6px',
+                              borderRadius: 3,
+                              minWidth: 36,
+                              textAlign: 'center',
+                            }}
+                          >
+                            {record.driver}
+                          </span>
+                          <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.team}</span>
+                        </div>
+                      );
+                    },
+                  },
+                  {
+                    title: t('result'),
+                    key: 'bestTime',
+                    width: 90,
+                    render: (_: unknown, record: PracticeRankingItem) => (
+                      <span style={{
+                        fontWeight: record.bestTimeSeconds === sprintQualifyingRanking[0]?.bestTimeSeconds ? 700 : 400,
+                        color: record.bestTimeSeconds === sprintQualifyingRanking[0]?.bestTimeSeconds ? '#a855f7' : undefined,
+                      }}>
+                        {record.bestTime}
+                      </span>
+                    ),
+                  },
+                  { title: 'Gap', key: 'gap', width: 80, dataIndex: 'gap' },
+                  {
+                    title: 'S1',
+                    key: 'sector1',
+                    width: 75,
+                    render: (_: unknown, record: PracticeRankingItem) => (
+                      <span style={{ color: '#f59e0b' }}>{record.sector1}</span>
+                    ),
+                  },
+                  {
+                    title: 'S2',
+                    key: 'sector2',
+                    width: 75,
+                    render: (_: unknown, record: PracticeRankingItem) => (
+                      <span style={{ color: '#3b82f6' }}>{record.sector2}</span>
+                    ),
+                  },
+                  {
+                    title: 'S3',
+                    key: 'sector3',
+                    width: 75,
+                    render: (_: unknown, record: PracticeRankingItem) => (
+                      <span style={{ color: '#10b981' }}>{record.sector3}</span>
+                    ),
+                  },
+                ]}
+                dataSource={sprintQualifyingRanking}
+                rowKey={(record) => record.driver}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </Card>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'sprintRace',
+      label: t('sprint'),
+      children: (
+        <div className="fastf1-analysis-stack">
+          {/* Sprint race results table */}
+          {sprintRaceTableData.length > 0 && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{t('sprint')}</h3>
+                  </div>
+                </div>
+              }
+            >
+              <Table
+                columns={raceColumns}
+                dataSource={sprintRaceTableData}
+                rowKey={(record) => `${record.Driver.code}-${record.position}`}
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </Card>
+          )}
+
+          {/* Sprint lap pace chart */}
+          {lapPaceOption && hasFastF1Sprint && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
+                    <p>{t('lapPaceDescription')}</p>
+                  </div>
+                  {fastF1SprintAnalytics?.fastestLap ? (
+                    <div className="fastf1-chart-badges">
+                      <span className="fastf1-fastest-lap-badge">
+                        {t('fastestLap')}
+                        {' '}
+                        {fastF1SprintAnalytics.fastestLap.driver}
+                        {' '}
+                        L{fastF1SprintAnalytics.fastestLap.lapNumber}
+                        {' '}
+                        {formatSeconds(fastF1SprintAnalytics.fastestLap.lapTimeSeconds)}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              }
+            >
+              <div className="driver-legend" aria-label={t('driver')}>
+                {driverLegendItems.map((item) => {
+                  const isActive = !hasLapDriverFilter || selectedLapDrivers.includes(item.driver);
+                  return (
+                    <button
+                      key={item.driver}
+                      type="button"
+                      className={`driver-legend-item${isActive ? ' is-active' : ' is-muted'}`}
+                      aria-pressed={selectedLapDrivers.includes(item.driver)}
+                      onClick={() => handleLapDriverToggle(item.driver)}
+                    >
+                      <span
+                        className="driver-legend-line"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      {item.driver}
+                    </button>
+                  );
+                })}
+              </div>
+              {fastF1SprintAnalytics?.trackStatusPeriods?.length ? (
+                <div className="track-status-legend" aria-label={t('raceStatus')}>
+                  {fastF1SprintAnalytics.trackStatusPeriods.map((period, index) => (
+                    <span key={`${period.type}-${period.startLap}-${index}`}>
+                      <span
+                        className="track-status-swatch"
+                        style={{ backgroundColor: period.type === 'YELLOW' ? 'rgba(245, 197, 66, 0.18)' : period.type === 'VSC' ? 'rgba(249, 115, 22, 0.16)' : period.type === 'SC' ? 'rgba(59, 130, 246, 0.14)' : 'rgba(239, 68, 68, 0.16)' }}
+                      />
+                      {period.label}
+                      {' L'}
+                      {period.startLap}
+                      -
+                      L
+                      {period.endLap}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+                <LazyEChartsPanel
+                  chartKey={`sprint-laps-${season}-${round}`}
+                  height={isMobile ? 300 : 430}
+                  option={lapPaceOption}
+                />
+              </Suspense>
+            </Card>
+          )}
+
+          {/* Sprint tyre strategy */}
+          {tyreStrategyOption && (
+            <Card
+              className="fastf1-chart-card"
+              title={
+                <div className="fastf1-chart-header">
+                  <div>
+                    <h3 className="fastf1-chart-title">{t('tyreStrategy')}</h3>
+                    <p>{t('tyreStrategyDescription')}</p>
+                  </div>
+                  {fastF1SprintSummary ? (
+                    <div className="compound-legend" aria-label={t('tyreStrategy')}>
+                      {fastF1SprintSummary.compounds.map((compound) => (
+                        <span key={compound} className="compound-legend-item">
+                          <span
+                            className="compound-swatch"
+                            style={{ backgroundColor: getCompoundColor(compound) }}
+                          />
+                          {formatCompoundWithCode(season, round, compound)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              }
+            >
+              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+                <LazyEChartsPanel
+                  chartKey={`sprint-tyre-strategy-${season}-${round}`}
+                  height={isMobile ? 320 : 400}
+                  option={tyreStrategyOption}
+                />
+              </Suspense>
+            </Card>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="fastf1-analytics-section">
+      <div className="fastf1-analytics-heading">
+        <div>
+          <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
+          <h2>{'\u51B2\u523A\u8D5B\u5206\u6790'}</h2>
+        </div>
+        {fastF1SprintSummary ? (
+          <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
+            <span>
+              {fastF1SprintSummary.driverCount}
+              {' '}
+              {t('drivers')}
+            </span>
+            <span>
+              {fastF1SprintSummary.maxLap}
+              {' '}
+              {t('summaryLaps')}
+            </span>
+            <span>
+              {fastF1SprintSummary.stints}
+              {' '}
+              {t('stints')}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <Tabs
+        className="race-subpage-tabs"
+        defaultActiveKey="sprintQualifying"
+        items={tabItems}
+      />
+    </div>
+  );
+};
+
+export default RaceSprint;

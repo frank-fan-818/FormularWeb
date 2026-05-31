@@ -7,10 +7,11 @@ import Home from '@/pages/Home';
 const Seasons = lazy(() => import('@/pages/Seasons'));
 const Races = lazy(() => import('@/pages/Races'));
 const RaceLayout = lazy(() => import('@/pages/Race/RaceLayout'));
-const RaceOverview = lazy(() => import('@/pages/Race/RaceOverview'));
-const RaceAnalytics = lazy(() => import('@/pages/Race/RaceAnalytics'));
-const RaceSessions = lazy(() => import('@/pages/Race/RaceSessions'));
-const RacePreview = lazy(() => import('@/pages/Race/RacePreview'));
+const RaceResults = lazy(() => import('@/pages/Race/RaceResults'));
+const RaceQualifying = lazy(() => import('@/pages/Race/RaceQualifying'));
+const RaceAnalysis = lazy(() => import('@/pages/Race/RaceAnalysis'));
+const RaceSprint = lazy(() => import('@/pages/Race/RaceSprint'));
+const RaceInfo = lazy(() => import('@/pages/Race/RaceInfo'));
 const Drivers = lazy(() => import('@/pages/Drivers'));
 const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
 const Constructors = lazy(() => import('@/pages/Constructors'));
@@ -74,11 +75,12 @@ const router = createBrowserRouter([
         path: '/races/:round',
         element: withSuspense(<RaceLayout />),
         children: [
-          { index: true, element: <Navigate to="overview" replace /> },
-          { path: 'overview', element: withSuspense(<RaceOverview />) },
-          { path: 'analytics', element: withSuspense(<RaceAnalytics />) },
-          { path: 'sessions', element: withSuspense(<RaceSessions />) },
-          { path: 'preview', element: withSuspense(<RacePreview />) },
+          { index: true, element: <Navigate to="results" replace /> },
+          { path: 'results', element: withSuspense(<RaceResults />) },
+          { path: 'qualifying', element: withSuspense(<RaceQualifying />) },
+          { path: 'race', element: withSuspense(<RaceAnalysis />) },
+          { path: 'sprint', element: withSuspense(<RaceSprint />) },
+          { path: 'info', element: withSuspense(<RaceInfo />) },
         ],
       },
       {

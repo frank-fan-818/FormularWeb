@@ -1,0 +1,645 @@
+import { lazy, Suspense, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, Table, Tabs } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useRaceData } from './RaceContext';
+import {
+  LIGHT_TAG_COLORS,
+  DRIVER_COLORS,
+} from '@/pages/RaceDetail/constants';
+import { buildRankingBarOption } from '@/pages/RaceDetail/charts/rankingBar';
+import { type RankingChartRow, formatSessionSeconds } from '@/pages/RaceDetail/charts/helpers';
+import {
+  buildFastF1QualifyingRows,
+  buildDriverLookup,
+  buildConstructorLookup,
+  getBestLapByDriver,
+} from '@/pages/RaceDetail/sessionData';
+import {
+  formatSignedSeconds,
+  getGapToneClassName,
+} from '@/utils/raceDetailFormatters';
+import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
+import type {
+  FastF1QualifyingBestLap,
+  FastF1TeamMateComparison,
+  QualifyingResult,
+} from '@/types';
+
+const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+
+// ---- Local Types ----
+
+interface SectorTimeRow {
+  key: string;
+  driver: string;
+  team: string;
+  position: number;
+  s1: number | null;
+  s2: number | null;
+  s3: number | null;
+  lapTime: number;
+  gap: number;
+  isDeleted: boolean;
+}
+
+interface TeamMateRow {
+  key: string;
+  team: string;
+  driverA: string;
+  driverB: string;
+  fastestLapDelta: number | null;
+  s1Delta: number | null;
+  s2Delta: number | null;
+  s3Delta: number | null;
+}
+
+// ---- Local Helpers ----
+
+function buildSectorTimeRows(bestLaps: FastF1QualifyingBestLap[]): SectorTimeRow[] {
+  if (!bestLaps.length) {
+    return [];
+  }
+
+  const sorted = [...bestLaps]
+    .filter((lap) => Number.isFinite(lap.lapTimeSeconds))
+    .sort((a, b) => a.lapTimeSeconds - b.lapTimeSeconds);
+
+  if (!sorted.length) {
+    return [];
+  }
+
+  const bestTime = sorted[0].lapTimeSeconds;
+
+  return sorted.map((lap) => ({
+    key: lap.driver,
+    driver: lap.driver,
+    team: lap.team,
+    position: lap.position,
+    s1: lap.sector1Seconds,
+    s2: lap.sector2Seconds,
+    s3: lap.sector3Seconds,
+    lapTime: lap.lapTimeSeconds,
+    gap: lap.lapTimeSeconds - bestTime,
+    isDeleted: lap.isDeleted,
+  }));
+}
+
+function buildPaceChartOption(
+  bestLaps: FastF1QualifyingBestLap[],
+  t: (key: string) => string,
+): Record<string, unknown> | null {
+  const sorted = [...bestLaps]
+    .filter((lap) => Number.isFinite(lap.lapTimeSeconds))
+    .sort((a, b) => a.lapTimeSeconds - b.lapTimeSeconds);
+
+  if (!sorted.length) {
+    return null;
+  }
+
+  const rows: RankingChartRow[] = sorted.map((lap, index) => ({
+    label: lap.driver,
+    value: lap.lapTimeSeconds,
+    displayValue: formatSessionSeconds(lap.lapTimeSeconds),
+    color: DRIVER_COLORS[index % DRIVER_COLORS.length],
+  }));
+
+  return buildRankingBarOption(
+    t('lapPace'),
+    t('time'),
+    rows,
+    formatSessionSeconds,
+  );
+}
+
+function buildTeamMateRows(
+  comparisons: FastF1TeamMateComparison[] | undefined,
+): TeamMateRow[] {
+  if (!comparisons || !comparisons.length) {
+    return [];
+  }
+
+  return comparisons.map((comp) => ({
+    key: comp.team,
+    team: comp.team,
+    driverA: comp.driverA,
+    driverB: comp.driverB,
+    fastestLapDelta: comp.fastestLapDeltaSeconds,
+    s1Delta: comp.sector1DeltaSeconds,
+    s2Delta: comp.sector2DeltaSeconds,
+    s3Delta: comp.sector3DeltaSeconds,
+  }));
+}
+
+function getQualifyingColumns(
+  bestLapByDriver: Map<string, FastF1QualifyingBestLap>,
+  phasePrefix: string,
+  t: (key: string) => string,
+): ColumnsType<QualifyingResult> {
+  const hasFastF1Laps = bestLapByDriver.size > 0;
+  const fastF1Columns: ColumnsType<QualifyingResult> = hasFastF1Laps
+    ? [
+        {
+          title: t('fastestLap'),
+          key: 'fastf1FastestLap',
+          width: 110,
+          render: (_: unknown, record: QualifyingResult) => {
+            const lap = bestLapByDriver.get(record.Driver.code);
+            if (!lap) {
+              return '-';
+            }
+            return (
+              <span className={lap.isDeleted ? 'fastf1-deleted-lap' : undefined}>
+                {formatSessionSeconds(lap.lapTimeSeconds)}
+                {lap.isDeleted ? ' *' : ''}
+              </span>
+            );
+          },
+        },
+      ]
+    : [];
+
+  return [
+    { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
+    {
+      title: t('driver'),
+      key: 'driver',
+      width: 150,
+      render: (_: unknown, record: QualifyingResult) => {
+        const color = getTeamColor(normalizeConstructorId(record.Constructor.constructorId));
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                display: 'inline-block',
+                backgroundColor: color,
+                color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+                fontWeight: 700,
+                fontSize: 12,
+                padding: '2px 6px',
+                borderRadius: 3,
+                minWidth: 36,
+                textAlign: 'center',
+              }}
+            >
+              {record.Driver.code}
+            </span>
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
+          </div>
+        );
+      },
+    },
+    { title: `${phasePrefix}1`, dataIndex: 'Q1', key: 'Q1', width: 80 },
+    { title: `${phasePrefix}2`, dataIndex: 'Q2', key: 'Q2', width: 80 },
+    { title: `${phasePrefix}3`, dataIndex: 'Q3', key: 'Q3', width: 80 },
+    ...fastF1Columns,
+  ];
+}
+
+function getSectorColumns(t: (key: string) => string): ColumnsType<SectorTimeRow> {
+  return [
+    {
+      title: t('rank'),
+      key: 'position',
+      width: 50,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
+    },
+    {
+      title: t('driver'),
+      key: 'driver',
+      width: 60,
+      render: (_: unknown, record: SectorTimeRow) => (
+        <span style={{ fontWeight: 700 }}>{record.driver}</span>
+      ),
+    },
+    {
+      title: t('sector1'),
+      key: 's1',
+      width: 80,
+      render: (_: unknown, record: SectorTimeRow) => formatSessionSeconds(record.s1),
+    },
+    {
+      title: t('sector2'),
+      key: 's2',
+      width: 80,
+      render: (_: unknown, record: SectorTimeRow) => formatSessionSeconds(record.s2),
+    },
+    {
+      title: t('sector3'),
+      key: 's3',
+      width: 80,
+      render: (_: unknown, record: SectorTimeRow) => formatSessionSeconds(record.s3),
+    },
+    {
+      title: t('time'),
+      key: 'lapTime',
+      width: 100,
+      render: (_: unknown, record: SectorTimeRow) => (
+        <span className={record.isDeleted ? 'fastf1-deleted-lap' : undefined}>
+          {formatSessionSeconds(record.lapTime)}
+          {record.isDeleted ? ' *' : ''}
+        </span>
+      ),
+    },
+    {
+      title: t('delta'),
+      key: 'gap',
+      width: 90,
+      render: (_: unknown, record: SectorTimeRow) => (
+        <span className={getGapToneClassName(record.gap)}>
+          {record.gap === 0 ? '-' : formatSignedSeconds(record.gap)}
+        </span>
+      ),
+      sorter: (a: SectorTimeRow, b: SectorTimeRow) => a.gap - b.gap,
+      defaultSortOrder: 'ascend' as const,
+    },
+  ];
+}
+
+function getTeamMateColumns(t: (key: string) => string): ColumnsType<TeamMateRow> {
+  return [
+    {
+      title: t('constructor'),
+      key: 'team',
+      width: 120,
+      render: (_: unknown, record: TeamMateRow) => {
+        const color = getTeamColor(normalizeConstructorId(record.team));
+        return (
+          <span
+            style={{
+              display: 'inline-block',
+              backgroundColor: color,
+              color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
+              fontWeight: 700,
+              fontSize: 12,
+              padding: '2px 6px',
+              borderRadius: 3,
+            }}
+          >
+            {record.team}
+          </span>
+        );
+      },
+    },
+    {
+      title: t('driver'),
+      key: 'drivers',
+      width: 120,
+      render: (_: unknown, record: TeamMateRow) => (
+        <span>
+          {record.driverA} vs {record.driverB}
+        </span>
+      ),
+    },
+    {
+      title: t('fastestLap'),
+      key: 'fastestLapDelta',
+      width: 100,
+      render: (_: unknown, record: TeamMateRow) => (
+        <span className={getGapToneClassName(record.fastestLapDelta)}>
+          {record.fastestLapDelta === null ? '-' : formatSignedSeconds(record.fastestLapDelta)}
+        </span>
+      ),
+    },
+    {
+      title: t('sector1'),
+      key: 's1Delta',
+      width: 80,
+      render: (_: unknown, record: TeamMateRow) => (
+        <span className={getGapToneClassName(record.s1Delta)}>
+          {record.s1Delta === null ? '-' : formatSignedSeconds(record.s1Delta)}
+        </span>
+      ),
+    },
+    {
+      title: t('sector2'),
+      key: 's2Delta',
+      width: 80,
+      render: (_: unknown, record: TeamMateRow) => (
+        <span className={getGapToneClassName(record.s2Delta)}>
+          {record.s2Delta === null ? '-' : formatSignedSeconds(record.s2Delta)}
+        </span>
+      ),
+    },
+    {
+      title: t('sector3'),
+      key: 's3Delta',
+      width: 80,
+      render: (_: unknown, record: TeamMateRow) => (
+        <span className={getGapToneClassName(record.s3Delta)}>
+          {record.s3Delta === null ? '-' : formatSignedSeconds(record.s3Delta)}
+        </span>
+      ),
+    },
+  ];
+}
+
+// ---- Main Component ----
+
+const RaceQualifying = () => {
+  const { t } = useTranslation();
+  const {
+    season,
+    round,
+    fastF1QualifyingAnalytics,
+    fastF1SprintQualifyingAnalytics,
+    fastF1SprintShootoutAnalytics,
+    qualifyingResults,
+    sprintQualifyingResults,
+    raceInfo,
+    primaryLoading,
+  } = useRaceData();
+
+  // ---- Qualifying (Q) lookups ----
+
+  const driverByCode = useMemo(
+    () => buildDriverLookup(qualifyingResults),
+    [qualifyingResults],
+  );
+
+  const constructorByName = useMemo(
+    () => buildConstructorLookup(qualifyingResults),
+    [qualifyingResults],
+  );
+
+  // ---- Qualifying (Q) data ----
+
+  const fastF1QualifyingRows = useMemo(
+    () => buildFastF1QualifyingRows(fastF1QualifyingAnalytics, driverByCode, constructorByName),
+    [fastF1QualifyingAnalytics, driverByCode, constructorByName],
+  );
+
+  const qualifyingTableData = useMemo(
+    () => (fastF1QualifyingRows.length > 0 ? fastF1QualifyingRows : qualifyingResults),
+    [fastF1QualifyingRows, qualifyingResults],
+  );
+
+  const qBestLapByDriver = useMemo(
+    () => getBestLapByDriver(fastF1QualifyingAnalytics),
+    [fastF1QualifyingAnalytics],
+  );
+
+  const qBestLaps = useMemo(
+    () => fastF1QualifyingAnalytics?.qualifyingAnalysis?.bestLaps || [],
+    [fastF1QualifyingAnalytics],
+  );
+
+  const qSectorRows = useMemo(
+    () => buildSectorTimeRows(qBestLaps),
+    [qBestLaps],
+  );
+
+  const qPaceOption = useMemo(
+    () => buildPaceChartOption(qBestLaps, t),
+    [qBestLaps, t],
+  );
+
+  const qTeamMateRows = useMemo(
+    () => buildTeamMateRows(fastF1QualifyingAnalytics?.qualifyingAnalysis?.teamMateComparisons),
+    [fastF1QualifyingAnalytics],
+  );
+
+  // ---- Sprint Qualifying (SQ) data ----
+
+  const activeSprintQualifyingAnalytics = useMemo(() => {
+    if (season === '2023') {
+      return fastF1SprintShootoutAnalytics || fastF1SprintQualifyingAnalytics;
+    }
+    return fastF1SprintQualifyingAnalytics || fastF1SprintShootoutAnalytics;
+  }, [season, fastF1SprintQualifyingAnalytics, fastF1SprintShootoutAnalytics]);
+
+  const sqDriverByCode = useMemo(
+    () => buildDriverLookup(sprintQualifyingResults),
+    [sprintQualifyingResults],
+  );
+
+  const sqConstructorByName = useMemo(
+    () => buildConstructorLookup(sprintQualifyingResults),
+    [sprintQualifyingResults],
+  );
+
+  const fastF1SprintQualifyingRows = useMemo(
+    () => buildFastF1QualifyingRows(
+      activeSprintQualifyingAnalytics,
+      sqDriverByCode,
+      sqConstructorByName,
+    ),
+    [activeSprintQualifyingAnalytics, sqDriverByCode, sqConstructorByName],
+  );
+
+  const sprintQualifyingTableData = useMemo(
+    () => (fastF1SprintQualifyingRows.length > 0
+      ? fastF1SprintQualifyingRows
+      : sprintQualifyingResults),
+    [fastF1SprintQualifyingRows, sprintQualifyingResults],
+  );
+
+  const sqBestLapByDriver = useMemo(
+    () => getBestLapByDriver(activeSprintQualifyingAnalytics),
+    [activeSprintQualifyingAnalytics],
+  );
+
+  const sqBestLaps = useMemo(
+    () => activeSprintQualifyingAnalytics?.qualifyingAnalysis?.bestLaps || [],
+    [activeSprintQualifyingAnalytics],
+  );
+
+  const sqSectorRows = useMemo(
+    () => buildSectorTimeRows(sqBestLaps),
+    [sqBestLaps],
+  );
+
+  const sqPaceOption = useMemo(
+    () => buildPaceChartOption(sqBestLaps, t),
+    [sqBestLaps, t],
+  );
+
+  const sqTeamMateRows = useMemo(
+    () => buildTeamMateRows(activeSprintQualifyingAnalytics?.qualifyingAnalysis?.teamMateComparisons),
+    [activeSprintQualifyingAnalytics],
+  );
+
+  // ---- Sprint weekend check ----
+
+  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || sprintQualifyingTableData.length > 0
+    || sqBestLaps.length > 0;
+
+  // ---- Table columns ----
+
+  const qualifyingColumns = useMemo(
+    () => getQualifyingColumns(qBestLapByDriver, 'Q', t),
+    [qBestLapByDriver, t],
+  );
+
+  const sectorColumns = useMemo(
+    () => getSectorColumns(t),
+    [t],
+  );
+
+  const teamMateColumns = useMemo(
+    () => getTeamMateColumns(t),
+    [t],
+  );
+
+  const sprintQualifyingColumns = useMemo(
+    () => getQualifyingColumns(sqBestLapByDriver, 'SQ', t),
+    [sqBestLapByDriver, t],
+  );
+
+  // ---- Render helpers ----
+
+  const renderQualifyingSection = (
+    noFastF1Data: boolean,
+    tableColumns: ColumnsType<QualifyingResult>,
+    tableData: QualifyingResult[],
+    sectorRows: SectorTimeRow[],
+    paceOption: Record<string, unknown> | null,
+    teamMateRows: TeamMateRow[],
+  ) => (
+    <div className="fastf1-analysis-stack">
+      {/* Qualifying Results Summary */}
+      <Card
+        className="race-weekend-post-card"
+        title={<h3 style={{ margin: 0 }}>{t('qualifying')} {t('result')}</h3>}
+      >
+        {noFastF1Data ? (
+          <p style={{ color: '#94a3b8', marginBottom: 16 }}>{t('noFastF1Analysis')}</p>
+        ) : null}
+        <Table
+          columns={tableColumns}
+          dataSource={tableData}
+          rowKey={(record) => `${record.Driver.code}-${record.position}`}
+          pagination={false}
+          size="small"
+          scroll={{ x: 'max-content' }}
+          loading={primaryLoading}
+        />
+      </Card>
+
+      {/* Sector Times Comparison */}
+      {sectorRows.length > 0 ? (
+        <Card
+          className="race-weekend-post-card"
+          title={(
+            <h3 style={{ margin: 0 }}>
+              {t('sector1')}/{t('sector2')}/{t('sector3')} {t('time')}
+            </h3>
+          )}
+        >
+          <Table
+            columns={sectorColumns}
+            dataSource={sectorRows}
+            pagination={false}
+            size="small"
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+      ) : null}
+
+      {/* Qualifying Pace Ranking */}
+      {paceOption ? (
+        <Card
+          className="fastf1-chart-card"
+          title={
+            <div className="fastf1-chart-header">
+              <div>
+                <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
+              </div>
+            </div>
+          }
+        >
+          <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+            <LazyEChartsPanel
+              chartKey={`qualifying-pace-${season}-${round}`}
+              height={420}
+              option={paceOption}
+            />
+          </Suspense>
+        </Card>
+      ) : null}
+
+      {/* Team Mate Comparison */}
+      {teamMateRows.length > 0 ? (
+        <Card
+          className="race-weekend-post-card"
+          title={<h3 style={{ margin: 0 }}>{t('teamMateDelta')}</h3>}
+        >
+          <Table
+            columns={teamMateColumns}
+            dataSource={teamMateRows}
+            pagination={false}
+            size="small"
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+      ) : null}
+    </div>
+  );
+
+  // ---- Early return (no data) ----
+
+  if (!primaryLoading && !qualifyingResults.length && !fastF1QualifyingAnalytics?.qualifyingAnalysis) {
+    return (
+      <div className="fastf1-analytics-section">
+        <div className="fastf1-analytics-heading">
+          <div>
+            <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
+            <h2>{t('qualifyingAnalyzer')}</h2>
+          </div>
+        </div>
+        <Card>
+          <p>{t('noFastF1Analysis')}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // ---- Render ----
+
+  return (
+    <div className="fastf1-analytics-section">
+      <div className="fastf1-analytics-heading">
+        <div>
+          <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
+          <h2>{t('qualifyingAnalyzer')}</h2>
+        </div>
+      </div>
+
+      <Tabs
+        items={[
+          {
+            key: 'qualifying',
+            label: t('qualifying'),
+            children: renderQualifyingSection(
+              !fastF1QualifyingAnalytics?.qualifyingAnalysis,
+              qualifyingColumns,
+              qualifyingTableData,
+              qSectorRows,
+              qPaceOption,
+              qTeamMateRows,
+            ),
+          },
+          ...(hasSprintQualifying
+            ? [
+                {
+                  key: 'sprintQualifying',
+                  label: t('sprintQualifying'),
+                  children: renderQualifyingSection(
+                    !activeSprintQualifyingAnalytics?.qualifyingAnalysis,
+                    sprintQualifyingColumns,
+                    sprintQualifyingTableData,
+                    sqSectorRows,
+                    sqPaceOption,
+                    sqTeamMateRows,
+                  ),
+                },
+              ]
+            : []),
+        ]}
+      />
+    </div>
+  );
+};
+
+export default RaceQualifying;

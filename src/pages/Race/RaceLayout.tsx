@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
-  BarChartOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   FlagOutlined,
@@ -16,13 +15,13 @@ import { TEXT } from '@/pages/RaceDetail/constants';
 const InnerLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { raceInfo, seasonLoading, primaryLoading, availableDbSessions } = useRaceData();
+  const { raceInfo, seasonLoading, primaryLoading, availableDbSessions, sprintResults } = useRaceData();
 
   const weekendSchedule = getRaceWeekendSchedule(raceInfo, TEXT);
   const weekendScheduleGroups = getRaceWeekendScheduleGroups(weekendSchedule);
 
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
-  const hasSprint = Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
+  const hasSprint = (sprintResults && sprintResults.length > 0) || Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
@@ -124,31 +123,27 @@ const InnerLayout = () => {
 
       <Tabs
         className="race-subpage-tabs"
-        defaultActiveKey="overview"
+        defaultActiveKey="results"
         onChange={(key) => {
           navigate(`/races/${raceInfo.round}/${key}`, { replace: true });
         }}
         items={[
           {
-            key: 'overview',
-            label: (
-              <span>
-                <BarChartOutlined />
-                {t('preRaceOverview')}
-              </span>
-            ),
+            key: 'results',
+            label: '比赛成绩',
           },
           {
-            key: 'analytics',
-            label: t('fastF1Analysis'),
+            key: 'qualifying',
+            label: '排位分析',
           },
           {
-            key: 'sessions',
-            label: t('result'),
+            key: 'race',
+            label: '正赛分析',
           },
+          ...(hasSprint ? [{ key: 'sprint' as const, label: '冲刺赛' }] : []),
           {
-            key: 'preview',
-            label: t('preRace'),
+            key: 'info',
+            label: '赛事信息',
           },
         ]}
       />
