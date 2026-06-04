@@ -148,11 +148,67 @@ export const seasonApi = {
   },
 
   getDriverStandings: async (season: string): Promise<DriverStanding[]> => {
+    // Try Supabase first
+    const { data: dbData, error } = await supabase
+      .from('season_driver_standings')
+      .select('*')
+      .eq('season', parseInt(season, 10))
+      .order('position', { ascending: true });
+
+    if (!error && dbData && dbData.length > 0) {
+      return dbData.map((row) => ({
+        position: String(row.position),
+        positionText: String(row.position),
+        points: String(row.points),
+        wins: String(row.wins),
+        Driver: {
+          driverId: row.driver_id,
+          permanentNumber: row.permanent_number || '',
+          code: row.code || '',
+          url: '#',
+          givenName: row.given_name,
+          familyName: row.family_name,
+          dateOfBirth: row.date_of_birth || '',
+          nationality: row.nationality || '',
+        },
+        Constructors: [{
+          constructorId: row.constructor_id,
+          url: '#',
+          name: row.constructor_name,
+          nationality: '',
+        }],
+      }));
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/driverStandings.json`);
     return response.MRData.StandingsTable?.StandingsLists[0]?.DriverStandings || [];
   },
 
   getConstructorStandings: async (season: string): Promise<ConstructorStanding[]> => {
+    // Try Supabase first
+    const { data: dbData, error } = await supabase
+      .from('season_constructor_standings')
+      .select('*')
+      .eq('season', parseInt(season, 10))
+      .order('position', { ascending: true });
+
+    if (!error && dbData && dbData.length > 0) {
+      return dbData.map((row) => ({
+        position: String(row.position),
+        positionText: String(row.position),
+        points: String(row.points),
+        wins: String(row.wins),
+        Constructor: {
+          constructorId: row.constructor_id,
+          url: '#',
+          name: row.constructor_name,
+          nationality: '',
+        },
+      }));
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/constructorStandings.json`);
     return response.MRData.StandingsTable?.StandingsLists[0]?.ConstructorStandings || [];
   },

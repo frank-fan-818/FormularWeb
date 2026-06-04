@@ -521,23 +521,23 @@ export interface FastF1SessionResult {
   laps: number | null;
 }
 
-export interface FastF1TelemetrySample {
-  distanceM: number;
-  timeSeconds: number | null;
-  speedKph: number | null;
-  rpm: number | null;
-  gear: number | null;
-  throttlePct: number | null;
-  brake: boolean;
-  drs: number | null;
+export interface FastF1TelemetrySamples {
+  distanceM: number[];
+  timeSeconds: (number | null)[];
+  speedKph: (number | null)[];
+  rpm: (number | null)[];
+  gear: (number | null)[];
+  throttlePct: (number | null)[];
+  brake: boolean[];
+  drs: (number | null)[];
 }
 
-export interface FastF1PositionSample {
-  distanceM: number;
-  x: number;
-  y: number;
-  z: number | null;
-  speedKph: number | null;
+export interface FastF1PositionSamples {
+  distanceM: number[];
+  x: (number | null)[];
+  y: (number | null)[];
+  z: (number | null)[];
+  speedKph: (number | null)[];
 }
 
 export interface FastF1TelemetryDriver {
@@ -548,8 +548,8 @@ export interface FastF1TelemetryDriver {
   compound: string;
   freshTyre?: boolean | null;
   tyreLife?: number | null;
-  samples: FastF1TelemetrySample[];
-  positionSamples: FastF1PositionSample[];
+  samples: FastF1TelemetrySamples;
+  positionSamples: FastF1PositionSamples;
 }
 
 export interface FastF1CircuitCorner {

@@ -274,15 +274,16 @@ export function buildRacePreviewSummary(params: {
 export function buildDriverTelemetrySummary(
   telemetryDriver: FastF1TelemetryDriver,
 ): DriverPostRaceTelemetrySummary {
-  const samples = telemetryDriver.samples || [];
-  const speedValues = samples
-    .map((sample) => sample.speedKph)
-    .filter((value): value is number => value !== null && Number.isFinite(value));
-  const throttleValues = samples
-    .map((sample) => sample.throttlePct)
-    .filter((value): value is number => value !== null && Number.isFinite(value));
-  const brakeSamples = samples.filter((sample) => sample.brake);
-  const drsSamples = samples.filter((sample) => sample.drs !== null && sample.drs > 0);
+  const samples = telemetryDriver.samples;
+  const sampleCount = samples.speedKph?.length || 0;
+  const speedValues = (samples.speedKph || []).filter(
+    (v): v is number => v !== null && Number.isFinite(v),
+  );
+  const throttleValues = (samples.throttlePct || []).filter(
+    (v): v is number => v !== null && Number.isFinite(v),
+  );
+  const brakeCount = (samples.brake || []).filter((v) => v === true).length;
+  const drsCount = (samples.drs || []).filter((v) => v !== null && v > 0).length;
 
   return {
     driver: telemetryDriver.driver,
@@ -292,11 +293,11 @@ export function buildDriverTelemetrySummary(
     maxSpeedKph: speedValues.length ? round(Math.max(...speedValues), 1) : null,
     avgSpeedKph: round(average(speedValues), 1),
     fullThrottlePct: throttleValues.length
-      ? round((throttleValues.filter((value) => value >= 99).length / throttleValues.length) * 100, 1)
+      ? round((throttleValues.filter((v) => v >= 99).length / throttleValues.length) * 100, 1)
       : null,
     avgThrottlePct: round(average(throttleValues), 1),
-    brakePct: samples.length ? round((brakeSamples.length / samples.length) * 100, 1) : null,
-    drsPct: samples.length ? round((drsSamples.length / samples.length) * 100, 1) : null,
+    brakePct: sampleCount ? round((brakeCount / sampleCount) * 100, 1) : null,
+    drsPct: sampleCount ? round((drsCount / sampleCount) * 100, 1) : null,
   };
 }
 

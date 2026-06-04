@@ -52,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--telemetry-samples",
         type=int,
-        default=650,
+        default=250,
         help="Maximum telemetry samples per driver after downsampling.",
     )
     parser.add_argument(
@@ -150,6 +150,34 @@ def downsample(items: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
         for index, item in enumerate(items)
         if index in selected_indexes
     ]
+
+
+def downsample_dict(data: dict[str, list], limit: int) -> dict[str, list]:
+    """Downsample columnar telemetry data by selecting evenly spaced indices."""
+    if not data or limit <= 0:
+        return data
+
+    keys = list(data.keys())
+    if not keys:
+        return data
+
+    length = len(data[keys[0]])
+    if length <= limit:
+        return data
+
+    if limit == 1:
+        return {key: [values[0]] for key, values in data.items()}
+
+    last_index = length - 1
+    selected_indexes = {
+        round(index * last_index / (limit - 1))
+        for index in range(limit)
+    }
+
+    return {
+        key: [values[i] for i in selected_indexes]
+        for key, values in data.items()
+    }
 
 
 def session_type(session_code: str) -> str | None:
@@ -951,11 +979,20 @@ def telemetry_time_seconds(value: Any) -> float | None:
     return to_float(value)
 
 
-def telemetry_records(car_data: pd.DataFrame) -> list[dict[str, Any]]:
+def telemetry_records(car_data: pd.DataFrame) -> dict[str, list]:
+    """Returns columnar telemetry data: {distanceM: [...], speedKph: [...], ...}"""
     if car_data.empty or "Distance" not in car_data.columns:
-        return []
+        return {}
 
-    records = []
+    distances = []
+    times = []
+    speeds = []
+    rpms = []
+    gears = []
+    throttles = []
+    brakes = []
+    drss = []
+
     for _, row in car_data.sort_values("Distance").iterrows():
         distance = to_float(row.get("Distance"))
         speed = to_float(row.get("Speed"))
@@ -963,18 +1000,28 @@ def telemetry_records(car_data: pd.DataFrame) -> list[dict[str, Any]]:
         if distance is None or speed is None:
             continue
 
-        records.append({
-            "distanceM": distance,
-            "timeSeconds": telemetry_time_seconds(row.get("Time")),
-            "speedKph": speed,
-            "rpm": to_number(row.get("RPM")),
-            "gear": to_number(row.get("nGear")),
-            "throttlePct": to_float(row.get("Throttle")),
-            "brake": to_bool(row.get("Brake")),
-            "drs": to_number(row.get("DRS")),
-        })
+        distances.append(distance)
+        times.append(telemetry_time_seconds(row.get("Time")))
+        speeds.append(speed)
+        rpms.append(to_number(row.get("RPM")))
+        gears.append(to_number(row.get("nGear")))
+        throttles.append(to_float(row.get("Throttle")))
+        brakes.append(to_bool(row.get("Brake")))
+        drss.append(to_number(row.get("DRS")))
 
-    return records
+    if not distances:
+        return {}
+
+    return {
+        "distanceM": distances,
+        "timeSeconds": times,
+        "speedKph": speeds,
+        "rpm": rpms,
+        "gear": gears,
+        "throttlePct": throttles,
+        "brake": brakes,
+        "drs": drss,
+    }
 
 
 def average(values: list[float]) -> float | None:
@@ -985,23 +1032,21 @@ def average(values: list[float]) -> float | None:
 
 
 def build_driver_telemetry_summary(driver_record: dict[str, Any]) -> dict[str, Any]:
-    samples = driver_record.get("samples") or []
+    samples = driver_record.get("samples") or {}
     speed_values = [
-        float(sample["speedKph"])
-        for sample in samples
-        if sample.get("speedKph") is not None
+        float(v) for v in samples.get("speedKph", [])
+        if v is not None
     ]
     throttle_values = [
-        float(sample["throttlePct"])
-        for sample in samples
-        if sample.get("throttlePct") is not None
+        float(v) for v in samples.get("throttlePct", [])
+        if v is not None
     ]
-    brake_count = len([sample for sample in samples if sample.get("brake")])
+    brake_count = len([v for v in samples.get("brake", []) if v])
     drs_count = len([
-        sample
-        for sample in samples
-        if sample.get("drs") is not None and float(sample.get("drs")) > 0
+        v for v in samples.get("drs", [])
+        if v is not None and float(v) > 0
     ])
+    sample_count = len(samples.get("speedKph", []))
     avg_speed = average(speed_values)
     avg_throttle = average(throttle_values)
 
@@ -1017,18 +1062,18 @@ def build_driver_telemetry_summary(driver_record: dict[str, Any]) -> dict[str, A
             1,
         ) if throttle_values else None,
         "avgThrottlePct": round(avg_throttle, 1) if avg_throttle is not None else None,
-        "brakePct": round(brake_count / len(samples) * 100, 1) if samples else None,
-        "drsPct": round(drs_count / len(samples) * 100, 1) if samples else None,
+        "brakePct": round(brake_count / sample_count * 100, 1) if sample_count else None,
+        "drsPct": round(drs_count / sample_count * 100, 1) if sample_count else None,
     }
 
 
 def position_records(
     position_data: pd.DataFrame,
     car_data: pd.DataFrame,
-) -> list[dict[str, Any]]:
+) -> dict[str, list]:
     required_columns = {"X", "Y"}
     if position_data.empty or not required_columns.issubset(position_data.columns):
-        return []
+        return {}
 
     car_points = []
     if not car_data.empty and {"Time", "Distance", "Speed"}.issubset(car_data.columns):
@@ -1056,7 +1101,12 @@ def position_records(
             key=lambda item: abs(item["timeSeconds"] - time_seconds),
         )
 
-    records = []
+    distances = []
+    xs = []
+    ys = []
+    zs = []
+    speeds = []
+
     for _, row in position_data.iterrows():
         time_seconds = telemetry_time_seconds(row.get("Time"))
         nearest = nearest_car_point(time_seconds)
@@ -1065,19 +1115,27 @@ def position_records(
         if distance is None:
             continue
 
-        records.append({
-            "distanceM": distance,
-            "x": to_float(row.get("X")),
-            "y": to_float(row.get("Y")),
-            "z": to_float(row.get("Z")),
-            "speedKph": nearest.get("speedKph") if nearest else None,
-        })
+        x = to_float(row.get("X"))
+        y = to_float(row.get("Y"))
+        if x is None or y is None:
+            continue
 
-    return [
-        record
-        for record in records
-        if record["x"] is not None and record["y"] is not None
-    ]
+        distances.append(distance)
+        xs.append(x)
+        ys.append(y)
+        zs.append(to_float(row.get("Z")))
+        speeds.append(nearest.get("speedKph") if nearest else None)
+
+    if not distances:
+        return {}
+
+    return {
+        "distanceM": distances,
+        "x": xs,
+        "y": ys,
+        "z": zs,
+        "speedKph": speeds,
+    }
 
 
 def raw_circuit_info(session: Any) -> Any | None:
@@ -1100,25 +1158,32 @@ def raw_circuit_info(session: Any) -> Any | None:
 def nearest_position_distance(
     x: float | None,
     y: float | None,
-    reference_positions: list[dict[str, Any]],
+    reference_positions: dict[str, list],
 ) -> float | None:
     if x is None or y is None or not reference_positions:
         return None
 
-    nearest = min(
-        reference_positions,
-        key=lambda position: (
-            (float(position["x"]) - x) ** 2
-            + (float(position["y"]) - y) ** 2
-        ),
+    xs = reference_positions.get("x", [])
+    ys = reference_positions.get("y", [])
+    distances = reference_positions.get("distanceM", [])
+
+    if not xs or not ys:
+        return None
+
+    nearest_idx = min(
+        range(len(xs)),
+        key=lambda i: (
+            (float(xs[i]) - x) ** 2
+            + (float(ys[i]) - y) ** 2
+        ) if xs[i] is not None and ys[i] is not None else float('inf'),
     )
 
-    return to_float(nearest.get("distanceM"))
+    return to_float(distances[nearest_idx]) if nearest_idx < len(distances) else None
 
 
 def build_circuit_corners(
     session: Any,
-    reference_positions: list[dict[str, Any]],
+    reference_positions: dict[str, list],
 ) -> list[dict[str, Any]]:
     try:
         circuit_info = session.get_circuit_info()
@@ -1157,22 +1222,27 @@ def build_circuit_corners(
 
 
 def nearest_speed_at_distance(
-    samples: list[dict[str, Any]],
+    samples: dict[str, list],
     target_distance: float,
 ) -> float | None:
     if not samples:
         return None
 
-    nearest = min(
-        samples,
-        key=lambda sample: abs(float(sample["distanceM"]) - target_distance),
+    distances = samples.get("distanceM", [])
+    speeds = samples.get("speedKph", [])
+    if not distances:
+        return None
+
+    nearest_idx = min(
+        range(len(distances)),
+        key=lambda i: abs(float(distances[i]) - target_distance) if distances[i] is not None else float('inf'),
     )
-    return to_float(nearest.get("speedKph"))
+    return to_float(speeds[nearest_idx]) if nearest_idx < len(speeds) else None
 
 
 def build_corner_analysis(
     corners: list[dict[str, Any]],
-    driver_samples: dict[str, list[dict[str, Any]]],
+    driver_samples: dict[str, dict[str, list]],
 ) -> list[dict[str, Any]]:
     if not corners or not driver_samples:
         return []
@@ -1183,16 +1253,15 @@ def build_corner_analysis(
         drivers = []
 
         for driver, samples in driver_samples.items():
-            window_samples = [
-                sample
-                for sample in samples
-                if abs(float(sample["distanceM"]) - float(corner_distance)) <= 120
+            distances = samples.get("distanceM", [])
+            speeds_list = samples.get("speedKph", [])
+
+            window_speeds = [
+                speeds_list[i]
+                for i in range(len(distances))
+                if distances[i] is not None and abs(float(distances[i]) - float(corner_distance)) <= 120
             ]
-            speeds = [
-                sample["speedKph"]
-                for sample in window_samples
-                if sample.get("speedKph") is not None
-            ]
+            speeds = [s for s in window_speeds if s is not None]
 
             drivers.append({
                 "driver": driver,
@@ -1231,8 +1300,8 @@ def build_fastest_lap_telemetry(
         return None
 
     telemetry_driver_records = []
-    full_driver_samples: dict[str, list[dict[str, Any]]] = {}
-    reference_positions: list[dict[str, Any]] = []
+    full_driver_samples: dict[str, dict[str, list]] = {}
+    reference_positions: dict[str, list] = {}
 
     for driver in selected_drivers:
         try:
@@ -1260,8 +1329,8 @@ def build_fastest_lap_telemetry(
             "compound": clean_text(lap.get("Compound")) or "UNKNOWN",
             "freshTyre": to_bool(lap.get("FreshTyre")),
             "tyreLife": to_number(lap.get("TyreLife")),
-            "samples": downsample(samples, sample_limit),
-            "positionSamples": downsample(positions, sample_limit),
+            "samples": downsample_dict(samples, sample_limit),
+            "positionSamples": downsample_dict(positions, sample_limit),
         })
 
     if not telemetry_driver_records:

@@ -69,9 +69,7 @@ export function formatSessionSeconds(value: number | null | undefined) {
 
 export function getTelemetryMaxDistance(drivers: FastF1TelemetryDriver[]) {
   const distances = drivers.flatMap((driver) =>
-    driver.samples
-      .map((sample) => sample.distanceM)
-      .filter((distance) => Number.isFinite(distance)),
+    (driver.samples.distanceM || []).filter((distance) => Number.isFinite(distance)),
   );
 
   if (!distances.length) {

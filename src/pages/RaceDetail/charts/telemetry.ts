@@ -1,4 +1,4 @@
-import type { FastF1RaceAnalytics, FastF1TelemetryDriver, FastF1TelemetrySample } from '@/types';
+import type { FastF1RaceAnalytics, FastF1TelemetryDriver } from '@/types';
 import { escapeTooltipText, formatNumber, formatSpeed, formatRpm } from '@/utils/raceDetailFormatters';
 import { TEXT, CHART_TOOLTIP_CSS } from '../constants';
 import type { ChartTooltipInput, ChartTooltipParam, TelemetryMetric } from './helpers';
@@ -110,9 +110,13 @@ function buildTelemetrySpeedOption(
     emphasis: {
       focus: 'series',
     },
-    data: driver.samples
-      .filter((sample) => sample.speedKph !== null)
-      .map((sample) => [sample.distanceM, sample.speedKph]),
+    data: driver.samples.distanceM.reduce<[number, number][]>((acc, d, i) => {
+      const speed = driver.samples.speedKph[i];
+      if (speed !== null) {
+        acc.push([d, speed]);
+      }
+      return acc;
+    }, []),
     markLine: index === 0 ? cornerMarkLines : undefined,
   }));
 
@@ -201,18 +205,19 @@ function buildTelemetryControlSeries(
   const samples = driver.samples;
   const selectedMetricSet = new Set(selectedMetrics);
 
-  const metricData = (
+  const buildMetricData = (
     metric: 'throttle' | 'brake' | 'gear' | 'rpm',
-    selector: (sample: FastF1TelemetrySample) => number | null,
-  ) => samples
-    .map((sample) => {
-      const value = selector(sample);
-      if (value === null || !Number.isFinite(value)) {
+    values: (number | null | boolean)[],
+  ) => samples.distanceM
+    .map((d, i) => {
+      const raw = values[i];
+      const v = typeof raw === 'boolean' ? (raw ? 100 : 0) : raw;
+      if (v === null || !Number.isFinite(v)) {
         return null;
       }
 
       return {
-        value: [sample.distanceM, value],
+        value: [d, v],
         metric,
       };
     })
@@ -229,7 +234,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 2.4, color, opacity: 0.92 },
       emphasis: { focus: 'series' },
-      data: metricData('throttle', (sample) => sample.throttlePct),
+      data: buildMetricData('throttle', samples.throttlePct),
     },
     {
       metric: 'brake' as TelemetryMetric,
@@ -241,7 +246,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 2, color, type: 'dashed', opacity: 0.76 },
       emphasis: { focus: 'series' },
-      data: metricData('brake', (sample) => (sample.brake ? 100 : 0)),
+      data: buildMetricData('brake', samples.brake),
     },
     {
       metric: 'gear' as TelemetryMetric,
@@ -253,7 +258,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 1.9, color, type: 'dotted', opacity: 0.82 },
       emphasis: { focus: 'series' },
-      data: metricData('gear', (sample) => sample.gear),
+      data: buildMetricData('gear', samples.gear),
     },
     {
       metric: 'rpm' as TelemetryMetric,
@@ -265,7 +270,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 1.4, color, type: [6, 3, 1, 3], opacity: 0.58 },
       emphasis: { focus: 'series' },
-      data: metricData('rpm', (sample) => sample.rpm),
+      data: buildMetricData('rpm', samples.rpm),
     },
   ].filter((series) => selectedMetricSet.has(series.metric));
 }
@@ -471,15 +476,21 @@ function buildTelemetryHeatmapOption(
 
   const chartDrivers = getTelemetryChartDrivers(analytics, activeDrivers);
   const allSpeeds = chartDrivers.flatMap((driver) =>
-    driver.positionSamples
-      .map((sample) => sample.speedKph)
+    (driver.positionSamples.speedKph || [])
       .filter((speed): speed is number => speed !== null && Number.isFinite(speed)),
   );
   const minSpeed = allSpeeds.length ? Math.min(...allSpeeds) : 0;
   const maxSpeed = allSpeeds.length ? Math.max(...allSpeeds) : 1;
   const heatSeries = activeDrivers.flatMap((driver) => {
-    const points = driver.positionSamples
-      .filter((sample) => sample.speedKph !== null)
+    const pos = driver.positionSamples;
+    const points = pos.distanceM
+      .map((d, i) => ({
+        distanceM: d,
+        x: pos.x[i],
+        y: pos.y[i],
+        speedKph: pos.speedKph[i],
+      }))
+      .filter((p) => p.speedKph !== null && p.x !== null && p.y !== null)
       .sort((a, b) => a.distanceM - b.distanceM);
 
     return points.slice(0, -1).map((point, index) => {
