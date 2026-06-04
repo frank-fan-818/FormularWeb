@@ -683,3 +683,14 @@ export interface FastF1RaceAnalytics {
   lapTimeSeries: FastF1DriverLapSeries[];
   tyreStrategies: FastF1DriverStrategy[];
 }
+
+export interface FastF1TelemetryPayload {
+  source: 'fastf1';
+  generatedAt: string;
+  season: string;
+  round: string;
+  session: string;
+  eventName: string;
+  telemetry: FastF1TelemetryAnalysis;
+  telemetrySummary: DriverPostRaceTelemetrySummary[];
+}

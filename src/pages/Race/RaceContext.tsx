@@ -13,6 +13,7 @@ import { raceSessionResultsApi } from '@/api/raceSessionResults';
 import {
   useFiaRaceUpgrades,
   useFastF1RaceAnalytics,
+  useFastF1RaceTelemetry,
   useFastF1SessionAnalytics,
   usePostRaceTelemetrySummary,
   useRacePreviewSummary,
@@ -22,6 +23,7 @@ import { useAppStore } from '@/store';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import type {
   FastF1RaceAnalytics,
+  FastF1TelemetryAnalysis,
   QualifyingResult,
   Race,
   RacePreviewSummary,
@@ -83,6 +85,11 @@ export interface RaceDataContextValue {
   postRaceTelemetrySummary: DriverPostRaceTelemetrySummary[];
   racePreviewSummary: RacePreviewSummary | null;
   racePreviewLoading: boolean;
+
+  // Telemetry (lazy loaded)
+  fastF1Telemetry: FastF1TelemetryAnalysis | null;
+  fastF1TelemetryLoading: boolean;
+  loadFastF1Telemetry: () => void;
 
   // FIA upgrades
   raceUpgradeSummary: FiaRaceUpgradeSummary | null;
@@ -230,6 +237,11 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { data: fastF1Practice3Analytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'FP3', shouldLoadFastF1Practice || activeTab === 'fp3',
   );
+  const {
+    data: fastF1Telemetry,
+    loading: fastF1TelemetryLoading,
+    load: loadFastF1Telemetry,
+  } = useFastF1RaceTelemetry(currentSeason, round, 'R');
 
   // ---- Effects ----
 
@@ -452,6 +464,9 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     fastF1Practice2Analytics,
     fastF1Practice3Analytics,
     postRaceTelemetrySummary,
+    fastF1Telemetry,
+    fastF1TelemetryLoading,
+    loadFastF1Telemetry,
     racePreviewSummary,
     racePreviewLoading,
     raceUpgradeSummary,
@@ -501,6 +516,9 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     fastF1Practice2Analytics,
     fastF1Practice3Analytics,
     postRaceTelemetrySummary,
+    fastF1Telemetry,
+    fastF1TelemetryLoading,
+    loadFastF1Telemetry,
     racePreviewSummary,
     racePreviewLoading,
     raceUpgradeSummary,

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -140,6 +140,9 @@ const RaceAnalysis = () => {
     fastF1Analytics,
     fastF1QualifyingAnalytics,
     postRaceTelemetrySummary,
+    fastF1Telemetry,
+    fastF1TelemetryLoading,
+    loadFastF1Telemetry,
   } = useRaceData();
 
   // Local UI state — each sub-page manages its own selections so they are
@@ -160,6 +163,13 @@ const RaceAnalysis = () => {
   const telemetryEnabled = isFeatureEnabled('fastf1-telemetry');
   const weatherEnabled = isFeatureEnabled('fastf1-weather');
   const duelEnabled = isFeatureEnabled('fastf1-duel');
+
+  // Auto-trigger telemetry loading when race analytics are available
+  useEffect(() => {
+    if (fastF1Analytics) {
+      loadFastF1Telemetry();
+    }
+  }, [fastF1Analytics, loadFastF1Telemetry]);
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -249,6 +259,14 @@ const RaceAnalysis = () => {
 
   const hasLapDriverFilter = selectedLapDrivers.length > 0;
 
+  // ---- Telemetry-aware analytics (merge lazy-loaded telemetry) ----
+
+  const fastF1AnalyticsWithTelemetry = useMemo(() => {
+    if (!fastF1Analytics) return null;
+    if (!fastF1Telemetry) return fastF1Analytics;
+    return { ...fastF1Analytics, telemetry: fastF1Telemetry };
+  }, [fastF1Analytics, fastF1Telemetry]);
+
   // ---- Duel ----
 
   const duelDriverItems = useMemo(
@@ -272,50 +290,50 @@ const RaceAnalysis = () => {
   );
 
   const duelCornerRows = useMemo(
-    () => getDuelCornerRows(fastF1Analytics, selectedDuelDrivers),
-    [fastF1Analytics, selectedDuelDrivers],
+    () => getDuelCornerRows(fastF1AnalyticsWithTelemetry, selectedDuelDrivers),
+    [fastF1AnalyticsWithTelemetry, selectedDuelDrivers],
   );
 
   // ---- Telemetry ----
 
   const activeTelemetryDrivers = useMemo(
-    () => getActiveTelemetryDrivers(fastF1Analytics, selectedTelemetryDrivers),
-    [fastF1Analytics, selectedTelemetryDrivers],
+    () => getActiveTelemetryDrivers(fastF1AnalyticsWithTelemetry, selectedTelemetryDrivers),
+    [fastF1AnalyticsWithTelemetry, selectedTelemetryDrivers],
   );
 
   const telemetrySpeedOption = useMemo(
-    () => (fastF1Analytics
-      ? buildTelemetrySpeedOption(fastF1Analytics, activeTelemetryDrivers)
+    () => (fastF1AnalyticsWithTelemetry
+      ? buildTelemetrySpeedOption(fastF1AnalyticsWithTelemetry, activeTelemetryDrivers)
       : null),
-    [activeTelemetryDrivers, fastF1Analytics],
+    [activeTelemetryDrivers, fastF1AnalyticsWithTelemetry],
   );
 
   const telemetryControlOption = useMemo(
-    () => (fastF1Analytics
-      ? buildTelemetryControlOption(fastF1Analytics, activeTelemetryDrivers, selectedTelemetryMetrics)
+    () => (fastF1AnalyticsWithTelemetry
+      ? buildTelemetryControlOption(fastF1AnalyticsWithTelemetry, activeTelemetryDrivers, selectedTelemetryMetrics)
       : null),
-    [activeTelemetryDrivers, fastF1Analytics, selectedTelemetryMetrics],
+    [activeTelemetryDrivers, fastF1AnalyticsWithTelemetry, selectedTelemetryMetrics],
   );
 
   const telemetryHeatmapOption = useMemo(
-    () => (fastF1Analytics
-      ? buildTelemetryHeatmapOption(fastF1Analytics, activeTelemetryDrivers)
+    () => (fastF1AnalyticsWithTelemetry
+      ? buildTelemetryHeatmapOption(fastF1AnalyticsWithTelemetry, activeTelemetryDrivers)
       : null),
-    [activeTelemetryDrivers, fastF1Analytics],
+    [activeTelemetryDrivers, fastF1AnalyticsWithTelemetry],
   );
 
   const telemetryDriverItems = useMemo(
-    () => (fastF1Analytics?.telemetry?.drivers || []).map((driver) => ({
+    () => (fastF1Telemetry?.drivers || []).map((driver) => ({
       driver: driver.driver,
-      color: getTelemetryDriverColor(driver.driver, fastF1Analytics?.telemetry?.drivers || []),
+      color: getTelemetryDriverColor(driver.driver, fastF1Telemetry?.drivers || []),
       label: `${driver.driver} ${driver.lapTimeSeconds ? formatSeconds(driver.lapTimeSeconds) : ''}`.trim(),
     })),
-    [fastF1Analytics],
+    [fastF1Telemetry],
   );
 
   const telemetryCornerRows = useMemo(
-    () => getCornerSpeedRows(fastF1Analytics?.telemetry?.cornerAnalysis || [], activeTelemetryDrivers),
-    [activeTelemetryDrivers, fastF1Analytics],
+    () => getCornerSpeedRows(fastF1Telemetry?.cornerAnalysis || [], activeTelemetryDrivers),
+    [activeTelemetryDrivers, fastF1Telemetry],
   );
 
   const telemetryCornerColumns: ColumnsType<CornerSpeedRow> = [
@@ -458,7 +476,7 @@ const RaceAnalysis = () => {
 
   const hasRaceAnalysisSection = Boolean(
     fastF1Analytics
-    && (lapPaceOption || tyreStrategyOption || weatherOption || fastF1Analytics.telemetry),
+    && (lapPaceOption || tyreStrategyOption || weatherOption || fastF1Telemetry),
   );
 
   // ---- Early return when no FastF1 data ----
@@ -949,7 +967,10 @@ const RaceAnalysis = () => {
             ) : null}
 
             {/* ========== 6. Telemetry Comparison + Speed Heatmap ========== */}
-            {telemetryEnabled && fastF1Analytics?.telemetry ? (
+            {telemetryEnabled ? (
+              fastF1TelemetryLoading ? (
+                <div className="race-weekend-empty">{t('loading')}</div>
+              ) : fastF1Telemetry ? (
               <Card
                 className="fastf1-chart-card telemetry-card"
                 title={
@@ -1065,7 +1086,7 @@ const RaceAnalysis = () => {
                   </>
                 )}
               </Card>
-            ) : null}
+            ) : null) : null}
           </div>
         ) : null}
       </div>

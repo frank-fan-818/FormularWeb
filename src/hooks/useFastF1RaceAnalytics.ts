@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
-import type { FastF1RaceAnalytics } from '@/types';
+import type { FastF1RaceAnalytics, FastF1TelemetryAnalysis } from '@/types';
 
 export function useFastF1SessionAnalytics(
   season: string,
@@ -51,4 +51,46 @@ export function useFastF1SessionAnalytics(
 
 export function useFastF1RaceAnalytics(season: string, round?: string, enabled = true) {
   return useFastF1SessionAnalytics(season, round, 'R', enabled);
+}
+
+export function useFastF1RaceTelemetry(
+  season: string,
+  round?: string,
+  session = 'R',
+) {
+  const [data, setData] = useState<FastF1TelemetryAnalysis | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const load = useCallback(() => {
+    if (!season || !round || loading || loaded) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+
+    fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal)
+      .then((payload) => {
+        setData(payload?.telemetry || null);
+        setLoaded(true);
+      })
+      .catch((requestError: unknown) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [season, round, session, loading, loaded]);
+
+  return { data, loading, error, load, loaded };
 }

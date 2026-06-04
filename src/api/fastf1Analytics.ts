@@ -1,4 +1,4 @@
-import type { FastF1RaceAnalytics } from '@/types';
+import type { FastF1RaceAnalytics, FastF1TelemetryPayload } from '@/types';
 import { measureRequest } from '@/utils/performance';
 import { logger } from '@/utils/logger';
 import { supabase } from '@/utils/supabase';
@@ -108,5 +108,34 @@ export const fastF1AnalyticsApi = {
     }
 
     return response.json() as Promise<FastF1RaceAnalytics>;
+  },
+
+  async getRaceTelemetry(
+    season: string,
+    round: string,
+    session = 'R',
+    signal?: AbortSignal,
+  ): Promise<FastF1TelemetryPayload | null> {
+    const sessionCode = session.toUpperCase();
+
+    // Try Supabase first (telemetry might be stored in the payload column too)
+    // For now, just fetch the static file
+    const response = await measureRequest('fetch', `fastf1-telemetry/${season}/${round}/${sessionCode}`, () => fetch(
+      buildAnalyticsUrl(season, round, `${sessionCode}-telemetry`),
+      {
+        signal,
+        cache: import.meta.env.DEV ? 'no-cache' : 'force-cache',
+      },
+    ));
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`FastF1 telemetry request failed with ${response.status}`);
+    }
+
+    return response.json() as Promise<FastF1TelemetryPayload>;
   },
 };

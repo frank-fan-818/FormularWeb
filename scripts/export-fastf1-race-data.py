@@ -65,6 +65,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Export classification and lap timing, but skip telemetry, weather and messages.",
     )
+    parser.add_argument(
+        "--split",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Split telemetry into a separate file (default: True). Use --no-split to keep telemetry inline.",
+    )
     return parser.parse_args()
 
 
@@ -1441,6 +1447,7 @@ def main() -> None:
     if qualifying_analysis:
         payload["qualifyingAnalysis"] = qualifying_analysis
 
+    telemetry_payload = None
     if str(args.session).upper() == "R":
         telemetry = build_fastest_lap_telemetry(
             session,
@@ -1451,8 +1458,23 @@ def main() -> None:
             max(0, args.telemetry_samples),
         )
         if telemetry:
-            payload["telemetry"] = telemetry
-            payload["telemetrySummary"] = telemetry.get("summary", [])
+            if args.split:
+                # Split mode: telemetry goes to a separate file
+                payload["telemetrySummary"] = telemetry.get("summary", [])
+                telemetry_payload = {
+                    "source": "fastf1",
+                    "generatedAt": datetime.now(timezone.utc).isoformat(),
+                    "season": str(args.season),
+                    "round": str(args.round),
+                    "session": str(args.session),
+                    "eventName": clean_text(session.event.get("EventName")),
+                    "telemetry": telemetry,
+                    "telemetrySummary": telemetry.get("summary", []),
+                }
+            else:
+                # Original behavior: everything in one file
+                payload["telemetry"] = telemetry
+                payload["telemetrySummary"] = telemetry.get("summary", [])
 
     output_path = output_root / str(args.season) / str(args.round) / f"{args.session}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1461,6 +1483,14 @@ def main() -> None:
         encoding="utf-8",
     )
     print(f"Wrote {output_path}")
+
+    if telemetry_payload:
+        telemetry_path = output_root / str(args.season) / str(args.round) / f"{args.session}-telemetry.json"
+        telemetry_path.write_text(
+            json.dumps(telemetry_payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"Wrote {telemetry_path}")
 
 
 if __name__ == "__main__":
