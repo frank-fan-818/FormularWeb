@@ -167,7 +167,7 @@ export function getRaceWeekendSchedule(
     { key: 'sprint', label: labels.sprint, code: 'SPR', tone: 'sprint' as const, session: race.Sprint },
     { key: 'qualifying', label: labels.qualifying, code: 'Q', tone: 'qualifying' as const, session: race.Qualifying },
     { key: 'race', label: labels.race, code: 'RACE', tone: 'race' as const, session: { date: race.date, time: race.time } },
-  ];
+  ].filter((s) => s.session?.date) as RaceWeekendSession[];
 }
 
 export function getRaceWeekendScheduleGroups(sessions: RaceWeekendSession[]): RaceWeekendScheduleGroup[] {

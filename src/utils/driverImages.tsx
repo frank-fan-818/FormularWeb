@@ -5,10 +5,15 @@ const FALLBACK_IDS = new Set<string>();
 
 const ALIASES: Record<string, string> = {
   antonelli: 'kimi_antonelli',
+  max_verstappen: 'max_verstappen',
 };
 
 function resolveId(driverId: string): string {
-  return ALIASES[driverId] || driverId;
+  if (ALIASES[driverId]) return ALIASES[driverId];
+  // Try last-name-only variant (e.g. lewis_hamilton -> hamilton)
+  const parts = driverId.split('_');
+  if (parts.length > 1) return parts[parts.length - 1];
+  return driverId;
 }
 
 export function getDriverImageUrl(driverId: string): string | null {

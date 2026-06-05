@@ -341,8 +341,8 @@ export const seasonApi = {
                   name: constructor?.name || '',
                   nationality: constructor?.nationality || '',
                 },
-                grid: String(r.grid),
-                laps: String(r.laps),
+                grid: String(r.grid ?? ''),
+                laps: String(r.laps ?? ''),
                 status: r.status,
                 Time: r.time
                   ? {

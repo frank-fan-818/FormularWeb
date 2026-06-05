@@ -72,7 +72,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} />
+              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -138,7 +138,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} />
+              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -182,7 +182,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} />
+              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -223,7 +223,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} />
+              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
@@ -277,7 +277,7 @@ const RaceResults = () => {
           const color = getTeamColor(record.Constructor.constructorId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} />
+              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
               <span
                 onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
                 style={{
