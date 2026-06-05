@@ -20,7 +20,6 @@ import {
   getTelemetryDriverColor,
 } from '@/pages/Race/shared/charts/helpers';
 import { DataViewPanel, type DataViewMode } from '@/pages/Race/shared/components/DataViewPanels';
-import { TyreStrategyTimeline } from '@/pages/Race/shared/components/TyreStrategyTimeline';
 import {
   buildFastF1Summary,
   getDriverLegendItems,
@@ -722,23 +721,15 @@ const RaceAnalysis = () => {
                 }
               >
                 {isCollapsed('tyreStrategy') ? null : (
-                  <>
-                    {tyreStrategyOption ? (
-                      <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                        <LazyEChartsPanel
-                          chartKey={`fastf1-tyre-strategy-${season}-${round}`}
-                          height={400}
-                          option={tyreStrategyOption}
-                        />
-                      </Suspense>
-                    ) : null}
-                    <TyreStrategyTimeline
-                      analytics={fastF1Analytics}
-                      highlightedDrivers={selectedDuelDrivers}
-                      season={season}
-                      round={round}
-                    />
-                  </>
+                  tyreStrategyOption ? (
+                    <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+                      <LazyEChartsPanel
+                        chartKey={`fastf1-tyre-strategy-${season}-${round}`}
+                        height={400}
+                        option={tyreStrategyOption}
+                      />
+                    </Suspense>
+                  ) : null
                 )}
               </Card>
             ) : null}
