@@ -6,15 +6,15 @@ import { useRaceData } from './RaceContext';
 import {
   LIGHT_TAG_COLORS,
   DRIVER_COLORS,
-} from '@/pages/RaceDetail/constants';
-import { buildRankingBarOption } from '@/pages/RaceDetail/charts/rankingBar';
-import { type RankingChartRow, formatSessionSeconds } from '@/pages/RaceDetail/charts/helpers';
+} from '@/pages/Race/shared/constants';
+import { buildRankingBarOption } from '@/pages/Race/shared/charts/rankingBar';
+import { type RankingChartRow, formatSessionSeconds } from '@/pages/Race/shared/charts/helpers';
 import {
   buildFastF1QualifyingRows,
   buildDriverLookup,
   buildConstructorLookup,
   getBestLapByDriver,
-} from '@/pages/RaceDetail/sessionData';
+} from '@/pages/Race/shared/sessionData';
 import {
   formatSignedSeconds,
   getGapToneClassName,

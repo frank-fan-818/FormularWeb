@@ -5,11 +5,11 @@ import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
 import {
   LIGHT_TAG_COLORS,
-} from '@/pages/RaceDetail/constants';
-import { buildLapPaceOption } from '@/pages/RaceDetail/charts/lapPace';
-import { buildTyreStrategyOption } from '@/pages/RaceDetail/charts/tyreStrategy';
-import { buildRankingBarOption } from '@/pages/RaceDetail/charts/rankingBar';
-import { getCompoundColor, formatSessionSeconds } from '@/pages/RaceDetail/charts/helpers';
+} from '@/pages/Race/shared/constants';
+import { buildLapPaceOption } from '@/pages/Race/shared/charts/lapPace';
+import { buildTyreStrategyOption } from '@/pages/Race/shared/charts/tyreStrategy';
+import { buildRankingBarOption } from '@/pages/Race/shared/charts/rankingBar';
+import { getCompoundColor, formatSessionSeconds } from '@/pages/Race/shared/charts/helpers';
 import {
   buildFastF1Summary,
   buildFastF1QualifyingRows,
@@ -19,13 +19,13 @@ import {
   getBestLapByDriver,
   getDriverLegendItems,
   buildPracticeRanking,
-} from '@/pages/RaceDetail/sessionData';
-import type { PracticeRankingItem } from '@/pages/RaceDetail/sessionData';
+} from '@/pages/Race/shared/sessionData';
+import type { PracticeRankingItem } from '@/pages/Race/shared/sessionData';
 import { getTeamColor } from '@/utils/teamColors';
 import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
-import '../RaceDetail.css';
+import '../shared/RaceDetail.css';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 

@@ -18,10 +18,10 @@ import {
   UPGRADE_REASON_LABELS,
   LIGHT_TAG_COLORS,
   DEFAULT_TAG_COLOR,
-} from '@/pages/RaceDetail/constants';
-import { TableOnlyPanel } from '@/pages/RaceDetail/components/DataViewPanels';
+} from '@/pages/Race/shared/constants';
+import { TableOnlyPanel } from '@/pages/Race/shared/components/DataViewPanels';
 import { useRaceData } from './RaceContext';
-import '../RaceDetail.css';
+import '../shared/RaceDetail.css';
 
 function driverIdToCode(driverId: string): string {
   const parts = driverId.split('_').filter(Boolean);

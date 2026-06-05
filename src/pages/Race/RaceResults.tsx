@@ -7,9 +7,9 @@ import type { QualifyingResult, Result } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
-import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/RaceDetail/constants';
+import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
-import '../RaceDetail.css';
+import '../shared/RaceDetail.css';
 
 interface TabItem {
   key: string;

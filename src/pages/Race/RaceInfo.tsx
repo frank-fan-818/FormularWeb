@@ -29,9 +29,9 @@ import {
   LIGHT_TAG_COLORS,
   DEFAULT_TAG_COLOR,
   TEXT,
-} from '@/pages/RaceDetail/constants';
+} from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
-import '../RaceDetail.css';
+import '../shared/RaceDetail.css';
 
 // ---- Localised text for circuit info (not yet in i18n / TEXT constants) ----
 

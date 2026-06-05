@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { RaceDataProvider, useRaceData } from './RaceContext';
 import { formatRaceDateTimeFull, getRaceWeekendSchedule, getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
-import { TEXT } from '@/pages/RaceDetail/constants';
+import { TEXT } from '@/pages/Race/shared/constants';
 
 const InnerLayout = () => {
   const { t } = useTranslation();

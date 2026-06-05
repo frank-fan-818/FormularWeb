@@ -32,7 +32,7 @@ import type {
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import { DEFERRED_TAB_KEYS } from '@/pages/RaceDetail/constants';
+import { DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
 
 // ---- Types for context ----
 

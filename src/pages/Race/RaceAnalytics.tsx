@@ -3,28 +3,28 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
-import { TEXT, TRACK_STATUS_STYLES, LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/RaceDetail/constants';
+import { TEXT, TRACK_STATUS_STYLES, LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/Race/shared/constants';
 import { isFeatureEnabled } from '@/utils/featureFlags';
-import { buildLapPaceOption } from '@/pages/RaceDetail/charts/lapPace';
-import { buildTyreStrategyOption } from '@/pages/RaceDetail/charts/tyreStrategy';
-import { buildWeatherOption } from '@/pages/RaceDetail/charts/weather';
+import { buildLapPaceOption } from '@/pages/Race/shared/charts/lapPace';
+import { buildTyreStrategyOption } from '@/pages/Race/shared/charts/tyreStrategy';
+import { buildWeatherOption } from '@/pages/Race/shared/charts/weather';
 import {
   buildTelemetrySpeedOption,
   buildTelemetryControlOption,
   buildTelemetryHeatmapOption,
-} from '@/pages/RaceDetail/charts/telemetry';
-import { buildRankingBarOption, getTelemetrySummaryChartRows } from '@/pages/RaceDetail/charts/rankingBar';
+} from '@/pages/Race/shared/charts/telemetry';
+import { buildRankingBarOption, getTelemetrySummaryChartRows } from '@/pages/Race/shared/charts/rankingBar';
 import {
   getCompoundColor,
   formatSessionSeconds,
   getTelemetryDriverColor,
-} from '@/pages/RaceDetail/charts/helpers';
-import { DataViewPanel, type DataViewMode } from '@/pages/RaceDetail/components/DataViewPanels';
-import { TyreStrategyTimeline } from '@/pages/RaceDetail/components/TyreStrategyTimeline';
+} from '@/pages/Race/shared/charts/helpers';
+import { DataViewPanel, type DataViewMode } from '@/pages/Race/shared/components/DataViewPanels';
+import { TyreStrategyTimeline } from '@/pages/Race/shared/components/TyreStrategyTimeline';
 import {
   buildFastF1Summary,
   getDriverLegendItems,
-} from '@/pages/RaceDetail/sessionData';
+} from '@/pages/Race/shared/sessionData';
 import {
   getDuelDriverItems,
   getSelectedDuelDrivers,
@@ -32,7 +32,7 @@ import {
   getDuelSectorGapItems,
   getDuelCornerRows,
   getActiveTelemetryDrivers,
-} from '@/pages/RaceDetail/duelAnalysis';
+} from '@/pages/Race/shared/duelAnalysis';
 import {
   formatNumber,
   formatPercent,
@@ -64,7 +64,7 @@ const TELEMETRY_METRICS: Array<{ key: TelemetryMetric; label: string }> = [
   { key: 'rpm', label: TEXT.rpm },
 ];
 
-// ---- Local helpers (mirrored from RaceDetail.tsx) ----
+// ---- Local helpers  ----
 
 function formatStatRange(summary?: { min: number | null; max: number | null }) {
   if (!summary || summary.min === null || summary.max === null) {
