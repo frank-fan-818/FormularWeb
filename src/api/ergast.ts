@@ -142,6 +142,51 @@ export const seasonApi = {
   },
 
   getSeasonRaces: async (season: string): Promise<Race[]> => {
+    const seasonNumber = parseInt(season, 10);
+
+    // Try Supabase first
+    if (Number.isInteger(seasonNumber)) {
+      const { data: dbRaces, error } = await supabase
+        .from('races')
+        .select('*')
+        .eq('season', seasonNumber)
+        .order('round');
+
+      if (!error && dbRaces && dbRaces.length > 0) {
+        // Fetch related circuits for location data
+        const circuitIds = [...new Set(dbRaces.map((r) => r.circuit_id).filter(Boolean))] as string[];
+        const { data: dbCircuits } = circuitIds.length > 0
+          ? await supabase.from('circuits').select('*').in('circuit_id', circuitIds)
+          : { data: [] };
+
+        const circuitMap = new Map((dbCircuits || []).map((c) => [c.circuit_id, c]));
+
+        return dbRaces.map((row) => {
+          const circuit = circuitMap.get(row.circuit_id);
+          return {
+            season: String(row.season),
+            round: String(row.round),
+            url: row.url || '#',
+            raceName: row.race_name,
+            Circuit: {
+              circuitId: row.circuit_id,
+              url: '#',
+              circuitName: circuit?.name || row.circuit_id,
+              Location: {
+                lat: circuit?.lat?.toString() || '0',
+                long: circuit?.long?.toString() || '0',
+                locality: row.locality || circuit?.locality || '',
+                country: row.country || circuit?.country || '',
+              },
+            },
+            date: row.date,
+            time: row.time || undefined,
+          } as Race;
+        });
+      }
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}.json`);
     const races = response.MRData.RaceTable?.Races || [];
     return races.map((r) => validateOrWarn(RaceSchema, r, `race-${r.season}-${r.round}`) as Race);
@@ -214,11 +259,215 @@ export const seasonApi = {
   },
 
   getRaceResults: async (season: string, round: string): Promise<Race | null> => {
+    const seasonNumber = parseInt(season, 10);
+    const roundNumber = parseInt(round, 10);
+
+    // Try Supabase first
+    if (Number.isInteger(seasonNumber) && Number.isInteger(roundNumber)) {
+      const { data: races, error } = await supabase
+        .from('races')
+        .select('*')
+        .eq('season', seasonNumber)
+        .eq('round', roundNumber)
+        .limit(1);
+
+      if (!error && races && races.length > 0) {
+        const raceRow = races[0];
+
+        const { data: resultRows, error: resultError } = await supabase
+          .from('race_results')
+          .select('*')
+          .eq('race_id', raceRow.id)
+          .order('position');
+
+        if (!resultError && resultRows && resultRows.length > 0) {
+          // Build driver and constructor lookup maps
+          const driverIds = [...new Set(resultRows.map((r) => r.driver_id).filter(Boolean))] as string[];
+          const constructorIds = [...new Set(resultRows.map((r) => r.constructor_id).filter(Boolean))] as string[];
+
+          const [driverData, constructorData, circuitData] = await Promise.all([
+            driverIds.length > 0
+              ? supabase.from('drivers').select('*').in('driver_id', driverIds)
+              : { data: [] },
+            constructorIds.length > 0
+              ? supabase.from('constructors').select('*').in('constructor_id', constructorIds)
+              : { data: [] },
+            supabase.from('circuits').select('*').eq('circuit_id', raceRow.circuit_id).limit(1),
+          ]);
+
+          const driverMap = new Map((driverData.data || []).map((d) => [d.driver_id, d]));
+          const constructorMap = new Map((constructorData.data || []).map((c) => [c.constructor_id, c]));
+          const circuit = circuitData.data?.[0];
+
+          return {
+            season: String(raceRow.season),
+            round: String(raceRow.round),
+            url: raceRow.url || '#',
+            raceName: raceRow.race_name,
+            Circuit: {
+              circuitId: raceRow.circuit_id,
+              url: '#',
+              circuitName: circuit?.name || raceRow.circuit_id,
+              Location: {
+                lat: circuit?.lat?.toString() || '0',
+                long: circuit?.long?.toString() || '0',
+                locality: raceRow.locality || circuit?.locality || '',
+                country: raceRow.country || circuit?.country || '',
+              },
+            },
+            date: raceRow.date,
+            time: raceRow.time || undefined,
+            Results: resultRows.map((r) => {
+              const driver = driverMap.get(r.driver_id);
+              const constructor = constructorMap.get(r.constructor_id);
+              return {
+                number: '',
+                position: String(r.position),
+                positionText: r.position_text || String(r.position),
+                points: String(r.points),
+                Driver: {
+                  driverId: r.driver_id,
+                  permanentNumber: driver?.permanent_number || '',
+                  code: driver?.code || '',
+                  url: '#',
+                  givenName: driver?.first_name || '',
+                  familyName: driver?.last_name || '',
+                  dateOfBirth: driver?.date_of_birth || '',
+                  nationality: driver?.nationality || '',
+                },
+                Constructor: {
+                  constructorId: r.constructor_id,
+                  url: '#',
+                  name: constructor?.name || '',
+                  nationality: constructor?.nationality || '',
+                },
+                grid: String(r.grid),
+                laps: String(r.laps),
+                status: r.status,
+                Time: r.time
+                  ? {
+                      millis: r.time_millis != null ? String(r.time_millis) : '',
+                      time: r.time,
+                    }
+                  : undefined,
+                FastestLap: r.fastest_lap_rank
+                  ? {
+                      rank: String(r.fastest_lap_rank),
+                      lap: '',
+                      Time: {
+                        time: r.fastest_lap_time || '',
+                      },
+                      AverageSpeed: r.fastest_lap_speed
+                        ? {
+                            units: 'kph',
+                            speed: String(r.fastest_lap_speed),
+                          }
+                        : undefined,
+                    }
+                  : undefined,
+              };
+            }),
+          } as Race;
+        }
+      }
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/results.json`);
     return response.MRData.RaceTable?.Races[0] || null;
   },
 
   getQualifyingResults: async (season: string, round: string): Promise<Race | null> => {
+    const seasonNumber = parseInt(season, 10);
+    const roundNumber = parseInt(round, 10);
+
+    // Try Supabase first
+    if (Number.isInteger(seasonNumber) && Number.isInteger(roundNumber)) {
+      const { data: races, error } = await supabase
+        .from('races')
+        .select('*')
+        .eq('season', seasonNumber)
+        .eq('round', roundNumber)
+        .limit(1);
+
+      if (!error && races && races.length > 0) {
+        const raceRow = races[0];
+
+        const { data: resultRows, error: resultError } = await supabase
+          .from('qualifying_results')
+          .select('*')
+          .eq('race_id', raceRow.id)
+          .order('position');
+
+        if (!resultError && resultRows && resultRows.length > 0) {
+          const driverIds = [...new Set(resultRows.map((r) => r.driver_id).filter(Boolean))] as string[];
+          const constructorIds = [...new Set(resultRows.map((r) => r.constructor_id).filter(Boolean))] as string[];
+
+          const [driverData, constructorData, circuitData] = await Promise.all([
+            driverIds.length > 0
+              ? supabase.from('drivers').select('*').in('driver_id', driverIds)
+              : { data: [] },
+            constructorIds.length > 0
+              ? supabase.from('constructors').select('*').in('constructor_id', constructorIds)
+              : { data: [] },
+            supabase.from('circuits').select('*').eq('circuit_id', raceRow.circuit_id).limit(1),
+          ]);
+
+          const driverMap = new Map((driverData.data || []).map((d) => [d.driver_id, d]));
+          const constructorMap = new Map((constructorData.data || []).map((c) => [c.constructor_id, c]));
+          const circuit = circuitData.data?.[0];
+
+          return {
+            season: String(raceRow.season),
+            round: String(raceRow.round),
+            url: raceRow.url || '#',
+            raceName: raceRow.race_name,
+            Circuit: {
+              circuitId: raceRow.circuit_id,
+              url: '#',
+              circuitName: circuit?.name || raceRow.circuit_id,
+              Location: {
+                lat: circuit?.lat?.toString() || '0',
+                long: circuit?.long?.toString() || '0',
+                locality: raceRow.locality || circuit?.locality || '',
+                country: raceRow.country || circuit?.country || '',
+              },
+            },
+            date: raceRow.date,
+            time: raceRow.time || undefined,
+            QualifyingResults: resultRows.map((r) => {
+              const driver = driverMap.get(r.driver_id);
+              const constructor = constructorMap.get(r.constructor_id);
+              return {
+                number: '',
+                position: String(r.position),
+                Driver: {
+                  driverId: r.driver_id,
+                  permanentNumber: driver?.permanent_number || '',
+                  code: driver?.code || '',
+                  url: '#',
+                  givenName: driver?.first_name || '',
+                  familyName: driver?.last_name || '',
+                  dateOfBirth: driver?.date_of_birth || '',
+                  nationality: driver?.nationality || '',
+                },
+                Constructor: {
+                  constructorId: r.constructor_id,
+                  url: '#',
+                  name: constructor?.name || '',
+                  nationality: constructor?.nationality || '',
+                },
+                Q1: r.q1 || undefined,
+                Q2: r.q2 || undefined,
+                Q3: r.q3 || undefined,
+              };
+            }),
+          } as Race;
+        }
+      }
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/qualifying.json`);
     return response.MRData.RaceTable?.Races[0] || null;
   },

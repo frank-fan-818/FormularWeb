@@ -75,6 +75,89 @@ CREATE POLICY "season constructor standings public read"
   USING (true);
 `;
 
+const CREATE_RACES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS public.races (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  season INT NOT NULL,
+  round INT NOT NULL,
+  race_name TEXT NOT NULL,
+  circuit_id TEXT NOT NULL,
+  date TEXT,
+  time TEXT,
+  url TEXT,
+  locality TEXT,
+  country TEXT,
+  is_sprint_weekend BOOLEAN DEFAULT FALSE,
+  CONSTRAINT races_unique_season_round UNIQUE (season, round)
+);
+
+CREATE INDEX IF NOT EXISTS races_season_idx ON public.races (season);
+CREATE INDEX IF NOT EXISTS races_season_round_idx ON public.races (season, round);
+
+ALTER TABLE public.races ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "races public read" ON public.races;
+CREATE POLICY "races public read"
+  ON public.races
+  FOR SELECT
+  USING (true);
+`;
+
+const CREATE_RACE_RESULTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS public.race_results (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  race_id INT NOT NULL,
+  position INT NOT NULL,
+  position_text TEXT,
+  points DOUBLE PRECISION NOT NULL DEFAULT 0,
+  driver_id TEXT NOT NULL,
+  constructor_id TEXT NOT NULL,
+  grid INT,
+  laps INT,
+  status TEXT,
+  time TEXT,
+  time_millis BIGINT,
+  fastest_lap_rank INT,
+  fastest_lap_time TEXT,
+  fastest_lap_speed DOUBLE PRECISION,
+  CONSTRAINT race_results_unique_race_driver UNIQUE (race_id, driver_id)
+);
+
+CREATE INDEX IF NOT EXISTS race_results_race_id_idx ON public.race_results (race_id);
+
+ALTER TABLE public.race_results ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "race results public read" ON public.race_results;
+CREATE POLICY "race results public read"
+  ON public.race_results
+  FOR SELECT
+  USING (true);
+`;
+
+const CREATE_QUALIFYING_RESULTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS public.qualifying_results (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  race_id INT NOT NULL,
+  position INT NOT NULL,
+  driver_id TEXT NOT NULL,
+  constructor_id TEXT NOT NULL,
+  q1 TEXT,
+  q2 TEXT,
+  q3 TEXT,
+  CONSTRAINT qualifying_results_unique_race_driver UNIQUE (race_id, driver_id)
+);
+
+CREATE INDEX IF NOT EXISTS qualifying_results_race_id_idx ON public.qualifying_results (race_id);
+
+ALTER TABLE public.qualifying_results ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "qualifying results public read" ON public.qualifying_results;
+CREATE POLICY "qualifying results public read"
+  ON public.qualifying_results
+  FOR SELECT
+  USING (true);
+`;
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -129,11 +212,98 @@ interface JolpicaConstructorStanding {
   };
 }
 
+/** Shape of a race entry from Jolpica. */
+interface JolpicaRace {
+  season: string;
+  round: string;
+  url: string;
+  raceName: string;
+  Circuit: {
+    circuitId: string;
+    circuitName: string;
+    url?: string;
+    Location: {
+      lat: string;
+      long: string;
+      locality: string;
+      country: string;
+    };
+  };
+  date: string;
+  time?: string;
+  Sprint?: Record<string, unknown>;
+  Qualifying?: Record<string, unknown>;
+  FirstPractice?: Record<string, unknown>;
+  SecondPractice?: Record<string, unknown>;
+  ThirdPractice?: Record<string, unknown>;
+  SprintQualifying?: Record<string, unknown>;
+}
+
+/** Shape of a Result entry from Jolpica. */
+interface JolpicaResult {
+  number: string;
+  position: string;
+  positionText: string;
+  points: string;
+  Driver: {
+    driverId: string;
+    permanentNumber?: string;
+    code?: string;
+    givenName: string;
+    familyName: string;
+    dateOfBirth?: string;
+    nationality?: string;
+  };
+  Constructor: {
+    constructorId: string;
+    name: string;
+    nationality?: string;
+  };
+  grid: string;
+  laps: string;
+  status: string;
+  Time?: { millis: string; time: string };
+  FastestLap?: {
+    rank: string;
+    lap: string;
+    Time: { time: string };
+    AverageSpeed?: { units: string; speed: string };
+  };
+}
+
+/** Shape of a QualifyingResult entry from Jolpica. */
+interface JolpicaQualifyingResult {
+  number: string;
+  position: string;
+  Driver: {
+    driverId: string;
+    permanentNumber?: string;
+    code?: string;
+    givenName: string;
+    familyName: string;
+    dateOfBirth?: string;
+    nationality?: string;
+  };
+  Constructor: {
+    constructorId: string;
+    name: string;
+    nationality?: string;
+  };
+  Q1?: string;
+  Q2?: string;
+  Q3?: string;
+}
+
 /** Generic Jolpica API response wrapper. */
 interface JolpicaResponse {
   MRData: {
     total: string;
     SeasonTable?: { Seasons: JolpicaSeason[] };
+    RaceTable?: {
+      season: string;
+      round?: string;
+      Races: JolpicaRace[];
+    };
     StandingsTable?: {
       season: string;
       StandingsLists: Array<{
@@ -174,6 +344,48 @@ interface ConstructorStandingRow {
   wins: number;
 }
 
+/** Row shape for the races table. */
+interface RaceRow {
+  season: number;
+  round: number;
+  race_name: string;
+  circuit_id: string;
+  date: string | null;
+  time: string | null;
+  url: string | null;
+  locality: string | null;
+  country: string | null;
+}
+
+/** Row shape for the race_results table. */
+interface RaceResultRow {
+  race_id: number;
+  position: number;
+  position_text: string | null;
+  points: number;
+  driver_id: string;
+  constructor_id: string;
+  grid: number;
+  laps: number;
+  status: string;
+  time: string | null;
+  time_millis: number | null;
+  fastest_lap_rank: number | null;
+  fastest_lap_time: string | null;
+  fastest_lap_speed: number | null;
+}
+
+/** Row shape for the qualifying_results table. */
+interface QualifyingResultRow {
+  race_id: number;
+  position: number;
+  driver_id: string;
+  constructor_id: string;
+  q1: string | null;
+  q2: string | null;
+  q3: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -188,10 +400,16 @@ Usage:
   npm run prefetch:standings -- --dry-run --verbose
 
 Description:
-  Pre-fetches season driver and constructor standings from the Jolpica Ergast
-  API and stores them in Supabase tables (season_driver_standings and
-  season_constructor_standings) so the frontend can read from Supabase instead
-  of hitting the external API on every page load.
+  Pre-fetches season data from the Jolpica Ergast API and stores it in Supabase
+  tables so the frontend can read from Supabase instead of hitting the external
+  API on every page load.
+
+  Data fetched:
+    - Driver standings (season_driver_standings)
+    - Constructor standings (season_constructor_standings)
+    - Race calendar (races)
+    - Race results (race_results)
+    - Qualifying results (qualifying_results)
 
 Flags:
   --dry-run        Print what would be inserted without writing to the database.
@@ -384,6 +602,39 @@ async function fetchConstructorStandingsForSeason(
   return mrData.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings || [];
 }
 
+async function fetchSeasonRaces(season: number): Promise<JolpicaRace[]> {
+  const mrData = await fetchJolpica<{
+    total: string;
+    RaceTable?: { season: string; Races: JolpicaRace[] };
+  }>(`/${season}.json`);
+
+  return mrData.RaceTable?.Races || [];
+}
+
+async function fetchRaceResults(
+  season: number,
+  round: number,
+): Promise<JolpicaResult[]> {
+  const mrData = await fetchJolpica<{
+    total: string;
+    RaceTable?: { season: string; Races: Array<{ Results?: JolpicaResult[] }> };
+  }>(`/${season}/${round}/results.json`);
+
+  return mrData.RaceTable?.Races?.[0]?.Results || [];
+}
+
+async function fetchQualifyingResults(
+  season: number,
+  round: number,
+): Promise<JolpicaQualifyingResult[]> {
+  const mrData = await fetchJolpica<{
+    total: string;
+    RaceTable?: { season: string; Races: Array<{ QualifyingResults?: JolpicaQualifyingResult[] }> };
+  }>(`/${season}/${round}/qualifying.json`);
+
+  return mrData.RaceTable?.Races?.[0]?.QualifyingResults || [];
+}
+
 // ---------------------------------------------------------------------------
 // Data transformation
 // ---------------------------------------------------------------------------
@@ -408,6 +659,53 @@ function transformDriverStanding(
     constructor_name: constructor?.name || '',
     points: parseNumeric(standing.points, 0),
     wins: parseInt(standing.wins, 10) || 0,
+  };
+}
+
+function transformRace(season: number, race: JolpicaRace): RaceRow {
+  return {
+    season,
+    round: parseInt(race.round, 10),
+    race_name: race.raceName,
+    circuit_id: race.Circuit.circuitId,
+    date: race.date || null,
+    time: race.time || null,
+    url: race.url || null,
+    locality: race.Circuit.Location.locality || null,
+    country: race.Circuit.Location.country || null,
+  };
+}
+
+function transformRaceResult(raceId: number, result: JolpicaResult): RaceResultRow {
+  return {
+    race_id: raceId,
+    position: parseInt(result.position, 10) || 0,
+    position_text: result.positionText || null,
+    points: parseNumeric(result.points, 0),
+    driver_id: result.Driver.driverId,
+    constructor_id: result.Constructor.constructorId,
+    grid: parseInt(result.grid, 10) || 0,
+    laps: parseInt(result.laps, 10) || 0,
+    status: result.status || 'Finished',
+    time: result.Time?.time || null,
+    time_millis: result.Time?.millis ? parseInt(result.Time.millis, 10) : null,
+    fastest_lap_rank: result.FastestLap?.rank ? parseInt(result.FastestLap.rank, 10) : null,
+    fastest_lap_time: result.FastestLap?.Time?.time || null,
+    fastest_lap_speed: result.FastestLap?.AverageSpeed?.speed
+      ? parseFloat(result.FastestLap.AverageSpeed.speed)
+      : null,
+  };
+}
+
+function transformQualifyingResult(raceId: number, result: JolpicaQualifyingResult): QualifyingResultRow {
+  return {
+    race_id: raceId,
+    position: parseInt(result.position, 10) || 0,
+    driver_id: result.Driver.driverId,
+    constructor_id: result.Constructor.constructorId,
+    q1: result.Q1 || null,
+    q2: result.Q2 || null,
+    q3: result.Q3 || null,
   };
 }
 
@@ -494,6 +792,18 @@ function describeConstructorRow(row: ConstructorStandingRow): string {
   return `P${String(row.position).padStart(2)}: ${row.constructor_name} - ${row.points} pts, ${row.wins} wins`;
 }
 
+function describeRaceRow(row: RaceRow): string {
+  return `R${String(row.round).padStart(2)}: ${row.race_name} (${row.circuit_id})`;
+}
+
+function describeRaceResultRow(row: RaceResultRow): string {
+  return `P${String(row.position).padStart(2)}: ${row.driver_id} (${row.constructor_id}) - ${row.points} pts`;
+}
+
+function describeQualifyingResultRow(row: QualifyingResultRow): string {
+  return `P${String(row.position).padStart(2)}: ${row.driver_id} (${row.constructor_id})`;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -522,6 +832,9 @@ async function main(): Promise<void> {
     console.log('Checking required tables...');
     await ensureTableExists(supabase, 'season_driver_standings', CREATE_DRIVER_STANDINGS_TABLE_SQL);
     await ensureTableExists(supabase, 'season_constructor_standings', CREATE_CONSTRUCTOR_STANDINGS_TABLE_SQL);
+    await ensureTableExists(supabase, 'races', CREATE_RACES_TABLE_SQL);
+    await ensureTableExists(supabase, 'race_results', CREATE_RACE_RESULTS_TABLE_SQL);
+    await ensureTableExists(supabase, 'qualifying_results', CREATE_QUALIFYING_RESULTS_TABLE_SQL);
   } else {
     console.log('Dry-run mode: skipping table checks.\n');
   }
@@ -557,23 +870,32 @@ async function main(): Promise<void> {
 
   let totalDriverRows = 0;
   let totalConstructorRows = 0;
+  let totalRaceRows = 0;
+  let totalRaceResultRows = 0;
+  let totalQualifyingResultRows = 0;
+
+  const RESULTS_BATCH_SIZE = 6; // Number of rounds to fetch results for in parallel
 
   for (const [index, season] of seasons.entries()) {
     console.log(`\n[${index + 1}/${seasons.length}] Season ${season}:`);
 
-    // Fetch both standings in parallel.
-    const [rawDriverStandings, rawConstructorStandings] = await Promise.all([
+    // Fetch standings and races in parallel.
+    const [rawDriverStandings, rawConstructorStandings, rawRaces] = await Promise.all([
       fetchDriverStandingsForSeason(season),
       fetchConstructorStandingsForSeason(season),
+      fetchSeasonRaces(season),
     ]);
 
+    // Transform standings data.
     const driverRows = rawDriverStandings.map((s) => transformDriverStanding(season, s));
     const constructorRows = rawConstructorStandings.map((s) =>
       transformConstructorStanding(season, s),
     );
+    const raceRows = rawRaces.map((r) => transformRace(season, r));
 
     console.log(`  Driver standings: ${driverRows.length} driver(s)`);
     console.log(`  Constructor standings: ${constructorRows.length} constructor(s)`);
+    console.log(`  Races: ${raceRows.length} race(s)`);
 
     // Dry-run output.
     if (args.dryRun) {
@@ -593,12 +915,21 @@ async function main(): Promise<void> {
         if (constructorRows.length > 5) {
           console.log(`    ... and ${constructorRows.length - 5} more`);
         }
+
+        console.log('  [DRY RUN] Races:');
+        raceRows.slice(0, 5).forEach((row) => {
+          console.log(`    ${describeRaceRow(row)}`);
+        });
+        if (raceRows.length > 5) {
+          console.log(`    ... and ${raceRows.length - 5} more`);
+        }
       } else {
         console.log('  [DRY RUN] Would upsert these rows to Supabase.');
       }
 
       totalDriverRows += driverRows.length;
       totalConstructorRows += constructorRows.length;
+      totalRaceRows += raceRows.length;
 
       // Still wait between API calls even in dry-run mode to be polite.
       if (index < seasons.length - 1) {
@@ -612,7 +943,6 @@ async function main(): Promise<void> {
     // --------------------------------------------------
 
     if (driverRows.length > 0) {
-      // Batch in chunks of 100 to stay within Supabase request size limits.
       const batchSize = 100;
       for (let start = 0; start < driverRows.length; start += batchSize) {
         const batch = driverRows.slice(start, start + batchSize);
@@ -652,8 +982,128 @@ async function main(): Promise<void> {
       console.log(`  Upserted ${constructorRows.length} constructor standing row(s).`);
     }
 
+    // --------------------------------------------------
+    // 5c. Upsert races
+    // --------------------------------------------------
+
+    if (raceRows.length > 0) {
+      const batchSize = 100;
+      let raceIdMap: Map<number, number> | null = null;
+
+      for (let start = 0; start < raceRows.length; start += batchSize) {
+        const batch = raceRows.slice(start, start + batchSize);
+        const { data: raceData, error: upsertError } = await supabase
+          .from('races')
+          .upsert(batch, { onConflict: 'season,round' })
+          .select('id, round');
+
+        if (upsertError) {
+          throw new Error(
+            `Failed to upsert races for season ${season} (batch ${start / batchSize + 1}): ${upsertError.message}`,
+          );
+        }
+
+        if (raceData) {
+          if (!raceIdMap) raceIdMap = new Map();
+          raceData.forEach((r: { id: number; round: number }) => {
+            raceIdMap!.set(r.round, r.id);
+          });
+        }
+      }
+
+      console.log(`  Upserted ${raceRows.length} race row(s).`);
+
+      // --------------------------------------------------
+      // 5d. Fetch and upsert race results & qualifying results
+      // --------------------------------------------------
+
+      if (raceIdMap && raceIdMap.size > 0) {
+        const rounds = [...raceIdMap.keys()].sort((a, b) => a - b);
+        let raceResultCount = 0;
+        let qualifyingResultCount = 0;
+
+        // Process rounds in batches to avoid overwhelming the API
+        for (let batchStart = 0; batchStart < rounds.length; batchStart += RESULTS_BATCH_SIZE) {
+          const roundBatch = rounds.slice(batchStart, batchStart + RESULTS_BATCH_SIZE);
+
+          const results = await Promise.allSettled(
+            roundBatch.map(async (round) => {
+              const [raceResults, qualifyingResults] = await Promise.all([
+                fetchRaceResults(season, round),
+                fetchQualifyingResults(season, round),
+              ]);
+
+              const raceId = raceIdMap!.get(round)!;
+              return {
+                raceId,
+                resultRows: raceResults.map((r) => transformRaceResult(raceId, r)),
+                qualifyingRows: qualifyingResults.map((r) => transformQualifyingResult(raceId, r)),
+              };
+            }),
+          );
+
+          const allRaceResultRows: RaceResultRow[] = [];
+          const allQualifyingRows: QualifyingResultRow[] = [];
+
+          for (const result of results) {
+            if (result.status === 'fulfilled') {
+              allRaceResultRows.push(...result.value.resultRows);
+              allQualifyingRows.push(...result.value.qualifyingRows);
+            }
+          }
+
+          // Upsert race results
+          if (allRaceResultRows.length > 0) {
+            const resultBatchSize = 100;
+            for (let rs = 0; rs < allRaceResultRows.length; rs += resultBatchSize) {
+              const resultBatch = allRaceResultRows.slice(rs, rs + resultBatchSize);
+              const { error: rrError } = await supabase
+                .from('race_results')
+                .upsert(resultBatch, { onConflict: 'race_id,driver_id' });
+
+              if (rrError) {
+                throw new Error(
+                  `Failed to upsert race results for season ${season} rounds ${roundBatch[0]}-${roundBatch[roundBatch.length - 1]}: ${rrError.message}`,
+                );
+              }
+            }
+            raceResultCount += allRaceResultRows.length;
+          }
+
+          // Upsert qualifying results
+          if (allQualifyingRows.length > 0) {
+            const qBatchSize = 100;
+            for (let qs = 0; qs < allQualifyingRows.length; qs += qBatchSize) {
+              const qBatch = allQualifyingRows.slice(qs, qs + qBatchSize);
+              const { error: qrError } = await supabase
+                .from('qualifying_results')
+                .upsert(qBatch, { onConflict: 'race_id,driver_id' });
+
+              if (qrError) {
+                throw new Error(
+                  `Failed to upsert qualifying results for season ${season} rounds ${roundBatch[0]}-${roundBatch[roundBatch.length - 1]}: ${qrError.message}`,
+                );
+              }
+            }
+            qualifyingResultCount += allQualifyingRows.length;
+          }
+
+          // Small delay between round batches to be polite to the API
+          if (batchStart + RESULTS_BATCH_SIZE < rounds.length) {
+            await sleep(API_INTERVAL_MS);
+          }
+        }
+
+        console.log(`  Upserted ${raceResultCount} race result row(s).`);
+        console.log(`  Upserted ${qualifyingResultCount} qualifying result row(s).`);
+        totalRaceResultRows += raceResultCount;
+        totalQualifyingResultRows += qualifyingResultCount;
+      }
+    }
+
     totalDriverRows += driverRows.length;
     totalConstructorRows += constructorRows.length;
+    totalRaceRows += raceRows.length;
 
     // Rate-limit between seasons.
     if (index < seasons.length - 1) {
@@ -668,10 +1118,10 @@ async function main(): Promise<void> {
   console.log('\n--- Summary ---');
 
   if (args.dryRun) {
-    console.log(`Dry-run: would process ${totalDriverRows} driver and ${totalConstructorRows} constructor standing rows across ${seasons.length} season(s).`);
+    console.log(`Dry-run: would process ${totalDriverRows} driver standing, ${totalConstructorRows} constructor standing, and ${totalRaceRows} race rows across ${seasons.length} season(s).`);
     console.log('No database rows were written.');
   } else {
-    console.log(`Imported ${totalDriverRows} driver and ${totalConstructorRows} constructor standing rows across ${seasons.length} season(s).`);
+    console.log(`Imported ${totalDriverRows} driver standing, ${totalConstructorRows} constructor standing, ${totalRaceRows} race, ${totalRaceResultRows} race result, and ${totalQualifyingResultRows} qualifying result rows across ${seasons.length} season(s).`);
   }
 }
 
