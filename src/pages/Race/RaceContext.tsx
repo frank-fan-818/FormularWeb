@@ -184,10 +184,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   // ---- Derived ----
 
   const raceInfo = races.find((race) => race.round === round) || null;
-  const isPastRace = useMemo(
-    () => Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day'))),
-    [raceInfo],
-  );
+  const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
   const shouldLoadRaceFastF1 = selectedWeekendMode === 'post'
     || (selectedWeekendMode === null && isPastRace);
   const { data: fastF1Analytics } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);

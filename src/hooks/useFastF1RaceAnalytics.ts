@@ -63,6 +63,14 @@ export function useFastF1RaceTelemetry(
   const [error, setError] = useState<Error | null>(null);
   const [loaded, setLoaded] = useState(false);
 
+  // Reset when season/round changes — otherwise loaded=true from a previous
+  // race prevents fetch for the new race.
+  useEffect(() => {
+    setData(null);
+    setLoaded(false);
+    setError(null);
+  }, [season, round]);
+
   const load = useCallback(() => {
     if (!season || !round || loading || loaded) {
       return;
@@ -88,8 +96,6 @@ export function useFastF1RaceTelemetry(
           setLoading(false);
         }
       });
-
-    return () => controller.abort();
   }, [season, round, session, loading, loaded]);
 
   return { data, loading, error, load, loaded };
