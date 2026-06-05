@@ -6,7 +6,7 @@ export interface RaceWeekendSession {
   label: string;
   code: string;
   tone: 'practice' | 'qualifying' | 'sprint' | 'race';
-  session: {
+  session?: {
     date?: string;
     time?: string;
   };
@@ -167,13 +167,14 @@ export function getRaceWeekendSchedule(
     { key: 'sprint', label: labels.sprint, code: 'SPR', tone: 'sprint' as const, session: race.Sprint },
     { key: 'qualifying', label: labels.qualifying, code: 'Q', tone: 'qualifying' as const, session: race.Qualifying },
     { key: 'race', label: labels.race, code: 'RACE', tone: 'race' as const, session: { date: race.date, time: race.time } },
-  ].filter((item) => item.session?.date) as RaceWeekendSession[];
+  ];
 }
 
 export function getRaceWeekendScheduleGroups(sessions: RaceWeekendSession[]): RaceWeekendScheduleGroup[] {
   const groups = new Map<string, RaceWeekendScheduleGroup>();
 
   sessions.forEach((item) => {
+    if (!item.session?.date) return; // skip sessions without date for grouping
     const groupKey = formatSessionDateLabel(item.session);
     const sessionItem = {
       ...item,

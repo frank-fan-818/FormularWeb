@@ -91,6 +91,9 @@ const RaceResults = () => {
                 {record.Driver.code}
               </span>
               <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
+              <span style={{ fontWeight: 500, fontSize: 13 }}>
+                {record.Driver.givenName} {record.Driver.familyName}
+              </span>
             </div>
           );
         },
@@ -154,6 +157,9 @@ const RaceResults = () => {
                 {record.Driver.code}
               </span>
               <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
+              <span style={{ fontWeight: 500, fontSize: 13 }}>
+                {record.Driver.givenName} {record.Driver.familyName}
+              </span>
             </div>
           );
         },
@@ -236,6 +242,9 @@ const RaceResults = () => {
                 {record.Driver.code}
               </span>
               <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
+              <span style={{ fontWeight: 500, fontSize: 13 }}>
+                {record.Driver.givenName} {record.Driver.familyName}
+              </span>
             </div>
           );
         },
@@ -287,6 +296,9 @@ const RaceResults = () => {
                 {record.Driver.code}
               </span>
               <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
+              <span style={{ fontWeight: 500, fontSize: 13 }}>
+                {record.Driver.givenName} {record.Driver.familyName}
+              </span>
             </div>
           );
         },
