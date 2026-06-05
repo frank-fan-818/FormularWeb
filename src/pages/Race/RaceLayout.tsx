@@ -8,7 +8,7 @@ import {
   FlagOutlined,
 } from '@ant-design/icons';
 import { RaceDataProvider, useRaceData } from './RaceContext';
-import { formatRaceDateTimeFull, getRaceWeekendSchedule } from '@/utils/raceSchedule';
+import { formatRaceDateTimeFull, formatSessionDateTime, getRaceWeekendSchedule, type RaceWeekendSession } from '@/utils/raceSchedule';
 import { TEXT } from '@/pages/Race/shared/constants';
 
 const InnerLayout = () => {
@@ -85,27 +85,14 @@ const InnerLayout = () => {
               overflowX: 'auto',
             }}>
               {weekendSchedule.map((item, index) => {
-                const tones: Record<string, { bg: string; border: string; text: string }> = {
-                  practice: { bg: '#f8fafc', border: '#94a3b8', text: '#475569' },
-                  qualifying: { bg: '#fefce8', border: '#eab308', text: '#854d0e' },
-                  sprint: { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' },
-                  race: { bg: '#fef2f2', border: '#dc2626', text: '#7f1d1d' },
+                const tones: Record<RaceWeekendSession['tone'], { bg: string; border: string; text: string }> = {
+                  practice: { bg: 'var(--schedule-practice-bg, #f8fafc)', border: 'var(--schedule-practice-border, #94a3b8)', text: 'var(--schedule-practice-text, #475569)' },
+                  qualifying: { bg: 'var(--schedule-qualifying-bg, #fefce8)', border: 'var(--schedule-qualifying-border, #eab308)', text: 'var(--schedule-qualifying-text, #854d0e)' },
+                  sprint: { bg: 'var(--schedule-sprint-bg, #fef2f2)', border: 'var(--schedule-sprint-border, #ef4444)', text: 'var(--schedule-sprint-text, #991b1b)' },
+                  race: { bg: 'var(--schedule-race-bg, #fef2f2)', border: 'var(--schedule-race-border, #dc2626)', text: 'var(--schedule-race-text, #7f1d1d)' },
                 };
-                const t = tones[item.tone] || tones.practice;
-                const timeLabel = item.session?.date
-                  ? new Intl.DateTimeFormat('zh-CN', {
-                      timeZone: 'Asia/Shanghai',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    }).format(new Date(
-                      item.session.time
-                        ? Date.parse(`${item.session.date}T${item.session.time.trim().endsWith('Z') ? item.session.time.trim() : item.session.time.trim() + 'Z'}`)
-                        : Date.parse(`${item.session.date}T00:00:00Z`)
-                    )).replace(/\//g, '-') + ' 北京时间'
-                  : '-';
+                const tone = tones[item.tone];
+                const timeLabel = formatSessionDateTime(item.session);
 
                 return (
                   <div key={item.key} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
@@ -119,8 +106,8 @@ const InnerLayout = () => {
                       }} />
                     )}
                     <div style={{
-                      background: t.bg,
-                      border: `1.5px solid ${t.border}`,
+                      background: tone.bg,
+                      border: `1.5px solid ${tone.border}`,
                       borderRadius: 8,
                       padding: '8px 12px',
                       textAlign: 'center',
@@ -130,7 +117,7 @@ const InnerLayout = () => {
                       <div style={{
                         fontSize: 11,
                         fontWeight: 700,
-                        color: t.text,
+                        color: tone.text,
                         letterSpacing: 0.5,
                         marginBottom: 2,
                       }}>
