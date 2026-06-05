@@ -165,16 +165,6 @@ type WindowWithIdleCallback = Window & typeof globalThis & {
   cancelIdleCallback?: (handle: number) => void;
 };
 
-const MonitorIcon = ({ className }: IconProps) => (
-  <IconBase className={className}>
-    <circle cx="6.5" cy="9.5" r="2.5" />
-    <path d="M4 17.5a4.5 4.5 0 0 1 5-4.4" />
-    <path d="M12 7.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Z" />
-    <path d="M13.5 15.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Z" />
-    <path d="m11 21.5 4-3.5 4 3.5" />
-  </IconBase>
-);
-
 const SettingIcon = ({ className }: IconProps) => (
   <IconBase className={className}>
     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -190,7 +180,6 @@ const navItems = [
   { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
   { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
   { key: '/settings', icon: SettingIcon, label: TEXT.settings },
-  { key: '/monitor', icon: MonitorIcon, label: '\u8fd0\u884c\u76d1\u63a7' },
 ];
 
 const resolveActiveNavKey = (pathname: string) => {
@@ -216,10 +205,6 @@ const resolveActiveNavKey = (pathname: string) => {
 
   if (pathname.startsWith('/seasons')) {
     return '/seasons';
-  }
-
-  if (pathname.startsWith('/monitor')) {
-    return '/monitor';
   }
 
   return '';

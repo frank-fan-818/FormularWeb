@@ -1,10 +1,7 @@
 /**
  * Structured JSON logger with three-level format (entry → step → exit).
  * All log output is JSON-serialized for machine readability.
- * Automatically feeds the runtime monitor (monitorBuffer.ts) for observability.
  */
-
-import type { MonitorEntry } from '@/utils/monitorBuffer';
 
 export function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -18,12 +15,9 @@ interface LogPayload {
   module: string;
   function: string;
   timestamp?: string;
-  // entry
   input?: string;
-  // step
   step?: string;
   durationMs?: number;
-  // exit
   status?: 'success' | 'failed';
   error?: string;
 }
@@ -36,57 +30,6 @@ function shouldLog(level: LogLevel): boolean {
   if (level === 'debug' && !import.meta.env.DEV && import.meta.env.MODE !== 'test') return false;
   return true;
 }
-
-// ---- Monitor feed ----
-let _pushMonitorEntry: ((entry: Omit<MonitorEntry, 'id'>) => void) | null = null;
-let _monitorImportStarted = false;
-const _pendingMonitorEntries: Array<Omit<MonitorEntry, 'id'>> = [];
-
-function toMonitorEntry(level: LogLevel, payload: LogPayload): Omit<MonitorEntry, 'id'> {
-  return {
-    timestamp: payload.timestamp || new Date().toISOString(),
-    level: level === 'debug' ? 'info' : level,
-    module: payload.module,
-    function: payload.function,
-    event: payload.event,
-    durationMs: payload.durationMs,
-    status: payload.status,
-    error: payload.error,
-  };
-}
-
-function feedMonitor(level: LogLevel, payload: LogPayload): void {
-  // Monitor is dev-only — tree-shaken in production builds
-  if (!import.meta.env.DEV) return;
-
-  const entry = toMonitorEntry(level, payload);
-
-  if (!_pushMonitorEntry) {
-    if (!_monitorImportStarted) {
-      _monitorImportStarted = true;
-      import('@/utils/monitorBuffer')
-        .then((mod) => {
-          _pushMonitorEntry = mod.pushMonitorEntry;
-          // Flush pending entries first, then the current one
-          for (const e of _pendingMonitorEntries) {
-            _pushMonitorEntry(e);
-          }
-          _pendingMonitorEntries.length = 0;
-          _pushMonitorEntry(entry);
-        })
-        .catch(() => { /* monitor unavailable */ });
-    } else {
-      // Import in progress — buffer this entry
-      _pendingMonitorEntries.push(entry);
-      if (_pendingMonitorEntries.length > 100) {
-        _pendingMonitorEntries.splice(0, _pendingMonitorEntries.length - 100);
-      }
-    }
-    return;
-  }
-  _pushMonitorEntry(entry);
-}
-// ----
 
 function emit(level: LogLevel, payload: LogPayload): void {
   if (!shouldLog(level)) return;
@@ -105,8 +48,6 @@ function emit(level: LogLevel, payload: LogPayload): void {
     default:
       console.info(message);
   }
-
-  feedMonitor(level, payload);
 
   // Production error reporting: send error/warn to Supabase
   const errorMsg = payload.error;

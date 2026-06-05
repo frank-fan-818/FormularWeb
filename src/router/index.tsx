@@ -19,8 +19,7 @@ const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
 const Circuits = lazy(() => import('@/pages/Circuits'));
 const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
-const Monitor = lazy(() => import('@/pages/Monitor'));
-const Settings = lazy(() => import('@/pages/Settings'));
+const Settings= lazy(() => import('@/pages/Settings'));
 const Login = lazy(() => import('@/pages/Login'));
 
 function withSuspense(element: JSX.Element) {
@@ -122,10 +121,6 @@ const router = createBrowserRouter([
       {
         path: '/login',
         element: withSuspense(<Login />),
-      },
-      {
-        path: '/monitor',
-        element: withSuspense(<Monitor />),
       },
     ],
   },
