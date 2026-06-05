@@ -878,35 +878,6 @@ const RaceAnalysis = () => {
               </Card>
             ) : null}
 
-            {/* ========== 4. Strategy Timeline ========== */}
-            {fastF1Analytics.tyreStrategies.length ? (
-              <Card
-                className="fastf1-chart-card"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('strategyTimeline')}</h3>
-                      <p>{t('strategyTimelineDescription')}</p>
-                    </div>
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('strategyTimeline')}>
-                    {isCollapsed('strategyTimeline') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('strategyTimeline') ? null : (
-                  <TyreStrategyTimeline
-                    analytics={fastF1Analytics}
-                    highlightedDrivers={selectedDuelDrivers}
-                    season={season}
-                    round={round}
-                  />
-                )}
-              </Card>
-            ) : null}
-
             {/* ========== 5. Weather Trend ========== */}
             {weatherEnabled && fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
               <Card

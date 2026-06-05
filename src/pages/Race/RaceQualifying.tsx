@@ -13,7 +13,6 @@ import {
   buildFastF1QualifyingRows,
   buildDriverLookup,
   buildConstructorLookup,
-  getBestLapByDriver,
 } from '@/pages/Race/shared/sessionData';
 import {
   formatSignedSeconds,
@@ -23,7 +22,6 @@ import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
 import type {
   FastF1QualifyingBestLap,
   FastF1TeamMateComparison,
-  QualifyingResult,
 } from '@/types';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
@@ -129,71 +127,6 @@ function buildTeamMateRows(
     s2Delta: comp.sector2DeltaSeconds,
     s3Delta: comp.sector3DeltaSeconds,
   }));
-}
-
-function getQualifyingColumns(
-  bestLapByDriver: Map<string, FastF1QualifyingBestLap>,
-  phasePrefix: string,
-  t: (key: string) => string,
-): ColumnsType<QualifyingResult> {
-  const hasFastF1Laps = bestLapByDriver.size > 0;
-  const fastF1Columns: ColumnsType<QualifyingResult> = hasFastF1Laps
-    ? [
-        {
-          title: t('fastestLap'),
-          key: 'fastf1FastestLap',
-          width: 110,
-          render: (_: unknown, record: QualifyingResult) => {
-            const lap = bestLapByDriver.get(record.Driver.code);
-            if (!lap) {
-              return '-';
-            }
-            return (
-              <span className={lap.isDeleted ? 'fastf1-deleted-lap' : undefined}>
-                {formatSessionSeconds(lap.lapTimeSeconds)}
-                {lap.isDeleted ? ' *' : ''}
-              </span>
-            );
-          },
-        },
-      ]
-    : [];
-
-  return [
-    { title: t('rank'), dataIndex: 'position', key: 'position', width: 60 },
-    {
-      title: t('driver'),
-      key: 'driver',
-      width: 150,
-      render: (_: unknown, record: QualifyingResult) => {
-        const color = getTeamColor(normalizeConstructorId(record.Constructor.constructorId));
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span
-              style={{
-                display: 'inline-block',
-                backgroundColor: color,
-                color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                fontWeight: 700,
-                fontSize: 12,
-                padding: '2px 6px',
-                borderRadius: 3,
-                minWidth: 36,
-                textAlign: 'center',
-              }}
-            >
-              {record.Driver.code}
-            </span>
-            <span style={{ color: '#94a3b8', fontSize: 12 }}>{record.Constructor.name}</span>
-          </div>
-        );
-      },
-    },
-    { title: `${phasePrefix}1`, dataIndex: 'Q1', key: 'Q1', width: 80 },
-    { title: `${phasePrefix}2`, dataIndex: 'Q2', key: 'Q2', width: 80 },
-    { title: `${phasePrefix}3`, dataIndex: 'Q3', key: 'Q3', width: 80 },
-    ...fastF1Columns,
-  ];
 }
 
 function getSectorColumns(t: (key: string) => string): ColumnsType<SectorTimeRow> {
@@ -350,34 +283,8 @@ const RaceQualifying = () => {
     primaryLoading,
   } = useRaceData();
 
-  // ---- Qualifying (Q) lookups ----
-
-  const driverByCode = useMemo(
-    () => buildDriverLookup(qualifyingResults),
-    [qualifyingResults],
-  );
-
-  const constructorByName = useMemo(
-    () => buildConstructorLookup(qualifyingResults),
-    [qualifyingResults],
-  );
-
   // ---- Qualifying (Q) data ----
 
-  const fastF1QualifyingRows = useMemo(
-    () => buildFastF1QualifyingRows(fastF1QualifyingAnalytics, driverByCode, constructorByName),
-    [fastF1QualifyingAnalytics, driverByCode, constructorByName],
-  );
-
-  const qualifyingTableData = useMemo(
-    () => (fastF1QualifyingRows.length > 0 ? fastF1QualifyingRows : qualifyingResults),
-    [fastF1QualifyingRows, qualifyingResults],
-  );
-
-  const qBestLapByDriver = useMemo(
-    () => getBestLapByDriver(fastF1QualifyingAnalytics),
-    [fastF1QualifyingAnalytics],
-  );
 
   const qBestLaps = useMemo(
     () => fastF1QualifyingAnalytics?.qualifyingAnalysis?.bestLaps || [],
@@ -434,10 +341,6 @@ const RaceQualifying = () => {
     [fastF1SprintQualifyingRows, sprintQualifyingResults],
   );
 
-  const sqBestLapByDriver = useMemo(
-    () => getBestLapByDriver(activeSprintQualifyingAnalytics),
-    [activeSprintQualifyingAnalytics],
-  );
 
   const sqBestLaps = useMemo(
     () => activeSprintQualifyingAnalytics?.qualifyingAnalysis?.bestLaps || [],
@@ -467,11 +370,6 @@ const RaceQualifying = () => {
 
   // ---- Table columns ----
 
-  const qualifyingColumns = useMemo(
-    () => getQualifyingColumns(qBestLapByDriver, 'Q', t),
-    [qBestLapByDriver, t],
-  );
-
   const sectorColumns = useMemo(
     () => getSectorColumns(t),
     [t],
@@ -482,41 +380,14 @@ const RaceQualifying = () => {
     [t],
   );
 
-  const sprintQualifyingColumns = useMemo(
-    () => getQualifyingColumns(sqBestLapByDriver, 'SQ', t),
-    [sqBestLapByDriver, t],
-  );
-
   // ---- Render helpers ----
 
   const renderQualifyingSection = (
-    noFastF1Data: boolean,
-    tableColumns: ColumnsType<QualifyingResult>,
-    tableData: QualifyingResult[],
     sectorRows: SectorTimeRow[],
     paceOption: Record<string, unknown> | null,
     teamMateRows: TeamMateRow[],
   ) => (
     <div className="fastf1-analysis-stack">
-      {/* Qualifying Results Summary */}
-      <Card
-        className="race-weekend-post-card"
-        title={<h3 style={{ margin: 0 }}>{t('qualifying')} {t('result')}</h3>}
-      >
-        {noFastF1Data ? (
-          <p style={{ color: '#94a3b8', marginBottom: 16 }}>{t('noFastF1Analysis')}</p>
-        ) : null}
-        <Table
-          columns={tableColumns}
-          dataSource={tableData}
-          rowKey={(record) => `${record.Driver.code}-${record.position}`}
-          pagination={false}
-          size="small"
-          scroll={{ x: 'max-content' }}
-          loading={primaryLoading}
-        />
-      </Card>
-
       {/* Sector Times Comparison */}
       {sectorRows.length > 0 ? (
         <Card
@@ -612,9 +483,6 @@ const RaceQualifying = () => {
             key: 'qualifying',
             label: t('qualifying'),
             children: renderQualifyingSection(
-              !fastF1QualifyingAnalytics?.qualifyingAnalysis,
-              qualifyingColumns,
-              qualifyingTableData,
               qSectorRows,
               qPaceOption,
               qTeamMateRows,
@@ -626,9 +494,6 @@ const RaceQualifying = () => {
                   key: 'sprintQualifying',
                   label: t('sprintQualifying'),
                   children: renderQualifyingSection(
-                    !activeSprintQualifyingAnalytics?.qualifyingAnalysis,
-                    sprintQualifyingColumns,
-                    sprintQualifyingTableData,
                     sqSectorRows,
                     sqPaceOption,
                     sqTeamMateRows,

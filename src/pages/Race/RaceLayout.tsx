@@ -5,11 +5,10 @@ import { Button, Card, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
-  ClockCircleOutlined,
   FlagOutlined,
 } from '@ant-design/icons';
 import { RaceDataProvider, useRaceData } from './RaceContext';
-import { formatRaceDateTimeFull, getRaceWeekendSchedule, getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
+import { formatRaceDateTimeFull, getRaceWeekendSchedule } from '@/utils/raceSchedule';
 import { TEXT } from '@/pages/Race/shared/constants';
 
 const InnerLayout = () => {
@@ -18,7 +17,6 @@ const InnerLayout = () => {
   const { raceInfo, seasonLoading, primaryLoading, availableDbSessions, sprintResults } = useRaceData();
 
   const weekendSchedule = getRaceWeekendSchedule(raceInfo, TEXT);
-  const weekendScheduleGroups = getRaceWeekendScheduleGroups(weekendSchedule);
 
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
   const hasSprint = (sprintResults && sprintResults.length > 0) || Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
@@ -78,44 +76,84 @@ const InnerLayout = () => {
             {raceInfo.Circuit.circuitName}
             <span> — {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}</span>
           </p>
-          {weekendScheduleGroups.length ? (
-            <div className="weekend-schedule" aria-label={t('weekendSchedule')}>
-              <div className="weekend-schedule-topbar">
-                <div>
-                  <span className="weekend-schedule-eyebrow">{t('weekendSchedule')}</span>
-                  <span className="weekend-schedule-source">{t('scheduleSourceHint')}</span>
-                </div>
-                <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${t('scheduleTimezoneValue')}`}>
-                  <ClockCircleOutlined />
-                  <strong>{t('scheduleTimezone')}</strong>
-                  {t('scheduleTimezoneValue')}
-                </span>
-              </div>
-              <div className="weekend-schedule-days">
-                {weekendScheduleGroups.map((group) => (
-                  <section key={group.key} className="weekend-schedule-day">
-                    <div className="weekend-day-header">
-                      <span className="weekend-day-name">{group.dayLabel}</span>
-                      <span className="weekend-day-date">
-                        <CalendarOutlined />
-                        {group.dateLabel}
-                      </span>
+          {weekendSchedule.length ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0,
+              padding: '16px 0 8px',
+              overflowX: 'auto',
+            }}>
+              {weekendSchedule.map((item, index) => {
+                const tones: Record<string, { bg: string; border: string; text: string }> = {
+                  practice: { bg: '#f8fafc', border: '#94a3b8', text: '#475569' },
+                  qualifying: { bg: '#fefce8', border: '#eab308', text: '#854d0e' },
+                  sprint: { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' },
+                  race: { bg: '#fef2f2', border: '#dc2626', text: '#7f1d1d' },
+                };
+                const t = tones[item.tone] || tones.practice;
+                const timeLabel = item.session?.date
+                  ? new Intl.DateTimeFormat('zh-CN', {
+                      timeZone: 'Asia/Shanghai',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    }).format(new Date(
+                      item.session.time
+                        ? Date.parse(`${item.session.date}T${item.session.time.trim().endsWith('Z') ? item.session.time.trim() : item.session.time.trim() + 'Z'}`)
+                        : Date.parse(`${item.session.date}T00:00:00Z`)
+                    )).replace(/\//g, '-') + ' 北京时间'
+                  : '-';
+
+                return (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    {index > 0 && (
+                      <div style={{
+                        width: 24,
+                        height: 2,
+                        background: 'linear-gradient(90deg, #e2e8f0, #cbd5e1)',
+                        margin: '0 4px',
+                        flexShrink: 0,
+                      }} />
+                    )}
+                    <div style={{
+                      background: t.bg,
+                      border: `1.5px solid ${t.border}`,
+                      borderRadius: 8,
+                      padding: '8px 12px',
+                      textAlign: 'center',
+                      minWidth: 90,
+                      flexShrink: 0,
+                    }}>
+                      <div style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: t.text,
+                        letterSpacing: 0.5,
+                        marginBottom: 2,
+                      }}>
+                        {item.code}
+                      </div>
+                      <div style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#1e293b',
+                        marginBottom: 2,
+                      }}>
+                        {item.label}
+                      </div>
+                      <div style={{
+                        fontSize: 10,
+                        color: '#94a3b8',
+                      }}>
+                        {timeLabel}
+                      </div>
                     </div>
-                    <div className="weekend-session-list">
-                      {group.sessions.map((item) => (
-                        <div key={item.key} className={`weekend-session weekend-session-${item.tone}`}>
-                          <span className="weekend-session-code">{item.code}</span>
-                          <span className="weekend-session-main">
-                            <strong>{item.label}</strong>
-                            <span>{t('scheduleTimezoneValue')}</span>
-                          </span>
-                          <time className="weekend-session-time">{item.timeLabel}</time>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
+                  </div>
+                );
+              })}
             </div>
           ) : null}
         </div>
