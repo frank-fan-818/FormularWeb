@@ -8,7 +8,7 @@ import { formatNumber, formatPercent } from '@/utils/raceDetailFormatters';
 import { LIGHT_TAG_COLORS, TRACK_STATUS_STYLES } from '@/pages/Race/shared/constants';
 import { buildFastF1Summary } from '@/pages/Race/shared/sessionData';
 import { useRaceData } from './RaceContext';
-import '../shared/RaceDetail.css';
+import '../RaceDetail.css';
 
 function formatStatRange(summary?: { min: number | null; max: number | null }) {
   if (!summary || summary.min === null || summary.max === null) {

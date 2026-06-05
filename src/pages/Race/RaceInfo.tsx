@@ -31,7 +31,7 @@ import {
   TEXT,
 } from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
-import '../shared/RaceDetail.css';
+import '../RaceDetail.css';
 
 // ---- Localised text for circuit info (not yet in i18n / TEXT constants) ----
 

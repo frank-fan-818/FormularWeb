@@ -9,7 +9,7 @@ import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
-import '../shared/RaceDetail.css';
+import '../RaceDetail.css';
 
 interface TabItem {
   key: string;

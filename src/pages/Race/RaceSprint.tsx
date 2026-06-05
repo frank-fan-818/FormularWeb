@@ -25,7 +25,7 @@ import { getTeamColor } from '@/utils/teamColors';
 import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
-import '../shared/RaceDetail.css';
+import '../RaceDetail.css';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 

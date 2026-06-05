@@ -21,7 +21,7 @@ import {
 } from '@/pages/Race/shared/constants';
 import { TableOnlyPanel } from '@/pages/Race/shared/components/DataViewPanels';
 import { useRaceData } from './RaceContext';
-import '../shared/RaceDetail.css';
+import '../RaceDetail.css';
 
 function driverIdToCode(driverId: string): string {
   const parts = driverId.split('_').filter(Boolean);
