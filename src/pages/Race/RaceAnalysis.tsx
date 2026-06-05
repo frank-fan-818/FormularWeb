@@ -164,6 +164,15 @@ const RaceAnalysis = () => {
   const weatherEnabled = isFeatureEnabled('fastf1-weather');
   const duelEnabled = isFeatureEnabled('fastf1-duel');
 
+  // Reset local UI state when navigating to a different race
+  useEffect(() => {
+    setSelectedLapDrivers([]);
+    setSelectedDuelDrivers([]);
+    setSelectedTelemetryDrivers([]);
+    setSelectedTelemetryMetrics(['throttle', 'brake', 'gear', 'rpm']);
+    setCollapsedSections({});
+  }, [season, round]);
+
   // Auto-trigger telemetry loading when race analytics are available
   useEffect(() => {
     if (fastF1Analytics) {
@@ -476,7 +485,7 @@ const RaceAnalysis = () => {
 
   const hasRaceAnalysisSection = Boolean(
     fastF1Analytics
-    && (lapPaceOption || tyreStrategyOption || weatherOption || fastF1Telemetry),
+    && (lapPaceOption || tyreStrategyOption || weatherOption),
   );
 
   // ---- Early return when no FastF1 data ----

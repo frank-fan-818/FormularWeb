@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
 import type { FastF1RaceAnalytics, FastF1TelemetryAnalysis } from '@/types';
 
@@ -61,29 +61,32 @@ export function useFastF1RaceTelemetry(
   const [data, setData] = useState<FastF1TelemetryAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const loadingRef = useRef(false);
+  const loadedRef = useRef(false);
 
-  // Reset when season/round changes — otherwise loaded=true from a previous
-  // race prevents fetch for the new race.
+  // Reset when season/round changes
   useEffect(() => {
     setData(null);
-    setLoaded(false);
     setError(null);
+    loadingRef.current = false;
+    loadedRef.current = false;
   }, [season, round]);
 
   const load = useCallback(() => {
-    if (!season || !round || loading || loaded) {
+    if (!season || !round || loadingRef.current || loadedRef.current) {
       return;
     }
 
-    const controller = new AbortController();
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
+
+    const controller = new AbortController();
 
     fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal)
       .then((payload) => {
         setData(payload?.telemetry || null);
-        setLoaded(true);
+        loadedRef.current = true;
       })
       .catch((requestError: unknown) => {
         if (controller.signal.aborted) {
@@ -93,10 +96,11 @@ export function useFastF1RaceTelemetry(
       })
       .finally(() => {
         if (!controller.signal.aborted) {
+          loadingRef.current = false;
           setLoading(false);
         }
       });
-  }, [season, round, session, loading, loaded]);
+  }, [season, round, session]);
 
-  return { data, loading, error, load, loaded };
+  return { data, loading, error, load, loaded: loadedRef.current };
 }
