@@ -1,4 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
+import { supabase } from '@/utils/supabase';
 import type {
   ConstructorStanding,
   DriverStanding,
@@ -61,6 +62,51 @@ export const seasonApi = {
   },
 
   async getSeasonRaces(season: string): Promise<Race[]> {
+    const seasonNumber = parseInt(season, 10);
+
+    // Try Supabase first
+    if (Number.isInteger(seasonNumber)) {
+      const { data: dbRaces, error } = await supabase
+        .from('races')
+        .select('*')
+        .eq('season', seasonNumber)
+        .order('round');
+
+      if (!error && dbRaces && dbRaces.length > 0) {
+        // Fetch related circuits for location data
+        const circuitIds = [...new Set(dbRaces.map((r) => r.circuit_id).filter(Boolean))] as string[];
+        const { data: dbCircuits } = circuitIds.length > 0
+          ? await supabase.from('circuits').select('*').in('circuit_id', circuitIds)
+          : { data: [] };
+
+        const circuitMap = new Map((dbCircuits || []).map((c) => [c.circuit_id, c]));
+
+        return dbRaces.map((row) => {
+          const circuit = circuitMap.get(row.circuit_id);
+          return {
+            season: String(row.season),
+            round: String(row.round),
+            url: row.url || '#',
+            raceName: row.race_name,
+            Circuit: {
+              circuitId: row.circuit_id,
+              url: '#',
+              circuitName: circuit?.name || row.circuit_id,
+              Location: {
+                lat: circuit?.lat?.toString() || '0',
+                long: circuit?.long?.toString() || '0',
+                locality: row.locality || circuit?.locality || '',
+                country: row.country || circuit?.country || '',
+              },
+            },
+            date: row.date,
+            time: row.time || undefined,
+          } as Race;
+        });
+      }
+    }
+
+    // Fall back to Jolpica
     const response: ErgastResponse<never> = await seasonClient.get(`/${season}.json`);
     return response.MRData.RaceTable?.Races || [];
   },
