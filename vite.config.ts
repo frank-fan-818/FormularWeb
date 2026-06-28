@@ -36,8 +36,24 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Only precache stable assets (icons, images, fonts). JS/CSS/HTML are
+        // version-hashed by Vite and cached by the browser — SW precaching them
+        // causes stale chunk 404 errors after every Vercel deployment.
+        globPatterns: ['**/*.{ico,png,svg,woff2}'],
         runtimeCaching: [
+          {
+            // HTML navigation: always try network first to get latest deployment
+            urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 10, // 10 minutes
+              },
+              networkTimeoutSeconds: 3,
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
