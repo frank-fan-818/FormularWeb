@@ -646,7 +646,7 @@ const RaceAnalysis = () => {
                     </div>
                     {fastF1Analytics.trackStatusPeriods?.length ? (
                       <div className="track-status-legend" aria-label={t('raceStatus')}>
-                        {fastF1Analytics.trackStatusPeriods.map((period, index) => (
+                        {(fastF1Analytics.trackStatusPeriods || []).map((period, index) => (
                           <span key={`${period.type}-${period.startLap}-${index}`}>
                             <span
                               className="track-status-swatch"

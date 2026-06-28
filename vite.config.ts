@@ -42,19 +42,6 @@ export default defineConfig({
         globPatterns: ['**/*.{ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            // HTML navigation: always try network first to get latest deployment
-            urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'pages',
-              expiration: {
-                maxEntries: 5,
-                maxAgeSeconds: 60 * 10, // 10 minutes
-              },
-              networkTimeoutSeconds: 3,
-            },
-          },
-          {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
