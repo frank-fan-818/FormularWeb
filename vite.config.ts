@@ -60,14 +60,13 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'supabase-api',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 5, // 5 minutes
               },
-              networkTimeoutSeconds: 10,
             },
           },
           {

@@ -14,7 +14,7 @@ import { TEXT } from '@/pages/Race/shared/constants';
 const InnerLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { raceInfo, seasonLoading, primaryLoading, availableDbSessions, sprintResults } = useRaceData();
+  const { raceInfo, seasonLoading, primaryLoading, availableDbSessions, sprintResults, setActiveTab } = useRaceData();
 
   const weekendSchedule = getRaceWeekendSchedule(raceInfo, TEXT);
 
@@ -150,6 +150,7 @@ const InnerLayout = () => {
         className="race-subpage-tabs"
         defaultActiveKey="results"
         onChange={(key) => {
+          setActiveTab(key);
           navigate(`/races/${raceInfo.round}/${key}`, { replace: true });
         }}
         items={[
