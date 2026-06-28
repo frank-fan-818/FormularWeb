@@ -19,15 +19,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Auto-reload when old chunk files return 404 (deployment happened)
-      window.addEventListener('unhandledrejection', function(e) {
-        var msg = (e.reason && e.reason.message) || '';
-        if (msg.indexOf('Failed to fetch dynamically imported module') !== -1 ||
-            msg.indexOf('Importing a module script failed') !== -1) {
-          window.location.reload();
-        }
-      });
-    </script>
   </body>
 </html>

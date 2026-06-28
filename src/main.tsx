@@ -12,3 +12,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 initWebVitals();
+
+// Auto-reload when old JS chunks 404 after Vercel deployment
+window.addEventListener('unhandledrejection', (e) => {
+  const msg = (e.reason as Error)?.message || '';
+  if (msg.includes('Failed to fetch dynamically imported module')
+      || msg.includes('Importing a module script failed')) {
+    window.location.reload();
+  }
+});

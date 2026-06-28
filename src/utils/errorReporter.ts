@@ -51,7 +51,10 @@ export function reportError(payload: {
     })
     .then(({ error }) => {
       if (error) {
-        console.warn('[errorReporter] Failed to send:', error.message);
+        // RLS violations are expected for anonymous users — don't log noise
+        if (error.code !== '42501') {
+          console.warn('[errorReporter] Failed to send:', error.message);
+        }
       }
     });
 }
