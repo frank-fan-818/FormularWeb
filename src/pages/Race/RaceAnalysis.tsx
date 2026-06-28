@@ -482,11 +482,6 @@ const RaceAnalysis = () => {
 
   // ---- Data existence checks ----
 
-  const hasRaceAnalysisSection = Boolean(
-    fastF1Analytics
-    && (lapPaceOption || tyreStrategyOption || weatherOption),
-  );
-
   // ---- Early return when no FastF1 data ----
 
   if (!fastF1Analytics) {
@@ -594,8 +589,7 @@ const RaceAnalysis = () => {
 
       {/* FastF1 Analysis Cards */}
       <div className="fastf1-analysis-stack">
-        {hasRaceAnalysisSection ? (
-          <div className="fastf1-analysis-group fastf1-race-group">
+        <div className="fastf1-analysis-group fastf1-race-group">
             {/* ========== 1. Lap Pace ========== */}
             {fastF1Analytics && lapPaceOption ? (
               <Card
@@ -1059,7 +1053,6 @@ const RaceAnalysis = () => {
               </Card>
             ) : null) : null}
           </div>
-        ) : null}
       </div>
     </div>
   );
