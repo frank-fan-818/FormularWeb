@@ -6,9 +6,42 @@ import type {
   FastF1SessionResult,
   QualifyingResult,
   Result,
+  Race,
 } from '@/types';
 import { normalizeConstructorId } from '@/utils/teamColors';
 import { getDriverColor, formatSessionSeconds } from './charts/helpers';
+
+export function getPendingSessionTabs(
+  allTabs: string[],
+  loadedTabs: string[],
+  loadingTabs: string[],
+): string[] {
+  const unavailableTabs = new Set([...loadedTabs, ...loadingTabs]);
+  return allTabs.filter((tabKey) => !unavailableTabs.has(tabKey));
+}
+
+export function mergeUniqueSessionTabs(currentTabs: string[], nextTabs: string[]): string[] {
+  return [...currentTabs, ...nextTabs.filter((tabKey) => !currentTabs.includes(tabKey))];
+}
+
+export function removeSessionTabs(currentTabs: string[], tabsToRemove: string[]): string[] {
+  const removalSet = new Set(tabsToRemove);
+  return currentTabs.filter((tabKey) => !removalSet.has(tabKey));
+}
+
+export function getScheduledDeferredSessionTabs(race: Race | null): string[] {
+  if (!race) {
+    return [];
+  }
+
+  const tabs: string[] = [];
+  if (race.FirstPractice) tabs.push('fp1');
+  if (race.SecondPractice) tabs.push('fp2');
+  if (race.ThirdPractice) tabs.push('fp3');
+  if (race.SprintQualifying) tabs.push('sprintQualifying');
+  if (race.Sprint) tabs.push('sprint');
+  return tabs;
+}
 
 export interface FastF1SprintLapSummary {
   driver: string;

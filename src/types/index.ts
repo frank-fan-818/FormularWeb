@@ -533,11 +533,11 @@ export interface FastF1TelemetrySamples {
 }
 
 export interface FastF1PositionSamples {
-  distanceM: number[];
+  distanceM?: number[];
   x: (number | null)[];
   y: (number | null)[];
   z: (number | null)[];
-  speedKph: (number | null)[];
+  speedKph?: (number | null)[];
 }
 
 export interface FastF1TelemetryDriver {
@@ -692,5 +692,5 @@ export interface FastF1TelemetryPayload {
   session: string;
   eventName: string;
   telemetry: FastF1TelemetryAnalysis;
-  telemetrySummary: DriverPostRaceTelemetrySummary[];
+  telemetrySummary?: DriverPostRaceTelemetrySummary[];
 }

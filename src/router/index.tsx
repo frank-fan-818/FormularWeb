@@ -77,7 +77,14 @@ const router = createBrowserRouter([
           { index: true, element: <Navigate to="results" replace /> },
           { path: 'results', element: withSuspense(<RaceResults />) },
           { path: 'qualifying', element: withSuspense(<RaceQualifying />) },
-          { path: 'race', element: withSuspense(<RaceAnalysis />) },
+          {
+            path: 'race',
+            element: withSuspense(
+              <ErrorBoundary>
+                <RaceAnalysis />
+              </ErrorBoundary>,
+            ),
+          },
           { path: 'sprint', element: withSuspense(<RaceSprint />) },
           { path: 'info', element: withSuspense(<RaceInfo />) },
         ],

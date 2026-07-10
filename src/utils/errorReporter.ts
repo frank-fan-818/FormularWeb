@@ -22,39 +22,40 @@ export function reportError(payload: {
   error: string;
   level?: 'error' | 'warn';
 }): void {
-  const key = dedupKey(payload.module, payload.function, payload.error);
-  const now = Date.now();
-  const lastSent = seenErrors.get(key);
-
-  if (lastSent && now - lastSent < DEDUP_WINDOW_MS) {
-    return; // already reported recently, skip
-  }
-  seenErrors.set(key, now);
-
-  // Clean old entries occasionally
-  if (seenErrors.size > 200) {
-    for (const [k, ts] of seenErrors) {
-      if (now - ts > DEDUP_WINDOW_MS * 2) seenErrors.delete(k);
+  // The error_logs table intentionally has no anonymous INSERT policy. Only
+  // authenticated sessions may attempt remote reporting, otherwise every
+  // warning would generate a guaranteed 401 request in the browser.
+  void supabase.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      return;
     }
-  }
 
-  // Fire and forget — don't block the caller
-  supabase
-    .from(ERROR_LOGS_TABLE)
-    .insert({
-      module: payload.module,
-      function: payload.function,
-      error: payload.error,
-      level: payload.level || 'error',
-      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 256) : null,
-      url: typeof window !== 'undefined' ? window.location.href.slice(0, 512) : null,
-    })
-    .then(({ error }) => {
-      if (error) {
-        // RLS violations are expected for anonymous users — don't log noise
-        if (error.code !== '42501') {
-          console.warn('[errorReporter] Failed to send:', error.message);
-        }
+    const key = dedupKey(payload.module, payload.function, payload.error);
+    const now = Date.now();
+    const lastSent = seenErrors.get(key);
+
+    if (lastSent && now - lastSent < DEDUP_WINDOW_MS) {
+      return;
+    }
+    seenErrors.set(key, now);
+
+    if (seenErrors.size > 200) {
+      for (const [k, ts] of seenErrors) {
+        if (now - ts > DEDUP_WINDOW_MS * 2) seenErrors.delete(k);
       }
-    });
+    }
+
+    void supabase
+      .from(ERROR_LOGS_TABLE)
+      .insert({
+        module: payload.module,
+        function: payload.function,
+        error: payload.error,
+        level: payload.level || 'error',
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 256) : null,
+        url: typeof window !== 'undefined' ? window.location.href.slice(0, 512) : null,
+      });
+  }).catch(() => {
+    // Error reporting must never create a second user-visible failure.
+  });
 }

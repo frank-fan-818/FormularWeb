@@ -110,9 +110,9 @@ function buildTelemetrySpeedOption(
     emphasis: {
       focus: 'series',
     },
-    data: driver.samples.distanceM.reduce<[number, number][]>((acc, d, i) => {
-      const speed = driver.samples.speedKph[i];
-      if (speed !== null) {
+    data: (driver.samples?.distanceM || []).reduce<[number, number][]>((acc, d, i) => {
+      const speed = driver.samples?.speedKph?.[i];
+      if (Number.isFinite(d) && typeof speed === 'number' && Number.isFinite(speed)) {
         acc.push([d, speed]);
       }
       return acc;
@@ -203,12 +203,13 @@ function buildTelemetryControlSeries(
 ) {
   const color = getTelemetryDriverColor(driver.driver, allDrivers);
   const samples = driver.samples;
+  const distances = samples?.distanceM || [];
   const selectedMetricSet = new Set(selectedMetrics);
 
   const buildMetricData = (
     metric: 'throttle' | 'brake' | 'gear' | 'rpm',
     values: (number | null | boolean)[],
-  ) => samples.distanceM
+  ) => distances
     .map((d, i) => {
       const raw = values[i];
       const v = typeof raw === 'boolean' ? (raw ? 100 : 0) : raw;
@@ -234,7 +235,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 2.4, color, opacity: 0.92 },
       emphasis: { focus: 'series' },
-      data: buildMetricData('throttle', samples.throttlePct),
+      data: buildMetricData('throttle', samples?.throttlePct || []),
     },
     {
       metric: 'brake' as TelemetryMetric,
@@ -246,7 +247,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 2, color, type: 'dashed', opacity: 0.76 },
       emphasis: { focus: 'series' },
-      data: buildMetricData('brake', samples.brake),
+      data: buildMetricData('brake', samples?.brake || []),
     },
     {
       metric: 'gear' as TelemetryMetric,
@@ -258,7 +259,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 1.9, color, type: 'dotted', opacity: 0.82 },
       emphasis: { focus: 'series' },
-      data: buildMetricData('gear', samples.gear),
+      data: buildMetricData('gear', samples?.gear || []),
     },
     {
       metric: 'rpm' as TelemetryMetric,
@@ -270,7 +271,7 @@ function buildTelemetryControlSeries(
       itemStyle: { color },
       lineStyle: { width: 1.4, color, type: [6, 3, 1, 3], opacity: 0.58 },
       emphasis: { focus: 'series' },
-      data: buildMetricData('rpm', samples.rpm),
+      data: buildMetricData('rpm', samples?.rpm || []),
     },
   ].filter((series) => selectedMetricSet.has(series.metric));
 }
@@ -426,6 +427,78 @@ function speedHeatColor(value: number | null | undefined, minSpeed: number, maxS
   return '#dc2626';
 }
 
+function interpolateFiniteSample(
+  values: (number | null | undefined)[],
+  progress: number,
+) {
+  if (!values.length) {
+    return null;
+  }
+
+  const sampleIndex = Math.max(0, Math.min(1, progress)) * (values.length - 1);
+  const lowerIndex = Math.floor(sampleIndex);
+  const upperIndex = Math.ceil(sampleIndex);
+  const lower = values[lowerIndex];
+  const upper = values[upperIndex];
+  const hasLower = typeof lower === 'number' && Number.isFinite(lower);
+  const hasUpper = typeof upper === 'number' && Number.isFinite(upper);
+
+  if (hasLower && hasUpper) {
+    return lower + (upper - lower) * (sampleIndex - lowerIndex);
+  }
+  if (hasLower) {
+    return lower;
+  }
+  if (hasUpper) {
+    return upper;
+  }
+  return null;
+}
+
+function buildTelemetryTrackPoints(driver: FastF1TelemetryDriver) {
+  const position = driver.positionSamples;
+  const xs = position?.x || [];
+  const ys = position?.y || [];
+  const pointCount = Math.min(xs.length, ys.length);
+  const positionDistances = position?.distanceM || [];
+  const positionSpeeds = position?.speedKph || [];
+  const sampleDistances = driver.samples?.distanceM || [];
+  const sampleSpeeds = driver.samples?.speedKph || [];
+
+  return Array.from({ length: pointCount }, (_, index) => {
+    const progress = pointCount <= 1 ? 0 : index / (pointCount - 1);
+    const storedDistance = positionDistances[index];
+    const storedSpeed = positionSpeeds[index];
+    const distanceM = typeof storedDistance === 'number' && Number.isFinite(storedDistance)
+      ? storedDistance
+      : interpolateFiniteSample(sampleDistances, progress);
+    const speedKph = typeof storedSpeed === 'number' && Number.isFinite(storedSpeed)
+      ? storedSpeed
+      : interpolateFiniteSample(sampleSpeeds, progress);
+
+    return {
+      distanceM,
+      x: xs[index],
+      y: ys[index],
+      speedKph,
+    };
+  })
+    .filter((point): point is {
+      distanceM: number;
+      x: number;
+      y: number;
+      speedKph: number;
+    } => (
+      point.distanceM !== null
+      && point.speedKph !== null
+      && typeof point.x === 'number'
+      && Number.isFinite(point.x)
+      && typeof point.y === 'number'
+      && Number.isFinite(point.y)
+    ))
+    .sort((a, b) => a.distanceM - b.distanceM);
+}
+
 function buildTrackHeatTooltip(params: ChartTooltipParam) {
   const data = params.data as { driver?: string; speedKph?: number | null } | undefined;
   if (!data?.driver) {
@@ -474,57 +547,48 @@ function buildTelemetryHeatmapOption(
     return null;
   }
 
-  const chartDrivers = getTelemetryChartDrivers(analytics, activeDrivers);
-  const allSpeeds = chartDrivers.flatMap((driver) =>
-    (driver.positionSamples.speedKph || [])
-      .filter((speed): speed is number => speed !== null && Number.isFinite(speed)),
-  );
+  const driverTracks = activeDrivers.map((driver) => ({
+    driver,
+    points: buildTelemetryTrackPoints(driver),
+  }));
+  const allSpeeds = driverTracks.flatMap(({ points }) => points.map((point) => point.speedKph));
   const minSpeed = allSpeeds.length ? Math.min(...allSpeeds) : 0;
   const maxSpeed = allSpeeds.length ? Math.max(...allSpeeds) : 1;
-  const heatSeries = activeDrivers.flatMap((driver) => {
-    const pos = driver.positionSamples;
-    const points = pos.distanceM
-      .map((d, i) => ({
-        distanceM: d,
-        x: pos.x[i],
-        y: pos.y[i],
-        speedKph: pos.speedKph[i],
-      }))
-      .filter((p) => p.speedKph !== null && p.x !== null && p.y !== null)
-      .sort((a, b) => a.distanceM - b.distanceM);
-
-    return points.slice(0, -1).map((point, index) => {
-      const next = points[index + 1];
-      const speed = point.speedKph;
-
-      return {
-        name: driver.driver,
-        type: 'lines',
-        coordinateSystem: 'cartesian2d',
-        polyline: false,
-        silent: false,
-        progressive: 0,
-        data: [{
+  const heatSeries = driverTracks.map(({ driver, points }) => {
+    return {
+      name: driver.driver,
+      type: 'lines',
+      coordinateSystem: 'cartesian2d',
+      polyline: false,
+      silent: false,
+      progressive: 200,
+      progressiveThreshold: 400,
+      data: points.slice(0, -1).map((point, index) => {
+        const next = points[index + 1];
+        const speed = point.speedKph;
+        return {
           coords: [
             [point.x, point.y],
             [next.x, next.y],
           ],
           driver: driver.driver,
           speedKph: speed,
-        }],
-        lineStyle: {
-          width: activeDrivers.length > 1 ? 2.4 : 3.2,
-          opacity: activeDrivers.length > 1 ? 0.72 : 0.92,
-          color: speedHeatColor(speed, minSpeed, maxSpeed),
-        },
-        emphasis: {
           lineStyle: {
-            width: 4,
-            opacity: 1,
+            color: speedHeatColor(speed, minSpeed, maxSpeed),
           },
+        };
+      }),
+      lineStyle: {
+        width: activeDrivers.length > 1 ? 2.4 : 3.2,
+        opacity: activeDrivers.length > 1 ? 0.72 : 0.92,
+      },
+      emphasis: {
+        lineStyle: {
+          width: 4,
+          opacity: 1,
         },
-      };
-    });
+      },
+    };
   });
 
   return {

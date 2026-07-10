@@ -1,7 +1,8 @@
 """Optimize R-telemetry.json files:
 1. Convert samples from object-array to columnar format
 2. Remove telemetrySummary (already in R.json)
-3. Remove distanceM + speedKph from positionSamples (redundant with samples)
+3. Preserve distanceM + speedKph in positionSamples because they are aligned
+   with the independently sampled position coordinates
 
 Usage: python scripts/optimize-telemetry.py [--dry-run]
 """
@@ -16,7 +17,6 @@ TELEMETRY_SAMPLE_KEYS = [
     "distanceM", "timeSeconds", "speedKph", "rpm",
     "gear", "throttlePct", "brake", "drs",
 ]
-POSITION_KEYS_REMOVE = {"distanceM", "speedKph"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,20 +52,14 @@ def optimize_driver(driver: dict) -> tuple[int, int]:
         new_size = len(json.dumps(driver["samples"], ensure_ascii=False))
         saved += old_size - new_size
 
-    # #3: Remove redundant keys from positionSamples
-    if isinstance(driver.get("positionSamples"), dict):
-        ps = driver["positionSamples"]
-        for key in POSITION_KEYS_REMOVE & set(ps.keys()):
-            del ps[key]
-    elif is_object_array(driver.get("positionSamples", [])):
-        # Also convert positionSamples to columnar while we're at it
+    # #3: Keep position distance/speed aligned with X/Y while converting old
+    # object-array payloads to the columnar representation.
+    if is_object_array(driver.get("positionSamples", [])):
         old_pos = driver["positionSamples"]
         ps_keys = set()
         for obj in old_pos:
             ps_keys.update(obj.keys())
         col_pos = {key: [obj.get(key) for obj in old_pos] for key in ps_keys}
-        for key in POSITION_KEYS_REMOVE & set(col_pos.keys()):
-            del col_pos[key]
         driver["positionSamples"] = col_pos
 
     return saved, 0

@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -32,7 +33,12 @@ import type {
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import { DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
+import {
+  getPendingSessionTabs,
+  getScheduledDeferredSessionTabs,
+  mergeUniqueSessionTabs,
+  removeSessionTabs,
+} from '@/pages/Race/shared/sessionData';
 
 // ---- Types for context ----
 
@@ -159,6 +165,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const [primaryLoading, setPrimaryLoading] = useState(false);
   const [loadingSessionTabs, setLoadingSessionTabs] = useState<string[]>([]);
   const [loadedSessionTabs, setLoadedSessionTabs] = useState<string[]>([]);
+  const loadingSessionTabsRef = useRef<string[]>([]);
+  const loadedSessionTabsRef = useRef<string[]>([]);
   const [activeTab, setActiveTab] = useState('qualifying');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
@@ -184,6 +192,10 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   // ---- Derived ----
 
   const raceInfo = races.find((race) => race.round === round) || null;
+  const scheduledDeferredSessionTabs = useMemo(
+    () => getScheduledDeferredSessionTabs(raceInfo),
+    [raceInfo],
+  );
   const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
   const shouldLoadRaceFastF1 = selectedWeekendMode === 'post'
     || (selectedWeekendMode === null && isPastRace);
@@ -210,8 +222,10 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, [isPastRace, raceInfo]);
   const activeWeekendMode = selectedWeekendMode || defaultWeekendMode;
   const shouldLoadFastF1Qualifying = activeWeekendMode === 'post' || activeTab === 'qualifying';
-  const shouldLoadFastF1SprintQualifying = activeWeekendMode === 'post' || activeTab === 'sprintQualifying';
-  const shouldLoadFastF1Sprint = activeWeekendMode === 'post' || activeTab === 'sprint';
+  const shouldLoadFastF1SprintQualifying = scheduledDeferredSessionTabs.includes('sprintQualifying')
+    && (activeWeekendMode === 'post' || activeTab === 'sprintQualifying');
+  const shouldLoadFastF1Sprint = scheduledDeferredSessionTabs.includes('sprint')
+    && (activeWeekendMode === 'post' || activeTab === 'sprint');
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'Q', shouldLoadFastF1Qualifying,
   );
@@ -224,15 +238,23 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'S', shouldLoadFastF1Sprint,
   );
-  const shouldLoadFastF1Practice = activeWeekendMode === 'post';
   const { data: fastF1Practice1Analytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'FP1', shouldLoadFastF1Practice || activeTab === 'fp1',
+    currentSeason,
+    round,
+    'FP1',
+    scheduledDeferredSessionTabs.includes('fp1') && (activeWeekendMode === 'post' || activeTab === 'fp1'),
   );
   const { data: fastF1Practice2Analytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'FP2', shouldLoadFastF1Practice || activeTab === 'fp2',
+    currentSeason,
+    round,
+    'FP2',
+    scheduledDeferredSessionTabs.includes('fp2') && (activeWeekendMode === 'post' || activeTab === 'fp2'),
   );
   const { data: fastF1Practice3Analytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'FP3', shouldLoadFastF1Practice || activeTab === 'fp3',
+    currentSeason,
+    round,
+    'FP3',
+    scheduledDeferredSessionTabs.includes('fp3') && (activeWeekendMode === 'post' || activeTab === 'fp3'),
   );
   const {
     data: fastF1Telemetry,
@@ -257,6 +279,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     setSelectedTelemetryDrivers([]);
     setSelectedTelemetryMetrics(['throttle', 'brake', 'gear', 'rpm']);
     setSelectedWeekendMode(null);
+    loadedSessionTabsRef.current = [];
+    loadingSessionTabsRef.current = [];
     setLoadedSessionTabs([]);
     setLoadingSessionTabs([]);
     setSprintResults([]);
@@ -313,13 +337,15 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, [currentSeason, round]);
 
   useEffect(() => {
-    if (!round || !DEFERRED_TAB_KEYS.includes(activeTab) || loadedSessionTabs.includes(activeTab)) {
+    if (!round || !scheduledDeferredSessionTabs.includes(activeTab) || loadedSessionTabs.includes(activeTab)) {
       return;
     }
     let cancelled = false;
-    setLoadingSessionTabs((currentTabs) =>
-      currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
-    );
+    setLoadingSessionTabs((currentTabs) => {
+      const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
+      loadingSessionTabsRef.current = nextTabs;
+      return nextTabs;
+    });
     const loadDeferredSession = async () => {
       let sessionData: Race | null = null;
       if (activeTab === 'sprint') {
@@ -352,37 +378,52 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
       } else if (activeTab === 'fp3') {
         setFp3Results(sessionData?.Results || []);
       }
-      setLoadedSessionTabs((currentTabs) =>
-        currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
-      );
-      setLoadingSessionTabs((currentTabs) => currentTabs.filter((tabKey) => tabKey !== activeTab));
+      setLoadedSessionTabs((currentTabs) => {
+        const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
+        loadedSessionTabsRef.current = nextTabs;
+        return nextTabs;
+      });
+      setLoadingSessionTabs((currentTabs) => {
+        const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
+        loadingSessionTabsRef.current = nextTabs;
+        return nextTabs;
+      });
     };
     loadDeferredSession().catch(() => {
       if (!cancelled) {
-        setLoadedSessionTabs((currentTabs) =>
-          currentTabs.includes(activeTab) ? currentTabs : [...currentTabs, activeTab],
-        );
-        setLoadingSessionTabs((currentTabs) => currentTabs.filter((tabKey) => tabKey !== activeTab));
+        setLoadedSessionTabs((currentTabs) => {
+          const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
+          loadedSessionTabsRef.current = nextTabs;
+          return nextTabs;
+        });
+        setLoadingSessionTabs((currentTabs) => {
+          const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
+          loadingSessionTabsRef.current = nextTabs;
+          return nextTabs;
+        });
       }
     });
     return () => { cancelled = true; };
-  }, [activeTab, currentSeason, loadedSessionTabs, round]);
+  }, [activeTab, currentSeason, loadedSessionTabs, round, scheduledDeferredSessionTabs]);
 
   useEffect(() => {
     if (!round || activeWeekendMode !== 'post') {
       return;
     }
-    const pendingTabs = DEFERRED_TAB_KEYS.filter(
-      (tabKey) => !loadedSessionTabs.includes(tabKey) && !loadingSessionTabs.includes(tabKey),
+    const pendingTabs = getPendingSessionTabs(
+      scheduledDeferredSessionTabs,
+      loadedSessionTabsRef.current,
+      loadingSessionTabsRef.current,
     );
     if (!pendingTabs.length) {
       return;
     }
     let cancelled = false;
-    setLoadingSessionTabs((currentTabs) => [
-      ...currentTabs,
-      ...pendingTabs.filter((tabKey) => !currentTabs.includes(tabKey)),
-    ]);
+    setLoadingSessionTabs((currentTabs) => {
+      const nextTabs = mergeUniqueSessionTabs(currentTabs, pendingTabs);
+      loadingSessionTabsRef.current = nextTabs;
+      return nextTabs;
+    });
     const loadSessionByTab = async (tabKey: string): Promise<[string, Race | null]> => {
       let sessionData: Race | null = null;
       if (tabKey === 'sprint') {
@@ -427,15 +468,27 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
           setFp3Results(sessionData?.Results || []);
         }
       });
-      setLoadedSessionTabs((currentTabs) => [
-        ...currentTabs,
-        ...completedTabs.filter((tabKey) => !currentTabs.includes(tabKey)),
-      ]);
-      setLoadingSessionTabs((currentTabs) => currentTabs.filter((tabKey) => !pendingTabs.includes(tabKey)));
+      setLoadedSessionTabs((currentTabs) => {
+        const nextTabs = mergeUniqueSessionTabs(currentTabs, completedTabs);
+        loadedSessionTabsRef.current = nextTabs;
+        return nextTabs;
+      });
+      setLoadingSessionTabs((currentTabs) => {
+        const nextTabs = removeSessionTabs(currentTabs, pendingTabs);
+        loadingSessionTabsRef.current = nextTabs;
+        return nextTabs;
+      });
     };
     void loadPostRaceSessions();
-    return () => { cancelled = true; };
-  }, [activeWeekendMode, currentSeason, loadedSessionTabs, loadingSessionTabs, round]);
+    return () => {
+      cancelled = true;
+      setLoadingSessionTabs((currentTabs) => {
+        const nextTabs = removeSessionTabs(currentTabs, pendingTabs);
+        loadingSessionTabsRef.current = nextTabs;
+        return nextTabs;
+      });
+    };
+  }, [activeWeekendMode, currentSeason, round, scheduledDeferredSessionTabs]);
 
   const value: RaceDataContextValue = useMemo(() => ({
     season: currentSeason,
