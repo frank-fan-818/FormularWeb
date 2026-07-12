@@ -356,3 +356,84 @@
     font-size: var(--text-lg);
   }
 }
+.season-data-notice,
+.season-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--accent-yellow);
+  border-radius: var(--radius-control);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.season-data-notice button,
+.season-empty-state button {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--f1-red);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--f1-red-dark);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+}
+
+.season-empty-state {
+  align-items: flex-start;
+  flex-direction: column;
+  border-left-color: var(--error);
+}
+
+.season-empty-state p { margin: 0; }
+
+.season-resource-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  color: var(--error);
+}
+
+.season-resource-error button {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--f1-red);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--f1-red-dark);
+  cursor: pointer;
+}
+
+.season-table-skeleton {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.season-skeleton-row {
+  min-height: 88px;
+  border-radius: var(--radius-panel);
+  background: linear-gradient(90deg, var(--bg-tertiary) 20%, var(--bg-secondary) 50%, var(--bg-tertiary) 80%);
+  background-size: 200% 100%;
+  animation: seasonSkeletonShift 1.2s ease-in-out infinite;
+}
+
+@keyframes seasonSkeletonShift {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-skeleton-row { animation: none; }
+}
+.official-season-row:focus-visible,
+.official-name-button:focus-visible,
+.official-team-link:focus-visible {
+  outline: 3px solid var(--f1-red-glow);
+  outline-offset: 3px;
+}

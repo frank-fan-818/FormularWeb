@@ -4,6 +4,7 @@ import { useNetworkStatus } from './useNetworkStatus';
 interface CacheOptions {
   cacheKey: string;
   cacheDuration?: number;
+  staleDuration?: number;
   enabled?: boolean;
   refreshOnMount?: boolean;
 }
@@ -11,6 +12,14 @@ interface CacheOptions {
 interface CacheEntry<T> {
   timestamp: number;
   data: T;
+}
+
+interface PersistedCacheEntry<T> extends CacheEntry<T> {
+  schemaVersion: 2;
+}
+
+export interface CacheSnapshot<T> extends CacheEntry<T> {
+  freshness: 'fresh' | 'stale';
 }
 
 export interface CacheStorageAdapter {
@@ -24,12 +33,15 @@ interface UseCachedDataReturn<T> {
   loading: boolean;
   error: Error | null;
   isOffline: boolean;
+  isStale: boolean;
+  updatedAt: number | null;
   refetch: () => void;
 }
 
 const memoryCache = new Map<string, CacheEntry<unknown>>();
 const inFlightRequests = new Map<string, Promise<unknown>>();
 const fallbackStorageMap = new Map<string, string>();
+const CACHE_KEY_PREFIX = 'f1-data-cache-v2:';
 
 let resolvedStoragePromise: Promise<CacheStorageAdapter> | null = null;
 
@@ -58,13 +70,53 @@ function createBrowserStorageAdapter(): CacheStorageAdapter | null {
 
     return {
       async get(key: string) {
-        return storage.getItem(key);
+        return storage.getItem(`${CACHE_KEY_PREFIX}${key}`);
       },
       async set(key: string, value: string) {
-        storage.setItem(key, value);
+        storage.setItem(`${CACHE_KEY_PREFIX}${key}`, value);
       },
       async remove(key: string) {
-        storage.removeItem(key);
+        storage.removeItem(`${CACHE_KEY_PREFIX}${key}`);
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function createIndexedDbStorageAdapter(): Promise<CacheStorageAdapter | null> {
+  if (typeof window === 'undefined' || !window.indexedDB) return null;
+
+  try {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = window.indexedDB.open('f1-data-cache', 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains('snapshots')) {
+          request.result.createObjectStore('snapshots');
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    const transact = <T>(
+      mode: IDBTransactionMode,
+      operation: (store: IDBObjectStore) => IDBRequest<T>,
+    ) => new Promise<T>((resolve, reject) => {
+      const request = operation(database.transaction('snapshots', mode).objectStore('snapshots'));
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    return {
+      async get(key: string) {
+        return (await transact('readonly', (store) => store.get(`${CACHE_KEY_PREFIX}${key}`))) ?? null;
+      },
+      async set(key: string, value: string) {
+        await transact('readwrite', (store) => store.put(value, `${CACHE_KEY_PREFIX}${key}`));
+      },
+      async remove(key: string) {
+        await transact('readwrite', (store) => store.delete(`${CACHE_KEY_PREFIX}${key}`));
       },
     };
   } catch {
@@ -79,14 +131,14 @@ async function createCapacitorPreferencesAdapter(): Promise<CacheStorageAdapter 
 
     return {
       async get(key: string) {
-        const { value } = await Preferences.get({ key });
+        const { value } = await Preferences.get({ key: `${CACHE_KEY_PREFIX}${key}` });
         return value;
       },
       async set(key: string, value: string) {
-        await Preferences.set({ key, value });
+        await Preferences.set({ key: `${CACHE_KEY_PREFIX}${key}`, value });
       },
       async remove(key: string) {
-        await Preferences.remove({ key });
+        await Preferences.remove({ key: `${CACHE_KEY_PREFIX}${key}` });
       },
     };
   } catch {
@@ -95,6 +147,11 @@ async function createCapacitorPreferencesAdapter(): Promise<CacheStorageAdapter 
 }
 
 async function resolvePersistentStorageAdapter(): Promise<CacheStorageAdapter> {
+  const indexedDbAdapter = await createIndexedDbStorageAdapter();
+  if (indexedDbAdapter) {
+    return indexedDbAdapter;
+  }
+
   const browserAdapter = createBrowserStorageAdapter();
   if (browserAdapter) {
     return browserAdapter;
@@ -133,6 +190,32 @@ function isFresh(timestamp: number, cacheDuration: number, now: number): boolean
   return now - timestamp <= cacheDuration;
 }
 
+function isCacheEntry(value: unknown): value is PersistedCacheEntry<unknown> {
+  return typeof value === 'object'
+    && value !== null
+    && 'data' in value
+    && 'timestamp' in value
+    && (value as { schemaVersion?: unknown }).schemaVersion === 2
+    && typeof (value as { timestamp?: unknown }).timestamp === 'number'
+    && Number.isFinite((value as { timestamp: number }).timestamp);
+}
+
+function toCacheSnapshot<T>(
+  entry: CacheEntry<T> | undefined,
+  cacheDuration: number,
+  staleDuration: number,
+  now: number,
+): CacheSnapshot<T> | null {
+  if (!entry || now - entry.timestamp > cacheDuration + staleDuration) {
+    return null;
+  }
+
+  return {
+    ...entry,
+    freshness: isFresh(entry.timestamp, cacheDuration, now) ? 'fresh' : 'stale',
+  };
+}
+
 export function setMemoryCacheValue<T>(cacheKey: string, value: T, now = Date.now()): void {
   memoryCache.set(cacheKey, {
     timestamp: now,
@@ -158,6 +241,24 @@ export function getMemoryCacheValue<T>(
   return entry.data;
 }
 
+export function getMemoryCacheSnapshot<T>(
+  cacheKey: string,
+  cacheDuration: number,
+  staleDuration: number,
+  now = Date.now(),
+): CacheSnapshot<T> | null {
+  const snapshot = toCacheSnapshot(
+    memoryCache.get(cacheKey) as CacheEntry<T> | undefined,
+    cacheDuration,
+    staleDuration,
+    now,
+  );
+  if (!snapshot) {
+    memoryCache.delete(cacheKey);
+  }
+  return snapshot;
+}
+
 export async function writePersistentCacheValue<T>(
   storage: CacheStorageAdapter,
   cacheKey: string,
@@ -167,9 +268,10 @@ export async function writePersistentCacheValue<T>(
   await storage.set(
     cacheKey,
     JSON.stringify({
+      schemaVersion: 2,
       timestamp: now,
       data: value,
-    } satisfies CacheEntry<T>),
+    } satisfies PersistedCacheEntry<T>),
   );
 }
 
@@ -185,14 +287,48 @@ export async function getPersistentCacheValue<T>(
       return null;
     }
 
-    const parsed = JSON.parse(rawValue) as CacheEntry<T>;
-    if (!isFresh(parsed.timestamp, cacheDuration, now)) {
+    const parsed = JSON.parse(rawValue) as unknown;
+    if (!isCacheEntry(parsed)) {
+      await storage.remove(cacheKey);
+      return null;
+    }
+    const entry = parsed as CacheEntry<T>;
+    if (!isFresh(entry.timestamp, cacheDuration, now)) {
       await storage.remove(cacheKey);
       return null;
     }
 
-    setMemoryCacheValue(cacheKey, parsed.data, parsed.timestamp);
-    return parsed.data;
+    setMemoryCacheValue(cacheKey, entry.data, entry.timestamp);
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPersistentCacheSnapshot<T>(
+  storage: CacheStorageAdapter,
+  cacheKey: string,
+  cacheDuration: number,
+  staleDuration: number,
+  now = Date.now(),
+): Promise<CacheSnapshot<T> | null> {
+  try {
+    const rawValue = await storage.get(cacheKey);
+    if (!rawValue) return null;
+
+    const parsed = JSON.parse(rawValue) as unknown;
+    if (!isCacheEntry(parsed)) {
+      await storage.remove(cacheKey);
+      return null;
+    }
+    const snapshot = toCacheSnapshot(parsed as CacheEntry<T>, cacheDuration, staleDuration, now);
+    if (!snapshot) {
+      await storage.remove(cacheKey);
+      return null;
+    }
+
+    setMemoryCacheValue(cacheKey, snapshot.data, snapshot.timestamp);
+    return snapshot;
   } catch {
     return null;
   }
@@ -204,7 +340,7 @@ export async function fetchAndCacheValue<T>(params: {
   storage?: CacheStorageAdapter;
   now?: number;
 }): Promise<T> {
-  const { cacheKey, fetchFn, storage = persistentStorage, now = Date.now() } = params;
+  const { cacheKey, fetchFn, storage = persistentStorage } = params;
   const inFlight = inFlightRequests.get(cacheKey) as Promise<T> | undefined;
 
   if (inFlight) {
@@ -213,8 +349,14 @@ export async function fetchAndCacheValue<T>(params: {
 
   const request = (async () => {
     const freshValue = await fetchFn();
-    setMemoryCacheValue(cacheKey, freshValue, now);
-    await writePersistentCacheValue(storage, cacheKey, freshValue, now);
+    const completedAt = params.now ?? Date.now();
+    setMemoryCacheValue(cacheKey, freshValue, completedAt);
+    try {
+      await writePersistentCacheValue(storage, cacheKey, freshValue, completedAt);
+    } catch {
+      // Persistent storage is an optimization. A quota/privacy failure must not
+      // turn a successful network response into a user-visible data failure.
+    }
     return freshValue;
   })().finally(() => {
     inFlightRequests.delete(cacheKey);
@@ -238,6 +380,7 @@ export function useCachedData<T>(
   const {
     cacheKey,
     cacheDuration = 24 * 60 * 60 * 1000,
+    staleDuration = 7 * 24 * 60 * 60 * 1000,
     enabled = true,
     refreshOnMount = true,
   } = options;
@@ -246,22 +389,31 @@ export function useCachedData<T>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isStale, setIsStale] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const dataRef = useRef<T | null>(null);
+  const requestGenerationRef = useRef(0);
 
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
 
-  const getCachedData = useCallback(async (): Promise<T | null> => {
-    const memoryValue = getMemoryCacheValue<T>(cacheKey, cacheDuration);
+  const getCachedData = useCallback(async (): Promise<CacheSnapshot<T> | null> => {
+    const memoryValue = getMemoryCacheSnapshot<T>(cacheKey, cacheDuration, staleDuration);
     if (memoryValue !== null) {
       return memoryValue;
     }
 
-    return getPersistentCacheValue<T>(persistentStorage, cacheKey, cacheDuration);
-  }, [cacheKey, cacheDuration]);
+    return getPersistentCacheSnapshot<T>(
+      persistentStorage,
+      cacheKey,
+      cacheDuration,
+      staleDuration,
+    );
+  }, [cacheKey, cacheDuration, staleDuration]);
 
   const fetchData = useCallback(async () => {
+    const generation = ++requestGenerationRef.current;
     setError(null);
 
     try {
@@ -270,11 +422,13 @@ export function useCachedData<T>(
 
       setLoading(shouldShowLoading);
 
-      if (cached) {
-        setData(cached);
+      if (cached && generation === requestGenerationRef.current) {
+        setData(cached.data);
+        setIsStale(cached.freshness === 'stale');
+        setUpdatedAt(cached.timestamp);
       }
 
-      if (cached && !refreshOnMount) {
+      if (cached && cached.freshness === 'fresh' && !refreshOnMount) {
         return;
       }
 
@@ -290,16 +444,24 @@ export function useCachedData<T>(
         fetchFn,
         storage: persistentStorage,
       });
-      setData(freshData);
+      if (generation === requestGenerationRef.current) {
+        setData(freshData);
+        setIsStale(false);
+        setUpdatedAt(Date.now());
+      }
     } catch (err) {
       const cached = await getCachedData();
+      if (generation !== requestGenerationRef.current) return;
       if (cached) {
-        setData(cached);
+        setData(cached.data);
+        setIsStale(true);
+        setUpdatedAt(cached.timestamp);
+        setError(err instanceof Error ? err : new Error('Failed to refresh data.'));
       } else {
         setError(err instanceof Error ? err : new Error('Failed to fetch data.'));
       }
     } finally {
-      setLoading(false);
+      if (generation === requestGenerationRef.current) setLoading(false);
     }
   }, [cacheKey, connected, fetchFn, getCachedData, refreshOnMount]);
 
@@ -310,6 +472,9 @@ export function useCachedData<T>(
     }
 
     void fetchData();
+    return () => {
+      requestGenerationRef.current += 1;
+    };
   }, [enabled, fetchData]);
 
   return {
@@ -317,6 +482,8 @@ export function useCachedData<T>(
     loading,
     error,
     isOffline: !connected,
+    isStale,
+    updatedAt,
     refetch: fetchData,
   };
 }

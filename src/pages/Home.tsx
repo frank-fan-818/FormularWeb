@@ -2,10 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import type { CSSProperties } from 'react';
 import dayjs from 'dayjs';
 import { Helmet } from 'react-helmet-async';
-import { useSeasonData, useRacesByStatus } from '@/hooks';
+import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
+import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { getTeamColor } from '@/utils/teamColors';
+import { preloadRaceInfoRoute } from '@/utils/routePreload';
 import './Home.css';
 
 const TEXT = {
@@ -28,12 +30,36 @@ const TEXT = {
   raceLocation: '\u5730\u70b9',
   today: '\u4eca\u5929',
   loading: '\u6b63\u5728\u52a0\u8f7d\u9996\u9875\u6570\u636e...',
+  staleData: '\u6570\u636e\u66f4\u65b0\u6682\u65f6\u5931\u8d25\uff0c\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e',
+  offlineData: '\u5f53\u524d\u79bb\u7ebf\uff0c\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e',
+  updatedAt: '\u66f4\u65b0\u4e8e',
+  seasonPulse: '\u8d5b\u5b63\u8109\u640f',
+  viewFullStandings: '\u67e5\u770b\u5b8c\u6574\u79ef\u5206\u699c',
+  seasonProgress: '\u672c\u8d5b\u5b63\u5df2\u5b8c\u6210',
+  racesUnit: '\u7ad9',
+  driverLeader: '\u8f66\u624b\u699c\u9886\u5148',
+  constructorLeader: '\u8f66\u961f\u699c\u9886\u5148',
+  unavailable: '\u8d5b\u5b63\u6570\u636e\u6682\u65f6\u65e0\u6cd5\u52a0\u8f7d\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u540e\u91cd\u8bd5\u3002',
+  retry: '\u91cd\u8bd5',
+  moduleLoading: '\u6b63\u5728\u8865\u9f50\u6570\u636e...',
+  moduleUnavailable: '\u8be5\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
 };
 
 const Home = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { driverStandings, constructorStandings, races, loading } = useSeasonData(currentSeason);
+  const {
+    driverStandings,
+    constructorStandings,
+    races,
+    loading,
+    error,
+    isOffline,
+    isStale,
+    updatedAt,
+    refetch,
+    resources,
+  } = useSeasonDataCached(currentSeason);
   const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
   const driverLeaderPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const constructorLeaderPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
@@ -48,9 +74,29 @@ const Home = () => {
           <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
           <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
         </Helmet>
-        <div className="page-loader">
-          <div className="page-loader-spinner" />
-          <span>{TEXT.loading}</span>
+        <div className="home-skeleton" role="status" aria-label={TEXT.loading}>
+          <div className="skeleton-card skeleton-card-pulse" />
+          <div className="skeleton-line skeleton-line-short" />
+          <div className="skeleton-card skeleton-card-hero" />
+          <div className="skeleton-line skeleton-line-short" />
+          <div className="skeleton-grid">
+            <div className="skeleton-card" />
+            <div className="skeleton-card" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const hasAnySeasonData = races.length > 0 || driverStandings.length > 0 || constructorStandings.length > 0;
+
+  if (error && !hasAnySeasonData) {
+    return (
+      <div className="page-container">
+        <Helmet><title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title></Helmet>
+        <div className="home-error-state" role="alert">
+          <strong>{TEXT.unavailable}</strong>
+          <button type="button" onClick={refetch}>{TEXT.retry}</button>
         </div>
       </div>
     );
@@ -61,27 +107,26 @@ const Home = () => {
       value: completedRaces.length,
       label: `${TEXT.completedRaces} / ${races.length}`,
       color: 'var(--f1-red)',
-      delay: 'stagger-1',
     },
     {
       value: driverStandings.length,
       label: TEXT.activeDrivers,
       color: 'var(--accent-blue)',
-      delay: 'stagger-2',
     },
     {
       value: constructorStandings.length,
       label: TEXT.activeConstructors,
       color: 'var(--accent-green)',
-      delay: 'stagger-3',
     },
     {
       value: daysUntilNextRace ?? '--',
       label: nextRace ? TEXT.daysUntilNextRace : TEXT.seasonEnded,
       color: 'var(--accent-yellow)',
-      delay: 'stagger-4',
     },
   ];
+
+  const driverLeader = driverStandings[0];
+  const constructorLeader = constructorStandings[0];
 
   const getRankBadgeClass = (index: number) => {
     if (index === 0) return 'rank-badge-1';
@@ -105,8 +150,30 @@ const Home = () => {
         <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
         <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
       </Helmet>
+      {(isOffline || isStale || (error && (races.length > 0 || driverStandings.length > 0))) ? (
+        <div className="data-freshness-notice" role="status">
+          <strong>{isOffline ? TEXT.offlineData : TEXT.staleData}</strong>
+          {updatedAt ? <span>{TEXT.updatedAt} {dayjs(updatedAt).format('YYYY-MM-DD HH:mm')}</span> : null}
+          <button type="button" className="notice-retry" onClick={refetch}>{TEXT.retry}</button>
+        </div>
+      ) : null}
+      {(driverLeader || constructorLeader || races.length > 0) ? (
+        <section className="season-pulse" aria-labelledby="season-pulse-title">
+          <div>
+            <span className="season-pulse-kicker" id="season-pulse-title">{TEXT.seasonPulse}</span>
+            <p>
+              {TEXT.seasonProgress} <strong>{completedRaces.length}/{races.length} {TEXT.racesUnit}</strong>
+              {driverLeader ? <> · {TEXT.driverLeader} <strong>{driverLeader.Driver.givenName} {driverLeader.Driver.familyName}</strong></> : null}
+              {constructorLeader ? <> · {TEXT.constructorLeader} <strong>{constructorLeader.Constructor.name}</strong></> : null}
+            </p>
+          </div>
+          <button type="button" className="standings-cta" onClick={() => navigate('/seasons')}>
+            {TEXT.viewFullStandings}
+          </button>
+        </section>
+      ) : null}
       {nextRace ? (
-        <section className="next-race-section animate-slide-up">
+        <section className="next-race-section">
           <h2 className="section-title-f1">
             <span className="section-title-accent section-title-accent-warning" />
             {TEXT.nextRace}
@@ -114,7 +181,9 @@ const Home = () => {
           <button
             type="button"
             className="next-race-card-f1"
-            onClick={() => navigate(`/races/${nextRace.round}`)}
+            onClick={() => navigate(`/races/${nextRace.round}/info`)}
+            onPointerEnter={preloadRaceInfoRoute}
+            onFocus={preloadRaceInfoRoute}
           >
             <div className="next-race-content-f1">
               <div className="next-race-info-f1">
@@ -139,12 +208,12 @@ const Home = () => {
       ) : null}
 
       {ongoingRace ? (
-        <section className="ongoing-section animate-slide-up">
+        <section className="ongoing-section">
           <h2 className="section-title-f1">
             <span className="section-title-accent section-title-accent-live" />
             {TEXT.ongoingRace}
           </h2>
-          <div className="ongoing-card-f1">
+          <button type="button" className="ongoing-card-f1" onClick={() => navigate(`/races/${ongoingRace.round}/race`)}>
             <div className="ongoing-content-f1">
               <div className="ongoing-info-f1">
                 <div className="ongoing-race-title">{ongoingRace.raceName}</div>
@@ -154,25 +223,35 @@ const Home = () => {
               </div>
               <span className="ongoing-tag">{TEXT.live}</span>
             </div>
-          </div>
+          </button>
         </section>
       ) : null}
 
       <div className="section-divider" />
 
       <section className="standings-section">
-        <h2 className="section-title-f1 animate-slide-up stagger-5">
-          <span className="section-title-accent section-title-accent-primary" />
-          {TEXT.standingsTopThree}
-        </h2>
+        <div className="section-heading-row">
+          <h2 className="section-title-f1">
+            <span className="section-title-accent section-title-accent-primary" />
+            {TEXT.standingsTopThree}
+          </h2>
+          <button type="button" className="standings-inline-link" onClick={() => navigate('/seasons')}>
+            {TEXT.viewFullStandings}
+          </button>
+        </div>
 
         <div className="standings-grid">
-          <div className="standings-card-f1 official-standings-card animate-slide-up stagger-5">
+          <div className="standings-card-f1 official-standings-card">
             <div className="official-standings-header">
               <span>{TEXT.driverStandings}</span>
               <strong>{TEXT.points}</strong>
             </div>
             <div className="standings-list-f1">
+              {resources.drivers.loading && driverStandings.length === 0 ? (
+                <div className="standings-module-state">{TEXT.moduleLoading}</div>
+              ) : resources.drivers.error && driverStandings.length === 0 ? (
+                <div className="standings-module-state is-error">{TEXT.moduleUnavailable}</div>
+              ) : null}
               {driverStandings.slice(0, 3).map((item, index) => {
                 const teamColor = getTeamColor(item.Constructors[0].constructorId);
 
@@ -214,12 +293,17 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="standings-card-f1 official-standings-card animate-slide-up stagger-6">
+          <div className="standings-card-f1 official-standings-card">
             <div className="official-standings-header">
               <span>{TEXT.constructorStandings}</span>
               <strong>{TEXT.points}</strong>
             </div>
             <div className="standings-list-f1">
+              {resources.constructors.loading && constructorStandings.length === 0 ? (
+                <div className="standings-module-state">{TEXT.moduleLoading}</div>
+              ) : resources.constructors.error && constructorStandings.length === 0 ? (
+                <div className="standings-module-state is-error">{TEXT.moduleUnavailable}</div>
+              ) : null}
               {constructorStandings.slice(0, 3).map((item, index) => {
                 const teamColor = getTeamColor(item.Constructor.constructorId);
 
@@ -265,7 +349,7 @@ const Home = () => {
         {statCards.map((card, index) => (
         <div
           key={index}
-          className={`stat-card-f1 animate-slide-up ${card.delay}`}
+          className="stat-card-f1"
         >
           <div className="stat-value" style={{ color: card.color }}>
             {card.value}

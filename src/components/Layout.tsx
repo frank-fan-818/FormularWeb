@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useSeasons } from '@/hooks';
+import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
 import { useAppStore } from '@/store';
 import './Layout.css';
 
@@ -157,6 +157,7 @@ const SearchIcon = ({ className }: IconProps) => (
 type NavigatorWithConnection = Navigator & {
   connection?: {
     saveData?: boolean;
+    effectiveType?: string;
   };
 };
 
@@ -220,7 +221,7 @@ const LayoutComponent = () => {
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
   const [searchActivated, setSearchActivated] = useState(false);
-  const { seasons } = useSeasons();
+  const { seasons } = useSeasonsCached();
   const { i18n } = useTranslation();
   const activeNavKey = resolveActiveNavKey(location.pathname);
 
@@ -238,7 +239,7 @@ const LayoutComponent = () => {
 
   useEffect(() => {
     const connection = (navigator as NavigatorWithConnection).connection;
-    if (connection?.saveData) {
+    if (connection?.saveData || (connection?.effectiveType && connection.effectiveType !== '4g')) {
       return undefined;
     }
 
@@ -252,11 +253,11 @@ const LayoutComponent = () => {
 
     const idleWindow = window as WindowWithIdleCallback;
     if (idleWindow.requestIdleCallback) {
-      const idleHandle = idleWindow.requestIdleCallback(preloadSearch, { timeout: 4000 });
+      const idleHandle = idleWindow.requestIdleCallback(preloadSearch, { timeout: 8000 });
       return () => idleWindow.cancelIdleCallback?.(idleHandle);
     }
 
-    const timeoutId = window.setTimeout(preloadSearch, 1800);
+    const timeoutId = window.setTimeout(preloadSearch, 8000);
     return () => window.clearTimeout(timeoutId);
   }, []);
 

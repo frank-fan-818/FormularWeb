@@ -2,8 +2,8 @@ import { Suspense, lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import Home from '@/pages/Home';
 
+const Home = lazy(() => import('@/pages/Home'));
 const Seasons = lazy(() => import('@/pages/Seasons'));
 const Races = lazy(() => import('@/pages/Races'));
 const RaceLayout = lazy(() => import('@/pages/Race/RaceLayout'));
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Home />,
+        element: withSuspense(<Home />),
       },
       {
         path: '/seasons',

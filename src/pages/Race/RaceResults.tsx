@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Table, Tabs } from 'antd';
+import { Button, Empty, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { QualifyingResult, Result } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
@@ -33,6 +33,9 @@ const RaceResults = () => {
     availableDbSessions,
     primaryLoading,
     loadingSessionTabs,
+    loadedSessionTabs,
+    sessionLoadErrors,
+    retryActiveSession,
     activeTab,
     setActiveTab,
   } = useRaceData();
@@ -43,12 +46,37 @@ const RaceResults = () => {
     Boolean(raceInfo?.SecondPractice) || availableDbSessions.includes('FP2') || fp2Results.length > 0;
   const hasFp3 =
     Boolean(raceInfo?.ThirdPractice) || availableDbSessions.includes('FP3') || fp3Results.length > 0;
-  const hasSprintQualifying = sprintQualifyingResults.length > 0;
-  const hasSprint = sprintResults.length > 0;
+  const hasSprintQualifying =
+    Boolean(raceInfo?.SprintQualifying)
+    || availableDbSessions.includes('SQ')
+    || availableDbSessions.includes('SS')
+    || sprintQualifyingResults.length > 0;
+  const hasSprint =
+    Boolean(raceInfo?.Sprint)
+    || availableDbSessions.includes('S')
+    || sprintResults.length > 0;
 
   const getTableLoading = (tabKey: string, data: unknown[]): boolean => {
     if (primaryLoading) return true;
     return DEFERRED_TAB_KEYS.includes(tabKey) && loadingSessionTabs.includes(tabKey) && data.length === 0;
+  };
+
+  const renderEmptyState = (tabKey: string) => {
+    const failed = sessionLoadErrors[tabKey];
+    const deferred = DEFERRED_TAB_KEYS.includes(tabKey);
+    const loaded = loadedSessionTabs.includes(tabKey);
+    return (
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        description={failed
+          ? '该场次数据加载失败'
+          : deferred && loaded
+            ? '该场次暂无已收录的完整数据'
+            : '该场次数据尚未发布'}
+      >
+        {failed ? <Button onClick={retryActiveSession}>重试此场次</Button> : null}
+      </Empty>
+    );
   };
 
   // Race columns -----------------------------------------------------------
@@ -366,7 +394,10 @@ const RaceResults = () => {
   ];
 
   const effectiveActiveTab =
-    tabItems.find((item) => item.key === activeTab)?.key || tabItems[0]?.key || 'race';
+    tabItems.find((item) => item.key === activeTab)?.key
+    || tabItems.find((item) => item.key === 'race')?.key
+    || tabItems[0]?.key
+    || 'race';
 
   return (
     <div className="race-results-page">
@@ -383,6 +414,7 @@ const RaceResults = () => {
               rowKey={(record: Result | QualifyingResult) => record.Driver?.driverId || ''}
               pagination={false}
               loading={getTableLoading(item.key, item.data)}
+              locale={{ emptyText: renderEmptyState(item.key) }}
               size="small"
               scroll={{ x: 'max-content' }}
             />

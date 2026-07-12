@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -157,6 +157,7 @@ const RaceAnalysis = () => {
   ]);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [telemetrySummaryMode, setTelemetrySummaryMode] = useState<DataViewMode>('chart');
+  const telemetrySectionRef = useRef<HTMLDivElement | null>(null);
 
   // Feature flag checks
   const telemetryEnabled = isFeatureEnabled('fastf1-telemetry');
@@ -172,12 +173,22 @@ const RaceAnalysis = () => {
     setCollapsedSections({});
   }, [season, round]);
 
-  // Auto-trigger telemetry loading when race analytics are available
   useEffect(() => {
-    if (fastF1Analytics) {
+    const element = telemetrySectionRef.current;
+    if (!telemetryEnabled || !fastF1Analytics || !element) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
       loadFastF1Telemetry();
+      return undefined;
     }
-  }, [fastF1Analytics, loadFastF1Telemetry]);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        loadFastF1Telemetry();
+        observer.disconnect();
+      }
+    }, { rootMargin: '320px 0px' });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [fastF1Analytics, loadFastF1Telemetry, telemetryEnabled]);
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -555,6 +566,14 @@ const RaceAnalysis = () => {
         ) : null}
       </div>
 
+      <nav className="analysis-section-nav" aria-label={t('raceAnalysisGroup')}>
+        {lapPaceOption ? <a href="#analysis-lap-pace">{t('lapPace')}</a> : null}
+        {fastF1Analytics.tyreStrategies.length ? <a href="#analysis-tyre">{t('tyreStrategy')}</a> : null}
+        {duelEnabled ? <a href="#analysis-duel">{t('driverDuel')}</a> : null}
+        {weatherEnabled && weatherOption ? <a href="#analysis-weather">{t('weatherTrend')}</a> : null}
+        {telemetryEnabled ? <a href="#analysis-telemetry">{t('telemetryComparison')}</a> : null}
+      </nav>
+
       {/* Telemetry Summary */}
       {telemetryEnabled && postRaceTelemetrySummary.length ? (
         <DataViewPanel
@@ -593,6 +612,7 @@ const RaceAnalysis = () => {
             {/* ========== 1. Lap Pace ========== */}
             {fastF1Analytics && lapPaceOption ? (
               <Card
+                id="analysis-lap-pace"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -678,6 +698,7 @@ const RaceAnalysis = () => {
             {/* ========== 2. Tyre Strategy Chart ========== */}
             {fastF1Analytics.tyreStrategies.length ? (
               <Card
+                id="analysis-tyre"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -731,6 +752,7 @@ const RaceAnalysis = () => {
             {/* ========== 3. Driver Duel ========== */}
             {duelEnabled && fastF1Analytics ? (
               <Card
+                id="analysis-duel"
                 className="fastf1-chart-card driver-duel-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -875,6 +897,7 @@ const RaceAnalysis = () => {
             {/* ========== 5. Weather Trend ========== */}
             {weatherEnabled && fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
               <Card
+                id="analysis-weather"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -932,6 +955,7 @@ const RaceAnalysis = () => {
             ) : null}
 
             {/* ========== 6. Telemetry Comparison + Speed Heatmap ========== */}
+            <div id="analysis-telemetry" ref={telemetrySectionRef} className="telemetry-section-anchor">
             {telemetryEnabled ? (
               fastF1TelemetryLoading ? (
                 <div className="race-weekend-empty">{t('loading')}</div>
@@ -1052,6 +1076,7 @@ const RaceAnalysis = () => {
                 )}
               </Card>
             ) : null) : null}
+            </div>
           </div>
       </div>
     </div>

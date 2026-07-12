@@ -56,6 +56,8 @@ export interface StandingInput {
   points: number;
   wins: number;
   totalDrivers: number;
+  racesCompleted?: number;
+  fieldPointsTotal?: number;
 }
 
 export interface DriverRecentForm {
@@ -381,20 +383,23 @@ export function buildStandingsFeatures(
   d: StandingInput,
   c: StandingInput,
 ): Partial<WinnerPredictionFeatureVector> {
+  const driverPointsShare = d.fieldPointsTotal ? d.points / d.fieldPointsTotal : null;
+  const constructorPointsShare = c.fieldPointsTotal ? c.points / c.fieldPointsTotal : null;
+
   return {
     driverStandingAdvantage: normalizePosition(d.position, d.totalDrivers),
-    driverStandingPointsShare: d.totalDrivers > 0
-      ? clamp((d.points / Math.max(d.totalDrivers, 1) - 10) / 50, -1, 1)
+    driverStandingPointsShare: driverPointsShare != null
+      ? normalizeRate(driverPointsShare, 1 / Math.max(d.totalDrivers, 1))
       : 0,
     constructorStandingAdvantage: normalizePosition(c.position, c.totalDrivers),
-    constructorStandingPointsShare: c.totalDrivers > 0
-      ? clamp((c.points / Math.max(c.totalDrivers, 1) - 10) / 50, -1, 1)
+    constructorStandingPointsShare: constructorPointsShare != null
+      ? normalizeRate(constructorPointsShare, 1 / Math.max(c.totalDrivers, 1))
       : 0,
-    driverSeasonWinRate: d.totalDrivers > 0
-      ? normalizeRate(d.wins / Math.max(d.totalDrivers, 1), 0.1)
+    driverSeasonWinRate: d.racesCompleted
+      ? normalizeRate(d.wins / d.racesCompleted, 0.1)
       : 0,
-    constructorSeasonWinRate: c.totalDrivers > 0
-      ? normalizeRate(c.wins / Math.max(c.totalDrivers, 1), 0.1)
+    constructorSeasonWinRate: c.racesCompleted
+      ? normalizeRate(c.wins / c.racesCompleted, 0.1)
       : 0,
   };
 }
@@ -1188,18 +1193,7 @@ export function buildWinnerFeatureVector(
     const seq = buildRaceWinnerSequenceEmbedding(input.driverRecentForm.last10Steps);
     sources.push(buildSequenceFeatures(seq, input.driverRecentForm, input.constructorRecentForm));
   } else {
-    // Neutral sequence embedding for missing data
-    const neutralEmbedding: RaceWinnerSequenceEmbedding = { momentum: 0.5, consistency: 0.5, upside: 0.5 };
-    const emptyForm: DriverRecentForm = {
-      last10Steps: [], finishPositions: [], qualifyingPositions: [],
-      winCount: 0, podiumCount: 0, raceCount: 1, dnfCount: 0,
-      totalLapsCompleted: 1, totalLapsPossible: 1,
-    };
-    const emptyCForm: ConstructorRecentForm = {
-      last10Steps: [], finishPositions: [],
-      winCount: 0, podiumCount: 0, raceCount: 1,
-    };
-    sources.push(buildSequenceFeatures(neutralEmbedding, emptyForm, emptyCForm));
+    sources.push({});
   }
 
   // Tier 4: Upgrades

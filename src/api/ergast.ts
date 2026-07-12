@@ -8,6 +8,8 @@ import { supabase } from '@/utils/supabase';
 import { logger } from '@/utils/logger';
 import { validateOrWarn } from '@/api/validation';
 import { RaceSchema } from '@/api/schemas';
+import { withRetry } from '@/utils/withRetry';
+import { assertCompleteList, assertUniqueValues } from '@/utils/dataCompleteness';
 import type {
   ErgastResponse,
   Season,
@@ -32,6 +34,30 @@ const ergastApi = axios.create({
   baseURL,
   timeout: 15000,
 });
+
+async function getCompleteRaceEndpoint(
+  season: string,
+  round: string,
+  endpoint: string,
+  listKey: 'Results' | 'QualifyingResults' | 'SprintResults',
+): Promise<Race | null> {
+  const response = await withRetry(
+    (signal) => ergastApi.get<never, ErgastResponse<never>>(
+      `/${season}/${round}/${endpoint}.json?limit=100`,
+      { signal },
+    ),
+    { timeoutMs: 10_000, maxRetries: 2 },
+  );
+  const race = response.MRData.RaceTable?.Races[0] || null;
+  if (!race) return null;
+  const entries = (race[listKey] || []) as Array<{ Driver: { driverId: string } }>;
+  assertUniqueValues(
+    assertCompleteList(entries, response.MRData.total, `Jolpica ${endpoint} results`),
+    (entry) => entry.Driver.driverId,
+    `Jolpica ${endpoint} results`,
+  );
+  return validateOrWarn(RaceSchema, race, `race-${season}-${round}-${endpoint}`) as Race;
+}
 
 type TimedAxiosConfig = InternalAxiosRequestConfig & {
   requestStartedAt?: number;
@@ -259,232 +285,23 @@ export const seasonApi = {
   },
 
   getRaceResults: async (season: string, round: string): Promise<Race | null> => {
-    const seasonNumber = parseInt(season, 10);
-    const roundNumber = parseInt(round, 10);
-
-    // Try Supabase first
-    if (Number.isInteger(seasonNumber) && Number.isInteger(roundNumber)) {
-      const { data: races, error } = await supabase
-        .from('races')
-        .select('*')
-        .eq('season', seasonNumber)
-        .eq('round', roundNumber)
-        .limit(1);
-
-      if (!error && races && races.length > 0) {
-        const raceRow = races[0];
-
-        const { data: resultRows, error: resultError } = await supabase
-          .from('race_results')
-          .select('*')
-          .eq('race_id', raceRow.id)
-          .order('position');
-
-        if (!resultError && resultRows && resultRows.length > 0) {
-          // Build driver and constructor lookup maps
-          const driverIds = [...new Set(resultRows.map((r) => r.driver_id).filter(Boolean))] as string[];
-          const constructorIds = [...new Set(resultRows.map((r) => r.constructor_id).filter(Boolean))] as string[];
-
-          const [driverData, constructorData, circuitData] = await Promise.all([
-            driverIds.length > 0
-              ? supabase.from('drivers').select('*').in('driver_id', driverIds)
-              : { data: [] },
-            constructorIds.length > 0
-              ? supabase.from('constructors').select('*').in('constructor_id', constructorIds)
-              : { data: [] },
-            supabase.from('circuits').select('*').eq('circuit_id', raceRow.circuit_id).limit(1),
-          ]);
-
-          const driverMap = new Map((driverData.data || []).map((d) => [d.driver_id, d]));
-          const constructorMap = new Map((constructorData.data || []).map((c) => [c.constructor_id, c]));
-          const circuit = circuitData.data?.[0];
-
-          return {
-            season: String(raceRow.season),
-            round: String(raceRow.round),
-            url: raceRow.url || '#',
-            raceName: raceRow.race_name,
-            Circuit: {
-              circuitId: raceRow.circuit_id,
-              url: '#',
-              circuitName: circuit?.name || raceRow.circuit_id,
-              Location: {
-                lat: circuit?.lat?.toString() || '0',
-                long: circuit?.long?.toString() || '0',
-                locality: raceRow.locality || circuit?.locality || '',
-                country: raceRow.country || circuit?.country || '',
-              },
-            },
-            date: raceRow.date,
-            time: raceRow.time || undefined,
-            Results: resultRows.map((r) => {
-              const driver = driverMap.get(r.driver_id);
-              const constructor = constructorMap.get(r.constructor_id);
-              return {
-                number: '',
-                position: String(r.position),
-                positionText: r.position_text || String(r.position),
-                points: String(r.points),
-                Driver: {
-                  driverId: r.driver_id,
-                  permanentNumber: driver?.permanent_number || '',
-                  code: driver?.code || '',
-                  url: '#',
-                  givenName: driver?.first_name || '',
-                  familyName: driver?.last_name || '',
-                  dateOfBirth: driver?.date_of_birth || '',
-                  nationality: driver?.nationality || '',
-                },
-                Constructor: {
-                  constructorId: r.constructor_id,
-                  url: '#',
-                  name: constructor?.name || '',
-                  nationality: constructor?.nationality || '',
-                },
-                grid: String(r.grid ?? ''),
-                laps: String(r.laps ?? ''),
-                status: r.status,
-                Time: r.time
-                  ? {
-                      millis: r.time_millis != null ? String(r.time_millis) : '',
-                      time: r.time,
-                    }
-                  : undefined,
-                FastestLap: r.fastest_lap_rank
-                  ? {
-                      rank: String(r.fastest_lap_rank),
-                      lap: '',
-                      Time: {
-                        time: r.fastest_lap_time || '',
-                      },
-                      AverageSpeed: r.fastest_lap_speed
-                        ? {
-                            units: 'kph',
-                            speed: String(r.fastest_lap_speed),
-                          }
-                        : undefined,
-                    }
-                  : undefined,
-              };
-            }),
-          } as Race;
-        }
-      }
-    }
-
-    // Fall back to Jolpica
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/results.json`);
-    return response.MRData.RaceTable?.Races[0] || null;
+    return getCompleteRaceEndpoint(season, round, 'results', 'Results');
   },
 
   getQualifyingResults: async (season: string, round: string): Promise<Race | null> => {
-    const seasonNumber = parseInt(season, 10);
-    const roundNumber = parseInt(round, 10);
-
-    // Try Supabase first
-    if (Number.isInteger(seasonNumber) && Number.isInteger(roundNumber)) {
-      const { data: races, error } = await supabase
-        .from('races')
-        .select('*')
-        .eq('season', seasonNumber)
-        .eq('round', roundNumber)
-        .limit(1);
-
-      if (!error && races && races.length > 0) {
-        const raceRow = races[0];
-
-        const { data: resultRows, error: resultError } = await supabase
-          .from('qualifying_results')
-          .select('*')
-          .eq('race_id', raceRow.id)
-          .order('position');
-
-        if (!resultError && resultRows && resultRows.length > 0) {
-          const driverIds = [...new Set(resultRows.map((r) => r.driver_id).filter(Boolean))] as string[];
-          const constructorIds = [...new Set(resultRows.map((r) => r.constructor_id).filter(Boolean))] as string[];
-
-          const [driverData, constructorData, circuitData] = await Promise.all([
-            driverIds.length > 0
-              ? supabase.from('drivers').select('*').in('driver_id', driverIds)
-              : { data: [] },
-            constructorIds.length > 0
-              ? supabase.from('constructors').select('*').in('constructor_id', constructorIds)
-              : { data: [] },
-            supabase.from('circuits').select('*').eq('circuit_id', raceRow.circuit_id).limit(1),
-          ]);
-
-          const driverMap = new Map((driverData.data || []).map((d) => [d.driver_id, d]));
-          const constructorMap = new Map((constructorData.data || []).map((c) => [c.constructor_id, c]));
-          const circuit = circuitData.data?.[0];
-
-          return {
-            season: String(raceRow.season),
-            round: String(raceRow.round),
-            url: raceRow.url || '#',
-            raceName: raceRow.race_name,
-            Circuit: {
-              circuitId: raceRow.circuit_id,
-              url: '#',
-              circuitName: circuit?.name || raceRow.circuit_id,
-              Location: {
-                lat: circuit?.lat?.toString() || '0',
-                long: circuit?.long?.toString() || '0',
-                locality: raceRow.locality || circuit?.locality || '',
-                country: raceRow.country || circuit?.country || '',
-              },
-            },
-            date: raceRow.date,
-            time: raceRow.time || undefined,
-            QualifyingResults: resultRows.map((r) => {
-              const driver = driverMap.get(r.driver_id);
-              const constructor = constructorMap.get(r.constructor_id);
-              return {
-                number: '',
-                position: String(r.position),
-                Driver: {
-                  driverId: r.driver_id,
-                  permanentNumber: driver?.permanent_number || '',
-                  code: driver?.code || '',
-                  url: '#',
-                  givenName: driver?.first_name || '',
-                  familyName: driver?.last_name || '',
-                  dateOfBirth: driver?.date_of_birth || '',
-                  nationality: driver?.nationality || '',
-                },
-                Constructor: {
-                  constructorId: r.constructor_id,
-                  url: '#',
-                  name: constructor?.name || '',
-                  nationality: constructor?.nationality || '',
-                },
-                Q1: r.q1 || undefined,
-                Q2: r.q2 || undefined,
-                Q3: r.q3 || undefined,
-              };
-            }),
-          } as Race;
-        }
-      }
-    }
-
-    // Fall back to Jolpica
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/qualifying.json`);
-    return response.MRData.RaceTable?.Races[0] || null;
+    return getCompleteRaceEndpoint(season, round, 'qualifying', 'QualifyingResults');
   },
 
   getSprintResults: async (season: string, round: string): Promise<Race | null> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/sprint.json`);
-    return response.MRData.RaceTable?.Races[0] || null;
+    return getCompleteRaceEndpoint(season, round, 'sprint', 'SprintResults');
   },
 
   getPracticeResults: async (season: string, round: string, practiceNumber: 1 | 2 | 3): Promise<Race | null> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/practice/${practiceNumber}.json`);
-    return response.MRData.RaceTable?.Races[0] || null;
+    return getCompleteRaceEndpoint(season, round, `practice/${practiceNumber}`, 'Results');
   },
 
   getSprintQualifyingResults: async (season: string, round: string): Promise<Race | null> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/${round}/sprintQualifying.json`);
-    return response.MRData.RaceTable?.Races[0] || null;
+    return getCompleteRaceEndpoint(season, round, 'sprintQualifying', 'QualifyingResults');
   },
 };
 
@@ -502,7 +319,12 @@ const BETWEEN_BATCH_DELAY_MS = 180;
 
 async function getAllSeasonIds(): Promise<string[]> {
   if (!allSeasonIdsPromise) {
-    allSeasonIdsPromise = seasonApi.getAllSeasons(100).then((seasons) => seasons.map((season) => season.season));
+    allSeasonIdsPromise = seasonApi.getAllSeasons(100)
+      .then((seasons) => seasons.map((season) => season.season))
+      .catch((error) => {
+        allSeasonIdsPromise = null;
+        throw error;
+      });
   }
 
   return allSeasonIdsPromise;
@@ -510,7 +332,11 @@ async function getAllSeasonIds(): Promise<string[]> {
 
 function getCachedDriverStandingsBySeason(season: string): Promise<DriverStanding[]> {
   if (!driverStandingsBySeasonCache.has(season)) {
-    driverStandingsBySeasonCache.set(season, getStandingsWithRetry(() => seasonApi.getDriverStandings(season)));
+    const request = getStandingsWithRetry(() => seasonApi.getDriverStandings(season)).catch((error) => {
+      driverStandingsBySeasonCache.delete(season);
+      throw error;
+    });
+    driverStandingsBySeasonCache.set(season, request);
   }
 
   return driverStandingsBySeasonCache.get(season)!;
@@ -518,7 +344,11 @@ function getCachedDriverStandingsBySeason(season: string): Promise<DriverStandin
 
 function getCachedConstructorStandingsBySeason(season: string): Promise<ConstructorStanding[]> {
   if (!constructorStandingsBySeasonCache.has(season)) {
-    constructorStandingsBySeasonCache.set(season, getStandingsWithRetry(() => seasonApi.getConstructorStandings(season)));
+    const request = getStandingsWithRetry(() => seasonApi.getConstructorStandings(season)).catch((error) => {
+      constructorStandingsBySeasonCache.delete(season);
+      throw error;
+    });
+    constructorStandingsBySeasonCache.set(season, request);
   }
 
   return constructorStandingsBySeasonCache.get(season)!;
@@ -680,7 +510,11 @@ async function getDriverCareerStandings(
   ].join('|');
 
   if (!driverCareerStandingsCache.has(cacheKey)) {
-    driverCareerStandingsCache.set(cacheKey, loadDriverCareerStandings(params));
+    const request = loadDriverCareerStandings(params).catch((error) => {
+      driverCareerStandingsCache.delete(cacheKey);
+      throw error;
+    });
+    driverCareerStandingsCache.set(cacheKey, request);
   }
 
   return driverCareerStandingsCache.get(cacheKey)!;
@@ -715,7 +549,11 @@ async function getConstructorCareerStandings(
   const cacheKey = normalizeIdentifierToken(constructorId);
 
   if (!constructorCareerStandingsCache.has(cacheKey)) {
-    constructorCareerStandingsCache.set(cacheKey, loadConstructorCareerStandings(constructorId));
+    const request = loadConstructorCareerStandings(constructorId).catch((error) => {
+      constructorCareerStandingsCache.delete(cacheKey);
+      throw error;
+    });
+    constructorCareerStandingsCache.set(cacheKey, request);
   }
 
   return constructorCareerStandingsCache.get(cacheKey)!;
@@ -982,7 +820,11 @@ async function getDriverCareerRaceResults(driverId: string): Promise<Race[]> {
   const cacheKey = normalizeIdentifierToken(driverId);
 
   if (!driverCareerRaceResultsCache.has(cacheKey)) {
-    driverCareerRaceResultsCache.set(cacheKey, loadPaginatedRaceResults(`/drivers/${driverId}/results.json`));
+    const request = loadPaginatedRaceResults(`/drivers/${driverId}/results.json`).catch((error) => {
+      driverCareerRaceResultsCache.delete(cacheKey);
+      throw error;
+    });
+    driverCareerRaceResultsCache.set(cacheKey, request);
   }
 
   return driverCareerRaceResultsCache.get(cacheKey)!;
@@ -992,7 +834,11 @@ async function getConstructorCareerRaceResults(constructorId: string): Promise<R
   const cacheKey = normalizeIdentifierToken(constructorId);
 
   if (!constructorCareerRaceResultsCache.has(cacheKey)) {
-    constructorCareerRaceResultsCache.set(cacheKey, loadPaginatedRaceResults(`/constructors/${constructorId}/results.json`));
+    const request = loadPaginatedRaceResults(`/constructors/${constructorId}/results.json`).catch((error) => {
+      constructorCareerRaceResultsCache.delete(cacheKey);
+      throw error;
+    });
+    constructorCareerRaceResultsCache.set(cacheKey, request);
   }
 
   return constructorCareerRaceResultsCache.get(cacheKey)!;

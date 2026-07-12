@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Table, Tag, Descriptions } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Card, Tag, Descriptions } from 'antd';
+import {
+  CalendarOutlined,
+  ClockCircleOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type {
   RecentGrandPrixResult,
@@ -13,7 +16,6 @@ import { getTeamColor } from '@/utils/teamColors';
 import { isFeatureEnabled } from '@/utils/featureFlags';
 import { getCircuitEnhancement, formatCircuitDirection } from '@/utils/circuitEnhancements';
 import {
-  formatRaceDateTimeFull,
   getRaceWeekendSchedule,
   getRaceWeekendScheduleGroups,
 } from '@/utils/raceSchedule';
@@ -31,14 +33,12 @@ import {
   TEXT,
 } from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
+import ViewportTable from './shared/components/ViewportTable';
 import '../RaceDetail.css';
 
 // ---- Localised text for circuit info (not yet in i18n / TEXT constants) ----
 
 const INFO_TEXT = {
-  circuitInfo: '赛道信息',
-  circuitName: '赛道名称',
-  location: '地点',
   direction: '赛道方向',
   turns: '弯道数量',
   weatherOverview: '天气概况',
@@ -426,23 +426,19 @@ const RaceInfo = () => {
   // ---- Render ----
 
   return (
-    <div className="race-info-page" style={{ display: 'grid', gap: 16 }}>
+    <div className="race-info-page">
+      <div className="race-info-section-heading">
+        <span>{t('weekendSchedule')}</span>
+        <small>ROUND {raceInfo.round} · {raceInfo.season}</small>
+      </div>
       {/* Row: Circuit Info + Weekend Schedule */}
-      <div className="race-weekend-grid" style={{ alignItems: 'start' }}>
+      <div className="race-info-overview">
         {/* Circuit Info Card */}
         <Card
-          className="race-weekend-card"
-          title={<div className="data-view-title"><span>{INFO_TEXT.circuitInfo}</span></div>}
+          className="race-weekend-card race-info-circuit-card"
+          title={<div className="data-view-title"><span>赛道特性</span></div>}
         >
           <Descriptions column={1} size="small" colon={false}>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{INFO_TEXT.circuitName}</span>}>
-              {raceInfo.Circuit.circuitName}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{INFO_TEXT.location}</span>}>
-              {raceInfo.Circuit.Location.locality}
-              {', '}
-              {raceInfo.Circuit.Location.country}
-            </Descriptions.Item>
             <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{INFO_TEXT.direction}</span>}>
               {circuitEnhancement.direction
                 ? formatCircuitDirection(circuitEnhancement.direction)
@@ -452,12 +448,6 @@ const RaceInfo = () => {
               {circuitEnhancement.leftTurns !== undefined && circuitEnhancement.rightTurns !== undefined
                 ? `${circuitEnhancement.leftTurns}L / ${circuitEnhancement.rightTurns}R`
                 : '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{t('time')}</span>}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <CalendarOutlined />
-                {formatRaceDateTimeFull(raceInfo)}
-              </span>
             </Descriptions.Item>
             {isSprintWeekend && (
               <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{t('sprintWeekend')}</span>}>
@@ -469,7 +459,7 @@ const RaceInfo = () => {
 
         {/* Weekend Schedule Card */}
         <Card
-          className="race-weekend-card"
+          className="race-weekend-card race-info-schedule-card"
           title={<div className="data-view-title"><span>{t('weekendSchedule')}</span></div>}
         >
           {weekendScheduleGroups.length ? (
@@ -485,7 +475,7 @@ const RaceInfo = () => {
                   {t('scheduleTimezoneValue')}
                 </span>
               </div>
-              <div className="weekend-schedule-days" style={{ gridTemplateColumns: `repeat(${Math.min(weekendScheduleGroups.length, 3)}, minmax(0, 1fr))` }}>
+              <div className="weekend-schedule-days">
                 {weekendScheduleGroups.map((group) => (
                   <section key={group.key} className="weekend-schedule-day">
                     <div className="weekend-day-header">
@@ -518,10 +508,15 @@ const RaceInfo = () => {
       </div>
 
       {/* Weather Overview */}
+      <section className="race-info-section" aria-labelledby="race-weather-heading">
+        <div className="race-info-section-heading">
+          <span>{INFO_TEXT.weatherOverview}</span>
+          <small>FastF1 session data</small>
+        </div>
       {weatherSummary ? (
         <Card
-          className="race-weekend-card"
-          title={<div className="data-view-title"><span>{INFO_TEXT.weatherOverview}</span></div>}
+          className="race-weekend-card race-info-weather-card"
+          id="race-weather-heading"
         >
           <Descriptions column={3} size="small" colon={false} bordered>
             <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{INFO_TEXT.trackTempRange}</span>}>
@@ -551,20 +546,22 @@ const RaceInfo = () => {
         <Card className="race-weekend-card">
           <div className="race-weekend-empty">{INFO_TEXT.noWeatherData}</div>
         </Card>
-      ) : null}
+      ) : (
+        <div className="race-info-inline-state" role="status">{t('loading')} {INFO_TEXT.weatherOverview}…</div>
+      )}
+      </section>
 
       {/* Row: Recent Winners + Interruption Risk */}
-      <div className="race-weekend-grid" style={{ alignItems: 'start' }}>
+      <section className="race-info-section" aria-labelledby="race-context-heading">
+        <div className="race-info-section-heading">
+          <span id="race-context-heading">{t('recentWinners')}</span>
+          <small>{t('preRaceDescription')}</small>
+        </div>
+      <div className="race-weekend-grid race-info-secondary-grid">
         {/* Recent Winners */}
         <Card
           className="race-weekend-card"
           loading={racePreviewLoading}
-          title={(
-            <div className="data-view-title">
-              <span>{t('recentWinners')}</span>
-              <small>{t('preRaceDescription')}</small>
-            </div>
-          )}
         >
           <>
             <div className="race-weekend-metric-grid">
@@ -577,7 +574,7 @@ const RaceInfo = () => {
               ))}
             </div>
             {racePreviewSummary?.recentResults.length ? (
-              <Table
+              <ViewportTable
                 className="race-history-table"
                 columns={recentResultColumns}
                 dataSource={racePreviewSummary.recentResults}
@@ -614,7 +611,7 @@ const RaceInfo = () => {
                   </span>
                 ))}
               </div>
-              <Table
+              <ViewportTable
                 columns={interruptionColumns}
                 dataSource={racePreviewSummary?.interruptionProbabilities || []}
                 rowKey={(record) => record.type}
@@ -623,7 +620,7 @@ const RaceInfo = () => {
               />
               <div className="race-weekend-subtable" style={{ marginTop: 12 }}>
                 <h4 style={{ marginBottom: 8 }}>{t('sampleYears')}</h4>
-                <Table
+                <ViewportTable
                   columns={interruptionSampleColumns}
                   dataSource={racePreviewSummary?.interruptionSamples || []}
                   rowKey={(record) => `${record.season}-${record.round}`}
@@ -636,17 +633,17 @@ const RaceInfo = () => {
           </Card>
         ) : null}
       </div>
+      </section>
 
       {/* FIA Car Upgrades (full width) */}
+      <section className="race-info-section" aria-labelledby="race-upgrades-heading">
+        <div className="race-info-section-heading">
+          <span id="race-upgrades-heading">{t('carUpgrades')}</span>
+          <small>{t('carUpgradesDescription')}</small>
+        </div>
       <Card
         className="race-weekend-card upgrade-summary-card"
         loading={raceUpgradeLoading}
-        title={(
-          <div className="data-view-title">
-            <span>{t('carUpgrades')}</span>
-            <small>{t('carUpgradesDescription')}</small>
-          </div>
-        )}
       >
         <div className="race-weekend-metric-grid upgrade-metric-grid">
           {raceUpgradeMetrics.map((item) => (
@@ -659,7 +656,7 @@ const RaceInfo = () => {
         </div>
         {raceUpgradeSummary?.teams.length ? (
           <>
-            <Table
+            <ViewportTable
               className="upgrade-summary-table"
               columns={raceUpgradeColumns}
               dataSource={raceUpgradeSummary.teams}
@@ -690,6 +687,7 @@ const RaceInfo = () => {
           <div className="race-weekend-empty">{t('noCarUpgrades')}</div>
         )}
       </Card>
+      </section>
     </div>
   );
 };

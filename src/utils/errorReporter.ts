@@ -4,8 +4,6 @@
  *
  * Fire-and-forget: does not block the caller, silently fails if unreachable.
  */
-import { supabase } from '@/utils/supabase';
-
 const ERROR_LOGS_TABLE = 'error_logs';
 
 // Deduplicate within a short window to avoid flooding on repeated errors
@@ -25,7 +23,7 @@ export function reportError(payload: {
   // The error_logs table intentionally has no anonymous INSERT policy. Only
   // authenticated sessions may attempt remote reporting, otherwise every
   // warning would generate a guaranteed 401 request in the browser.
-  void supabase.auth.getSession().then(({ data }) => {
+  void import('@/utils/supabase').then(({ supabase }) => supabase.auth.getSession().then(({ data }) => {
     if (!data.session) {
       return;
     }
@@ -45,7 +43,7 @@ export function reportError(payload: {
       }
     }
 
-    void supabase
+    return supabase
       .from(ERROR_LOGS_TABLE)
       .insert({
         module: payload.module,
@@ -55,7 +53,7 @@ export function reportError(payload: {
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 256) : null,
         url: typeof window !== 'undefined' ? window.location.href.slice(0, 512) : null,
       });
-  }).catch(() => {
+  })).catch(() => {
     // Error reporting must never create a second user-visible failure.
   });
 }

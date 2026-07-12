@@ -63,14 +63,18 @@ export function useFastF1RaceTelemetry(
   const [error, setError] = useState<Error | null>(null);
   const loadingRef = useRef(false);
   const loadedRef = useRef(false);
+  const controllerRef = useRef<AbortController | null>(null);
 
-  // Reset when season/round changes
+  // Reset and cancel obsolete telemetry when the requested session changes.
   useEffect(() => {
+    controllerRef.current?.abort();
+    controllerRef.current = null;
     setData(null);
     setError(null);
     loadingRef.current = false;
     loadedRef.current = false;
-  }, [season, round]);
+    return () => controllerRef.current?.abort();
+  }, [season, round, session]);
 
   const load = useCallback(() => {
     if (!season || !round || loadingRef.current || loadedRef.current) {
@@ -82,6 +86,8 @@ export function useFastF1RaceTelemetry(
     setError(null);
 
     const controller = new AbortController();
+    controllerRef.current?.abort();
+    controllerRef.current = controller;
 
     fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal)
       .then((payload) => {
@@ -95,6 +101,9 @@ export function useFastF1RaceTelemetry(
         setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
       })
       .finally(() => {
+        if (controllerRef.current === controller) {
+          controllerRef.current = null;
+        }
         if (!controller.signal.aborted) {
           loadingRef.current = false;
           setLoading(false);

@@ -51,12 +51,25 @@ export async function measureRequest<T>(
 
 // Report Web Vitals (LCP, INP, CLS, FCP, TTFB) to analytics
 function sendToAnalytics(metric: { name: string; value: number; rating: string }) {
-  // Log to console in dev, send to Supabase in prod
-  const body = { name: metric.name, value: Math.round(metric.value), rating: metric.rating };
-  if (import.meta.env.DEV) {
-    console.log('[Web Vitals]', body);
+  const body = {
+    name: metric.name,
+    value: Math.round(metric.value),
+    rating: metric.rating,
+    path: typeof window !== 'undefined' ? window.location.pathname : '',
+    timestamp: new Date().toISOString(),
+  };
+  const endpoint = import.meta.env.VITE_PERFORMANCE_ENDPOINT;
+  if (endpoint && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+    navigator.sendBeacon(endpoint, JSON.stringify(body));
+    return;
   }
-  // Can be extended to send to Supabase later
+  logger.debug({
+    event: 'step',
+    module: 'performance',
+    function: 'webVitals',
+    status: metric.rating === 'poor' ? 'failed' : 'success',
+    ...body,
+  });
 }
 
 export function initWebVitals() {

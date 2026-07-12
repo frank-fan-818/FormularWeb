@@ -1,13 +1,14 @@
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { seasonApi } from '@/api/ergast';
 import { raceSessionResultsApi } from '@/api/raceSessionResults';
@@ -18,7 +19,7 @@ import {
   useFastF1SessionAnalytics,
   usePostRaceTelemetrySummary,
   useRacePreviewSummary,
-  useSeasonData,
+  useSeasonRacesCached,
 } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
@@ -65,6 +66,8 @@ export interface RaceDataContextValue {
   raceInfo: Race | null;
   seasonLoading: boolean;
   primaryLoading: boolean;
+  raceLoadError: Error | null;
+  retryRaceData: () => void;
   isPastRace: boolean;
 
   // Race results
@@ -110,6 +113,8 @@ export interface RaceDataContextValue {
   // Session loading
   loadingSessionTabs: string[];
   loadedSessionTabs: string[];
+  sessionLoadErrors: Record<string, string>;
+  retryActiveSession: () => void;
 
   // UI state
   isMobile: boolean;
@@ -149,8 +154,14 @@ interface RaceDataProviderProps {
 
 export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { round } = useParams<{ round: string }>();
+  const location = useLocation();
   const { currentSeason } = useAppStore();
-  const { races, loading: seasonLoading } = useSeasonData(currentSeason);
+  const {
+    races,
+    loading: seasonLoading,
+    error: seasonError,
+    refetch: refetchSeason,
+  } = useSeasonRacesCached(currentSeason);
 
   // ---- State ----
 
@@ -163,11 +174,18 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const [fp3Results, setFp3Results] = useState<Result[]>([]);
   const [availableDbSessions, setAvailableDbSessions] = useState<string[]>([]);
   const [primaryLoading, setPrimaryLoading] = useState(false);
+  const [primaryError, setPrimaryError] = useState<Error | null>(null);
+  const [primaryReloadKey, setPrimaryReloadKey] = useState(0);
   const [loadingSessionTabs, setLoadingSessionTabs] = useState<string[]>([]);
   const [loadedSessionTabs, setLoadedSessionTabs] = useState<string[]>([]);
+  const [sessionLoadErrors, setSessionLoadErrors] = useState<Record<string, string>>({});
+  const [sessionReloadKey, setSessionReloadKey] = useState(0);
   const loadingSessionTabsRef = useRef<string[]>([]);
   const loadedSessionTabsRef = useRef<string[]>([]);
-  const [activeTab, setActiveTab] = useState('qualifying');
+  const [activeTab, setActiveTab] = useState(() => {
+    const segments = location.pathname.split('/').filter(Boolean);
+    return segments[segments.length - 1] || 'results';
+  });
   const [isMobile, setIsMobile] = useState(false);
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
   const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
@@ -197,8 +215,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     [raceInfo],
   );
   const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
-  const shouldLoadRaceFastF1 = selectedWeekendMode === 'post'
-    || (selectedWeekendMode === null && isPastRace);
+  // Race analytics also powers the weather summary on the information tab.
+  const shouldLoadRaceFastF1 = activeTab === 'race' || activeTab === 'info';
   const { data: fastF1Analytics } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
@@ -207,12 +225,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const {
     data: racePreviewSummary,
     loading: racePreviewLoading,
-  } = useRacePreviewSummary(currentSeason, round, previewCircuitId);
+  } = useRacePreviewSummary(currentSeason, round, previewCircuitId, activeTab === 'info');
   const {
     data: raceUpgradeSummary,
     loading: raceUpgradeLoading,
     error: raceUpgradeError,
-  } = useFiaRaceUpgrades(currentSeason, round);
+  } = useFiaRaceUpgrades(currentSeason, round, activeTab === 'info');
   const postRaceTelemetrySummary = usePostRaceTelemetrySummary(fastF1Analytics);
   const defaultWeekendMode: RaceWeekendMode = useMemo(() => {
     if (!raceInfo) {
@@ -221,11 +239,11 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     return isPastRace ? 'post' : 'pre';
   }, [isPastRace, raceInfo]);
   const activeWeekendMode = selectedWeekendMode || defaultWeekendMode;
-  const shouldLoadFastF1Qualifying = activeWeekendMode === 'post' || activeTab === 'qualifying';
+  const shouldLoadFastF1Qualifying = activeTab === 'qualifying';
   const shouldLoadFastF1SprintQualifying = scheduledDeferredSessionTabs.includes('sprintQualifying')
-    && (activeWeekendMode === 'post' || activeTab === 'sprintQualifying');
+    && activeTab === 'sprintQualifying';
   const shouldLoadFastF1Sprint = scheduledDeferredSessionTabs.includes('sprint')
-    && (activeWeekendMode === 'post' || activeTab === 'sprint');
+    && activeTab === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'Q', shouldLoadFastF1Qualifying,
   );
@@ -242,19 +260,19 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     currentSeason,
     round,
     'FP1',
-    scheduledDeferredSessionTabs.includes('fp1') && (activeWeekendMode === 'post' || activeTab === 'fp1'),
+    scheduledDeferredSessionTabs.includes('fp1') && activeTab === 'fp1',
   );
   const { data: fastF1Practice2Analytics } = useFastF1SessionAnalytics(
     currentSeason,
     round,
     'FP2',
-    scheduledDeferredSessionTabs.includes('fp2') && (activeWeekendMode === 'post' || activeTab === 'fp2'),
+    scheduledDeferredSessionTabs.includes('fp2') && activeTab === 'fp2',
   );
   const { data: fastF1Practice3Analytics } = useFastF1SessionAnalytics(
     currentSeason,
     round,
     'FP3',
-    scheduledDeferredSessionTabs.includes('fp3') && (activeWeekendMode === 'post' || activeTab === 'fp3'),
+    scheduledDeferredSessionTabs.includes('fp3') && activeTab === 'fp3',
   );
   const {
     data: fastF1Telemetry,
@@ -289,10 +307,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     setFp2Results([]);
     setFp3Results([]);
     setAvailableDbSessions([]);
+    setSessionLoadErrors({});
   }, [currentSeason, round]);
 
   useEffect(() => {
     if (!round) {
+      setPrimaryLoading(false);
       return;
     }
     let cancelled = false;
@@ -302,7 +322,9 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
         setAvailableDbSessions(sessions);
       }
     };
-    void loadAvailableSessions();
+    void loadAvailableSessions().catch(() => {
+      // Optional session discovery must not reject the whole race page.
+    });
     return () => { cancelled = true; };
   }, [currentSeason, round]);
 
@@ -311,10 +333,9 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
       return;
     }
     let cancelled = false;
-    setActiveTab('qualifying');
-    setQualifyingResults([]);
-    setRaceResults([]);
+    // Preserve already rendered data during a refresh to avoid a flash of empty UI.
     setPrimaryLoading(true);
+    setPrimaryError(null);
 
     const loadPrimaryData = async () => {
       const [qualifyingData, raceResultsData] = await Promise.allSettled([
@@ -330,11 +351,18 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
       setRaceResults(
         raceResultsData.status === 'fulfilled' ? raceResultsData.value?.Results || [] : [],
       );
+      if (qualifyingData.status === 'rejected' || raceResultsData.status === 'rejected') {
+        setPrimaryError(new Error(
+          qualifyingData.status === 'rejected' && raceResultsData.status === 'rejected'
+            ? 'Race and qualifying results are temporarily unavailable'
+            : 'Part of the race results is temporarily unavailable',
+        ));
+      }
       setPrimaryLoading(false);
     };
     void loadPrimaryData();
     return () => { cancelled = true; };
-  }, [currentSeason, round]);
+  }, [currentSeason, primaryReloadKey, round]);
 
   useEffect(() => {
     if (!round || !scheduledDeferredSessionTabs.includes(activeTab) || loadedSessionTabs.includes(activeTab)) {
@@ -383,6 +411,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
         loadedSessionTabsRef.current = nextTabs;
         return nextTabs;
       });
+      setSessionLoadErrors((current) => {
+        if (!current[activeTab]) return current;
+        const next = { ...current };
+        delete next[activeTab];
+        return next;
+      });
       setLoadingSessionTabs((currentTabs) => {
         const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
         loadingSessionTabsRef.current = nextTabs;
@@ -391,11 +425,10 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     };
     loadDeferredSession().catch(() => {
       if (!cancelled) {
-        setLoadedSessionTabs((currentTabs) => {
-          const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
-          loadedSessionTabsRef.current = nextTabs;
-          return nextTabs;
-        });
+        setSessionLoadErrors((current) => ({
+          ...current,
+          [activeTab]: '\u8be5\u573a\u6b21\u6570\u636e\u6682\u65f6\u672a\u80fd\u5b8c\u6574\u52a0\u8f7d',
+        }));
         setLoadingSessionTabs((currentTabs) => {
           const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
           loadingSessionTabsRef.current = nextTabs;
@@ -404,10 +437,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
       }
     });
     return () => { cancelled = true; };
-  }, [activeTab, currentSeason, loadedSessionTabs, round, scheduledDeferredSessionTabs]);
+  }, [activeTab, currentSeason, loadedSessionTabs, round, scheduledDeferredSessionTabs, sessionReloadKey]);
 
   useEffect(() => {
-    if (!round || activeWeekendMode !== 'post') {
+    // Sessions are loaded on demand by the active-tab effect above. Keep this
+    // bulk loader dormant so opening results/info never downloads every session.
+    if (!round || activeWeekendMode !== 'post' || activeTab !== 'allSessions') {
       return;
     }
     const pendingTabs = getPendingSessionTabs(
@@ -488,7 +523,22 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
         return nextTabs;
       });
     };
-  }, [activeWeekendMode, currentSeason, round, scheduledDeferredSessionTabs]);
+  }, [activeTab, activeWeekendMode, currentSeason, round, scheduledDeferredSessionTabs]);
+
+  const retryRaceData = useCallback(() => {
+    refetchSeason();
+    setPrimaryReloadKey((value) => value + 1);
+  }, [refetchSeason]);
+  const retryActiveSession = useCallback(() => {
+    setSessionLoadErrors((current) => {
+      const next = { ...current };
+      delete next[activeTab];
+      return next;
+    });
+    setSessionReloadKey((value) => value + 1);
+  }, [activeTab]);
+
+  const raceLoadError = seasonError ?? primaryError;
 
   const value: RaceDataContextValue = useMemo(() => ({
     season: currentSeason,
@@ -496,6 +546,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     raceInfo,
     seasonLoading,
     primaryLoading,
+    raceLoadError,
+    retryRaceData,
     isPastRace,
     qualifyingResults,
     raceResults,
@@ -527,6 +579,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     setSelectedWeekendMode,
     loadingSessionTabs,
     loadedSessionTabs,
+    sessionLoadErrors,
+    retryActiveSession,
     isMobile,
     activeTab,
     setActiveTab,
@@ -548,6 +602,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     raceInfo,
     seasonLoading,
     primaryLoading,
+    raceLoadError,
+    retryRaceData,
     isPastRace,
     qualifyingResults,
     raceResults,
@@ -579,6 +635,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     setSelectedWeekendMode,
     loadingSessionTabs,
     loadedSessionTabs,
+    sessionLoadErrors,
+    retryActiveSession,
     isMobile,
     activeTab,
     setActiveTab,

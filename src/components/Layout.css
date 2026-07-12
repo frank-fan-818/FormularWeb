@@ -634,8 +634,21 @@
   }
 
   .season-select-native {
-    width: 92px;
+    width: 78px;
     padding: 0 var(--space-2);
+  }
+
+  .mobile-header .lang-switcher,
+  .mobile-header .theme-toggle-btn {
+    display: none;
+  }
+
+  .mobile-header .menu-toggle-btn,
+  .mobile-header .mobile-search-trigger {
+    width: 44px;
+    min-height: 44px;
+    height: 44px;
+    flex-basis: 44px;
   }
 
   .header-mobile-search .global-search-dropdown {

@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   clearCachedDataForTests,
   fetchAndCacheValue,
+  getMemoryCacheSnapshot,
   getMemoryCacheValue,
+  getPersistentCacheSnapshot,
   getPersistentCacheValue,
   setMemoryCacheValue,
   type CacheStorageAdapter,
@@ -51,6 +53,7 @@ describe('useCachedData cache helpers', () => {
     await storage.set(
       'season-data-2025',
       JSON.stringify({
+        schemaVersion: 2,
         timestamp: 1_000,
         data: { driverCount: 20 },
       }),
@@ -65,6 +68,50 @@ describe('useCachedData cache helpers', () => {
 
     expect(value).toEqual({ driverCount: 20 });
     expect(getMemoryCacheValue('season-data-2025', 60_000, 2_000)).toEqual({ driverCount: 20 });
+  });
+
+  it('keeps an expired entry available inside the stale-if-error window', () => {
+    setMemoryCacheValue('season-data-2025', { value: 'last-known-good' }, 1_000);
+
+    expect(getMemoryCacheSnapshot('season-data-2025', 1_000, 10_000, 3_000)).toEqual({
+      data: { value: 'last-known-good' },
+      timestamp: 1_000,
+      freshness: 'stale',
+    });
+  });
+
+  it('removes a persisted entry only after the stale window expires', async () => {
+    const storage = createMemoryStorage();
+    await storage.set('season-data-2025', JSON.stringify({
+      schemaVersion: 2,
+      timestamp: 1_000,
+      data: { value: 'too-old' },
+    }));
+
+    const snapshot = await getPersistentCacheSnapshot(
+      storage,
+      'season-data-2025',
+      1_000,
+      5_000,
+      8_000,
+    );
+
+    expect(snapshot).toBeNull();
+    expect(storage.values.has('season-data-2025')).toBe(false);
+  });
+
+  it('rejects and removes a malformed persistent cache entry', async () => {
+    const storage = createMemoryStorage();
+    await storage.set('season-data-2025', JSON.stringify({ data: { value: 'missing timestamp' } }));
+
+    await expect(getPersistentCacheSnapshot(
+      storage,
+      'season-data-2025',
+      1_000,
+      5_000,
+      2_000,
+    )).resolves.toBeNull();
+    expect(storage.values.has('season-data-2025')).toBe(false);
   });
 
   it('deduplicates concurrent fetches for the same key', async () => {
@@ -97,5 +144,23 @@ describe('useCachedData cache helpers', () => {
     expect(callCount).toBe(1);
     expect(first).toEqual({ value: 'fresh-data' });
     expect(second).toEqual({ value: 'fresh-data' });
+  });
+
+  it('returns successful network data even when persistent cache storage is full', async () => {
+    const storage = createMemoryStorage();
+    storage.set = async () => {
+      throw new Error('QuotaExceededError');
+    };
+
+    await expect(fetchAndCacheValue({
+      cacheKey: 'season-data-2025',
+      fetchFn: async () => ({ value: 'fresh-data' }),
+      storage,
+      now: 1_000,
+    })).resolves.toEqual({ value: 'fresh-data' });
+
+    expect(getMemoryCacheValue('season-data-2025', 60_000, 2_000)).toEqual({
+      value: 'fresh-data',
+    });
   });
 });

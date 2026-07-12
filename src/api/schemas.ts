@@ -84,3 +84,25 @@ export const QualifyingMRDataSchema = z.object({
     })),
   }),
 });
+
+export const FastF1AnalyticsEnvelopeSchema = z.object({
+  source: z.literal('fastf1'),
+  generatedAt: z.string().min(1),
+  season: z.string().min(1),
+  round: z.string().min(1),
+  session: z.string().min(1),
+  eventName: z.string(),
+  sessionName: z.string(),
+  lapTimeSeries: z.array(z.unknown()),
+  tyreStrategies: z.array(z.unknown()),
+}).passthrough();
+
+export const FastF1TelemetryEnvelopeSchema = z.object({
+  source: z.literal('fastf1'),
+  generatedAt: z.string().min(1),
+  season: z.string().min(1),
+  round: z.string().min(1),
+  session: z.string().min(1),
+  eventName: z.string(),
+  telemetry: z.object({}).passthrough(),
+}).passthrough();

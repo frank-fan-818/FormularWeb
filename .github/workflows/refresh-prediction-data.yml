@@ -1,0 +1,72 @@
+name: Refresh prediction data
+
+on:
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: Season to refresh; defaults to the current UTC year
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh-prediction-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Resolve season
+        id: season
+        shell: bash
+        run: |
+          season="${{ inputs.season }}"
+          if [ -z "$season" ]; then season="$(date -u +%Y)"; fi
+          echo "value=$season" >> "$GITHUB_OUTPUT"
+
+      - name: Sync completed races
+        run: npm run prediction:sync -- --season "${{ steps.season.outputs.value }}"
+
+      - name: Verify prediction code
+        run: npx vitest run src/utils/currentSeasonPredictionData.test.ts src/utils/raceWinnerPrediction.test.ts
+
+      - run: npm run type-check
+
+      - name: Refresh rolling backtest
+        run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: prediction-refresh-diagnostics
+          path: |
+            data/prediction/seasons/
+            docs/model-artifacts/winner-prediction-backtest.json
+
+      - name: Create or update refresh PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/prediction-data-${{ steps.season.outputs.value }}
+          delete-branch: true
+          commit-message: 'chore: refresh F1 prediction data'
+          title: 'chore: refresh F1 prediction data (${{ steps.season.outputs.value }})'
+          body: |
+            Automated refresh of completed Jolpica races and the rolling prediction backtest.
+            Incomplete race weekends are excluded; merge only after CI passes.
+          labels: automated,data

@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { fiaCarUpgradesApi } from '@/api/fiaCarUpgrades';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 
-export function useFiaRaceUpgrades(season: string, round: string | undefined) {
+export function useFiaRaceUpgrades(season: string, round: string | undefined, enabled = true) {
   const [data, setData] = useState<FiaRaceUpgradeSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!season || !round) {
+    if (!enabled || !season || !round) {
       setData(null);
       setLoading(false);
       setError(null);
@@ -40,7 +40,7 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [round, season]);
+  }, [enabled, round, season]);
 
   return { data, loading, error };
 }

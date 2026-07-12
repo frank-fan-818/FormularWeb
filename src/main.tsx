@@ -16,8 +16,19 @@ initWebVitals();
 // Auto-reload when old JS chunks 404 after Vercel deployment
 window.addEventListener('unhandledrejection', (e) => {
   const msg = (e.reason as Error)?.message || '';
+  const name = (e.reason as Error)?.name || '';
   if (msg.includes('Failed to fetch dynamically imported module')
-      || msg.includes('Importing a module script failed')) {
-    window.location.reload();
+      || msg.includes('Importing a module script failed')
+      || msg.includes('Loading chunk')
+      || name === 'ChunkLoadError') {
+    const recoveryKey = 'f1-chunk-recovery-attempted';
+    const lastAttempt = Number(sessionStorage.getItem(recoveryKey) || 0);
+    if (!Number.isFinite(lastAttempt) || Date.now() - lastAttempt > 5 * 60 * 1000) {
+      sessionStorage.setItem(recoveryKey, String(Date.now()));
+      void navigator.serviceWorker?.getRegistration()
+        .then((registration) => registration?.update())
+        .catch(() => undefined)
+        .finally(() => window.location.reload());
+    }
   }
 });

@@ -1,7 +1,7 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.9.3",
+  "version": "0.10.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -22,7 +22,10 @@
     "fia:import-upgrades-db": "ts-node-esm ./scripts/import-fia-car-upgrades-db.ts",
     "fia:import-tech-updates": "ts-node-esm ./scripts/import-fia-tech-updates.ts",
     "import:race-sessions": "ts-node-esm ./scripts/import-race-session-results.ts",
-    "lighthouse": "lhci autorun"
+    "prediction:sync": "tsx ./scripts/sync-current-season-prediction-data.ts",
+    "prediction:backtest": "tsx ./scripts/backtest-winner-prediction.ts",
+    "lighthouse": "lhci autorun",
+    "budget:performance": "node scripts/check-performance-budget.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",

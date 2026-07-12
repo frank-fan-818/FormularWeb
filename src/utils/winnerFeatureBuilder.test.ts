@@ -239,6 +239,8 @@ describe('buildStandingsFeatures', () => {
     points,
     wins,
     totalDrivers: 20,
+    racesCompleted: 10,
+    fieldPointsTotal: 1000,
   });
 
   it('championship leader gets positive advantage', () => {
@@ -609,8 +611,9 @@ describe('buildWinnerFeatureVector', () => {
     const input = makeFullInput({ driverRecentForm: undefined, constructorRecentForm: undefined });
     const vector = buildWinnerFeatureVector(input);
     expect(Object.keys(vector).length).toBe(WINNER_PREDICTION_FEATURES.length);
-    // Sequence features should be near-neutral
-    expect(Math.abs(vector.driverSequenceMomentum)).toBeLessThan(0.2);
+    expect(vector.driverSequenceMomentum).toBe(0);
+    expect(vector.driverRecentWinRate).toBe(0);
+    expect(vector.constructorRecentWinRate).toBe(0);
   });
 });
 

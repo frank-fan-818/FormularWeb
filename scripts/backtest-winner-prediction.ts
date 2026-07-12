@@ -26,7 +26,9 @@ import {
   type ResidualWinnerTrainingSample,
 } from '../src/utils/raceWinnerNonlinearPrediction.ts';
 import { buildRaceWinnerSequenceEmbedding, type RaceWinnerSequenceStep } from '../src/utils/raceWinnerSequenceModel.ts';
+import { mergePredictionRaceSources } from '../src/utils/currentSeasonPredictionData.ts';
 import type { FiaCarUpgradeSummary } from '../src/utils/fiaCarUpgrades.ts';
+import type { PredictionSeasonRaceData, PredictionSeasonSnapshot } from '../src/types/predictionData.ts';
 
 interface RaceYaml {
   id: number;
@@ -275,6 +277,7 @@ interface PredictionReport {
 }
 
 const DATA_ROOT = path.join(process.cwd(), 'f1db-main', 'src', 'data', 'seasons');
+const PREDICTION_SNAPSHOT_ROOT = path.join(process.cwd(), 'data', 'prediction', 'seasons');
 const OUTPUT_PATH = path.join(process.cwd(), 'docs', 'model-artifacts', 'winner-prediction-backtest.json');
 const FIA_UPGRADES_PATH = path.join(process.cwd(), 'docs', 'model-artifacts', 'fia-car-upgrades-full-v2.json');
 const FIA_UPGRADES_FALLBACK_PATH = path.join(process.cwd(), 'docs', 'model-artifacts', 'fia-car-upgrades.json');
@@ -1538,7 +1541,76 @@ function buildConstructorSequenceEmbedding(
   return buildRaceWinnerSequenceEmbedding(sequence);
 }
 
-function loadSourceRaces(): SourceRace[] {
+function readPredictionSeasonRaces(): PredictionSeasonRaceData[] {
+  if (!existsSync(PREDICTION_SNAPSHOT_ROOT)) return [];
+
+  return readdirSync(PREDICTION_SNAPSHOT_ROOT)
+    .filter((fileName) => /^\d{4}\.json$/.test(fileName))
+    .flatMap((fileName) => {
+      try {
+        const snapshot = JSON.parse(
+          readFileSync(path.join(PREDICTION_SNAPSHOT_ROOT, fileName), 'utf8'),
+        ) as PredictionSeasonSnapshot;
+        return snapshot.schemaVersion === 1 ? snapshot.races : [];
+      } catch {
+        return [];
+      }
+    });
+}
+
+function isClassifiedStatus(status: string) {
+  return status === 'Finished' || /^\+\d+ Laps?$/.test(status);
+}
+
+function overlaySnapshotRace(
+  snapshotRace: PredictionSeasonRaceData,
+  localRace?: SourceRace,
+): SourceRace {
+  const { season, round } = snapshotRace;
+  const circuitId = localRace?.circuitId || snapshotRace.circuitId;
+  const mapResult = (result: PredictionSeasonRaceData['results'][number]): ResultYaml => ({
+    position: result.position,
+    driverId: result.driverId,
+    constructorId: result.constructorId,
+    points: result.points,
+    gridPosition: result.gridPosition > 0 ? result.gridPosition : null,
+    laps: result.laps,
+    reasonRetired: isClassifiedStatus(result.status) ? null : result.status,
+  });
+  const mapQualifying = (
+    result: PredictionSeasonRaceData['qualifying'][number],
+  ): QualifyingYaml => ({
+    position: result.position,
+    driverId: result.driverId,
+    constructorId: result.constructorId,
+    q1: result.q1,
+    q2: result.q2,
+    q3: result.q3,
+  });
+
+  return {
+    season,
+    round,
+    raceKey: `${season}-${round}`,
+    raceName: localRace?.raceName || snapshotRace.raceName,
+    circuitId,
+    era: getWinnerPredictionEra(season),
+    isSprintWeekend: snapshotRace.isSprintWeekend || Boolean(localRace?.isSprintWeekend),
+    results: snapshotRace.results.map(mapResult),
+    qualifying: snapshotRace.qualifying.length ? snapshotRace.qualifying.map(mapQualifying) : localRace?.qualifying || [],
+    practices: localRace?.practices || [[], [], []],
+    fastestLaps: localRace?.fastestLaps || [],
+    pitStops: localRace?.pitStops || [],
+    sprintResults: snapshotRace.sprintResults.length ? snapshotRace.sprintResults.map(mapResult) : localRace?.sprintResults || [],
+    sprintQualifying: snapshotRace.sprintQualifying.length
+      ? snapshotRace.sprintQualifying.map(mapQualifying)
+      : localRace?.sprintQualifying || [],
+    weather: localRace?.weather || blendWeather(readFastF1Weather(season, round), getCircuitWeatherPrior(circuitId)),
+    safety: localRace?.safety || readFastF1RaceSafetySummary(season, round),
+  };
+}
+
+function loadF1DbRaces(): SourceRace[] {
   return readdirSync(DATA_ROOT)
     .filter((seasonName) => /^\d+$/.test(seasonName))
     .flatMap((seasonName) => {
@@ -1578,8 +1650,17 @@ function loadSourceRaces(): SourceRace[] {
           };
         });
     })
-    .filter((race) => race.results.some((result) => toNumber(result.position) === 1))
     .sort((left, right) => left.season - right.season || left.round - right.round);
+}
+
+function loadSourceRaces(): SourceRace[] {
+  const localRaces = loadF1DbRaces();
+  const localByKey = new Map(localRaces.map((race) => [race.raceKey, race]));
+  const snapshotRaces = readPredictionSeasonRaces().map((race) =>
+    overlaySnapshotRace(race, localByKey.get(`${race.season}-${race.round}`)),
+  );
+  return mergePredictionRaceSources(localRaces, snapshotRaces)
+    .filter((race) => race.results.some((result) => toNumber(result.position) === 1));
 }
 
 function addHistoryItem<T>(history: Map<string, T[]>, key: string, item: T) {
@@ -2512,7 +2593,6 @@ function runRollingBacktest(
     const trainingGroups = [
       ...globalTrainingGroups,
       ...sameEraTrainingGroups,
-      ...recentTrainingGroups,
       ...recentTrainingGroups,
     ];
 

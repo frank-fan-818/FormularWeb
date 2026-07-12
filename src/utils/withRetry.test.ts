@@ -16,7 +16,7 @@ describe('withTimeout', () => {
 
     const promise = withTimeout(slow, 100);
     vi.advanceTimersByTime(200);
-    await expect(promise).rejects.toThrow(/超时/);
+    await expect(promise).rejects.toThrow(/timeout/i);
     vi.clearAllTimers();
     vi.useRealTimers();
   });
@@ -34,7 +34,7 @@ describe('withRetry', () => {
     vi.useFakeTimers();
 
     const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('操作超时 (100ms)'))
+      .mockRejectedValueOnce(new Error('Request timeout (100ms)'))
       .mockResolvedValueOnce('recovered');
 
     const promise = withRetry(fn, { maxRetries: 3, baseDelayMs: 100, timeoutMs: 50 });
@@ -54,15 +54,16 @@ describe('withRetry', () => {
   it('stops retrying after maxRetries exhausted', async () => {
     vi.useFakeTimers();
 
-    const timeoutErr = new Error('操作超时 (100ms)');
+    const timeoutErr = new Error('Request timeout (100ms)');
     const fn = vi.fn().mockRejectedValue(timeoutErr);
 
     const promise = withRetry(fn, { maxRetries: 2, baseDelayMs: 100, timeoutMs: 50 });
+    const rejection = expect(promise).rejects.toThrow(/timeout/i);
 
     // Run all timers to completion so no pending timers leak
     await vi.runAllTimersAsync();
 
-    await expect(promise).rejects.toThrow(/超时/);
+    await rejection;
     expect(fn).toHaveBeenCalledTimes(3); // initial + 2 retries
 
     vi.clearAllTimers();
@@ -137,7 +138,7 @@ describe('withRetry', () => {
   it('calls onRetry callback with attempt number', async () => {
     vi.useFakeTimers();
 
-    const timeoutErr = new Error('操作超时 (100ms)');
+    const timeoutErr = new Error('Request timeout (100ms)');
     const fn = vi.fn()
       .mockRejectedValueOnce(timeoutErr)
       .mockResolvedValueOnce('done');
@@ -165,5 +166,47 @@ describe('withRetry', () => {
     ).rejects.toThrow('Invalid input data');
 
     expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('aborts the underlying attempt when the timeout expires', async () => {
+    vi.useFakeTimers();
+    let attemptSignal: AbortSignal | undefined;
+    const promise = withRetry((signal) => {
+      attemptSignal = signal;
+      return new Promise(() => undefined);
+    }, { maxRetries: 0, timeoutMs: 100 });
+    const assertion = expect(promise).rejects.toThrow(/timeout/i);
+
+    await vi.advanceTimersByTimeAsync(101);
+    await assertion;
+    expect(attemptSignal?.aborted).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it('reports timeout even when the aborted operation rejects immediately', async () => {
+    vi.useFakeTimers();
+    const promise = withRetry((signal) => new Promise((_, reject) => {
+      signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')), { once: true });
+    }), { maxRetries: 0, timeoutMs: 100 });
+    const assertion = expect(promise).rejects.toMatchObject({ name: 'RequestTimeoutError' });
+
+    await vi.advanceTimersByTimeAsync(101);
+    await assertion;
+    vi.useRealTimers();
+  });
+
+  it('disables attempt timeout when timeoutMs is zero', async () => {
+    await expect(withRetry(async () => 'ok', { timeoutMs: 0 })).resolves.toBe('ok');
+  });
+
+  it('does not start an attempt after caller cancellation', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fn = vi.fn().mockResolvedValue('unexpected');
+
+    await expect(withRetry(fn, { signal: controller.signal })).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(fn).not.toHaveBeenCalled();
   });
 });

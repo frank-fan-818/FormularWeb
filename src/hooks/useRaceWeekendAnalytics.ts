@@ -13,13 +13,14 @@ export function useRacePreviewSummary(
   season: string,
   round: string | undefined,
   circuitId: string | undefined,
+  enabled = true,
 ) {
   const [data, setData] = useState<RacePreviewSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!season || !round || !circuitId) {
+    if (!enabled || !season || !round || !circuitId) {
       setData(null);
       setLoading(false);
       setError(null);
@@ -51,7 +52,7 @@ export function useRacePreviewSummary(
     return () => {
       cancelled = true;
     };
-  }, [circuitId, round, season]);
+  }, [circuitId, enabled, round, season]);
 
   return { data, loading, error };
 }

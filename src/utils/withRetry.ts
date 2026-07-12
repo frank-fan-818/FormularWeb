@@ -1,116 +1,122 @@
-/**
- * Generic timeout + exponential-backoff retry utility.
- *
- * Rules (from reliability skill §2):
- * - External calls MUST have a timeout.
- * - Retry at most 3 times with exponential backoff (1s → 2s → 4s).
- * - Only retry on TimeoutError, HTTP 429, or HTTP 5xx.
- * - Never retry on HTTP 4xx client errors or business logic errors.
- */
+export class RequestTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`Request timeout (${timeoutMs}ms)`);
+    this.name = 'RequestTimeoutError';
+  }
+}
 
 export interface RetryOptions {
-  /** Maximum retry attempts (default 3). */
   maxRetries?: number;
-  /** Base delay in ms for exponential backoff (default 1000). */
   baseDelayMs?: number;
-  /** Timeout in ms for each attempt. */
   timeoutMs?: number;
-  /** Callback invoked before each retry. */
+  signal?: AbortSignal;
+  jitterRatio?: number;
   onRetry?: (attempt: number, error: Error) => void;
 }
 
-const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'onRetry'>> = {
-  maxRetries: 3,
-  baseDelayMs: 1000,
-  timeoutMs: 5000,
+const DEFAULT_OPTIONS = {
+  maxRetries: 2,
+  baseDelayMs: 350,
+  timeoutMs: 8000,
+  jitterRatio: 0.2,
 };
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function abortError(): DOMException {
+  return new DOMException('Request aborted', 'AbortError');
 }
 
-/**
- * Execute a Promise with a timeout. If the promise doesn't resolve within
- * `timeoutMs`, it rejects with a TimeoutError.
- */
-export async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T> {
-  if (timeoutMs <= 0) return promise;
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw abortError();
+}
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => {
-      reject(new Error(`操作超时 (${timeoutMs}ms)`));
-    }, timeoutMs);
-  });
-
-  try {
-    const result = await Promise.race([promise, timeout]);
-    return result;
-  } finally {
-    if (timer !== undefined) {
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    throwIfAborted(signal);
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => {
       clearTimeout(timer);
-    }
+      reject(abortError());
+    }, { once: true });
+  });
+}
+
+export async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  if (timeoutMs <= 0) return promise;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new RequestTimeoutError(timeoutMs)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
-/**
- * Determine if an error is retryable.
- * Retry on: TimeoutError, HTTP 429 (rate limit), HTTP 5xx (server errors).
- * Do NOT retry on: HTTP 4xx (client errors), other errors.
- */
-function isRetryable(error: Error): boolean {
-  const message = error.message.toLowerCase();
-  // Timeout
-  if (message.includes('timeout') || message.includes('超时')) return true;
-  // Axios-style HTTP errors
-  if ('response' in (error as unknown as Record<string, unknown>)) {
-    const status = (error as unknown as { response?: { status?: number } }).response?.status;
-    if (status !== undefined) {
-      // 429 Too Many Requests, or 5xx Server Error
-      return status === 429 || (status >= 500 && status <= 599);
-    }
-  }
-  return false;
+function statusOf(error: Error): number | undefined {
+  const candidate = error as Error & { response?: { status?: number }; status?: number };
+  return candidate.response?.status ?? candidate.status;
 }
 
-/**
- * Execute an async function with retry logic.
- *
- * Each attempt is wrapped in a timeout. On failure, if the error is retryable
- * and we're under maxRetries, we wait with exponential backoff and retry.
- */
+function retryAfterMsOf(error: Error): number {
+  const value = (error as Error & { retryAfterMs?: number }).retryAfterMs;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+export function isRetryableRequestError(error: Error): boolean {
+  if (error.name === 'AbortError') return false;
+  if (error instanceof RequestTimeoutError || /timeout|network|failed to fetch/i.test(error.message)) return true;
+  const status = statusOf(error);
+  return status === 408 || status === 429 || (status !== undefined && status >= 500 && status <= 599);
+}
+
+function linkAbortSignal(parent: AbortSignal | undefined, child: AbortController): () => void {
+  if (!parent) return () => undefined;
+  const abort = () => child.abort(parent.reason);
+  parent.addEventListener('abort', abort, { once: true });
+  return () => parent.removeEventListener('abort', abort);
+}
+
 export async function withRetry<T>(
-  fn: () => Promise<T>,
+  fn: (signal: AbortSignal) => Promise<T>,
   options: RetryOptions = {},
 ): Promise<T> {
-  const { maxRetries, baseDelayMs, timeoutMs } = {
-    ...DEFAULT_OPTIONS,
-    ...options,
-  };
-
+  const settings = { ...DEFAULT_OPTIONS, ...options };
   let lastError: Error | undefined;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= settings.maxRetries; attempt += 1) {
+    throwIfAborted(settings.signal);
+    const attemptController = new AbortController();
+    const unlink = linkAbortSignal(settings.signal, attemptController);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     try {
-      return await withTimeout(fn(), timeoutMs);
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (attempt < maxRetries && isRetryable(lastError)) {
-        const delay = Math.min(baseDelayMs * Math.pow(2, attempt), 8000);
-        options.onRetry?.(attempt + 1, lastError);
-        await sleep(delay);
-        continue;
+      if (settings.timeoutMs <= 0) {
+        return await fn(attemptController.signal);
       }
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new RequestTimeoutError(settings.timeoutMs));
+          attemptController.abort();
+        }, settings.timeoutMs);
+      });
+      return await Promise.race([fn(attemptController.signal), timeoutPromise]);
+    } catch (value) {
+      lastError = value instanceof Error ? value : new Error(String(value));
+      if (settings.signal?.aborted) throw abortError();
+      if (attempt >= settings.maxRetries || !isRetryableRequestError(lastError)) throw lastError;
 
-      throw lastError;
+      options.onRetry?.(attempt + 1, lastError);
+      const exponential = Math.min(settings.baseDelayMs * (2 ** attempt), 8000);
+      const jitter = exponential * settings.jitterRatio * ((Math.random() * 2) - 1);
+      await sleep(Math.max(retryAfterMsOf(lastError), exponential + jitter, 0), settings.signal);
+    } finally {
+      if (timer) clearTimeout(timer);
+      unlink();
     }
   }
 
-  // Unreachable — the loop above always either returns or throws
-  throw lastError ?? new Error('withRetry: unexpected end');
+  throw lastError ?? new Error('Request failed');
 }

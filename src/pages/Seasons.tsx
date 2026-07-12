@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin, Tabs } from 'antd';
+import { Card, Tabs } from 'antd';
 import { Helmet } from 'react-helmet-async';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
@@ -17,6 +17,10 @@ const TEXT = {
   team: '\u8f66\u961f',
   gap: '\u5dee\u8ddd',
   leader: '\u9886\u5148',
+  loading: '\u6b63\u5728\u52a0\u8f7d\u79ef\u5206\u699c...',
+  unavailable: '\u79ef\u5206\u699c\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002',
+  stale: '\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e\uff0c\u540e\u53f0\u4ecd\u5728\u66f4\u65b0\u3002',
+  retry: '\u91cd\u8bd5',
 };
 
 function formatGap(points: string, leaderPoints: number): string {
@@ -31,7 +35,15 @@ function formatGap(points: string, leaderPoints: number): string {
 const Seasons = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { driverStandings, constructorStandings, loading } = useSeasonData(currentSeason);
+  const {
+    driverStandings,
+    constructorStandings,
+    loading,
+    error,
+    isStale,
+    refetch,
+    resources,
+  } = useSeasonData(currentSeason);
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
 
@@ -47,6 +59,16 @@ const Seasons = () => {
             <span>{TEXT.team}</span>
             <span>{TEXT.points}</span>
           </div>
+          {resources.drivers.loading && driverStandings.length === 0 ? (
+            <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
+              {Array.from({ length: 5 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
+            </div>
+          ) : resources.drivers.error && driverStandings.length === 0 ? (
+            <div className="season-resource-error" role="alert">
+              <span>{TEXT.unavailable}</span>
+              <button type="button" onClick={resources.drivers.refetch}>{TEXT.retry}</button>
+            </div>
+          ) : null}
           {driverStandings.map((standing, index) => {
             const constructor = standing.Constructors[0];
             const teamColor = getTeamColor(constructor.constructorId);
@@ -104,6 +126,16 @@ const Seasons = () => {
             <span>{TEXT.nationality}</span>
             <span>{TEXT.points}</span>
           </div>
+          {resources.constructors.loading && constructorStandings.length === 0 ? (
+            <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
+              {Array.from({ length: 5 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
+            </div>
+          ) : resources.constructors.error && constructorStandings.length === 0 ? (
+            <div className="season-resource-error" role="alert">
+              <span>{TEXT.unavailable}</span>
+              <button type="button" onClick={resources.constructors.refetch}>{TEXT.retry}</button>
+            </div>
+          ) : null}
           {constructorStandings.map((standing, index) => {
             const teamColor = getTeamColor(standing.Constructor.constructorId);
             const darkTeamColor = getTeamDarkColor(standing.Constructor.constructorId);
@@ -115,6 +147,14 @@ const Seasons = () => {
                 hoverable
                 style={{ animationDelay: `${index * 0.035}s`, borderLeftColor: teamColor }}
                 onClick={() => navigate(`/constructors/${standing.Constructor.constructorId}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`/constructors/${standing.Constructor.constructorId}`);
+                  }
+                }}
               >
                 <div className="official-rank">P{standing.position}</div>
                 <div className="official-identity">
@@ -147,9 +187,21 @@ const Seasons = () => {
       </Helmet>
       <h1 className="page-title"><span>{currentSeason} {TEXT.seasonStandings}</span></h1>
 
+      {(isStale || (error && (driverStandings.length > 0 || constructorStandings.length > 0))) ? (
+        <div className="season-data-notice" role="status">
+          <span>{TEXT.stale}</span>
+          <button type="button" onClick={refetch}>{TEXT.retry}</button>
+        </div>
+      ) : null}
+
       {loading ? (
-        <div className="loading-container">
-          <Spin size="large" />
+        <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
+          {Array.from({ length: 6 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
+        </div>
+      ) : driverStandings.length === 0 && constructorStandings.length === 0 ? (
+        <div className="season-empty-state" role="alert">
+          <p>{TEXT.unavailable}</p>
+          <button type="button" onClick={refetch}>{TEXT.retry}</button>
         </div>
       ) : (
         <Tabs defaultActiveKey="drivers" items={tabItems} className="official-season-tabs" />

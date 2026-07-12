@@ -23,17 +23,17 @@ const SAMPLE_CASES: Array<{
   expected: Partial<WinnerPredictionOutput>;
 }> = [
   // 2024 season sample cases
-  { input: { season: '2024', round: '1' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2024', round: '5' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2024', round: '10' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2024', round: '15' }, expected: { driverId: 'max_verstappen' } },
+  { input: { season: '2024', round: '1' }, expected: { driverId: 'max-verstappen' } },
+  { input: { season: '2024', round: '5' }, expected: { driverId: 'max-verstappen' } },
+  { input: { season: '2024', round: '10' }, expected: { driverId: 'george-russell' } },
+  { input: { season: '2024', round: '15' }, expected: { driverId: 'lando-norris' } },
   // Additional cases for variety
-  { input: { season: '2023', round: '1' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2023', round: '10' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2023', round: '20' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2022', round: '1' }, expected: { driverId: 'charles_leclerc' } },
-  { input: { season: '2022', round: '10' }, expected: { driverId: 'max_verstappen' } },
-  { input: { season: '2022', round: '20' }, expected: { driverId: 'max_verstappen' } },
+  { input: { season: '2023', round: '1' }, expected: { driverId: 'max-verstappen' } },
+  { input: { season: '2023', round: '10' }, expected: { driverId: 'max-verstappen' } },
+  { input: { season: '2023', round: '20' }, expected: { driverId: 'max-verstappen' } },
+  { input: { season: '2022', round: '1' }, expected: { driverId: 'charles-leclerc' } },
+  { input: { season: '2022', round: '10' }, expected: { driverId: 'carlos-sainz' } },
+  { input: { season: '2022', round: '20' }, expected: { driverId: 'george-russell' } },
 ];
 
 export async function evaluateWinnerModel(
