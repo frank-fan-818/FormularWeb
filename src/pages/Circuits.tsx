@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
@@ -7,37 +7,55 @@ import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import type { Race } from '@/types';
+import type { Circuit, Race, SupabaseCircuitListRow } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './Circuits.css';
 
+interface CircuitAtlasItem extends Circuit {
+  length: string | number | null;
+  turns: string | number | null;
+  first_race: string | number | null;
+  total_races: string | number | null;
+  race_laps: string | number | null;
+  total_distance: string | number | null;
+  lap_record: string | null;
+  lap_record_driver: string | null;
+  lap_record_year: string | number | null;
+  _supabaseId: string;
+  index: number;
+}
+
+function formatCircuitLength(value: string | number | null): string {
+  if (value === null || value === '') return '--';
+  const text = String(value).trim();
+  return /\bkm$/i.test(text) ? text : `${text} km`;
+}
+
 const Circuits = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { races, loading: racesLoading } = useSeasonRacesCached(currentSeason);
-  const [circuits, setCircuits] = useState<any[]>([]);
-  const hasEnrichedRef = useRef(false);
-  const fetchCircuitMetadata = useCallback(() => supabaseApi.circuits.getListMetadata(), []);
+  const fetchCircuitMetadata = useCallback(
+    () => supabaseApi.circuits.getListMetadata<SupabaseCircuitListRow>(),
+    [],
+  );
   const { data: circuitMetadata } = useSupabaseMetadata(
     'supabase-circuit-list-metadata',
     fetchCircuitMetadata,
     races.length > 0,
   );
 
-  useEffect(() => {
-    if (races.length === 0) return;
+  const circuits = useMemo<CircuitAtlasItem[]>(() => {
+    const circuitMap = new Map(
+      (circuitMetadata || []).map((circuit) => [circuit.circuit_id, circuit]),
+    );
 
-    const enrichWithMetadata = circuitMetadata && circuitMetadata.length > 0;
-    const circuitMap = enrichWithMetadata
-      ? new Map(circuitMetadata.map((circuit) => [circuit.circuit_id, circuit]))
-      : null;
-
-    const formattedCircuits = races.map((race, index) => {
+    return races.map((race, index) => {
       const ergastId = race.Circuit.circuitId;
       const supabaseId = getSupabaseCircuitId(ergastId);
-      const dbCircuit = circuitMap?.get(supabaseId);
+      const dbCircuit = circuitMap.get(supabaseId);
 
       return {
         ...race.Circuit,
@@ -54,14 +72,6 @@ const Circuits = () => {
         index,
       };
     });
-
-    // Only update if data actually changed or this is the first enrichment
-    if (!enrichWithMetadata || !hasEnrichedRef.current) {
-      setCircuits(formattedCircuits);
-      if (enrichWithMetadata) {
-        hasEnrichedRef.current = true;
-      }
-    }
   }, [races, circuitMetadata]);
 
   const loading = racesLoading && circuits.length === 0;
@@ -111,7 +121,7 @@ const Circuits = () => {
                 <p><EnvironmentOutlined /> {circuit.Location.locality}</p>
               </div>
               <div className="circuit-atlas-specs">
-                <span><small>Length</small><strong>{circuit.length ? `${circuit.length} km` : '--'}</strong></span>
+                <span><small>Length</small><strong>{formatCircuitLength(circuit.length)}</strong></span>
                 <span><small>Turns</small><strong>{circuit.turns || '--'}</strong></span>
                 <span><small>First GP</small><strong>{circuit.first_race || '--'}</strong></span>
               </div>

@@ -1,0 +1,106 @@
+/* Classification */
+
+.race-classification-shell {
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.race-classification-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  background:
+    repeating-linear-gradient(120deg, transparent 0 18px, rgba(255, 255, 255, 0.025) 18px 19px),
+    var(--surface-dark);
+}
+
+.race-classification-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--race-display);
+  font-size: 30px;
+}
+
+.race-classification-heading p {
+  max-width: 480px;
+  margin: 0;
+  color: #9ca3af;
+  font-size: var(--text-xs);
+  text-align: right;
+}
+
+.race-session-tabs > .ant-tabs-nav {
+  margin: 0;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border-secondary);
+  background: var(--bg-secondary);
+}
+
+.race-session-tabs .ant-tabs-tab {
+  min-height: 62px;
+  padding: 0 var(--space-3);
+}
+
+.race-session-tabs .ant-tabs-ink-bar {
+  height: 3px !important;
+  background: var(--f1-red);
+}
+
+.race-session-tab-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.race-session-tab-label b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-family: var(--race-display);
+  font-size: 11px;
+}
+
+.race-session-tabs .ant-tabs-tab-active .race-session-tab-label b {
+  border-color: var(--f1-red);
+  background: var(--f1-red);
+  color: #fff;
+}
+
+.race-classification-table {
+  padding: var(--space-2) var(--space-4) var(--space-5);
+}
+
+.race-classification-table .ant-table {
+  background: transparent;
+}
+
+.race-classification-table .ant-table-thead > tr > th {
+  border-bottom: 1px solid var(--surface-dark);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--race-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.race-classification-table .ant-table-tbody > tr > td {
+  height: 58px;
+  border-bottom-color: var(--border-secondary);
+  background: transparent;
+}
+
+.race-classification-table .ant-table-tbody > tr:hover > td {
+  background: color-mix(in srgb, var(--f1-red-glow) 45%, var(--bg-secondary)) !important;
+}

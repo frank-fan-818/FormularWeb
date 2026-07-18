@@ -1,27 +1,23 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Empty, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import type { QualifyingResult, Result } from '@/types';
-import { getTeamColor } from '@/utils/teamColors';
-import { DriverAvatar } from '@/utils/driverImages';
-import { ConstructorLogo } from '@/utils/constructorLogos';
-import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
+import type { QualifyingResult, RaceClassificationSessionKey, Result } from '@/types';
+import { DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
 import { RaceOverviewPanel } from '@/pages/Race/shared/components/RaceOverviewPanel';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { SessionDriverCell } from '@/pages/Race/shared/components/SessionDriverCell';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { useRaceData } from './RaceContext';
-import '../RaceDetail.css';
 
 interface TabItem {
-  key: string;
+  key: RaceClassificationSessionKey;
   label: string;
   data: (Result | QualifyingResult)[];
   columns: ColumnsType<Result | QualifyingResult>;
 }
 
-const SESSION_CODES: Record<string, string> = {
+const SESSION_CODES: Record<RaceClassificationSessionKey, string> = {
   fp1: 'FP1',
   fp2: 'FP2',
   fp3: 'FP3',
@@ -33,7 +29,6 @@ const SESSION_CODES: Record<string, string> = {
 
 const RaceResults = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const {
     raceResults,
     qualifyingResults,
@@ -50,8 +45,8 @@ const RaceResults = () => {
     sessionLoadErrors,
     retryActiveSession,
     fastF1Analytics,
-    activeTab,
-    setActiveTab,
+    activeSessionTab,
+    setActiveSessionTab,
   } = useRaceData();
 
   const hasFp1 =
@@ -114,35 +109,9 @@ const RaceResults = () => {
       {
         title: t('driver'),
         key: 'driver',
-        render: (_: unknown, record: Result) => {
-          const color = getTeamColor(record.Constructor.constructorId);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
-              <span
-                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: color,
-                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  borderRadius: 3,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                {record.Driver.code}
-              </span>
-              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
-              <span style={{ fontWeight: 500, fontSize: 13 }}>
-                {record.Driver.givenName} {record.Driver.familyName}
-              </span>
-            </div>
-          );
-        },
+        render: (_: unknown, record: Result) => (
+          <SessionDriverCell driver={record.Driver} constructor={record.Constructor} />
+        ),
       },
       { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 60 },
       {
@@ -171,7 +140,7 @@ const RaceResults = () => {
         render: (points: string) => <span className="points">{points}</span>,
       },
     ];
-  }, [raceResults, t, navigate]);
+  }, [raceResults, t]);
 
   // Qualifying columns ------------------------------------------------------
   const qualifyingColumns: ColumnsType<QualifyingResult> = useMemo(
@@ -180,41 +149,15 @@ const RaceResults = () => {
       {
         title: t('driver'),
         key: 'driver',
-        render: (_: unknown, record: QualifyingResult) => {
-          const color = getTeamColor(record.Constructor.constructorId);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
-              <span
-                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: color,
-                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  borderRadius: 3,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                {record.Driver.code}
-              </span>
-              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
-              <span style={{ fontWeight: 500, fontSize: 13 }}>
-                {record.Driver.givenName} {record.Driver.familyName}
-              </span>
-            </div>
-          );
-        },
+        render: (_: unknown, record: QualifyingResult) => (
+          <SessionDriverCell driver={record.Driver} constructor={record.Constructor} />
+        ),
       },
       { title: 'Q1', dataIndex: 'Q1', key: 'Q1', width: 90 },
       { title: 'Q2', dataIndex: 'Q2', key: 'Q2', width: 90 },
       { title: 'Q3', dataIndex: 'Q3', key: 'Q3', width: 90 },
     ],
-    [t, navigate],
+    [t],
   );
 
   // Sprint Qualifying columns -----------------------------------------------
@@ -224,41 +167,15 @@ const RaceResults = () => {
       {
         title: t('driver'),
         key: 'driver',
-        render: (_: unknown, record: QualifyingResult) => {
-          const color = getTeamColor(record.Constructor.constructorId);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
-              <span
-                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: color,
-                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  borderRadius: 3,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                {record.Driver.code}
-              </span>
-              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
-              <span style={{ fontWeight: 500, fontSize: 13 }}>
-                {record.Driver.givenName} {record.Driver.familyName}
-              </span>
-            </div>
-          );
-        },
+        render: (_: unknown, record: QualifyingResult) => (
+          <SessionDriverCell driver={record.Driver} constructor={record.Constructor} />
+        ),
       },
       { title: 'SQ1', dataIndex: 'Q1', key: 'Q1', width: 90 },
       { title: 'SQ2', dataIndex: 'Q2', key: 'Q2', width: 90 },
       { title: 'SQ3', dataIndex: 'Q3', key: 'Q3', width: 90 },
     ],
-    [t, navigate],
+    [t],
   );
 
   // Sprint columns ----------------------------------------------------------
@@ -269,35 +186,9 @@ const RaceResults = () => {
       {
         title: t('driver'),
         key: 'driver',
-        render: (_: unknown, record: Result) => {
-          const color = getTeamColor(record.Constructor.constructorId);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
-              <span
-                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: color,
-                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  borderRadius: 3,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                {record.Driver.code}
-              </span>
-              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
-              <span style={{ fontWeight: 500, fontSize: 13 }}>
-                {record.Driver.givenName} {record.Driver.familyName}
-              </span>
-            </div>
-          );
-        },
+        render: (_: unknown, record: Result) => (
+          <SessionDriverCell driver={record.Driver} constructor={record.Constructor} />
+        ),
       },
       { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 60 },
       {
@@ -313,7 +204,7 @@ const RaceResults = () => {
         render: (points: string) => <span className="points">{points}</span>,
       },
     ],
-    [t, navigate],
+    [t],
   );
 
   // Practice columns --------------------------------------------------------
@@ -323,35 +214,9 @@ const RaceResults = () => {
       {
         title: t('driver'),
         key: 'driver',
-        render: (_: unknown, record: Result) => {
-          const color = getTeamColor(record.Constructor.constructorId);
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <DriverAvatar driverId={record.Driver.driverId} size={32} givenName={record.Driver.givenName} familyName={record.Driver.familyName} />
-              <span
-                onClick={() => navigate(`/drivers/${record.Driver.driverId}`)}
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: color,
-                  color: LIGHT_TAG_COLORS.has(color) ? '#111827' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  borderRadius: 3,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                {record.Driver.code}
-              </span>
-              <ConstructorLogo constructorId={record.Constructor.constructorId} size={24} />
-              <span style={{ fontWeight: 500, fontSize: 13 }}>
-                {record.Driver.givenName} {record.Driver.familyName}
-              </span>
-            </div>
-          );
-        },
+        render: (_: unknown, record: Result) => (
+          <SessionDriverCell driver={record.Driver} constructor={record.Constructor} />
+        ),
       },
       {
         title: t('result'),
@@ -360,7 +225,7 @@ const RaceResults = () => {
       },
       { title: t('laps'), dataIndex: 'laps', key: 'laps', width: 60 },
     ],
-    [t, navigate],
+    [t],
   );
 
   // Build tab items ---------------------------------------------------------
@@ -412,7 +277,7 @@ const RaceResults = () => {
   ];
 
   const effectiveActiveTab =
-    tabItems.find((item) => item.key === activeTab)?.key
+    tabItems.find((item) => item.key === activeSessionTab)?.key
     || tabItems.find((item) => item.key === 'race')?.key
     || tabItems[0]?.key
     || 'race';
@@ -448,7 +313,7 @@ const RaceResults = () => {
         <Tabs
           className="race-session-tabs"
           activeKey={effectiveActiveTab}
-          onChange={setActiveTab}
+          onChange={(key) => setActiveSessionTab(key as RaceClassificationSessionKey)}
           items={tabItems.map((item) => ({
             key: item.key,
             label: (

@@ -11,6 +11,7 @@ import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import type { Driver, SupabaseDriverListRow } from '@/types';
 import './Drivers.css';
 
 const TEXT = {
@@ -27,14 +28,30 @@ const TEXT = {
 interface DriverLineupGroup {
   constructorId: string;
   constructorName: string;
-  drivers: any[];
+  drivers: DriverLineupItem[];
+}
+
+interface DriverLineupItem extends Driver {
+  total_wins: number | null;
+  total_pole_positions: number | null;
+  total_fastest_laps: number | null;
+  total_race_starts: number | null;
+  constructorId: string;
+  constructorName: string;
+  position: string;
+  points: string;
+  seasonWins: string;
+  index: number;
 }
 
 const Drivers = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { driverStandings, loading: standingsLoading } = useDriverStandingsCached(currentSeason);
-  const fetchDriverMetadata = useCallback(() => supabaseApi.drivers.getListMetadata(), []);
+  const fetchDriverMetadata = useCallback(
+    () => supabaseApi.drivers.getListMetadata<SupabaseDriverListRow>(),
+    [],
+  );
   const { data: driverMetadata } = useSupabaseMetadata(
     'supabase-driver-list-metadata',
     fetchDriverMetadata,
@@ -46,14 +63,15 @@ const Drivers = () => {
 
     return driverStandings.map((standing, index) => {
       const dbDriver = driverMap.get(standing.Driver.driverId);
+      const constructor = standing.Constructors[0];
       return {
         ...standing.Driver,
         total_wins: dbDriver?.total_wins || null,
         total_pole_positions: dbDriver?.total_pole_positions || null,
         total_fastest_laps: dbDriver?.total_fastest_laps || null,
         total_race_starts: dbDriver?.total_race_starts || null,
-        constructorId: standing.Constructors[0].constructorId,
-        constructorName: standing.Constructors[0].name,
+        constructorId: constructor?.constructorId || 'unknown',
+        constructorName: constructor?.name || '-',
         position: standing.position,
         points: standing.points,
         seasonWins: standing.wins,

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Tabs } from 'antd';
@@ -15,9 +15,8 @@ import {
 import { RaceDataProvider, useRaceData } from './RaceContext';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
+import { getRaceRouteSection } from '@/utils/race/raceSessionState';
 import '../RaceDetail.css';
-
-const RACE_TAB_KEYS = ['results', 'qualifying', 'race', 'sprint', 'info'] as const;
 
 const InnerLayout = () => {
   const { t } = useTranslation();
@@ -37,25 +36,19 @@ const InnerLayout = () => {
     activeWeekendMode,
     sessionLoadErrors,
     retryActiveSession,
-    setActiveTab,
   } = useRaceData();
 
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
   const hasSprint = (sprintResults && sprintResults.length > 0) || Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const requestedTab = pathSegments[pathSegments.length - 1] || 'results';
-  const routeTab = RACE_TAB_KEYS.includes(requestedTab as typeof RACE_TAB_KEYS[number])
-    ? requestedTab
-    : 'results';
+  const routeTab = getRaceRouteSection(location.pathname);
+  const activeSessionErrorKey = routeTab === 'qualifying' && sessionLoadErrors.sprintQualifying
+    ? 'sprintQualifying'
+    : routeTab;
   const insights = useMemo(
     () => buildRaceOverviewInsights(raceResults, qualifyingResults, fastF1Analytics),
     [fastF1Analytics, qualifyingResults, raceResults],
   );
-
-  useEffect(() => {
-    setActiveTab(routeTab);
-  }, [routeTab, setActiveTab]);
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
     return (
@@ -173,10 +166,16 @@ const InnerLayout = () => {
           <Button size="large" onClick={retryRaceData}>{'\u91cd\u8bd5'}</Button>
         </div>
       ) : null}
-      {sessionLoadErrors[routeTab] ? (
+      {sessionLoadErrors[activeSessionErrorKey] ? (
         <div className="race-partial-notice" role="alert">
-          <span>{sessionLoadErrors[routeTab]}，请重试以获取完整结果。</span>
+          <span>{sessionLoadErrors[activeSessionErrorKey]}，请重试以获取完整结果。</span>
           <Button onClick={retryActiveSession}>重试此场次</Button>
+        </div>
+      ) : null}
+      {sessionLoadErrors.discovery ? (
+        <div className="race-partial-notice" role="status">
+          <span>{sessionLoadErrors.discovery}，已按官方赛程显示可用场次。</span>
+          <Button onClick={retryActiveSession}>重新发现场次</Button>
         </div>
       ) : null}
 
@@ -184,7 +183,6 @@ const InnerLayout = () => {
         className="race-subpage-tabs"
         activeKey={routeTab}
         onChange={(key) => {
-          setActiveTab(key);
           navigate(`/races/${raceInfo.round}/${key}`, { replace: true });
         }}
         items={[

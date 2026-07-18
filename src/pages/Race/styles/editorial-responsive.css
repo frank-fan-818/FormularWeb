@@ -1,0 +1,245 @@
+/* Motion and responsive behavior */
+
+@keyframes race-command-reveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes race-content-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .race-command-main {
+    grid-template-columns: minmax(0, 1fr) minmax(310px, 0.75fr);
+    gap: var(--space-5);
+  }
+
+  .race-command-copy h1 { font-size: clamp(40px, 6vw, 62px); }
+  .race-overview-debrief { grid-template-columns: 1fr; }
+  .race-debrief-heading { grid-row: auto; min-height: 220px; }
+  .race-podium { padding-left: var(--space-5); }
+  .race-story-grid { margin-left: var(--space-5); }
+  .race-page-intro { grid-template-columns: auto minmax(0, 1fr); }
+  .race-page-intro-aside { grid-column: 2; }
+  .race-page-pulse { justify-content: flex-start; }
+}
+
+@media (max-width: 768px) {
+  .race-detail-page { gap: var(--space-3); }
+
+  .race-command {
+    min-height: 0;
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4) 0;
+  }
+
+  .race-command-round-mark {
+    right: 8px;
+    top: 28px;
+    font-size: 180px;
+  }
+
+  .race-command-utility {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
+  }
+
+  .race-command-championship { display: none; }
+  .race-command-state { justify-self: end; font-size: 9px; }
+
+  .race-command-main {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: var(--space-5);
+    min-height: 0;
+    padding: var(--space-5) 0;
+  }
+
+  .race-command-copy h1 {
+    gap: var(--space-2);
+    font-size: clamp(36px, 12vw, 54px);
+  }
+
+  .race-command-copy > p {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: var(--space-3);
+  }
+
+  .race-command-copy > p span::before { display: none; }
+
+  .race-command-snapshot {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .race-command-stat {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 2px;
+    min-height: 92px;
+    padding: var(--space-3);
+    border-right: 1px solid var(--race-command-line);
+    border-bottom: 0;
+  }
+
+  .race-command-stat:last-child { border-right: 0; }
+  .race-command-stat strong { font-size: 20px; }
+  .race-command-stat small { text-align: left; }
+
+  .race-command-footer {
+    justify-content: flex-start;
+    overflow-x: auto;
+    margin: 0 calc(var(--space-4) * -1);
+    padding: 0 var(--space-4);
+    white-space: nowrap;
+  }
+
+  .race-command-footer span:not(:first-child) { display: none; }
+
+  .race-subpage-tabs {
+    top: 56px;
+    overflow: hidden;
+  }
+
+  .race-subpage-tabs > .ant-tabs-nav { padding: 0 var(--space-2); }
+  .race-subpage-tabs .ant-tabs-tab { min-height: 58px; padding: 0 var(--space-3) !important; }
+  .race-command-tab-label { gap: var(--space-2); }
+  .race-command-tab-label > .anticon { font-size: 15px; }
+  .race-command-tab-label small { display: none; }
+
+  .race-page-intro {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-3);
+    min-height: 0;
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .race-page-intro-index {
+    min-width: 42px;
+    font-size: 58px;
+  }
+
+  .race-page-intro h2 { font-size: clamp(26px, 8vw, 36px); }
+  .race-page-intro-aside { grid-column: 1 / -1; width: 100%; }
+  .race-page-pulse { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .race-page-pulse > span { justify-content: center; min-width: 0; padding: 0 var(--space-2); }
+
+  .race-overview-debrief { border-radius: var(--radius-md); }
+  .race-debrief-heading { min-height: 200px; padding: var(--space-5); }
+  .race-debrief-heading h2 { font-size: 40px; }
+
+  .race-podium {
+    gap: var(--space-2);
+    min-height: 276px;
+    padding: var(--space-5) var(--space-3) var(--space-3);
+  }
+
+  .race-podium::after { right: var(--space-3); left: var(--space-3); }
+  .race-podium-driver { padding: var(--space-3) 4px var(--space-5); }
+  .race-podium-driver.position-1 { min-height: 230px; }
+  .race-podium-driver.position-2 { min-height: 198px; }
+  .race-podium-driver.position-3 { min-height: 180px; }
+  .race-podium-avatar { width: 56px !important; height: 56px !important; }
+  .race-podium-driver.position-1 .race-podium-avatar { width: 66px !important; height: 66px !important; }
+  .race-podium-team { display: none; }
+  .race-podium-driver > strong { font-size: 18px; }
+
+  .race-story-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 var(--space-3) var(--space-3);
+  }
+
+  .race-classification-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: var(--space-5);
+  }
+
+  .race-classification-heading p { text-align: left; }
+  .race-session-tabs > .ant-tabs-nav { padding: 0 var(--space-2); }
+  .race-session-tabs .ant-tabs-tab { min-height: 56px; padding: 0 var(--space-2); }
+  .race-session-tab-label { gap: 5px; }
+  .race-classification-table { padding: 0 var(--space-2) var(--space-3); }
+
+  .analysis-section-nav {
+    top: 118px;
+    padding: 0;
+  }
+
+  .analysis-section-nav-label { display: none; }
+  .analysis-section-nav a { min-height: 46px; padding: 0 var(--space-3); }
+
+  .fastf1-chart-card .ant-card-head,
+  .race-weekend-card .ant-card-head,
+  .race-weekend-post-card .ant-card-head {
+    min-height: 68px;
+  }
+
+  .fastf1-chart-card .ant-card-body,
+  .race-weekend-card .ant-card-body,
+  .race-weekend-post-card .ant-card-body { padding: var(--space-3); }
+
+  .fastf1-chart-card .ant-card-head-title,
+  .fastf1-chart-header,
+  .fastf1-chart-header > div,
+  .fastf1-chart-title,
+  .fastf1-chart-header p {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .race-info-overview { grid-template-columns: 1fr; gap: var(--space-4); }
+  .race-info-schedule-card { order: 1; }
+  .race-info-circuit-card { order: 2; }
+  .race-info-section { padding-top: var(--space-4); }
+  .race-info-section-heading small { text-align: left; }
+
+  .race-analysis-brief { grid-template-columns: 1fr; }
+  .race-analysis-brief article {
+    min-height: 108px;
+    padding: var(--space-4);
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .race-analysis-brief article:last-child { border-bottom: 0; }
+}
+
+@media (max-width: 430px) {
+  .race-command-meta > span { max-width: 100%; font-size: 10px; }
+  .race-command-stat { padding: 10px 7px; }
+  .race-command-stat > span { font-size: 8px; }
+  .race-command-stat small { font-size: 9px; }
+  .race-subpage-tabs .ant-tabs-tab { padding: 0 6px !important; }
+  .race-subpage-tabs .ant-tabs-nav-more { padding: 0 4px; }
+  .race-command-tab-label { gap: 3px; }
+  .race-command-tab-label > .anticon { font-size: 13px; }
+  .race-command-tab-label strong { font-size: 11px; }
+  .race-page-intro p { font-size: 13px; }
+  .race-page-pulse { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .race-podium { padding-right: var(--space-2); padding-left: var(--space-2); }
+  .race-podium-driver > strong { font-size: 16px; }
+  .race-podium-driver > em { font-size: 8px; }
+  .race-story-card > strong { font-size: 24px; }
+  .race-session-tab-label span { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .race-command,
+  .race-page-intro,
+  .race-overview-debrief {
+    animation: none;
+  }
+
+  .race-podium-driver,
+  .fastf1-chart-card,
+  .race-weekend-card,
+  .weekend-session {
+    transition: none;
+  }
+}

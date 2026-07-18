@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { Race } from '@/types';
+import type { Circuit, CircuitRouteState, Race } from '@/types';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import ProductMasthead from '@/components/product/ProductMasthead';
@@ -39,6 +39,20 @@ type CircuitRaceWithMetadata = Race & {
   is_sprint_weekend?: boolean;
 };
 
+function isCircuit(value: unknown): value is Circuit {
+  if (!value || typeof value !== 'object') return false;
+  const circuit = value as Partial<Circuit>;
+  return typeof circuit.circuitId === 'string'
+    && typeof circuit.circuitName === 'string'
+    && Boolean(circuit.Location && typeof circuit.Location === 'object');
+}
+
+function getCircuitRouteState(value: unknown): CircuitRouteState | null {
+  if (!value || typeof value !== 'object') return null;
+  const circuit = (value as { circuit?: unknown }).circuit;
+  return isCircuit(circuit) ? { circuit } : null;
+}
+
 function hasDisplayValue(value: unknown): boolean {
   return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '-';
 }
@@ -66,7 +80,7 @@ const CircuitDetail = () => {
     circuitRaces,
     loading,
     detailsLoading,
-  } = useCircuitDetailData(circuitId, currentSeason, location.state as { circuit?: any } | null);
+  } = useCircuitDetailData(circuitId, currentSeason, getCircuitRouteState(location.state));
 
   if (loading) {
     return (

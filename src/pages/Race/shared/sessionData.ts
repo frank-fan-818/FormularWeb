@@ -21,12 +21,14 @@ export function getPendingSessionTabs(
 }
 
 export function mergeUniqueSessionTabs(currentTabs: string[], nextTabs: string[]): string[] {
-  return [...currentTabs, ...nextTabs.filter((tabKey) => !currentTabs.includes(tabKey))];
+  const tabsToAdd = nextTabs.filter((tabKey) => !currentTabs.includes(tabKey));
+  return tabsToAdd.length ? [...currentTabs, ...tabsToAdd] : currentTabs;
 }
 
 export function removeSessionTabs(currentTabs: string[], tabsToRemove: string[]): string[] {
   const removalSet = new Set(tabsToRemove);
-  return currentTabs.filter((tabKey) => !removalSet.has(tabKey));
+  const nextTabs = currentTabs.filter((tabKey) => !removalSet.has(tabKey));
+  return nextTabs.length === currentTabs.length ? currentTabs : nextTabs;
 }
 
 export function getScheduledDeferredSessionTabs(race: Race | null): string[] {

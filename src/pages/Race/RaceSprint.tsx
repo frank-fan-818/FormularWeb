@@ -1,6 +1,6 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Table, Tabs } from 'antd';
+import { Button, Card, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
 import {
@@ -26,7 +26,6 @@ import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
-import '../RaceDetail.css';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -42,10 +41,18 @@ const RaceSprint = () => {
     fastF1SprintShootoutAnalytics,
     primaryLoading,
     isMobile,
+    loadingSessionTabs,
+    loadedSessionTabs,
+    sessionLoadErrors,
+    retrySession,
   } = useRaceData();
 
   // Local UI state for sprint-specific filtering
   const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedLapDrivers([]);
+  }, [round, season]);
 
   const handleLapDriverToggle = (driver: string) => {
     setSelectedLapDrivers((current) => {
@@ -294,8 +301,11 @@ const RaceSprint = () => {
     || sprintRaceTableData.length > 0
     || Boolean(activeSprintQualifyingAnalytics)
     || Boolean(fastF1SprintAnalytics);
+  const hasDeferredSprintError = Boolean(
+    sessionLoadErrors.sprintQualifying || sessionLoadErrors.sprint,
+  );
 
-  if (!primaryLoading && !hasSprintData) {
+  if (!primaryLoading && !loadingSessionTabs.length && !hasDeferredSprintError && !hasSprintData) {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
@@ -311,6 +321,31 @@ const RaceSprint = () => {
     );
   }
 
+  const renderDeferredSessionState = (
+    sessionKey: 'sprintQualifying' | 'sprint',
+    hasVisibleData: boolean,
+  ) => {
+    if (hasVisibleData) return null;
+    const error = sessionLoadErrors[sessionKey];
+    if (error) {
+      return (
+        <Card className="race-empty-command-card">
+          <div className="race-weekend-empty" role="alert">
+            <span>{error}</span>
+            <Button onClick={() => retrySession(sessionKey)}>重试此场次</Button>
+          </div>
+        </Card>
+      );
+    }
+    if (loadingSessionTabs.includes(sessionKey)) {
+      return <Card loading className="race-empty-command-card" />;
+    }
+    if (loadedSessionTabs.includes(sessionKey)) {
+      return <Card className="race-empty-command-card"><div className="race-weekend-empty">{t('noPreviewData')}</div></Card>;
+    }
+    return null;
+  };
+
   // ---- Tab items ----
   const tabItems = [
     {
@@ -318,6 +353,10 @@ const RaceSprint = () => {
       label: t('sprintQualifying'),
       children: (
         <div className="fastf1-analysis-stack">
+          {renderDeferredSessionState(
+            'sprintQualifying',
+            sprintQualifyingTableData.length > 0 || Boolean(sprintQualifyingRankingBarOption),
+          )}
           {/* Qualifying results table */}
           {sprintQualifyingTableData.length > 0 && (
             <Card
@@ -359,6 +398,7 @@ const RaceSprint = () => {
                   chartKey={`sprint-qualifying-ranking-${season}-${round}`}
                   height={isMobile ? 340 : 440}
                   option={sprintQualifyingRankingBarOption}
+                  ariaLabel="车手冲刺排位最快圈成绩与差距排名图。"
                 />
               </Suspense>
             </Card>
@@ -461,6 +501,10 @@ const RaceSprint = () => {
       label: t('sprint'),
       children: (
         <div className="fastf1-analysis-stack">
+          {renderDeferredSessionState(
+            'sprint',
+            sprintRaceTableData.length > 0 || Boolean(lapPaceOption) || Boolean(tyreStrategyOption),
+          )}
           {/* Sprint race results table */}
           {sprintRaceTableData.length > 0 && (
             <Card
@@ -553,6 +597,7 @@ const RaceSprint = () => {
                   chartKey={`sprint-laps-${season}-${round}`}
                   height={isMobile ? 300 : 430}
                   option={lapPaceOption}
+                  ariaLabel="冲刺赛车手逐圈圈速趋势对比图，可使用上方车手图例筛选。"
                 />
               </Suspense>
             </Card>
@@ -589,6 +634,7 @@ const RaceSprint = () => {
                   chartKey={`sprint-tyre-strategy-${season}-${round}`}
                   height={isMobile ? 320 : 400}
                   option={tyreStrategyOption}
+                  ariaLabel="冲刺赛车手轮胎配方与使用圈数策略对比图。"
                 />
               </Suspense>
             </Card>

@@ -78,8 +78,8 @@ const Seasons = () => {
           ) : null}
           {driverStandings.map((standing, index) => {
             const constructor = standing.Constructors[0];
-            const teamColor = getTeamColor(constructor.constructorId);
-            const darkTeamColor = getTeamDarkColor(constructor.constructorId);
+            const teamColor = getTeamColor(constructor?.constructorId || 'unknown');
+            const darkTeamColor = getTeamDarkColor(constructor?.constructorId || 'unknown');
 
             return (
               <Card
@@ -105,10 +105,11 @@ const Seasons = () => {
                 <button
                   type="button"
                   className="official-team-link"
-                  onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
+                  disabled={!constructor}
+                  onClick={() => constructor && navigate(`/constructors/${constructor.constructorId}`)}
                 >
                   <span className="official-team-swatch" style={{ backgroundColor: teamColor }} />
-                  <span>{constructor.name}</span>
+                  <span>{constructor?.name || '-'}</span>
                 </button>
                 <div className="official-points-cell">
                   <div className="official-points-value" style={{ color: darkTeamColor }}>
@@ -204,7 +205,9 @@ const Seasons = () => {
               ? `${driverStandings[0].Driver.givenName[0]}. ${driverStandings[0].Driver.familyName}`
               : '--',
             detail: `${maxDriverPoints || '--'} PTS · +${driverGap}`,
-            accent: driverStandings[0] ? getTeamColor(driverStandings[0].Constructors[0].constructorId) : undefined,
+            accent: driverStandings[0]?.Constructors[0]
+              ? getTeamColor(driverStandings[0].Constructors[0].constructorId)
+              : undefined,
           },
           {
             label: '\u8f66\u961f\u699c\u9886\u8dd1',

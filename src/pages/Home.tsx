@@ -188,7 +188,9 @@ const Home = () => {
             label: TEXT.driverLeader,
             value: driverLeader ? `${driverLeader.Driver.givenName[0]}. ${driverLeader.Driver.familyName}` : '--',
             detail: driverLeader ? `${driverLeader.points} PTS` : TEXT.moduleLoading,
-            accent: driverLeader ? getTeamColor(driverLeader.Constructors[0].constructorId) : undefined,
+            accent: driverLeader?.Constructors[0]
+              ? getTeamColor(driverLeader.Constructors[0].constructorId)
+              : undefined,
           },
           {
             label: TEXT.constructorLeader,
@@ -300,7 +302,8 @@ const Home = () => {
                 <div className="standings-module-state is-error">{TEXT.moduleUnavailable}</div>
               ) : null}
               {driverStandings.slice(0, 3).map((item, index) => {
-                const teamColor = getTeamColor(item.Constructors[0].constructorId);
+                const constructor = item.Constructors[0];
+                const teamColor = getTeamColor(constructor?.constructorId || 'unknown');
 
                 return (
                 <div
@@ -322,9 +325,10 @@ const Home = () => {
                     <button
                       type="button"
                       className="standings-link-f1 standings-team-f1 clickable-f1"
-                      onClick={() => navigate(`/constructors/${item.Constructors[0].constructorId}`)}
+                      disabled={!constructor}
+                      onClick={() => constructor && navigate(`/constructors/${constructor.constructorId}`)}
                     >
-                      {item.Constructors[0].name}
+                      {constructor?.name || '-'}
                     </button>
                     <span className="standings-gap-f1">
                       {TEXT.gap}: {formatGap(item.points, driverLeaderPoints)}

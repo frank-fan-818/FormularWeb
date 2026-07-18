@@ -7,7 +7,7 @@ import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitId
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 
 interface CircuitRouteState {
-  circuit?: Circuit & Record<string, unknown>;
+  circuit?: Circuit;
 }
 
 type CircuitDetails = {

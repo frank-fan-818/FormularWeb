@@ -1,9 +1,9 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
-import { TEXT, TRACK_STATUS_STYLES, LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/Race/shared/constants';
+import { LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/Race/shared/constants';
 import { isFeatureEnabled } from '@/utils/featureFlags';
 import { buildLapPaceOption } from '@/pages/Race/shared/charts/lapPace';
 import { buildTyreStrategyOption } from '@/pages/Race/shared/charts/tyreStrategy';
@@ -14,13 +14,13 @@ import {
   buildTelemetryHeatmapOption,
 } from '@/pages/Race/shared/charts/telemetry';
 import { buildRankingBarOption, getTelemetrySummaryChartRows } from '@/pages/Race/shared/charts/rankingBar';
-import {
-  getCompoundColor,
-  formatSessionSeconds,
-  getTelemetryDriverColor,
-} from '@/pages/Race/shared/charts/helpers';
+import { formatSessionSeconds, getTelemetryDriverColor } from '@/pages/Race/shared/charts/helpers';
 import { DataViewPanel, type DataViewMode } from '@/pages/Race/shared/components/DataViewPanels';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { RaceTelemetryPanel } from '@/pages/Race/shared/components/RaceTelemetryPanel';
+import { RacePaceStrategyPanels } from '@/pages/Race/shared/components/RacePaceStrategyPanels';
+import { RaceDriverDuelPanel } from '@/pages/Race/shared/components/RaceDriverDuelPanel';
+import { RaceWeatherPanel } from '@/pages/Race/shared/components/RaceWeatherPanel';
 import {
   buildFastF1Summary,
   getDriverLegendItems,
@@ -37,98 +37,25 @@ import {
   formatNumber,
   formatPercent,
   formatSeconds,
-  formatSignedNumber,
-  formatSignedSeconds,
   formatSpeed,
-  formatWindSpeed,
-  getGapToneClassName,
 } from '@/utils/raceDetailFormatters';
-import { formatCompoundWithCode, getTyreAgeLabel } from '@/utils/tyreCompounds';
 import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
+import { useRaceAnalysisControls } from '@/hooks/race/useRaceAnalysisControls';
+import { useViewportActivation } from '@/hooks/race/useViewportActivation';
+import {
+  formatAnalysisStatRange,
+  formatCornerSpeedSet,
+  getCornerSpeedRows,
+  type CornerSpeedRow,
+} from '@/utils/race/raceAnalysisViewModel';
 import type {
-  FastF1CornerAnalysis,
-  FastF1CornerDriverSpeed,
-  FastF1TelemetryDriver,
   DriverPostRaceTelemetrySummary,
-  FastF1WeatherLapRange,
 } from '@/types';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
-type TelemetryMetric = 'throttle' | 'brake' | 'gear' | 'rpm';
-
-const TELEMETRY_METRICS: Array<{ key: TelemetryMetric; label: string }> = [
-  { key: 'throttle', label: TEXT.throttle },
-  { key: 'brake', label: TEXT.brake },
-  { key: 'gear', label: TEXT.gear },
-  { key: 'rpm', label: TEXT.rpm },
-];
-
 // ---- Local helpers  ----
 
-function formatStatRange(summary?: { min: number | null; max: number | null }) {
-  if (!summary || summary.min === null || summary.max === null) {
-    return '-';
-  }
-  return `${formatNumber(summary.min, 1)}-${formatNumber(summary.max, 1)} C`;
-}
-
-function formatLapRange(range: FastF1WeatherLapRange) {
-  return range.startLap === range.endLap
-    ? `L${range.startLap}`
-    : `L${range.startLap}-L${range.endLap}`;
-}
-
-function formatLapRanges(ranges: FastF1WeatherLapRange[] = []) {
-  if (!ranges.length) {
-    return '-';
-  }
-  return ranges.map(formatLapRange).join(', ');
-}
-
-interface CornerSpeedRow {
-  key: string;
-  corner: string;
-  distanceM: number;
-  drivers: FastF1CornerDriverSpeed[];
-  minSpeedDelta: number | null;
-}
-
-function getCornerSpeedRows(
-  cornerAnalysis: FastF1CornerAnalysis[],
-  activeDrivers: FastF1TelemetryDriver[],
-): CornerSpeedRow[] {
-  if (!activeDrivers.length) {
-    return [];
-  }
-  const activeDriverSet = new Set(activeDrivers.map((d) => d.driver));
-  return cornerAnalysis.map((corner) => {
-    const driverSpeeds = corner.drivers.filter((d) => activeDriverSet.has(d.driver));
-    const minSpeedDelta = driverSpeeds.length === 2
-      && driverSpeeds[0].minSpeedKph !== null
-      && driverSpeeds[1].minSpeedKph !== null
-      ? Number((driverSpeeds[0].minSpeedKph - driverSpeeds[1].minSpeedKph).toFixed(1))
-      : null;
-    return {
-      key: `${corner.corner}-${corner.distanceM}`,
-      corner: corner.corner,
-      distanceM: corner.distanceM,
-      drivers: driverSpeeds,
-      minSpeedDelta,
-    };
-  });
-}
-
-function formatCornerSpeedSet(driverSpeed?: FastF1CornerDriverSpeed) {
-  if (!driverSpeed) {
-    return '-';
-  }
-  return [
-    formatNumber(driverSpeed.entrySpeedKph, 0),
-    formatNumber(driverSpeed.minSpeedKph, 0),
-    formatNumber(driverSpeed.exitSpeedKph, 0),
-  ].join(' / ');
-}
 
 // ---- Component ----
 
@@ -138,115 +65,38 @@ const RaceAnalysis = () => {
     season,
     round,
     fastF1Analytics,
+    fastF1AnalyticsLoading,
+    fastF1AnalyticsError,
+    retryFastF1Analytics,
     fastF1QualifyingAnalytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
     fastF1TelemetryLoading,
+    fastF1TelemetryError,
     loadFastF1Telemetry,
+    isMobile,
   } = useRaceData();
 
-  // Local UI state — each sub-page manages its own selections so they are
-  // isolated from the session-tab state in RaceContext.
-  const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
-  const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
-  const [selectedTelemetryDrivers, setSelectedTelemetryDrivers] = useState<string[]>([]);
-  const [selectedTelemetryMetrics, setSelectedTelemetryMetrics] = useState<TelemetryMetric[]>([
-    'throttle',
-    'brake',
-    'gear',
-    'rpm',
-  ]);
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [telemetrySummaryMode, setTelemetrySummaryMode] = useState<DataViewMode>('chart');
-  const telemetrySectionRef = useRef<HTMLDivElement | null>(null);
-
-  // Feature flag checks
   const telemetryEnabled = isFeatureEnabled('fastf1-telemetry');
   const weatherEnabled = isFeatureEnabled('fastf1-weather');
   const duelEnabled = isFeatureEnabled('fastf1-duel');
-
-  // Reset local UI state when navigating to a different race
-  useEffect(() => {
-    setSelectedLapDrivers([]);
-    setSelectedDuelDrivers([]);
-    setSelectedTelemetryDrivers([]);
-    setSelectedTelemetryMetrics(['throttle', 'brake', 'gear', 'rpm']);
-    setCollapsedSections({});
-  }, [season, round]);
-
-  useEffect(() => {
-    const element = telemetrySectionRef.current;
-    if (!telemetryEnabled || !fastF1Analytics || !element) return undefined;
-    if (typeof IntersectionObserver === 'undefined') {
-      loadFastF1Telemetry();
-      return undefined;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        loadFastF1Telemetry();
-        observer.disconnect();
-      }
-    }, { rootMargin: '320px 0px' });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [fastF1Analytics, loadFastF1Telemetry, telemetryEnabled]);
-
-  const toggleSection = (key: string) => {
-    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const isCollapsed = (key: string) => !!collapsedSections[key];
-
-  // ---- Lap driver handlers ----
-
-  const handleLapDriverToggle = (driver: string) => {
-    setSelectedLapDrivers((current) => {
-      if (!current.length) {
-        return [driver];
-      }
-      if (current.includes(driver)) {
-        return current.filter((d) => d !== driver);
-      }
-      return [...current, driver];
-    });
-  };
-
-  const handleDuelDriverToggle = (driver: string) => {
-    setSelectedDuelDrivers((current) => {
-      let next: string[];
-      if (current.includes(driver)) {
-        next = current.filter((d) => d !== driver);
-      } else if (current.length < 2) {
-        next = [...current, driver];
-      } else {
-        next = [current[1], driver];
-      }
-      // Sync lap pace highlight with duel selection
-      setSelectedLapDrivers(next);
-      return next;
-    });
-  };
-
-  const handleTelemetryDriverToggle = (driver: string) => {
-    setSelectedTelemetryDrivers((current) => {
-      if (!current.length) {
-        return [driver];
-      }
-      if (current.includes(driver)) {
-        return current.filter((d) => d !== driver);
-      }
-      return [...current, driver];
-    });
-  };
-
-  const handleTelemetryMetricToggle = (metric: TelemetryMetric) => {
-    setSelectedTelemetryMetrics((current) => {
-      if (current.includes(metric)) {
-        return current.filter((m) => m !== metric);
-      }
-      return [...current, metric];
-    });
-  };
+  const {
+    selectedLapDrivers,
+    selectedDuelDrivers,
+    selectedTelemetryDrivers,
+    selectedTelemetryMetrics,
+    toggleSection,
+    isCollapsed,
+    handleLapDriverToggle,
+    handleDuelDriverToggle,
+    handleTelemetryDriverToggle,
+    handleTelemetryMetricToggle,
+  } = useRaceAnalysisControls(season, round);
+  const [telemetrySummaryMode, setTelemetrySummaryMode] = useState<DataViewMode>('chart');
+  const telemetrySectionRef = useViewportActivation({
+    enabled: telemetryEnabled && Boolean(fastF1Analytics),
+    onActivate: loadFastF1Telemetry,
+  });
 
   // ---- Memoised derived data ----
 
@@ -276,8 +126,6 @@ const RaceAnalysis = () => {
     () => getDriverLegendItems(fastF1Analytics?.lapTimeSeries || []),
     [fastF1Analytics],
   );
-
-  const hasLapDriverFilter = selectedLapDrivers.length > 0;
 
   // ---- Telemetry-aware analytics (merge lazy-loaded telemetry) ----
 
@@ -496,6 +344,22 @@ const RaceAnalysis = () => {
 
   // ---- Early return when no FastF1 data ----
 
+  if (fastF1AnalyticsLoading) {
+    return (
+      <div className="fastf1-analytics-section">
+        <RacePageIntro
+          index="03"
+          eyebrow="RACE DEBRIEF / 比赛解读"
+          title="正在建立比赛证据链"
+          description="正在读取比赛节奏、轮胎策略、天气和遥测摘要。"
+        />
+        <Card className="race-empty-command-card" loading>
+          <p>{t('loading')}</p>
+        </Card>
+      </div>
+    );
+  }
+
   if (!fastF1Analytics) {
     return (
       <div className="fastf1-analytics-section">
@@ -506,7 +370,8 @@ const RaceAnalysis = () => {
           description="正赛数据可用后，这里会把比赛节奏、轮胎策略、车手攻防、天气和遥测串成完整的比赛故事。"
         />
         <Card className="race-empty-command-card">
-          <p>{t('noFastF1Analysis')}</p>
+          <p>{fastF1AnalyticsError?.message || t('noFastF1Analysis')}</p>
+          {fastF1AnalyticsError ? <Button onClick={retryFastF1Analytics}>重试分析数据</Button> : null}
         </Card>
       </div>
     );
@@ -551,12 +416,12 @@ const RaceAnalysis = () => {
                 <span>
                   {t('trackTemp')}
                   {' '}
-                  {formatStatRange(fastF1Summary.weatherSummary.trackTempC)}
+                  {formatAnalysisStatRange(fastF1Summary.weatherSummary.trackTempC)}
                 </span>
                 <span>
                   {t('airTemp')}
                   {' '}
-                  {formatStatRange(fastF1Summary.weatherSummary.airTempC)}
+                  {formatAnalysisStatRange(fastF1Summary.weatherSummary.airTempC)}
                 </span>
                 <span>
                   {t('humidity')}
@@ -618,8 +483,9 @@ const RaceAnalysis = () => {
             <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
               <LazyEChartsPanel
                 chartKey={`post-race-telemetry-summary-${season}-${round}`}
-                height={420}
+                height={isMobile ? 300 : 420}
                 option={telemetrySummaryChartOption}
+                ariaLabel="车手赛后遥测综合评分排名图，可切换到同模块的数据表。"
               />
             </Suspense>
           }
@@ -639,478 +505,73 @@ const RaceAnalysis = () => {
       {/* FastF1 Analysis Cards */}
       <div className="fastf1-analysis-stack">
         <div className="fastf1-analysis-group fastf1-race-group">
-            {/* ========== 1. Lap Pace ========== */}
-            {fastF1Analytics && lapPaceOption ? (
-              <Card
-                id="analysis-lap-pace"
-                data-module-index="01"
-                className="fastf1-chart-card"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
-                      <p>{t('lapPaceDescription')}</p>
-                    </div>
-                    <div className="fastf1-chart-badges">
-                      {fastF1Analytics.fastestLap ? (
-                        <span className="fastf1-fastest-lap-badge">
-                          {t('fastestLap')}
-                          {' '}
-                          {fastF1Analytics.fastestLap.driver}
-                          {' '}
-                          L
-                          {fastF1Analytics.fastestLap.lapNumber}
-                          {' '}
-                          {formatSeconds(fastF1Analytics.fastestLap.lapTimeSeconds)}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('lapPace')}>
-                    {isCollapsed('lapPace') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('lapPace') ? null : (
-                  <>
-                    <div className="driver-legend" aria-label={t('driver')}>
-                      {driverLegendItems.map((item) => {
-                        const isActive = !hasLapDriverFilter || selectedLapDrivers.includes(item.driver);
-                        return (
-                          <button
-                            key={item.driver}
-                            type="button"
-                            className={`driver-legend-item${isActive ? ' is-active' : ' is-muted'}`}
-                            aria-pressed={selectedLapDrivers.includes(item.driver)}
-                            onClick={() => handleLapDriverToggle(item.driver)}
-                          >
-                            <span
-                              className="driver-legend-line"
-                              style={{ backgroundColor: item.color }}
-                            />
-                            {item.driver}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {fastF1Analytics.trackStatusPeriods?.length ? (
-                      <div className="track-status-legend" aria-label={t('raceStatus')}>
-                        {(fastF1Analytics.trackStatusPeriods || []).map((period, index) => (
-                          <span key={`${period.type}-${period.startLap}-${index}`}>
-                            <span
-                              className="track-status-swatch"
-                              style={{ backgroundColor: TRACK_STATUS_STYLES[period.type].color }}
-                            />
-                            {period.label}
-                            {' '}
-                            L
-                            {period.startLap}
-                            -
-                            L
-                            {period.endLap}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                    <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                      <LazyEChartsPanel
-                        chartKey={`fastf1-laps-${season}-${round}`}
-                        height={430}
-                        option={lapPaceOption}
-                      />
-                    </Suspense>
-                  </>
-                )}
-              </Card>
-            ) : null}
+            <RacePaceStrategyPanels
+              analytics={fastF1Analytics}
+              summary={fastF1Summary}
+              season={season}
+              round={round}
+              lapPaceOption={lapPaceOption}
+              tyreStrategyOption={tyreStrategyOption}
+              driverLegendItems={driverLegendItems}
+              selectedLapDrivers={selectedLapDrivers}
+              lapPaceCollapsed={isCollapsed('lapPace')}
+              tyreStrategyCollapsed={isCollapsed('tyreStrategy')}
+              isMobile={isMobile}
+              onToggleLapDriver={handleLapDriverToggle}
+              onToggleLapPace={() => toggleSection('lapPace')}
+              onToggleTyreStrategy={() => toggleSection('tyreStrategy')}
+            />
 
-            {/* ========== 2. Tyre Strategy Chart ========== */}
-            {fastF1Analytics.tyreStrategies.length ? (
-              <Card
-                id="analysis-tyre"
-                data-module-index="02"
-                className="fastf1-chart-card"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('tyreStrategy')}</h3>
-                      <p>{t('tyreStrategyDescription')}</p>
-                    </div>
-                    {fastF1Summary ? (
-                      <div className="compound-legend" aria-label={t('tyreStrategy')}>
-                        {fastF1Summary.compounds.map((compound) => (
-                          <span key={compound} className="compound-legend-item">
-                            <span
-                              className="compound-swatch"
-                              style={{ backgroundColor: getCompoundColor(compound) }}
-                            />
-                            {formatCompoundWithCode(season, round, compound)}
-                          </span>
-                        ))}
-                        <span className="compound-legend-item tyre-age-legend-item">
-                          <span className="tyre-age-line is-new" />
-                          {'\u65b0\u80ce'}
-                        </span>
-                        <span className="compound-legend-item tyre-age-legend-item">
-                          <span className="tyre-age-line is-used" />
-                          {'\u65e7\u80ce'}
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('tyreStrategy')}>
-                    {isCollapsed('tyreStrategy') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('tyreStrategy') ? null : (
-                  tyreStrategyOption ? (
-                    <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                      <LazyEChartsPanel
-                        chartKey={`fastf1-tyre-strategy-${season}-${round}`}
-                        height={400}
-                        option={tyreStrategyOption}
-                      />
-                    </Suspense>
-                  ) : null
-                )}
-              </Card>
-            ) : null}
+            <RaceDriverDuelPanel
+              enabled={duelEnabled}
+              collapsed={isCollapsed('driverDuel')}
+              season={season}
+              round={round}
+              selectedDrivers={selectedDuelDrivers}
+              driverItems={duelDriverItems}
+              tyreSummaryItems={duelTyreSummaryItems}
+              sectorGapItems={duelSectorGapItems}
+              cornerRows={duelCornerRows}
+              duelReady={activeDuelDrivers.length === 2}
+              onToggleCollapsed={() => toggleSection('driverDuel')}
+              onToggleDriver={handleDuelDriverToggle}
+            />
 
-            {/* ========== 3. Driver Duel ========== */}
-            {duelEnabled && fastF1Analytics ? (
-              <Card
-                id="analysis-duel"
-                data-module-index="03"
-                className="fastf1-chart-card driver-duel-card"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('driverDuel')}</h3>
-                      <p>{t('driverDuelDescription')}</p>
-                    </div>
-                    {duelTyreSummaryItems.length ? (
-                      <div className="duel-summary-pills" aria-label={t('driverDuel')}>
-                        {duelTyreSummaryItems.map((item) => (
-                          <span key={item.driver} className="duel-stint-pill">
-                            <strong>{item.driver}</strong>
-                            {item.stints.map((stint) => (
-                              <span key={`${item.driver}-${stint.stint}`} className="duel-stint-token">
-                                <span
-                                  className="compound-swatch"
-                                  style={{ backgroundColor: getCompoundColor(stint.compound) }}
-                                />
-                                <strong>{formatCompoundWithCode(season, round, stint.compound)}</strong>
-                                <em>{getTyreAgeLabel(stint)}</em>
-                                {formatSessionSeconds(stint.averagePaceSeconds)}
-                                {stint.previousDeltaSeconds !== null ? (
-                                  <em>{formatSignedSeconds(stint.previousDeltaSeconds)}</em>
-                                ) : null}
-                              </span>
-                            ))}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('driverDuel')}>
-                    {isCollapsed('driverDuel') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('driverDuel') ? null : (
-                  <>
-                    <div className="driver-legend" aria-label={t('driverDuel')}>
-                      {duelDriverItems.map((item) => {
-                        const isActive = selectedDuelDrivers.includes(item.driver);
-                        const isMuted = selectedDuelDrivers.length === 2 && !isActive;
-                        return (
-                          <button
-                            key={item.driver}
-                            type="button"
-                            className={`driver-legend-item${isActive ? ' is-active' : ''}${isMuted ? ' is-muted' : ''}`}
-                            aria-pressed={isActive}
-                            onClick={() => handleDuelDriverToggle(item.driver)}
-                          >
-                            <span
-                              className="driver-legend-line"
-                              style={{ backgroundColor: item.color }}
-                            />
-                            {item.driver}
-                            {isActive ? (
-                              <span className="duel-pick-badge">
-                                {selectedDuelDrivers.indexOf(item.driver) + 1}
-                              </span>
-                            ) : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {activeDuelDrivers.length === 2 ? (
-                      <div className="duel-grid">
-                        {duelSectorGapItems.length ? (
-                          <div className="duel-sector-panel">
-                            <div className="telemetry-panel-title">
-                              {t('qualifying')}
-                              {' '}
-                              Gap
-                            </div>
-                            <div className="duel-sector-gap-grid">
-                              {duelSectorGapItems.map((item) => (
-                                <div
-                                  key={item.key}
-                                  className={`duel-sector-gap-card ${getGapToneClassName(item.value)}`}
-                                >
-                                  <span>{item.label}</span>
-                                  <strong>{formatSignedSeconds(item.value)}</strong>
-                                  <em>
-                                    {item.firstDriver}
-                                    {' '}
-                                    vs
-                                    {' '}
-                                    {item.secondDriver}
-                                  </em>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
-                        {duelCornerRows.length ? (
-                          <div className="duel-corner-panel">
-                            <div className="telemetry-panel-title">{t('cornerSpeed')}</div>
-                            <div className="duel-corner-grid">
-                              {duelCornerRows.map((row) => (
-                                <div key={row.key} className="duel-corner-card">
-                                  <div className="duel-corner-head">
-                                    <span>{row.corner}</span>
-                                    <em>
-                                      {formatNumber(row.distanceM, 0)}
-                                      m
-                                    </em>
-                                  </div>
-                                  <div className="duel-corner-row">
-                                    <strong>{row.driverA}</strong>
-                                    <span>{formatSpeed(row.firstMinSpeed)}</span>
-                                  </div>
-                                  <div className="duel-corner-row">
-                                    <strong>{row.driverB}</strong>
-                                    <span>{formatSpeed(row.secondMinSpeed)}</span>
-                                  </div>
-                                  <div className="duel-corner-row is-delta">
-                                    <strong>{t('delta')}</strong>
-                                    <span>{formatSignedNumber(row.delta, 1)}</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="duel-empty-state">
-                        {t('driverDuel')}
-                        :
-                        {' '}
-                        {t('driver')}
-                        {' '}
-                        2
-                      </div>
-                    )}
-                  </>
-                )}
-              </Card>
-            ) : null}
+            <RaceWeatherPanel
+              enabled={weatherEnabled}
+              collapsed={isCollapsed('weather')}
+              season={season}
+              round={round}
+              weather={fastF1Analytics.weather || null}
+              option={weatherOption}
+              isMobile={isMobile}
+              onToggleCollapsed={() => toggleSection('weather')}
+            />
 
-            {/* ========== 5. Weather Trend ========== */}
-            {weatherEnabled && fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
-              <Card
-                id="analysis-weather"
-                data-module-index="04"
-                className="fastf1-chart-card"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('weatherTrend')}</h3>
-                      <p>{t('weatherDescription')}</p>
-                    </div>
-                    <div className="weather-summary-pills" aria-label={t('weatherTrend')}>
-                      <span>
-                        {t('trackTemp')}
-                        {' '}
-                        {formatStatRange(fastF1Analytics.weather.summary.trackTempC)}
-                      </span>
-                      <span>
-                        {t('airTemp')}
-                        {' '}
-                        {formatStatRange(fastF1Analytics.weather.summary.airTempC)}
-                      </span>
-                      <span>
-                        {t('wind')}
-                        {' '}
-                        {formatWindSpeed(fastF1Analytics.weather.summary.maxWindSpeedMps)}
-                      </span>
-                    </div>
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('weather')}>
-                    {isCollapsed('weather') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('weather') ? null : (
-                  <>
-                    {fastF1Analytics.weather.summary.rainLapRanges.length ? (
-                      <div className="weather-rain-legend" aria-label={t('rainfall')}>
-                        <span className="weather-rain-swatch" />
-                        <span>
-                          {t('rainfall')}
-                          {' '}
-                          {formatLapRanges(fastF1Analytics.weather.summary.rainLapRanges)}
-                        </span>
-                      </div>
-                    ) : null}
-                    <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                      <LazyEChartsPanel
-                        chartKey={`fastf1-weather-${season}-${round}`}
-                        height={360}
-                        option={weatherOption}
-                      />
-                    </Suspense>
-                  </>
-                )}
-              </Card>
-            ) : null}
-
-            {/* ========== 6. Telemetry Comparison + Speed Heatmap ========== */}
             <div id="analysis-telemetry" ref={telemetrySectionRef} className="telemetry-section-anchor">
-            {telemetryEnabled ? (
-              fastF1TelemetryLoading ? (
-                <div className="race-weekend-empty">{t('loading')}</div>
-              ) : fastF1Telemetry ? (
-              <Card
-                className="fastf1-chart-card telemetry-card"
-                data-module-index="05"
-                title={
-                  <div className="fastf1-chart-header">
-                    <div>
-                      <h3 className="fastf1-chart-title">{t('telemetryComparison')}</h3>
-                      <p>{t('telemetryDescription')}</p>
-                    </div>
-                  </div>
-                }
-                extra={
-                  <Button type="text" size="small" onClick={() => toggleSection('telemetry')}>
-                    {isCollapsed('telemetry') ? t('expand') : t('collapse')}
-                  </Button>
-                }
-              >
-                {isCollapsed('telemetry') ? null : (
-                  <>
-                    <div className="telemetry-driver-strip" aria-label={t('telemetryComparison')}>
-                      {telemetryDriverItems.map((item) => {
-                        const isActive = selectedTelemetryDrivers.includes(item.driver);
-                        const isMuted = selectedTelemetryDrivers.length > 0 && !isActive;
-                        return (
-                          <button
-                            key={item.driver}
-                            type="button"
-                            className={`driver-legend-item${isActive ? ' is-active' : ''}${isMuted ? ' is-muted' : ''}`}
-                            aria-pressed={selectedTelemetryDrivers.includes(item.driver)}
-                            onClick={() => handleTelemetryDriverToggle(item.driver)}
-                          >
-                            <span
-                              className="driver-legend-line"
-                              style={{ backgroundColor: item.color }}
-                            />
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {telemetrySpeedOption ? (
-                      <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                        <LazyEChartsPanel
-                          chartKey={`fastf1-telemetry-speed-${season}-${round}-${activeTelemetryDrivers.map((d) => d.driver).join('-')}`}
-                          height={330}
-                          option={telemetrySpeedOption}
-                        />
-                      </Suspense>
-                    ) : null}
-
-                    {/* Speed Heatmap */}
-                    {telemetryHeatmapOption ? (
-                      <div className="telemetry-heatmap-panel">
-                        <div className="telemetry-panel-title">{t('speedHeatmap')}</div>
-                        <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                          <LazyEChartsPanel
-                            chartKey={`fastf1-telemetry-heatmap-${season}-${round}-${activeTelemetryDrivers.map((d) => d.driver).join('-')}`}
-                            height={360}
-                            option={telemetryHeatmapOption}
-                          />
-                        </Suspense>
-                        <div className="telemetry-heat-legend" aria-label={t('speedHeatmap')}>
-                          <span className="telemetry-heat-low" />
-                          {' '}
-                          {t('minimum')}
-                          <span className="telemetry-heat-high" />
-                          {' '}
-                          {t('speed')}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {telemetryControlOption ? (
-                      <>
-                        <div className="telemetry-chart-divider" />
-                        <div className="telemetry-metric-strip" aria-label={t('telemetryComparison')}>
-                          {TELEMETRY_METRICS.map((metric) => {
-                            const isActive = selectedTelemetryMetrics.includes(metric.key);
-                            return (
-                              <button
-                                key={metric.key}
-                                type="button"
-                                className={`telemetry-metric-button${isActive ? ' is-active' : ' is-muted'}`}
-                                aria-pressed={isActive}
-                                onClick={() => handleTelemetryMetricToggle(metric.key)}
-                              >
-                                {metric.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
-                          <LazyEChartsPanel
-                            chartKey={`fastf1-telemetry-controls-${season}-${round}-${activeTelemetryDrivers.map((d) => d.driver).join('-')}-${selectedTelemetryMetrics.join('-')}`}
-                            height={340}
-                            option={telemetryControlOption}
-                          />
-                        </Suspense>
-                      </>
-                    ) : null}
-
-                    {telemetryCornerRows.length ? (
-                      <div className="telemetry-corner-table">
-                        <div className="telemetry-panel-title">{t('cornerSpeed')}</div>
-                        <Table
-                          columns={telemetryCornerColumns}
-                          dataSource={telemetryCornerRows}
-                          pagination={false}
-                          size="small"
-                          scroll={{ x: 'max-content' }}
-                        />
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </Card>
-            ) : null) : null}
+              <RaceTelemetryPanel
+                enabled={telemetryEnabled}
+                loading={fastF1TelemetryLoading}
+                error={fastF1TelemetryError}
+                telemetry={fastF1Telemetry}
+                collapsed={isCollapsed('telemetry')}
+                season={season}
+                round={round}
+                driverItems={telemetryDriverItems}
+                selectedDrivers={selectedTelemetryDrivers}
+                selectedMetrics={selectedTelemetryMetrics}
+                activeDrivers={activeTelemetryDrivers}
+                speedOption={telemetrySpeedOption}
+                heatmapOption={telemetryHeatmapOption}
+                controlOption={telemetryControlOption}
+                cornerRows={telemetryCornerRows}
+                cornerColumns={telemetryCornerColumns}
+                isMobile={isMobile}
+                onToggleCollapsed={() => toggleSection('telemetry')}
+                onToggleDriver={handleTelemetryDriverToggle}
+                onToggleMetric={handleTelemetryMetricToggle}
+                onRetry={loadFastF1Telemetry}
+              />
             </div>
           </div>
       </div>

@@ -1,7 +1,20 @@
 // 从f1db获取赛道详细信息（静态集成，无外部依赖）
-export const getCircuitDetails = async (circuitId: string) => {
+export interface StaticCircuitDetails {
+  length: string;
+  firstRace: number;
+  lapRecord: string;
+  lapRecordDriver: string;
+  lapRecordYear: number;
+  totalRaces: number;
+  raceLaps: number;
+  totalDistance: string;
+}
+
+type StaticCircuitRecord = Omit<StaticCircuitDetails, 'length'>;
+
+export const getCircuitDetails = async (circuitId: string): Promise<StaticCircuitDetails | null> => {
   // 所有赛道数据已静态集成，直接返回
-  const circuitData: Record<string, any> = {
+  const circuitData: Record<string, StaticCircuitRecord> = {
     // 亚洲 & 中东
     shanghai: {
       firstRace: 2004,
@@ -392,6 +405,6 @@ export const getCircuitDetails = async (circuitId: string) => {
   return {
     ...circuit,
     // 确保格式一致
-    length: circuit.length ? `${circuit.length} km` : '未知'
+    length: '未知'
   };
 }

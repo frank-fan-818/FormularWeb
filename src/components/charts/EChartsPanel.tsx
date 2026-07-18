@@ -1,7 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import ReactEChartsCore from 'echarts-for-react/lib/core';
 import { BarChart, LineChart, LinesChart, ScatterChart } from 'echarts/charts';
 import {
   GridComponent,
+  AriaComponent,
   LegendComponent,
   MarkAreaComponent,
   MarkLineComponent,
@@ -25,6 +27,7 @@ echarts.use([
   MarkLineComponent,
   MarkPointComponent,
   GridComponent,
+  AriaComponent,
   CanvasRenderer,
 ]);
 
@@ -32,11 +35,25 @@ interface EChartsPanelProps {
   chartKey: string;
   height: number | string;
   option: unknown;
+  ariaLabel?: string;
 }
 
-const EChartsPanel = ({ chartKey, height, option }: EChartsPanelProps) => {
+const EChartsPanel = ({ chartKey, height, option, ariaLabel }: EChartsPanelProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const accessibleOption = typeof option === 'object' && option !== null
+    ? {
+        ...option,
+        aria: {
+          enabled: true,
+          decal: { show: true },
+          label: {
+            enabled: true,
+            description: ariaLabel || '赛事数据可视化图表。图表主题与关键结论位于当前模块标题和摘要中。',
+          },
+        },
+      }
+    : option;
 
   useEffect(() => {
     const element = containerRef.current;
@@ -61,7 +78,7 @@ const EChartsPanel = ({ chartKey, height, option }: EChartsPanelProps) => {
         <ReactEChartsCore
           echarts={echarts}
           key={chartKey}
-          option={option as EChartsCoreOption}
+          option={accessibleOption as EChartsCoreOption}
           style={{ height }}
           notMerge
           lazyUpdate
@@ -74,4 +91,3 @@ const EChartsPanel = ({ chartKey, height, option }: EChartsPanelProps) => {
 };
 
 export default EChartsPanel;
-import { useEffect, useRef, useState } from 'react';

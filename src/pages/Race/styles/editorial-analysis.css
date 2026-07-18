@@ -1,0 +1,245 @@
+/* Analytical pages */
+
+.race-analysis-tabs > .ant-tabs-nav {
+  margin: 0;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+}
+
+.race-analysis-tabs .ant-tabs-tab {
+  min-height: 56px;
+  font-family: var(--race-display);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.analysis-section-nav {
+  top: 140px;
+  gap: 0;
+  margin: 0;
+  padding: 0 var(--space-2);
+  border-color: var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.race-analysis-brief {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-dark);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.race-analysis-brief article {
+  position: relative;
+  min-height: 138px;
+  padding: var(--space-5);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent);
+}
+
+.race-analysis-brief article:first-child::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--f1-red);
+}
+
+.race-analysis-brief article:last-child { border-right: 0; }
+
+.race-analysis-brief span {
+  display: block;
+  color: #9ca3af;
+  font-family: var(--race-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.race-analysis-brief strong {
+  display: block;
+  margin-top: var(--space-3);
+  color: #fff;
+  font-family: var(--race-display);
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1;
+}
+
+.race-analysis-brief p {
+  margin: var(--space-2) 0 0;
+  color: #9ca3af;
+  font-size: var(--text-xs);
+}
+
+.analysis-section-nav-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border-right: 1px solid var(--border-primary);
+  color: var(--text-tertiary);
+  font-family: var(--race-display);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.analysis-section-nav a {
+  gap: var(--space-2);
+  min-height: 50px;
+  border-radius: 0;
+  font-size: var(--text-xs);
+}
+
+.analysis-section-nav a b {
+  color: var(--f1-red);
+  font-family: var(--race-display);
+  font-size: 10px;
+}
+
+.fastf1-analysis-stack,
+.fastf1-analysis-group {
+  gap: var(--space-5);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fastf1-chart-card,
+.race-weekend-card,
+.race-weekend-post-card {
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.fastf1-analytics-section,
+.telemetry-section-anchor,
+.fastf1-chart-card,
+.fastf1-chart-card .ant-card-body,
+.fastf1-chart-card .echarts-for-react {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fastf1-chart-card .echarts-for-react,
+.fastf1-chart-card .echarts-for-react > div,
+.fastf1-chart-card canvas {
+  max-width: 100% !important;
+}
+
+.fastf1-chart-card .ant-table-wrapper,
+.telemetry-corner-table {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.fastf1-chart-card:hover,
+.race-weekend-card:hover {
+  border-color: color-mix(in srgb, var(--f1-red) 30%, var(--border-primary));
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.fastf1-chart-card[data-module-index]::after {
+  content: attr(data-module-index);
+  position: absolute;
+  z-index: 0;
+  right: var(--space-4);
+  top: -18px;
+  color: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  font-family: var(--race-display);
+  font-size: 112px;
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.fastf1-chart-card .ant-card-head,
+.race-weekend-card .ant-card-head,
+.race-weekend-post-card .ant-card-head {
+  position: relative;
+  z-index: 1;
+  min-height: 76px;
+  border-bottom: 1px solid var(--border-primary);
+  border-left: 3px solid var(--f1-red);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--race-control-panel) 65%, transparent), transparent),
+    var(--bg-secondary);
+}
+
+.fastf1-chart-card .ant-card-body,
+.race-weekend-card .ant-card-body,
+.race-weekend-post-card .ant-card-body {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-5);
+}
+
+.fastf1-chart-title,
+.race-weekend-card .ant-card-head-title,
+.race-weekend-post-card .ant-card-head-title h3 {
+  font-family: var(--race-display);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.fastf1-chart-header p {
+  max-width: 700px;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.driver-legend {
+  padding: var(--space-3);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-control);
+  background: var(--bg-tertiary);
+}
+
+.driver-legend-item {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-2);
+  background: var(--bg-card);
+}
+
+.driver-legend-item.is-active {
+  border-color: var(--border-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.fastf1-summary-strip span {
+  min-height: 38px;
+  border-radius: var(--radius-control);
+  background: var(--bg-secondary);
+  font-family: var(--race-display);
+  font-size: 12px;
+}
+
+.race-empty-command-card {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--border-dark);
+  border-left: 4px solid var(--f1-red);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}

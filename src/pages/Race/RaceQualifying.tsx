@@ -426,6 +426,7 @@ const RaceQualifying = () => {
               chartKey={`qualifying-pace-${season}-${round}`}
               height={420}
               option={paceOption}
+              ariaLabel="车手排位赛最快圈成绩与差距排名图。"
             />
           </Suspense>
         </Card>

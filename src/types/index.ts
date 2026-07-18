@@ -684,6 +684,9 @@ export interface FastF1RaceAnalytics {
   tyreStrategies: FastF1DriverStrategy[];
 }
 
+export * from './raceDetail';
+export * from './supabaseRows';
+
 export interface FastF1TelemetryPayload {
   source: 'fastf1';
   generatedAt: string;
