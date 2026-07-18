@@ -21,9 +21,15 @@ const requestedViewport = process.env.QA_VIEWPORT;
 const waitMs = Number(process.env.QA_WAIT_MS || 1200);
 const supportOnly = process.env.QA_SUPPORT_ONLY === '1';
 const supportingRoutes = supportOnly ? [
+  '/',
+  '/races',
+  '/drivers',
   '/drivers/max_verstappen',
+  '/constructors',
   '/constructors/red_bull',
+  '/circuits',
   '/circuits/albert_park',
+  '/races/1/results',
 ] : [];
 
 await mkdir(outputDir, { recursive: true });
@@ -155,17 +161,21 @@ for (const route of supportingRoutes) {
   const page = await supportingContext.newPage();
   const consoleProblems = [];
   const pageErrors = [];
+  const failedRequests = [];
   page.on('console', (message) => {
     if (message.type() === 'error' || message.type() === 'warning') consoleProblems.push(`${message.type()}: ${message.text()}`);
   });
   page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('response', (response) => {
+    if (response.status() >= 400) failedRequests.push(`${response.status()} ${response.url()}`);
+  });
   const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.waitForTimeout(1_000);
+  await page.waitForTimeout(Math.max(waitMs, 1_000));
   const metrics = await page.evaluate(() => ({
     pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     bodyTextLength: document.body.innerText.trim().length,
   }));
-  findings.push({ viewport: 'desktop', route, status: response?.status() || null, ...metrics, consoleProblems, pageErrors });
+  findings.push({ viewport: 'desktop', route, status: response?.status() || null, ...metrics, consoleProblems, pageErrors, failedRequests });
   await page.close();
 }
 await supportingContext.close();
@@ -177,6 +187,7 @@ const blockers = findings.filter((item) => item.status !== 200
   || item.mainVisible === false
   || item.consoleProblems.length
   || item.pageErrors.length
+  || item.failedRequests?.length
   || (waitMs > 2000 && item.chartPlaceholderCount > 0)
   || (waitMs > 2000 && item.tableSkeletonCount > 0)
   || (waitMs > 2000 && item.route.endsWith('/qualifying') && item.chartCount < 1)

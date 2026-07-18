@@ -188,7 +188,7 @@ const ConstructorDetail = () => {
 
     const loadPrimaryData = async () => {
       const constructorInfo = await Promise.allSettled([
-        supabaseApi.constructors.getById<SupabaseConstructorDetailRow>(constructorId),
+        supabaseApi.constructors.getById(constructorId),
       ]);
 
       if (cancelled) {

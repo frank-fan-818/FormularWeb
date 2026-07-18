@@ -170,7 +170,7 @@ function getCircuitDetail(supabaseId: string): Promise<CircuitDetails | null> {
   }
 
   const request = Promise.all([
-    supabaseApi.circuits.getById<CircuitDetails>(supabaseId).catch(() => null),
+    supabaseApi.circuits.getById(supabaseId).catch(() => null),
     getLocalCircuitDetail(supabaseId),
   ])
     .then(([databaseDetails, localDetails]) => {

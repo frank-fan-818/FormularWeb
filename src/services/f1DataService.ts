@@ -1,13 +1,13 @@
 import { seasonApi } from '@/api/ergast';
 import { supabaseApi } from '@/api/supabase';
 import { logger, getErrorMessage } from '@/utils/logger';
+import { mapDriverDetails } from '@/utils/driverDetails';
 import type {
   ConstructorStanding,
   DriverDetails,
   DriverStanding,
   Race,
   Season,
-  SupabaseDriverDetailRow,
 } from '@/types';
 
 interface SeasonData {
@@ -60,20 +60,16 @@ export const f1DataService = {
   /**
    * 获取车手详细信息（Supabase + Ergast 合并）
    */
-  getDriverDetails: async (driverId: string, season: string): Promise<DriverDetails> => {
+  getDriverDetails: async (driverId: string, season: string): Promise<DriverDetails | null> => {
     try {
       const [driverInfo, standings] = await Promise.all([
-        supabaseApi.drivers.getById<SupabaseDriverDetailRow>(driverId),
+        supabaseApi.drivers.getById(driverId),
         seasonApi.getDriverStandings(season),
       ]);
 
       const standing = standings.find(s => s.Driver.driverId === driverId);
 
-      return {
-        ...standing?.Driver,
-        ...(driverInfo || {}),
-        standing: standing || null,
-      };
+      return mapDriverDetails(driverId, standing || null, driverInfo);
     } catch (error) {
       const message = getErrorMessage(error);
       logger.error({

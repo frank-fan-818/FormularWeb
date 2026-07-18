@@ -151,7 +151,7 @@ async function resolveSupabaseDriverProfile(
   driverId: string,
   standing: DriverStanding | null,
 ): Promise<DriverProfile | null> {
-  const exact = await supabaseApi.drivers.getById<SupabaseDriverDetailRow>(driverId);
+  const exact = await supabaseApi.drivers.getById(driverId);
   if (exact) {
     return mapSupabaseDriver(exact);
   }
@@ -160,7 +160,7 @@ async function resolveSupabaseDriverProfile(
     return null;
   }
 
-  const allDrivers = await supabaseApi.drivers.getAll<SupabaseDriverDetailRow>();
+  const allDrivers = await supabaseApi.drivers.getAll();
   const matched = allDrivers.find((item) =>
     item.first_name === standing.Driver.givenName
     && item.last_name === standing.Driver.familyName,

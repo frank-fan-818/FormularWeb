@@ -7,7 +7,7 @@ import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import type { Circuit, Race, SupabaseCircuitListRow } from '@/types';
+import type { Circuit, Race } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
@@ -38,7 +38,7 @@ const Circuits = () => {
   const { currentSeason } = useAppStore();
   const { races, loading: racesLoading } = useSeasonRacesCached(currentSeason);
   const fetchCircuitMetadata = useCallback(
-    () => supabaseApi.circuits.getListMetadata<SupabaseCircuitListRow>(),
+    () => supabaseApi.circuits.getListMetadata(),
     [],
   );
   const { data: circuitMetadata } = useSupabaseMetadata(

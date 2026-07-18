@@ -29,6 +29,11 @@ export interface SupabaseConstructorDetailRow {
   total_race_entries: number | null;
 }
 
+export type SupabaseConstructorListRow = Omit<
+  SupabaseConstructorDetailRow,
+  'name' | 'total_podiums'
+>;
+
 export interface SupabaseCircuitListRow {
   circuit_id: string;
   length: string | number | null;
@@ -42,11 +47,22 @@ export interface SupabaseCircuitListRow {
   lap_record_year: string | number | null;
 }
 
-export type DriverDetails = Partial<Omit<Driver, 'code' | 'nationality'>> & Partial<SupabaseDriverDetailRow> & {
-  code?: string | null;
-  nationality?: string | null;
+export interface SupabaseCircuitDetailRow extends SupabaseCircuitListRow {
+  name: string | null;
+  locality: string | null;
+  country: string | null;
+  lat: string | number | null;
+  long: string | number | null;
+}
+
+export interface DriverDetails extends Driver {
+  totalWins: number;
+  totalPodiums: number;
+  totalPolePositions: number;
+  totalFastestLaps: number;
+  totalRaceStarts: number;
   standing: DriverStanding | null;
-};
+}
 
 export type CircuitRouteState = {
   circuit?: Circuit;

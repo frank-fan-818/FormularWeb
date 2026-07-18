@@ -4,10 +4,51 @@ import { logger } from '@/utils/logger';
 import type {
   ConstructorHistorySummaryRecord,
   DriverHistorySummaryRecord,
+  SupabaseCircuitDetailRow,
+  SupabaseCircuitListRow,
+  SupabaseConstructorDetailRow,
+  SupabaseConstructorListRow,
+  SupabaseDriverDetailRow,
+  SupabaseDriverListRow,
 } from '@/types';
+import type { ZodType } from 'zod';
+import {
+  ConstructorHistorySummaryRecordSchema,
+  DriverHistorySummaryRecordSchema,
+  SupabaseCircuitDetailRowSchema,
+  SupabaseCircuitListRowSchema,
+  SupabaseConstructorDetailRowSchema,
+  SupabaseConstructorListRowSchema,
+  SupabaseDriverDetailRowSchema,
+  SupabaseDriverListRowSchema,
+  SupabaseRowSchema,
+} from './supabaseSchemas';
 
 type RowPatch = Record<string, string | number | boolean | null>;
-type SupabaseRow = Record<string, unknown>;
+
+export class SupabaseDataValidationError extends Error {
+  constructor(table: string, paths: string[]) {
+    super(`Supabase ${table} 数据结构无效${paths.length ? `: ${paths.join(', ')}` : ''}`);
+    this.name = 'SupabaseDataValidationError';
+  }
+}
+
+function parseRows<T extends object>(table: string, schema: ZodType<T>, data: unknown): T[] {
+  const parsed = schema.array().safeParse(data ?? []);
+  if (parsed.success) return parsed.data;
+
+  const paths = parsed.error.issues
+    .slice(0, 5)
+    .map((issue) => issue.path.join('.') || 'row');
+  logger.warn({
+    event: 'exit',
+    module: 'supabase',
+    function: `${table}.validate`,
+    status: 'failed',
+    error: `Supabase ${table} 返回字段不符合约定: ${paths.join(', ')}`,
+  });
+  throw new SupabaseDataValidationError(table, paths);
+}
 
 export const SUPABASE_COLUMNS = {
   circuitListMetadata: [
@@ -80,7 +121,7 @@ export const SUPABASE_COLUMNS = {
   ].join(', '),
 };
 
-async function listRows<T extends object = SupabaseRow>(table: string, options?: {
+async function listRows<T extends object>(table: string, schema: ZodType<T>, options?: {
   columns?: string;
   orderBy?: string;
   ascending?: boolean;
@@ -103,13 +144,14 @@ async function listRows<T extends object = SupabaseRow>(table: string, options?:
     throw error;
   }
 
-  return (data || []) as unknown as T[];
+  return parseRows(table, schema, data);
 }
 
-async function getSingleRow<T extends object = SupabaseRow>(
+async function getSingleRow<T extends object>(
   table: string,
   key: string,
   value: string | number,
+  schema: ZodType<T>,
   columns = '*',
 ): Promise<T | null> {
   const query = supabase
@@ -130,7 +172,8 @@ async function getSingleRow<T extends object = SupabaseRow>(
     return null;
   }
 
-  return data && data.length > 0 ? data[0] as unknown as T : null;
+  if (!data || data.length === 0) return null;
+  return parseRows(table, schema, data)[0] || null;
 }
 
 async function updateRow(table: string, key: string, value: string | number, patch: RowPatch) {
@@ -147,57 +190,59 @@ async function updateRow(table: string, key: string, value: string | number, pat
     throw error;
   }
 
-  return data;
+  return SupabaseRowSchema.parse(data);
 }
 
 export const supabaseApi = {
   circuits: {
-    getAll: async <T extends object = SupabaseRow>(limit = 400) => listRows<T>('circuits', { orderBy: 'name', limit }),
-    getListMetadata: async <T extends object = SupabaseRow>(limit = 400) => listRows<T>('circuits', {
+    getAll: async (limit = 400): Promise<SupabaseCircuitDetailRow[]> => listRows('circuits', SupabaseCircuitDetailRowSchema, { orderBy: 'name', limit }),
+    getListMetadata: async (limit = 400): Promise<SupabaseCircuitListRow[]> => listRows('circuits', SupabaseCircuitListRowSchema, {
       columns: SUPABASE_COLUMNS.circuitListMetadata,
       orderBy: 'name',
       limit,
     }),
-    getById: async <T extends object = SupabaseRow>(circuitId: string) =>
-      getSingleRow<T>('circuits', 'circuit_id', circuitId, SUPABASE_COLUMNS.circuitDetail),
+    getById: async (circuitId: string): Promise<SupabaseCircuitDetailRow | null> =>
+      getSingleRow('circuits', 'circuit_id', circuitId, SupabaseCircuitDetailRowSchema, SUPABASE_COLUMNS.circuitDetail),
     update: async (circuitId: string, patch: RowPatch) => updateRow('circuits', 'circuit_id', circuitId, patch),
   },
 
   drivers: {
-    getAll: async <T extends object = SupabaseRow>(limit = 1000) => listRows<T>('drivers', { orderBy: 'last_name', limit }),
-    getListMetadata: async <T extends object = SupabaseRow>(limit = 1000) => listRows<T>('drivers', {
+    getAll: async (limit = 1000): Promise<SupabaseDriverDetailRow[]> => listRows('drivers', SupabaseDriverDetailRowSchema, { orderBy: 'last_name', limit }),
+    getListMetadata: async (limit = 1000): Promise<SupabaseDriverListRow[]> => listRows('drivers', SupabaseDriverListRowSchema, {
       columns: SUPABASE_COLUMNS.driverListMetadata,
       orderBy: 'last_name',
       limit,
     }),
-    getById: async <T extends object = SupabaseRow>(driverId: string) =>
-      getSingleRow<T>('drivers', 'driver_id', driverId, SUPABASE_COLUMNS.driverDetail),
+    getById: async (driverId: string): Promise<SupabaseDriverDetailRow | null> =>
+      getSingleRow('drivers', 'driver_id', driverId, SupabaseDriverDetailRowSchema, SUPABASE_COLUMNS.driverDetail),
     update: async (driverId: string, patch: RowPatch) => updateRow('drivers', 'driver_id', driverId, patch),
   },
 
   constructors: {
-    getAll: async <T extends object = SupabaseRow>(limit = 300) => listRows<T>('constructors', { orderBy: 'name', limit }),
-    getListMetadata: async <T extends object = SupabaseRow>(limit = 300) => listRows<T>('constructors', {
+    getAll: async (limit = 300): Promise<SupabaseConstructorDetailRow[]> => listRows('constructors', SupabaseConstructorDetailRowSchema, { orderBy: 'name', limit }),
+    getListMetadata: async (limit = 300): Promise<SupabaseConstructorListRow[]> => listRows('constructors', SupabaseConstructorListRowSchema, {
       columns: SUPABASE_COLUMNS.constructorListMetadata,
       orderBy: 'name',
       limit,
     }),
-    getById: async <T extends object = SupabaseRow>(constructorId: string) =>
-      getSingleRow<T>('constructors', 'constructor_id', constructorId, SUPABASE_COLUMNS.constructorDetail),
+    getById: async (constructorId: string): Promise<SupabaseConstructorDetailRow | null> =>
+      getSingleRow('constructors', 'constructor_id', constructorId, SupabaseConstructorDetailRowSchema, SUPABASE_COLUMNS.constructorDetail),
     update: async (constructorId: string, patch: RowPatch) => updateRow('constructors', 'constructor_id', constructorId, patch),
   },
 
   driverHistorySummaries: {
-    getById: async (driverId: string) => getSingleRow<DriverHistorySummaryRecord>('driver_history_summary', 'driver_id', driverId),
+    getById: async (driverId: string): Promise<DriverHistorySummaryRecord | null> =>
+      getSingleRow('driver_history_summary', 'driver_id', driverId, DriverHistorySummaryRecordSchema),
   },
 
   constructorHistorySummaries: {
-    getById: async (constructorId: string) => getSingleRow<ConstructorHistorySummaryRecord>('constructor_history_summary', 'constructor_id', constructorId),
+    getById: async (constructorId: string): Promise<ConstructorHistorySummaryRecord | null> =>
+      getSingleRow('constructor_history_summary', 'constructor_id', constructorId, ConstructorHistorySummaryRecordSchema),
   },
 
   seasons: {
-    getAll: async (limit = 200) => listRows('seasons', { orderBy: 'year', ascending: false, limit }),
-    getByYear: async (year: number) => getSingleRow('seasons', 'year', year),
+    getAll: async (limit = 200) => listRows('seasons', SupabaseRowSchema, { orderBy: 'year', ascending: false, limit }),
+    getByYear: async (year: number) => getSingleRow('seasons', 'year', year, SupabaseRowSchema),
     update: async (year: number, patch: RowPatch) => updateRow('seasons', 'year', year, patch),
   },
 
@@ -214,7 +259,7 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('races', SupabaseRowSchema, data);
     },
     getAll: async (limit = 300) => {
       const query = supabase
@@ -229,9 +274,9 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('races', SupabaseRowSchema, data);
     },
-    getById: async (id: number) => getSingleRow('races', 'id', id),
+    getById: async (id: number) => getSingleRow('races', 'id', id, SupabaseRowSchema),
     update: async (id: number, patch: RowPatch) => updateRow('races', 'id', id, patch),
   },
 
@@ -248,7 +293,7 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('race_results', SupabaseRowSchema, data);
     },
     getAll: async (limit = 300) => {
       const query = supabase
@@ -263,9 +308,9 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('race_results', SupabaseRowSchema, data);
     },
-    getById: async (id: number) => getSingleRow('race_results', 'id', id),
+    getById: async (id: number) => getSingleRow('race_results', 'id', id, SupabaseRowSchema),
     update: async (id: number, patch: RowPatch) => updateRow('race_results', 'id', id, patch),
   },
 
@@ -282,7 +327,7 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('qualifying_results', SupabaseRowSchema, data);
     },
     getAll: async (limit = 300) => {
       const query = supabase
@@ -297,9 +342,9 @@ export const supabaseApi = {
         throw error;
       }
 
-      return data || [];
+      return parseRows('qualifying_results', SupabaseRowSchema, data);
     },
-    getById: async (id: number) => getSingleRow('qualifying_results', 'id', id),
+    getById: async (id: number) => getSingleRow('qualifying_results', 'id', id, SupabaseRowSchema),
     update: async (id: number, patch: RowPatch) => updateRow('qualifying_results', 'id', id, patch),
   },
 };

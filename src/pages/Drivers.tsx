@@ -11,7 +11,7 @@ import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
-import type { Driver, SupabaseDriverListRow } from '@/types';
+import type { Driver } from '@/types';
 import './Drivers.css';
 
 const TEXT = {
@@ -49,7 +49,7 @@ const Drivers = () => {
   const { currentSeason } = useAppStore();
   const { driverStandings, loading: standingsLoading } = useDriverStandingsCached(currentSeason);
   const fetchDriverMetadata = useCallback(
-    () => supabaseApi.drivers.getListMetadata<SupabaseDriverListRow>(),
+    () => supabaseApi.drivers.getListMetadata(),
     [],
   );
   const { data: driverMetadata } = useSupabaseMetadata(
