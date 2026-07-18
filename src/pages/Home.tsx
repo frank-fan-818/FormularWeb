@@ -8,6 +8,7 @@ import { useAppStore } from '@/store';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { getTeamColor } from '@/utils/teamColors';
 import { preloadRaceInfoRoute } from '@/utils/routePreload';
+import ProductMasthead from '@/components/product/ProductMasthead';
 import './Home.css';
 
 const TEXT = {
@@ -43,6 +44,11 @@ const TEXT = {
   retry: '\u91cd\u8bd5',
   moduleLoading: '\u6b63\u5728\u8865\u9f50\u6570\u636e...',
   moduleUnavailable: '\u8be5\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
+  controlRoom: '\u8d5b\u5b63\u6307\u6325\u5ba4',
+  briefing: '\u4ece\u4e0b\u4e00\u7ad9\u3001\u51a0\u519b\u4e89\u593a\u5230\u6700\u65b0\u6392\u540d\uff0c\u4e00\u5c4f\u638c\u63e1\u5f53\u524d F1 \u8d5b\u5b63\u7684\u6700\u91cd\u8981\u4fe1\u53f7\u3002',
+  seasonProgressShort: '\u8d5b\u5b63\u8fdb\u5ea6',
+  nextSignal: '\u4e0b\u4e00\u4fe1\u53f7',
+  noRace: '\u5df2\u5b8c\u8d5b',
 };
 
 const Home = () => {
@@ -157,6 +163,47 @@ const Home = () => {
           <button type="button" className="notice-retry" onClick={refetch}>{TEXT.retry}</button>
         </div>
       ) : null}
+      <ProductMasthead
+        index="00"
+        eyebrow={`${currentSeason} / ${TEXT.controlRoom}`}
+        title={<>{currentSeason}<br />SEASON CONTROL</>}
+        description={TEXT.briefing}
+        actions={(
+          <>
+            <button type="button" className="home-command-primary" onClick={() => navigate('/races')}>
+              {TEXT.nextRace}
+            </button>
+            <button type="button" className="home-command-secondary" onClick={() => navigate('/seasons')}>
+              {TEXT.viewFullStandings}
+            </button>
+          </>
+        )}
+        metrics={[
+          {
+            label: TEXT.seasonProgressShort,
+            value: `${completedRaces.length}/${races.length || '--'}`,
+            detail: `${TEXT.completedRaces} · ${Math.round((completedRaces.length / Math.max(races.length, 1)) * 100)}%`,
+          },
+          {
+            label: TEXT.driverLeader,
+            value: driverLeader ? `${driverLeader.Driver.givenName[0]}. ${driverLeader.Driver.familyName}` : '--',
+            detail: driverLeader ? `${driverLeader.points} PTS` : TEXT.moduleLoading,
+            accent: driverLeader ? getTeamColor(driverLeader.Constructors[0].constructorId) : undefined,
+          },
+          {
+            label: TEXT.constructorLeader,
+            value: constructorLeader?.Constructor.name || '--',
+            detail: constructorLeader ? `${constructorLeader.points} PTS` : TEXT.moduleLoading,
+            accent: constructorLeader ? getTeamColor(constructorLeader.Constructor.constructorId) : undefined,
+          },
+          {
+            label: TEXT.nextSignal,
+            value: nextRace ? (daysUntilNextRace === 0 ? TEXT.today : `T-${daysUntilNextRace}`) : TEXT.noRace,
+            detail: nextRace?.raceName || TEXT.seasonEnded,
+            accent: 'var(--accent-yellow)',
+          },
+        ]}
+      />
       {(driverLeader || constructorLeader || races.length > 0) ? (
         <section className="season-pulse" aria-labelledby="season-pulse-title">
           <div>

@@ -1,14 +1,20 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
+  BarChartOutlined,
   CalendarOutlined,
+  CompassOutlined,
   FlagOutlined,
+  FundProjectionScreenOutlined,
+  ThunderboltOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
 import { RaceDataProvider, useRaceData } from './RaceContext';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import '../RaceDetail.css';
 
 const RACE_TAB_KEYS = ['results', 'qualifying', 'race', 'sprint', 'info'] as const;
@@ -25,6 +31,10 @@ const InnerLayout = () => {
     retryRaceData,
     availableDbSessions,
     sprintResults,
+    raceResults,
+    qualifyingResults,
+    fastF1Analytics,
+    activeWeekendMode,
     sessionLoadErrors,
     retryActiveSession,
     setActiveTab,
@@ -38,6 +48,10 @@ const InnerLayout = () => {
   const routeTab = RACE_TAB_KEYS.includes(requestedTab as typeof RACE_TAB_KEYS[number])
     ? requestedTab
     : 'results';
+  const insights = useMemo(
+    () => buildRaceOverviewInsights(raceResults, qualifyingResults, fastF1Analytics),
+    [fastF1Analytics, qualifyingResults, raceResults],
+  );
 
   useEffect(() => {
     setActiveTab(routeTab);
@@ -84,39 +98,74 @@ const InnerLayout = () => {
 
   return (
     <div className="race-detail-page">
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate(-1)}
-        className="back-button"
-      >
-        {t('back')}
-      </Button>
+      <section className="race-command" aria-labelledby="race-command-title">
+        <span className="race-command-round-mark" aria-hidden="true">
+          {String(raceInfo.round).padStart(2, '0')}
+        </span>
+        <div className="race-command-grid" aria-hidden="true" />
 
-      <Card loading={seasonLoading || primaryLoading} className="race-info-card">
-        <div className="race-hero">
-          <div className="race-hero-top">
-            <h1 className="race-hero-title">
-              <FlagOutlined className="race-hero-flag" />
+        <div className="race-command-utility">
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(-1)}
+            className="race-command-back"
+          >
+            返回赛历
+          </Button>
+          <span className="race-command-championship">
+            FIA FORMULA ONE WORLD CHAMPIONSHIP
+          </span>
+          <span className={`race-command-state state-${activeWeekendMode}`}>
+            <i />
+            {activeWeekendMode === 'post' ? 'FINAL · 已完赛' : 'UPCOMING · 赛前'}
+          </span>
+        </div>
+
+        <div className="race-command-main">
+          <div className="race-command-copy">
+            <span className="race-command-kicker">
+              {raceInfo.season} SEASON / ROUND {String(raceInfo.round).padStart(2, '0')}
+            </span>
+            <h1 id="race-command-title">
+              <FlagOutlined />
               <span>{raceInfo.raceName}</span>
             </h1>
-            <div className="race-hero-badges">
-              <span className="race-hero-date">
-                <CalendarOutlined />
-                {formatRaceDateTimeFull(raceInfo)}
-              </span>
-              {isSprintWeekend ? (
-                <span className="race-hero-sprint">
-                  {t('sprintWeekend')}
-                </span>
-              ) : null}
+            <p>
+              <strong>{raceInfo.Circuit.circuitName}</strong>
+              <span>{raceInfo.Circuit.Location.locality} · {raceInfo.Circuit.Location.country}</span>
+            </p>
+            <div className="race-command-meta">
+              <span><CalendarOutlined />{formatRaceDateTimeFull(raceInfo)}</span>
+              {isSprintWeekend ? <span className="is-sprint"><ThunderboltOutlined />SPRINT WEEKEND</span> : null}
             </div>
           </div>
-          <p className="race-hero-circuit">
-            {raceInfo.Circuit.circuitName}
-            <span> — {raceInfo.Circuit.Location.locality}, {raceInfo.Circuit.Location.country}</span>
-          </p>
+
+          <div className="race-command-snapshot" aria-label="比赛关键数据">
+            <div className="race-command-stat is-primary">
+              <span>{insights.winner ? 'RACE WINNER' : 'RACE STATUS'}</span>
+              <strong>{insights.winner?.Driver.code || 'PENDING'}</strong>
+              <small>{insights.winner ? insights.winner.Constructor.name : '等待比赛结果'}</small>
+            </div>
+            <div className="race-command-stat">
+              <span>POLE POSITION</span>
+              <strong>{insights.pole?.Driver.code || '—'}</strong>
+              <small>{insights.pole?.Constructor.name || '排位结果待发布'}</small>
+            </div>
+            <div className="race-command-stat">
+              <span>FASTEST LAP</span>
+              <strong>{insights.fastestLap?.result.Driver.code || '—'}</strong>
+              <small>{insights.fastestLap?.time || `${insights.totalLaps || '—'} LAPS`}</small>
+            </div>
+          </div>
         </div>
-      </Card>
+
+        <div className="race-command-footer">
+          <span><i className="signal-dot" /> RACE DATA LINK</span>
+          <span>{raceResults.length || qualifyingResults.length ? 'CLASSIFICATION AVAILABLE' : 'AWAITING SESSION DATA'}</span>
+          <span>{fastF1Analytics ? 'FASTF1 ANALYTICS ONLINE' : 'FASTF1 ANALYTICS STANDBY'}</span>
+        </div>
+      </section>
 
       {raceLoadError ? (
         <div className="race-partial-notice" role="status">
@@ -141,20 +190,23 @@ const InnerLayout = () => {
         items={[
           {
             key: 'results',
-            label: '比赛成绩',
+            label: <span className="race-command-tab-label"><TrophyOutlined /><span><strong>赛事概览</strong><small>OVERVIEW</small></span></span>,
           },
           {
             key: 'qualifying',
-            label: '排位分析',
+            label: <span className="race-command-tab-label"><BarChartOutlined /><span><strong>排位解构</strong><small>QUALIFYING</small></span></span>,
           },
           {
             key: 'race',
-            label: '正赛分析',
+            label: <span className="race-command-tab-label"><FundProjectionScreenOutlined /><span><strong>比赛解读</strong><small>RACE ANALYSIS</small></span></span>,
           },
-          ...(hasSprint ? [{ key: 'sprint' as const, label: '冲刺赛' }] : []),
+          ...(hasSprint ? [{
+            key: 'sprint' as const,
+            label: <span className="race-command-tab-label"><ThunderboltOutlined /><span><strong>冲刺周末</strong><small>SPRINT</small></span></span>,
+          }] : []),
           {
             key: 'info',
-            label: '赛事信息',
+            label: <span className="race-command-tab-label"><CompassOutlined /><span><strong>周末情报</strong><small>INTELLIGENCE</small></span></span>,
           },
         ]}
       />

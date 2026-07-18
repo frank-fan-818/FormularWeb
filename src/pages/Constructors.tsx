@@ -8,6 +8,8 @@ import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
+import ProductMasthead from '@/components/product/ProductMasthead';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './Constructors.css';
 
 const TEXT = {
@@ -76,13 +78,26 @@ const Constructors = () => {
         <title>&#x8f66;&#x961f;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
         <meta name="description" content="F1&#x8f66;&#x961f;&#x5217;&#x8868;&#xff0c;&#x67e5;&#x770b;&#x672c;&#x8d5b;&#x5b63;&#x8f66;&#x961f;&#x9635;&#x5bb9;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
       </Helmet>
-      <h1 className="page-title"><span>{currentSeason} {TEXT.title}</span></h1>
-
+      <ProductMasthead
+        index="04"
+        eyebrow={`${currentSeason} / TEAM LIBRARY`}
+        title={<>THE<br />CONSTRUCTORS</>}
+        description="车队颜色代表身份，积分与胜场代表当前竞争力。先理解本赛季格局，再进入每支车队的作战档案。"
+        metrics={[
+          { label: '\u53c2\u8d5b\u8f66\u961f', value: constructors.length || '--', detail: `${currentSeason} GRID` },
+          { label: '\u79ef\u5206\u9886\u8dd1', value: constructors[0]?.name || '--', detail: constructors[0] ? `${constructors[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: constructors[0] ? getTeamColor(constructors[0].constructorId) : undefined },
+          { label: '\u9886\u8dd1\u80dc\u573a', value: constructors[0]?.seasonWins || '--', detail: constructors[0]?.name || '\u5f85\u5b9a' },
+        ]}
+      />
       {loading ? (
         <div className="loading-container">
           <Spin size="large" />
         </div>
+      ) : constructors.length === 0 ? (
+        <div className="constructor-library-empty">当前赛季暂无车队数据。</div>
       ) : (
+        <>
+        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队作战库" description="稳定的车队色、当前排名和历史数据共同构成每支车队的识别系统。" />
         <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);
@@ -163,6 +178,7 @@ const Constructors = () => {
             );
           })}
         </div>
+        </>
       )}
     </div>
   );

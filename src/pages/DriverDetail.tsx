@@ -15,6 +15,7 @@ import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './DriverDetail.css';
 
 interface DriverProfile {
@@ -659,6 +660,12 @@ const DriverDetail = () => {
           </Card>
         </div>
 
+        <ProductSectionHeader
+          index="01"
+          eyebrow={`${currentSeason} / FORM`}
+          title={TEXT.pointsTrend}
+          description="用每一站的积分变化读取车手当前状态，而不是只看一个静态排名。"
+        />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}

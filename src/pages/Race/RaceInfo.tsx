@@ -34,6 +34,7 @@ import {
 } from '@/pages/Race/shared/constants';
 import { useRaceData } from './RaceContext';
 import ViewportTable from './shared/components/ViewportTable';
+import { RacePageIntro } from './shared/components/RacePageIntro';
 import '../RaceDetail.css';
 
 // ---- Localised text for circuit info (not yet in i18n / TEXT constants) ----
@@ -427,10 +428,20 @@ const RaceInfo = () => {
 
   return (
     <div className="race-info-page">
-      <div className="race-info-section-heading">
-        <span>{t('weekendSchedule')}</span>
-        <small>ROUND {raceInfo.round} · {raceInfo.season}</small>
-      </div>
+      <RacePageIntro
+        index="05"
+        eyebrow="WEEKEND INTELLIGENCE / 周末情报"
+        title="在赛车驶上赛道之前，先读懂这条赛道"
+        description="把赛程、赛道画像、实际天气、历史中断风险与车队升级放在同一份周末情报中，建立理解比赛所需的上下文。"
+        aside={(
+          <div className="race-page-pulse">
+            <span><strong>{weekendSchedule.length}</strong> 场次</span>
+            <span><strong>{racePreviewSummary?.sampleSize || 0}</strong> 历史样本</span>
+            <span><strong>{raceUpgradeSummary?.teams.length || 0}</strong> 升级车队</span>
+            {isSprintWeekend ? <span className="is-accent"><strong>SPRINT</strong> 周末</span> : null}
+          </div>
+        )}
+      />
       {/* Row: Circuit Info + Weekend Schedule */}
       <div className="race-info-overview">
         {/* Circuit Info Card */}

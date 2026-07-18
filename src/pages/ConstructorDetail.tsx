@@ -11,6 +11,7 @@ import { useAppStore } from '@/store';
 import type { HistoryCareerSummary } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './ConstructorDetail.css';
 
 interface ConstructorProfile {
@@ -553,6 +554,12 @@ const ConstructorDetail = () => {
           </Card>
         </div>
 
+        <ProductSectionHeader
+          index="01"
+          eyebrow={`${currentSeason} / TEAM FORM`}
+          title={TEXT.pointsTrend}
+          description="用分站积分轨迹判断车队竞争力是在上升、持平还是回落。"
+        />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}

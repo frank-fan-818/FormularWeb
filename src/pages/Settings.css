@@ -3,8 +3,10 @@
    ======================================== */
 
 .settings-page {
-  max-width: 800px;
+  max-width: 1120px;
 }
+
+.settings-page > .settings-header { display: none; }
 
 .settings-header {
   margin-bottom: var(--space-6);
@@ -24,10 +26,20 @@
 }
 
 .settings-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
+
+.settings-card {
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.settings-card:last-child { grid-column: 1 / -1; }
+.settings-card .ant-card-head { min-height: 58px; background: var(--race-control-panel); border-bottom-color: var(--border-secondary); }
+.settings-card .ant-card-head-title { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.02em; }
 
 /* Setting Row: label on left, control on right */
 .setting-row {
@@ -56,6 +68,8 @@
 
 /* Mobile adjustments */
 @media (max-width: 600px) {
+  .settings-content { grid-template-columns: 1fr; }
+  .settings-card:last-child { grid-column: auto; }
   .setting-row {
     flex-direction: column;
     align-items: flex-start;

@@ -8,6 +8,9 @@ import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import { LIGHT_TAG_COLORS, DEFERRED_TAB_KEYS } from '@/pages/Race/shared/constants';
+import { RaceOverviewPanel } from '@/pages/Race/shared/components/RaceOverviewPanel';
+import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { useRaceData } from './RaceContext';
 import '../RaceDetail.css';
 
@@ -17,6 +20,16 @@ interface TabItem {
   data: (Result | QualifyingResult)[];
   columns: ColumnsType<Result | QualifyingResult>;
 }
+
+const SESSION_CODES: Record<string, string> = {
+  fp1: 'FP1',
+  fp2: 'FP2',
+  fp3: 'FP3',
+  sprintQualifying: 'SQ',
+  sprint: 'S',
+  qualifying: 'Q',
+  race: 'R',
+};
 
 const RaceResults = () => {
   const { t } = useTranslation();
@@ -36,6 +49,7 @@ const RaceResults = () => {
     loadedSessionTabs,
     sessionLoadErrors,
     retryActiveSession,
+    fastF1Analytics,
     activeTab,
     setActiveTab,
   } = useRaceData();
@@ -55,6 +69,10 @@ const RaceResults = () => {
     Boolean(raceInfo?.Sprint)
     || availableDbSessions.includes('S')
     || sprintResults.length > 0;
+  const insights = useMemo(
+    () => buildRaceOverviewInsights(raceResults, qualifyingResults, fastF1Analytics),
+    [fastF1Analytics, qualifyingResults, raceResults],
+  );
 
   const getTableLoading = (tabKey: string, data: unknown[]): boolean => {
     if (primaryLoading) return true;
@@ -401,26 +419,61 @@ const RaceResults = () => {
 
   return (
     <div className="race-results-page">
-      <Tabs
-        activeKey={effectiveActiveTab}
-        onChange={setActiveTab}
-        items={tabItems.map((item) => ({
-          key: item.key,
-          label: item.label,
-          children: (
-            <Table
-              columns={item.columns}
-              dataSource={item.data}
-              rowKey={(record: Result | QualifyingResult) => record.Driver?.driverId || ''}
-              pagination={false}
-              loading={getTableLoading(item.key, item.data)}
-              locale={{ emptyText: renderEmptyState(item.key) }}
-              size="small"
-              scroll={{ x: 'max-content' }}
-            />
-          ),
-        }))}
+      <RacePageIntro
+        index="01"
+        eyebrow="WEEKEND OVERVIEW / 赛事概览"
+        title={raceResults.length ? '看懂方格旗之后的全部故事' : '从周末第一圈开始追踪局势'}
+        description={raceResults.length
+          ? '先读懂领奖台、位置变化与关键异常，再进入每一个场次的完整分类。'
+          : '已发布的练习、排位与冲刺成绩会在这里持续汇总，正赛结束后自动生成赛后速览。'}
+        aside={(
+          <div className="race-page-pulse">
+            <span><strong>{tabItems.length}</strong> 场次</span>
+            <span><strong>{raceResults.length || qualifyingResults.length}</strong> 车手</span>
+            <span><strong>{insights.interruptionCount}</strong> 中断阶段</span>
+          </div>
+        )}
       />
+
+      <RaceOverviewPanel insights={insights} />
+
+      <section className="race-classification-shell" aria-labelledby="race-classification-title">
+        <div className="race-classification-heading">
+          <div>
+            <span>OFFICIAL CLASSIFICATION</span>
+            <h2 id="race-classification-title">完整场次成绩</h2>
+          </div>
+          <p>切换场次查看官方分类；车手代码可直接进入车手档案。</p>
+        </div>
+        <Tabs
+          className="race-session-tabs"
+          activeKey={effectiveActiveTab}
+          onChange={setActiveTab}
+          items={tabItems.map((item) => ({
+            key: item.key,
+            label: (
+              <span className="race-session-tab-label">
+                <b>{SESSION_CODES[item.key] || item.key.toUpperCase()}</b>
+                <span>{item.label}</span>
+              </span>
+            ),
+            children: (
+              <div className="race-classification-table">
+                <Table
+                  columns={item.columns}
+                  dataSource={item.data}
+                  rowKey={(record: Result | QualifyingResult) => record.Driver?.driverId || ''}
+                  pagination={false}
+                  loading={getTableLoading(item.key, item.data)}
+                  locale={{ emptyText: renderEmptyState(item.key) }}
+                  size="small"
+                  scroll={{ x: 'max-content' }}
+                />
+              </div>
+            ),
+          }))}
+        />
+      </section>
     </div>
   );
 };

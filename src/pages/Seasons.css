@@ -211,12 +211,22 @@
 }
 
 .season-standings-page {
-  max-width: 1120px;
+  max-width: 1280px;
 }
 
 .official-season-tabs .ant-tabs-nav {
   margin-bottom: var(--space-4);
+  padding: 5px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
 }
+
+.official-season-tabs .ant-tabs-nav::before { display: none; }
+.official-season-tabs .ant-tabs-tab { padding: 10px 18px; border-radius: var(--radius-control); }
+.official-season-tabs .ant-tabs-tab-active { background: var(--race-control-ink); }
+.official-season-tabs .ant-tabs-tab-active .ant-tabs-tab-btn { color: #fff !important; }
+.official-season-tabs .ant-tabs-ink-bar { display: none; }
 
 .official-season-table {
   display: flex;
@@ -241,7 +251,7 @@
   border: 1px solid var(--border-secondary);
   border-left: 6px solid var(--f1-red);
   background: var(--bg-card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   overflow: hidden;
   animation: slideUp 0.45s ease both;
 }
@@ -252,6 +262,12 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
+}
+
+.official-season-row:hover {
+  transform: translateX(4px);
+  border-color: var(--border-primary);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 .official-rank {

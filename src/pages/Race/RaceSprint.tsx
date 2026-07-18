@@ -25,6 +25,7 @@ import { getTeamColor } from '@/utils/teamColors';
 import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
+import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import '../RaceDetail.css';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
@@ -297,7 +298,13 @@ const RaceSprint = () => {
   if (!primaryLoading && !hasSprintData) {
     return (
       <div className="fastf1-analytics-section">
-        <Card>
+        <RacePageIntro
+          index="04"
+          eyebrow="SPRINT WEEKEND / 冲刺周末"
+          title="更短的赛程，更快的决策"
+          description="冲刺周末数据发布后，这里会把冲刺排位与冲刺正赛合并成一条紧凑的速度故事。"
+        />
+        <Card className="race-empty-command-card">
           <p>{'\u672C\u573A\u6BD4\u8D5B\u65E0\u51B2\u523A\u8D5B'}</p>
         </Card>
       </div>
@@ -593,12 +600,12 @@ const RaceSprint = () => {
 
   return (
     <div className="fastf1-analytics-section">
-      <div className="fastf1-analytics-heading">
-        <div>
-          <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
-          <h2>{'\u51B2\u523A\u8D5B\u5206\u6790'}</h2>
-        </div>
-        {fastF1SprintSummary ? (
+      <RacePageIntro
+        index="04"
+        eyebrow="SPRINT WEEKEND / 冲刺周末"
+        title="短赛程，把每一次失误都放大"
+        description="从冲刺排位到冲刺正赛，连续阅读单圈速度、比赛节奏与有限轮胎选择下的得失。"
+        aside={fastF1SprintSummary ? (
           <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
             <span>
               {fastF1SprintSummary.driverCount}
@@ -617,10 +624,10 @@ const RaceSprint = () => {
             </span>
           </div>
         ) : null}
-      </div>
+      />
 
       <Tabs
-        className="race-subpage-tabs"
+        className="race-analysis-tabs race-sprint-tabs"
         defaultActiveKey="sprintQualifying"
         items={tabItems}
       />

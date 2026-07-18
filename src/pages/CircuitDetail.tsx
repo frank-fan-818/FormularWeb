@@ -8,6 +8,8 @@ import { useAppStore } from '@/store';
 import type { Race } from '@/types';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
+import ProductMasthead from '@/components/product/ProductMasthead';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './CircuitDetail.css';
 
 const TEXT = {
@@ -105,7 +107,7 @@ const CircuitDetail = () => {
   const direction = waitingForDetails ? TEXT.loadingStat : formatCircuitDirection(circuitDetails?.direction);
 
   return (
-    <div className="circuit-detail-container">
+    <div className="circuit-detail-container circuit-engineering-page">
       <Helmet>
         <title>{circuit?.circuitName ? `${circuit.circuitName} \u2014 F1 Dashboard` : '\u8d5b\u9053\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
         <meta name="description" content={`${circuit?.circuitName || ''} F1\u8d5b\u9053\u8be6\u60c5, \u8d5b\u9053\u957f\u5ea6\u3001\u5f2f\u9053\u6570\u91cf\u3001\u5386\u53f2\u6570\u636e\u7b49`} />
@@ -118,9 +120,34 @@ const CircuitDetail = () => {
         {TEXT.back}
       </Button>
 
+      <ProductMasthead
+        index="05"
+        eyebrow={`${currentSeason} / TRACK DOSSIER`}
+        title={<>{circuit.circuitName}</>}
+        description={`${circuit.Location.locality}, ${circuit.Location.country}。从赛道几何、方向与落差开始，理解这里为什么会形成独特的排位赛和正赛节奏。`}
+        accent="var(--race-control-apex)"
+        aside={(
+          <div className="circuit-command-map">
+            <CircuitImage alt={circuit.circuitName} circuitId={circuit.circuitId} className="circuit-image" showSectors />
+            <div className="sector-legend" aria-label="Sector">
+              <span><i className="sector-dot sector-dot-1" />S1</span>
+              <span><i className="sector-dot sector-dot-2" />S2</span>
+              <span><i className="sector-dot sector-dot-3" />S3</span>
+            </div>
+          </div>
+        )}
+        metrics={[
+          { label: TEXT.length, value: formatStatValue(circuitDetails?.length, ' km', waitingForDetails), accent: 'var(--race-control-apex)' },
+          { label: TEXT.turns, value: formatStatValue(circuitDetails?.turns, '', waitingForDetails) },
+          { label: TEXT.direction, value: direction },
+          { label: TEXT.raceCount, value: formatStatValue(circuitDetails?.total_races, '', waitingForDetails), detail: `${TEXT.firstRace} ${formatStatValue(circuitDetails?.first_race, '', waitingForDetails)}` },
+        ]}
+      />
+
       <h1 className="page-title"><span>{circuit.circuitName}</span></h1>
       <p className="page-subtitle">{circuit.Location.locality}, {circuit.Location.country}</p>
 
+      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道工程参数" description="几何结构与比赛距离是理解赛道特征的第一层证据。" />
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">

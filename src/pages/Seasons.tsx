@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
+import ProductMasthead from '@/components/product/ProductMasthead';
 import './Seasons.css';
 
 const TEXT = {
@@ -46,6 +47,12 @@ const Seasons = () => {
   } = useSeasonData(currentSeason);
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
+  const driverGap = driverStandings[1]
+    ? Math.max(0, maxDriverPoints - parseFloat(driverStandings[1].points)).toFixed(0)
+    : '--';
+  const constructorGap = constructorStandings[1]
+    ? Math.max(0, maxConstructorPoints - parseFloat(constructorStandings[1].points)).toFixed(0)
+    : '--';
 
   const tabItems = [
     {
@@ -185,7 +192,30 @@ const Seasons = () => {
         <title>&#x5b63;&#x8282;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
         <meta name="description" content="F1&#x8d5b;&#x5b63;&#x79ef;&#x5206;&#x699c;, &#x67e5;&#x770b;&#x8f66;&#x624b;&#x548c;&#x8f66;&#x961f;&#x6392;&#x540d;" />
       </Helmet>
-      <h1 className="page-title"><span>{currentSeason} {TEXT.seasonStandings}</span></h1>
+      <ProductMasthead
+        index="01"
+        eyebrow={`${currentSeason} / CHAMPIONSHIP`}
+        title={<>{currentSeason}<br />STANDINGS</>}
+        description="冠军争夺不是一张静态表格。先看领跑者与关键差距，再深入每一位车手和车队的完整排名。"
+        metrics={[
+          {
+            label: '\u8f66\u624b\u699c\u9886\u8dd1',
+            value: driverStandings[0]
+              ? `${driverStandings[0].Driver.givenName[0]}. ${driverStandings[0].Driver.familyName}`
+              : '--',
+            detail: `${maxDriverPoints || '--'} PTS · +${driverGap}`,
+            accent: driverStandings[0] ? getTeamColor(driverStandings[0].Constructors[0].constructorId) : undefined,
+          },
+          {
+            label: '\u8f66\u961f\u699c\u9886\u8dd1',
+            value: constructorStandings[0]?.Constructor.name || '--',
+            detail: `${maxConstructorPoints || '--'} PTS · +${constructorGap}`,
+            accent: constructorStandings[0] ? getTeamColor(constructorStandings[0].Constructor.constructorId) : undefined,
+          },
+          { label: '\u73b0\u5f79\u8f66\u624b', value: driverStandings.length || '--', detail: '\u5b8c\u6574\u6392\u540d' },
+          { label: '\u53c2\u8d5b\u8f66\u961f', value: constructorStandings.length || '--', detail: '\u8f66\u961f\u79ef\u5206' },
+        ]}
+      />
 
       {(isStale || (error && (driverStandings.length > 0 || constructorStandings.length > 0))) ? (
         <div className="season-data-notice" role="status">

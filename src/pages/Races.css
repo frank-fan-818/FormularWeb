@@ -11,6 +11,90 @@
   margin-left: 16px;
 }
 
+.races-calendar-page { max-width: 1280px; }
+.races-calendar-page > .page-title { display: none; }
+
+.race-calendar-list { display: grid; gap: 8px; }
+.race-calendar-list--featured { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.race-calendar-row {
+  --race-status-color: var(--text-tertiary);
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(240px, 1fr) minmax(180px, auto) 128px 24px;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 94px;
+  padding: 16px 20px 16px 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-left: 4px solid var(--race-status-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  animation: slideUp 0.45s ease both;
+}
+
+.race-calendar-row:hover {
+  z-index: 1;
+  transform: translateX(5px);
+  border-color: var(--race-status-color);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
+}
+
+.race-calendar-row:focus-visible { outline: 3px solid var(--f1-red-glow); outline-offset: 3px; }
+
+.race-calendar-round {
+  display: grid;
+  align-self: stretch;
+  place-items: center;
+  color: var(--text-tertiary);
+  font: 800 13px/1 var(--font-mono);
+  border-right: 1px solid var(--border-secondary);
+}
+
+.race-calendar-country,
+.race-calendar-status {
+  color: var(--text-tertiary);
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.race-calendar-copy h3 {
+  margin: 5px 0 3px;
+  font-family: var(--font-display);
+  font-size: clamp(19px, 2vw, 27px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.race-calendar-copy p,
+.race-calendar-date { margin: 0; color: var(--text-secondary); font-size: 12px; }
+.race-calendar-copy p { display: flex; align-items: center; gap: 6px; }
+.race-calendar-date { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.race-calendar-status { display: flex; align-items: center; gap: 7px; }
+.race-calendar-status i { width: 8px; height: 8px; background: var(--race-status-color); border-radius: 50%; }
+.race-calendar-arrow { color: var(--text-tertiary); font-size: 22px; transition: transform var(--transition-fast); }
+.race-calendar-row:hover .race-calendar-arrow { transform: translateX(3px); color: var(--race-status-color); }
+.race-calendar-row--ongoing { background: color-mix(in srgb, var(--accent-orange) 6%, var(--bg-card)); }
+.race-calendar-list--featured .race-calendar-row { grid-template-columns: 64px minmax(0, 1fr) 24px; min-height: 148px; padding-right: 20px; }
+.race-calendar-list--featured .race-calendar-date,
+.race-calendar-list--featured .race-calendar-status { grid-column: 2; }
+.race-calendar-list--featured .race-calendar-arrow { grid-column: 3; grid-row: 1 / 4; }
+.race-calendar-empty { padding: 48px; color: var(--text-secondary); text-align: center; border: 1px dashed var(--border-primary); }
+
+@media (max-width: 900px) {
+  .race-calendar-list--featured { grid-template-columns: 1fr; }
+  .race-calendar-row { grid-template-columns: 60px minmax(0, 1fr) 24px; gap: 12px; }
+  .race-calendar-date, .race-calendar-status { grid-column: 2; }
+  .race-calendar-arrow { grid-column: 3; grid-row: 1 / 4; }
+}
+
 /* Status dot styles */
 .status-dot {
   display: inline-block;
@@ -33,6 +117,11 @@
 }
 
 @media (max-width: 768px) {
+  .race-calendar-list--featured .race-calendar-row,
+  .race-calendar-row { grid-template-columns: 48px minmax(0, 1fr) 20px; min-height: 112px; padding: 12px 12px 12px 0; }
+  .race-calendar-round { font-size: 11px; }
+  .race-calendar-copy h3 { font-size: 18px; }
+  .race-calendar-date { white-space: normal; }
   .list-page-container {
     padding: var(--space-2);
   }

@@ -20,6 +20,7 @@ import {
   getTelemetryDriverColor,
 } from '@/pages/Race/shared/charts/helpers';
 import { DataViewPanel, type DataViewMode } from '@/pages/Race/shared/components/DataViewPanels';
+import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import {
   buildFastF1Summary,
   getDriverLegendItems,
@@ -498,30 +499,32 @@ const RaceAnalysis = () => {
   if (!fastF1Analytics) {
     return (
       <div className="fastf1-analytics-section">
-        <div className="fastf1-analytics-heading">
-          <div>
-            <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
-            <h2>{t('raceAnalysisGroup')}</h2>
-          </div>
-        </div>
-        <Card>
+        <RacePageIntro
+          index="03"
+          eyebrow="RACE DEBRIEF / 比赛解读"
+          title="比赛证据链仍在生成"
+          description="正赛数据可用后，这里会把比赛节奏、轮胎策略、车手攻防、天气和遥测串成完整的比赛故事。"
+        />
+        <Card className="race-empty-command-card">
           <p>{t('noFastF1Analysis')}</p>
         </Card>
       </div>
     );
   }
 
+  const strategySummary = fastF1Analytics.strategyAnalysis?.summary;
+  const biggestStrategyGain = strategySummary?.biggestPositionGain;
+
   // ---- Render ----
 
   return (
     <div className="fastf1-analytics-section">
-      {/* Heading + summary strip */}
-      <div className="fastf1-analytics-heading">
-        <div>
-          <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
-          <h2>{t('raceAnalysisGroup')}</h2>
-        </div>
-        {fastF1Summary ? (
+      <RacePageIntro
+        index="03"
+        eyebrow="RACE DEBRIEF / 比赛解读"
+        title="从结果倒推，找到胜负真正发生的地方"
+        description="沿着比赛节奏、轮胎、对决、天气与遥测逐层深入；每个模块都是同一场比赛的不同证据，而不是彼此孤立的图表。"
+        aside={fastF1Summary ? (
           <div className="fastf1-summary-strip" aria-label={t('raceAnalysisGroup')}>
             <span>
               {fastF1Summary.driverCount}
@@ -564,14 +567,41 @@ const RaceAnalysis = () => {
             ) : null}
           </div>
         ) : null}
-      </div>
+      />
+
+      <section className="race-analysis-brief" aria-label="比赛关键结论">
+        <article>
+          <span>PACE SIGNAL / 速度基准</span>
+          <strong>{fastF1Analytics.fastestLap?.driver || '—'}</strong>
+          <p>
+            {fastF1Analytics.fastestLap
+              ? `L${fastF1Analytics.fastestLap.lapNumber} · ${formatSeconds(fastF1Analytics.fastestLap.lapTimeSeconds)}`
+              : '最快圈数据暂未生成'}
+          </p>
+        </article>
+        <article>
+          <span>STRATEGY SWING / 策略收益</span>
+          <strong>{biggestStrategyGain?.driver || strategySummary?.pitStopCount || '—'}</strong>
+          <p>
+            {biggestStrategyGain
+              ? `L${biggestStrategyGain.pitLap} 进站窗口 · +${biggestStrategyGain.value} 位置`
+              : `${strategySummary?.pitStopCount || 0} 次进站记录`}
+          </p>
+        </article>
+        <article>
+          <span>RACE CONTROL / 比赛控制</span>
+          <strong>{fastF1Analytics.trackStatusPeriods?.length || 0}</strong>
+          <p>{fastF1Analytics.trackStatusPeriods?.length ? '段中断或管制阶段改变比赛节奏' : '未记录显著中断阶段'}</p>
+        </article>
+      </section>
 
       <nav className="analysis-section-nav" aria-label={t('raceAnalysisGroup')}>
-        {lapPaceOption ? <a href="#analysis-lap-pace">{t('lapPace')}</a> : null}
-        {fastF1Analytics.tyreStrategies.length ? <a href="#analysis-tyre">{t('tyreStrategy')}</a> : null}
-        {duelEnabled ? <a href="#analysis-duel">{t('driverDuel')}</a> : null}
-        {weatherEnabled && weatherOption ? <a href="#analysis-weather">{t('weatherTrend')}</a> : null}
-        {telemetryEnabled ? <a href="#analysis-telemetry">{t('telemetryComparison')}</a> : null}
+        <span className="analysis-section-nav-label">ANALYSIS INDEX</span>
+        {lapPaceOption ? <a href="#analysis-lap-pace"><b>01</b>{t('lapPace')}</a> : null}
+        {fastF1Analytics.tyreStrategies.length ? <a href="#analysis-tyre"><b>02</b>{t('tyreStrategy')}</a> : null}
+        {duelEnabled ? <a href="#analysis-duel"><b>03</b>{t('driverDuel')}</a> : null}
+        {weatherEnabled && weatherOption ? <a href="#analysis-weather"><b>04</b>{t('weatherTrend')}</a> : null}
+        {telemetryEnabled ? <a href="#analysis-telemetry"><b>05</b>{t('telemetryComparison')}</a> : null}
       </nav>
 
       {/* Telemetry Summary */}
@@ -613,6 +643,7 @@ const RaceAnalysis = () => {
             {fastF1Analytics && lapPaceOption ? (
               <Card
                 id="analysis-lap-pace"
+                data-module-index="01"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -699,6 +730,7 @@ const RaceAnalysis = () => {
             {fastF1Analytics.tyreStrategies.length ? (
               <Card
                 id="analysis-tyre"
+                data-module-index="02"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -753,6 +785,7 @@ const RaceAnalysis = () => {
             {duelEnabled && fastF1Analytics ? (
               <Card
                 id="analysis-duel"
+                data-module-index="03"
                 className="fastf1-chart-card driver-duel-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -898,6 +931,7 @@ const RaceAnalysis = () => {
             {weatherEnabled && fastF1Analytics && weatherOption && fastF1Analytics.weather ? (
               <Card
                 id="analysis-weather"
+                data-module-index="04"
                 className="fastf1-chart-card"
                 title={
                   <div className="fastf1-chart-header">
@@ -962,6 +996,7 @@ const RaceAnalysis = () => {
               ) : fastF1Telemetry ? (
               <Card
                 className="fastf1-chart-card telemetry-card"
+                data-module-index="05"
                 title={
                   <div className="fastf1-chart-header">
                     <div>
