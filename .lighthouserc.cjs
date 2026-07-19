@@ -2,6 +2,9 @@ module.exports = {
   ci: {
     collect: {
       staticDistDir: './dist',
+      settings: {
+        chromeFlags: '--disable-gpu --no-sandbox',
+      },
     },
     assert: {
       preset: 'lighthouse:recommended',
@@ -15,7 +18,8 @@ module.exports = {
       },
     },
     upload: {
-      target: 'temporary-public-storage',
+      target: 'filesystem',
+      outputDir: './.lighthouseci/reports',
     },
   },
 };
