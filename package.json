@@ -1,7 +1,7 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.10.2",
+  "version": "0.10.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,6 +25,7 @@
     "prediction:sync": "ts-node-esm ./scripts/sync-current-season-prediction-data.ts",
     "prediction:backtest": "ts-node-esm ./scripts/backtest-winner-prediction.ts",
     "toolchain:verify": "node ./scripts/verify-local-toolchain.mjs",
+    "lighthouse:config:verify": "node ./scripts/verify-lighthouse-config.mjs",
     "lighthouse": "lhci autorun --config=.lighthouserc.cjs",
     "budget:performance": "node scripts/check-performance-budget.mjs"
   },
