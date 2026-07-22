@@ -12,6 +12,7 @@ import { useAppStore } from '@/store';
 import { useSeasons } from '@/hooks';
 import { version } from '../../package.json';
 import type { ThemeMode } from '@/store';
+import ProductMasthead from '@/components/product/ProductMasthead';
 import './Settings.css';
 
 const { Text, Link } = Typography;
@@ -39,6 +40,19 @@ const Settings = () => {
 
   return (
     <div className="page-container settings-page">
+      <ProductMasthead
+        index="06"
+        tone="utility"
+        eyebrow="PREFERENCES / LOCAL"
+        title="CONTROL SETTINGS"
+        description="调整界面、语言与默认赛季。所有选项都围绕更快进入你最常查看的数据上下文。"
+        metrics={[
+          { label: '\u5f53\u524d\u8d5b\u5b63', value: currentSeason },
+          { label: '\u754c\u9762\u4e3b\u9898', value: theme.toUpperCase() },
+          { label: '\u8bed\u8a00', value: i18n.language === 'zh-CN' ? '\u4e2d\u6587' : 'ENGLISH' },
+          { label: '\u7248\u672c', value: `v${version}` },
+        ]}
+      />
       <header className="settings-header">
         <h2>
           <SettingOutlined style={{ marginRight: 10, color: 'var(--f1-red)' }} />

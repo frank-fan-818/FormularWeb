@@ -40,11 +40,21 @@ describe('race session loading state', () => {
     )).toEqual(['fp1', 'fp2', 'fp3']);
   });
 
+  it('preserves the current array reference when a merge changes nothing', () => {
+    const current = ['fp1', 'fp2'];
+    expect(mergeUniqueSessionTabs(current, ['fp2'])).toBe(current);
+  });
+
   it('clears every tab owned by a completed batch', () => {
     expect(removeSessionTabs(
       ['fp1', 'fp2', 'fp3', 'sprint'],
       ['fp2', 'sprint'],
     )).toEqual(['fp1', 'fp3']);
+  });
+
+  it('preserves the current array reference when no requested tab is present', () => {
+    const current = ['fp1', 'fp2'];
+    expect(removeSessionTabs(current, ['sprint'])).toBe(current);
   });
 
   it('does not schedule sprint endpoints for a non-sprint weekend', () => {

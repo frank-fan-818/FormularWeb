@@ -11,10 +11,15 @@ export function useFastF1SessionAnalytics(
   const [data, setData] = useState<FastF1RaceAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [dataIdentity, setDataIdentity] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const requestIdentity = `${season}:${round || ''}:${session}`;
+  const identityCurrent = enabled && Boolean(season && round) && dataIdentity === requestIdentity;
 
   useEffect(() => {
     if (!enabled || !season || !round) {
       setData(null);
+      setDataIdentity(null);
       setLoading(false);
       setError(null);
       return undefined;
@@ -27,7 +32,9 @@ export function useFastF1SessionAnalytics(
 
     fastF1AnalyticsApi.getRaceAnalytics(season, round, session, controller.signal)
       .then((analytics) => {
+        if (controller.signal.aborted) return;
         setData(analytics);
+        setDataIdentity(requestIdentity);
       })
       .catch((requestError: unknown) => {
         if (controller.signal.aborted) {
@@ -35,6 +42,7 @@ export function useFastF1SessionAnalytics(
         }
 
         setData(null);
+        setDataIdentity(requestIdentity);
         setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
       })
       .finally(() => {
@@ -44,9 +52,15 @@ export function useFastF1SessionAnalytics(
       });
 
     return () => controller.abort();
-  }, [enabled, round, season, session]);
+  }, [enabled, reloadKey, requestIdentity, round, season, session]);
 
-  return { data, loading, error };
+  const retry = useCallback(() => setReloadKey((value) => value + 1), []);
+  return {
+    data: identityCurrent ? data : null,
+    loading: identityCurrent ? loading : enabled && Boolean(season && round),
+    error: identityCurrent ? error : null,
+    retry,
+  };
 }
 
 export function useFastF1RaceAnalytics(season: string, round?: string, enabled = true) {
@@ -61,15 +75,21 @@ export function useFastF1RaceTelemetry(
   const [data, setData] = useState<FastF1TelemetryAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [dataIdentity, setDataIdentity] = useState<string | null>(null);
+  const [loadingIdentity, setLoadingIdentity] = useState<string | null>(null);
   const loadingRef = useRef(false);
   const loadedRef = useRef(false);
   const controllerRef = useRef<AbortController | null>(null);
+  const requestIdentity = `${season}:${round || ''}:${session}`;
+  const identityCurrent = dataIdentity === requestIdentity;
 
   // Reset and cancel obsolete telemetry when the requested session changes.
   useEffect(() => {
     controllerRef.current?.abort();
     controllerRef.current = null;
     setData(null);
+    setDataIdentity(null);
+    setLoadingIdentity(null);
     setError(null);
     loadingRef.current = false;
     loadedRef.current = false;
@@ -82,6 +102,7 @@ export function useFastF1RaceTelemetry(
     }
 
     loadingRef.current = true;
+    setLoadingIdentity(requestIdentity);
     setLoading(true);
     setError(null);
 
@@ -91,13 +112,16 @@ export function useFastF1RaceTelemetry(
 
     fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal)
       .then((payload) => {
+        if (controller.signal.aborted) return;
         setData(payload?.telemetry || null);
+        setDataIdentity(requestIdentity);
         loadedRef.current = true;
       })
       .catch((requestError: unknown) => {
         if (controller.signal.aborted) {
           return;
         }
+        setDataIdentity(requestIdentity);
         setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
       })
       .finally(() => {
@@ -109,7 +133,13 @@ export function useFastF1RaceTelemetry(
           setLoading(false);
         }
       });
-  }, [season, round, session]);
+  }, [requestIdentity, season, round, session]);
 
-  return { data, loading, error, load, loaded: loadedRef.current };
+  return {
+    data: identityCurrent ? data : null,
+    loading: loadingIdentity === requestIdentity && loading,
+    error: identityCurrent ? error : null,
+    load,
+    loaded: identityCurrent && loadedRef.current,
+  };
 }

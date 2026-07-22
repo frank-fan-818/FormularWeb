@@ -337,8 +337,11 @@
 }
 
 .drivers-lineup-page {
-  max-width: 1180px;
+  max-width: 1280px;
 }
+
+.drivers-lineup-page > .page-title { display: none; }
+.driver-lineup-empty { padding: 48px; color: var(--text-secondary); text-align: center; border: 1px dashed var(--border-primary); }
 
 .driver-lineup-container {
   display: flex;
@@ -356,7 +359,10 @@
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   animation: slideUp 0.45s ease both;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
+
+.driver-team-group:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(15, 23, 42, 0.09); }
 
 .driver-team-header {
   display: flex;
@@ -401,10 +407,24 @@
 }
 
 .driver-lineup-card .ant-card-body {
+  position: relative;
   min-height: 230px;
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.driver-lineup-card .ant-card-body::after {
+  position: absolute;
+  right: -34px;
+  bottom: -52px;
+  width: 120px;
+  height: 120px;
+  content: '';
+  border: 1px solid var(--border-secondary);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .driver-card-topline {

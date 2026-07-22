@@ -32,9 +32,15 @@
 .history-hero-card {
   margin-bottom: var(--space-5);
   background:
-    radial-gradient(circle at top right, var(--history-accent-soft), transparent 35%),
-    linear-gradient(180deg, var(--bg-card), var(--bg-secondary));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--history-accent) 22%, transparent), transparent 38%),
+    linear-gradient(135deg, #171511, #282219);
+  border-top: 3px solid var(--history-accent);
 }
+
+.history-hero-card .history-title { color: #fffaf0; font-family: var(--font-display); font-size: clamp(2.8rem, 6vw, 5.5rem); letter-spacing: -0.05em; }
+.history-hero-card .history-subtitle { color: rgba(255, 250, 240, 0.68); }
+.history-hero-card .history-chip { color: rgba(255, 250, 240, 0.72); background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.13); }
+.history-hero-card .history-chip strong { color: #fffaf0; }
 
 .history-hero {
   display: flex;

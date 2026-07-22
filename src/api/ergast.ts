@@ -25,6 +25,8 @@ import type {
   ConstructorSeasonHistoryItem,
   HistoryCareerSummary,
   BestFinishSummary,
+  SupabaseConstructorDetailRow,
+  SupabaseDriverDetailRow,
 } from '@/types';
 
 // Use the local Vite proxy in development and Jolpica directly in production.
@@ -134,27 +136,6 @@ export type ConstructorCareerStandingList = {
   DriverStandings: never[];
   ConstructorStandings: ConstructorStanding[];
 };
-type SupabaseDriverRow = {
-  driver_id: string;
-  permanent_number?: string | null;
-  code?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  date_of_birth?: string | null;
-  nationality?: string | null;
-  total_race_starts?: number | null;
-  total_pole_positions?: number | null;
-  total_podiums?: number | null;
-};
-type SupabaseConstructorRow = {
-  constructor_id: string;
-  name?: string | null;
-  nationality?: string | null;
-  total_race_entries?: number | null;
-  total_pole_positions?: number | null;
-  total_podiums?: number | null;
-};
-
 export const seasonApi = {
   getAllSeasons: async (limit = 100): Promise<Season[]> => {
     const response: ErgastResponse<never> = await ergastApi.get(`/seasons.json?limit=${limit}`);
@@ -300,9 +281,6 @@ export const seasonApi = {
     return getCompleteRaceEndpoint(season, round, `practice/${practiceNumber}`, 'Results');
   },
 
-  getSprintQualifyingResults: async (season: string, round: string): Promise<Race | null> => {
-    return getCompleteRaceEndpoint(season, round, 'sprintQualifying', 'QualifyingResults');
-  },
 };
 
 let allSeasonIdsPromise: Promise<string[]> | null = null;
@@ -912,7 +890,7 @@ function buildCareerSummary(params: {
   };
 }
 
-function mapSupabaseDriverHistoryProfile(driver: SupabaseDriverRow): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
+function mapSupabaseDriverHistoryProfile(driver: SupabaseDriverDetailRow): Omit<DriverHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons' | 'recentConstructorName' | 'recentConstructorId'> {
   return {
     driverId: driver.driver_id,
     permanentNumber: driver.permanent_number || '',
@@ -925,7 +903,7 @@ function mapSupabaseDriverHistoryProfile(driver: SupabaseDriverRow): Omit<Driver
   };
 }
 
-function mapSupabaseConstructorHistoryProfile(constructor: SupabaseConstructorRow): Omit<ConstructorHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons'> {
+function mapSupabaseConstructorHistoryProfile(constructor: SupabaseConstructorDetailRow): Omit<ConstructorHistoryProfile, 'careerSummary' | 'bestRaceFinish' | 'seasons'> {
   return {
     constructorId: constructor.constructor_id,
     url: '#',
@@ -1066,7 +1044,7 @@ export const historyApi = {
       return directSummaryProfile;
     }
 
-    const exactSupabaseDriver = await supabaseApi.drivers.getById<SupabaseDriverRow>(driverId);
+    const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId);
     const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
       ? {
         givenName: exactSupabaseDriver.first_name || undefined,
@@ -1089,14 +1067,14 @@ export const historyApi = {
       : null;
 
     if (!baseProfile && resolvedDriverId !== driverId) {
-      const resolvedSupabaseDriver = await supabaseApi.drivers.getById<SupabaseDriverRow>(resolvedDriverId);
+      const resolvedSupabaseDriver = await supabaseApi.drivers.getById(resolvedDriverId);
       if (resolvedSupabaseDriver) {
         baseProfile = mapSupabaseDriverHistoryProfile(resolvedSupabaseDriver);
       }
     }
 
     if (!baseProfile && standingsLists.length > 0) {
-      const allDrivers = await supabaseApi.drivers.getAll<SupabaseDriverRow>();
+      const allDrivers = await supabaseApi.drivers.getAll();
       const latestStandingDriver = standingsLists
         .slice()
         .reverse()
@@ -1158,7 +1136,7 @@ export const historyApi = {
       return summaryProfile;
     }
 
-    const constructorInfo = await supabaseApi.constructors.getById<SupabaseConstructorRow>(constructorId);
+    const constructorInfo = await supabaseApi.constructors.getById(constructorId);
     const standingsLists = await getConstructorCareerStandings(constructorId);
     const seasons = mapConstructorSeasonHistory(standingsLists);
 

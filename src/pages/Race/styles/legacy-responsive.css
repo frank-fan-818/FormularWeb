@@ -1,0 +1,367 @@
+/* Mobile layout */
+@media (max-width: 768px) {
+  .race-info-page { gap: var(--space-4); }
+  .race-info-command { align-items: flex-start; flex-direction: column; padding: var(--space-4); }
+  .race-info-command-meta { width: 100%; justify-content: flex-start; }
+  .race-info-command-meta span,
+  .race-info-command-meta strong { max-width: 100%; min-height: 44px; white-space: normal; }
+  .race-info-overview { grid-template-columns: 1fr; gap: var(--space-3); }
+  .race-info-schedule-card,
+  .race-info-circuit-card { grid-column: 1; grid-row: auto; }
+  .race-info-section-heading { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .race-info-weather-card .ant-descriptions-row { display: grid; grid-template-columns: 1fr; }
+  .race-subpage-tabs { top: 56px; margin: var(--space-3) 0; }
+  .race-subpage-tabs .ant-tabs-tab { min-height: 44px; padding: 10px 4px; }
+  .race-partial-notice { align-items: stretch; flex-direction: column; }
+  .race-partial-notice .ant-btn { width: 100%; }
+
+  .race-detail-page {
+    padding: 0;
+  }
+
+  .back-button {
+    margin-bottom: 12px;
+  }
+
+  .race-hero-title {
+    font-size: var(--text-2xl);
+  }
+
+  .race-hero-top {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .race-hero-date,
+  .race-hero-sprint {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .weekend-schedule {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .weekend-schedule-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weekend-schedule-source {
+    white-space: normal;
+  }
+
+  .weekend-time-toggle {
+    min-height: 28px;
+    padding: 0 10px;
+  }
+
+  .weekend-schedule-days {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-schedule-day {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-day-header {
+    min-height: 40px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .weekend-session-list {
+    grid-template-columns: 1fr;
+  }
+
+  .weekend-session {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    border-right: 0;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .weekend-session-main strong {
+    font-size: 12px;
+  }
+
+  .weekend-session-time {
+    font-size: 15px;
+  }
+
+  .race-weekend-metric-grid,
+  .race-weekend-risk-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .race-weekend-mode-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .race-weekend-mode-bar h2 {
+    font-size: 18px;
+  }
+
+  .race-weekend-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .race-weekend-card .ant-card-body {
+    padding: 12px;
+  }
+
+  .upgrade-source-list a,
+  .upgrade-source-list span {
+    white-space: normal;
+  }
+
+  .data-view-card .ant-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .data-view-card .ant-card-extra {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .data-view-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .data-view-title small {
+    white-space: normal;
+  }
+
+  .fastf1-analytics-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fastf1-analytics-heading h2 {
+    font-size: 20px;
+  }
+
+  .fastf1-summary-strip {
+    justify-content: flex-start;
+  }
+
+  .fastf1-analytics-grid {
+    gap: 12px;
+  }
+
+  .fastf1-analysis-stack {
+    gap: 14px;
+  }
+
+  .fastf1-analysis-group-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .fastf1-analysis-group-header h3 {
+    font-size: 18px;
+  }
+
+  .fastf1-chart-card .ant-card-body {
+    padding: 12px;
+  }
+
+  .fastf1-chart-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fastf1-chart-badges {
+    justify-content: flex-start;
+  }
+
+  .fastf1-chart-title {
+    font-size: 16px;
+  }
+
+  .driver-legend,
+  .track-status-legend {
+    gap: 8px 10px;
+  }
+
+  .compound-legend {
+    justify-content: flex-start;
+  }
+
+  .duel-summary-pills {
+    justify-content: flex-start;
+  }
+
+  .qualifying-gap-grid,
+  .duel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qualifying-gap-scoreboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .qualifying-sector-gap-grid {
+    display: contents;
+  }
+
+  .qualifying-gap-total,
+  .qualifying-sector-gap {
+    min-height: 64px;
+  }
+
+  .qualifying-gap-total strong {
+    font-size: 18px;
+  }
+
+  .weather-summary-pills,
+  .weather-rain-legend {
+    justify-content: flex-start;
+  }
+
+  .telemetry-driver-strip {
+    gap: 8px 10px;
+  }
+
+  .race-hero-sprint {
+    display: inline-flex;
+  }
+
+  /* Mobile table layout */
+  .slider-content .ant-table {
+    font-size: 12px;
+  }
+
+  .slider-content .ant-table-cell {
+    padding: 8px 4px !important;
+  }
+
+  .driver-name {
+    font-size: 13px;
+  }
+
+  .driver-code {
+    font-size: 10px;
+  }
+
+  .constructor-name {
+    font-size: 11px;
+  }
+}
+
+/* Small-screen layout */
+@media (max-width: 375px) {
+  .race-hero-title {
+    font-size: var(--text-xl);
+  }
+
+  .race-weekend-metric-grid,
+  .race-weekend-risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .tab-dot.active {
+    width: 16px;
+  }
+
+  .current-tab-label {
+    font-size: 14px;
+    padding: 6px;
+  }
+}
+.race-layout-skeleton {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.race-skeleton-line,
+.race-skeleton-hero,
+.race-skeleton-tabs {
+  border-radius: var(--radius-panel);
+  background: var(--bg-tertiary);
+}
+
+.race-skeleton-line { width: 140px; height: 36px; }
+.race-skeleton-hero { min-height: 260px; }
+.race-skeleton-tabs { min-height: 56px; }
+
+.race-load-error {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--error);
+  border-radius: var(--radius-panel);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.race-load-error strong { color: var(--text-primary); }
+
+.race-partial-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--accent-yellow);
+  border-radius: var(--radius-control);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.analysis-section-nav {
+  position: sticky;
+  top: 72px;
+  z-index: var(--z-sticky);
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-panel);
+  background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.analysis-section-nav a {
+  flex: 0 0 auto;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+}
+
+.analysis-section-nav a:hover,
+.analysis-section-nav a:focus-visible {
+  color: var(--f1-red-dark);
+  background: var(--f1-red-glow);
+}
+
+.fastf1-chart-card[id] { scroll-margin-top: 132px; }
+.telemetry-section-anchor { min-height: 1px; scroll-margin-top: 132px; }

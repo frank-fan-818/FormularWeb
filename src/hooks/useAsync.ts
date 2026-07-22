@@ -6,25 +6,25 @@ interface UseAsyncOptions<T> {
   onError?: (error: Error) => void;
 }
 
-interface UseAsyncReturn<T> {
+interface UseAsyncReturn<T, TArgs extends unknown[]> {
   data: T | null;
   loading: boolean;
   error: Error | null;
-  execute: (...args: any[]) => Promise<T | undefined>;
+  execute: (...args: TArgs) => Promise<T | undefined>;
   reset: () => void;
 }
 
-export function useAsync<T>(
-  asyncFunction: (...args: any[]) => Promise<T>,
+export function useAsync<T, TArgs extends unknown[] = []>(
+  asyncFunction: (...args: TArgs) => Promise<T>,
   options: UseAsyncOptions<T> = {}
-): UseAsyncReturn<T> {
+): UseAsyncReturn<T, TArgs> {
   const { onSuccess, onError } = options;
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: TArgs) => {
       setLoading(true);
       setError(null);
       try {

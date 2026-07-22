@@ -14,6 +14,7 @@ import {
   buildDriverLookup,
   buildConstructorLookup,
 } from '@/pages/Race/shared/sessionData';
+import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import {
   formatSignedSeconds,
   getGapToneClassName,
@@ -425,6 +426,7 @@ const RaceQualifying = () => {
               chartKey={`qualifying-pace-${season}-${round}`}
               height={420}
               option={paceOption}
+              ariaLabel="车手排位赛最快圈成绩与差距排名图。"
             />
           </Suspense>
         </Card>
@@ -453,13 +455,13 @@ const RaceQualifying = () => {
   if (!primaryLoading && !qualifyingResults.length && !fastF1QualifyingAnalytics?.qualifyingAnalysis) {
     return (
       <div className="fastf1-analytics-section">
-        <div className="fastf1-analytics-heading">
-          <div>
-            <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
-            <h2>{t('qualifyingAnalyzer')}</h2>
-          </div>
-        </div>
-        <Card>
+        <RacePageIntro
+          index="02"
+          eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
+          title="速度边界仍在等待被写下"
+          description="排位数据发布后，这里会拆解晋级路径、赛段优势、单圈节奏和队友之间最细微的差距。"
+        />
+        <Card className="race-empty-command-card">
           <p>{t('noFastF1Analysis')}</p>
         </Card>
       </div>
@@ -470,14 +472,22 @@ const RaceQualifying = () => {
 
   return (
     <div className="fastf1-analytics-section">
-      <div className="fastf1-analytics-heading">
-        <div>
-          <span className="fastf1-eyebrow">{t('fastF1Source')}</span>
-          <h2>{t('qualifyingAnalyzer')}</h2>
-        </div>
-      </div>
+      <RacePageIntro
+        index="02"
+        eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
+        title="一圈之内，速度在哪里被赢得"
+        description="从最终名次向内拆解到 Q1–Q3、三个赛段与队友差距，让杆位不再只是结果，而是一条可以验证的速度证据链。"
+        aside={(
+          <div className="race-page-pulse">
+            <span><strong>{qSectorRows.length}</strong> 有效圈</span>
+            <span><strong>{qTeamMateRows.length}</strong> 组队友</span>
+            <span><strong>{hasSprintQualifying ? 2 : 1}</strong> 排位场次</span>
+          </div>
+        )}
+      />
 
       <Tabs
+        className="race-analysis-tabs"
         items={[
           {
             key: 'qualifying',

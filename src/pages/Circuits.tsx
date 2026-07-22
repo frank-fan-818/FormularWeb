@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
@@ -7,37 +7,55 @@ import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
+import type { Circuit, Race } from '@/types';
+import CircuitImage from '@/components/circuits/CircuitImage';
+import ProductMasthead from '@/components/product/ProductMasthead';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import './Circuits.css';
 
-const TEXT = {
-  title: '\u8d5b\u9053',
-};
+interface CircuitAtlasItem extends Circuit {
+  length: string | number | null;
+  turns: string | number | null;
+  first_race: string | number | null;
+  total_races: string | number | null;
+  race_laps: string | number | null;
+  total_distance: string | number | null;
+  lap_record: string | null;
+  lap_record_driver: string | null;
+  lap_record_year: string | number | null;
+  _supabaseId: string;
+  index: number;
+}
+
+function formatCircuitLength(value: string | number | null): string {
+  if (value === null || value === '') return '--';
+  const text = String(value).trim();
+  return /\bkm$/i.test(text) ? text : `${text} km`;
+}
 
 const Circuits = () => {
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
   const { races, loading: racesLoading } = useSeasonRacesCached(currentSeason);
-  const [circuits, setCircuits] = useState<any[]>([]);
-  const hasEnrichedRef = useRef(false);
-  const fetchCircuitMetadata = useCallback(() => supabaseApi.circuits.getListMetadata(), []);
+  const fetchCircuitMetadata = useCallback(
+    () => supabaseApi.circuits.getListMetadata(),
+    [],
+  );
   const { data: circuitMetadata } = useSupabaseMetadata(
     'supabase-circuit-list-metadata',
     fetchCircuitMetadata,
     races.length > 0,
   );
 
-  useEffect(() => {
-    if (races.length === 0) return;
+  const circuits = useMemo<CircuitAtlasItem[]>(() => {
+    const circuitMap = new Map(
+      (circuitMetadata || []).map((circuit) => [circuit.circuit_id, circuit]),
+    );
 
-    const enrichWithMetadata = circuitMetadata && circuitMetadata.length > 0;
-    const circuitMap = enrichWithMetadata
-      ? new Map(circuitMetadata.map((circuit) => [circuit.circuit_id, circuit]))
-      : null;
-
-    const formattedCircuits = races.map((race, index) => {
+    return races.map((race, index) => {
       const ergastId = race.Circuit.circuitId;
       const supabaseId = getSupabaseCircuitId(ergastId);
-      const dbCircuit = circuitMap?.get(supabaseId);
+      const dbCircuit = circuitMap.get(supabaseId);
 
       return {
         ...race.Circuit,
@@ -54,55 +72,64 @@ const Circuits = () => {
         index,
       };
     });
-
-    // Only update if data actually changed or this is the first enrichment
-    if (!enrichWithMetadata || !hasEnrichedRef.current) {
-      setCircuits(formattedCircuits);
-      if (enrichWithMetadata) {
-        hasEnrichedRef.current = true;
-      }
-    }
   }, [races, circuitMetadata]);
 
   const loading = racesLoading && circuits.length === 0;
 
   return (
-    <div className="list-page-container">
+    <div className="list-page-container circuit-atlas-page">
       <Helmet>
         <title>&#x8d5b;&#x9053;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
         <meta name="description" content="F1&#x8d5b;&#x9053;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x8d5b;&#x9053;&#x4fe1;&#x606f;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
       </Helmet>
-      <h1 className="page-title"><span>{TEXT.title}</span></h1>
-
+      <ProductMasthead
+        index="05"
+        eyebrow={`${currentSeason} / CIRCUIT ATLAS`}
+        title={<>TRACK<br />ENGINEERING</>}
+        description="从赛道轮廓开始认识每一站：地点、长度、弯道构成和历史纪录共同决定比赛会如何展开。"
+        metrics={[
+          { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--', detail: `${currentSeason} CALENDAR` },
+          { label: '\u5df2\u8865\u5145\u5de5\u7a0b\u6570\u636e', value: circuits.filter((circuit) => circuit.length).length || '--', detail: '\u957f\u5ea6 / \u5f2f\u9053 / \u7eaa\u5f55' },
+          { label: '\u51b2\u523a\u5468\u672b', value: races.filter((race) => Boolean((race as Race & { Sprint?: unknown }).Sprint)).length || '0', detail: '\u7279\u6b8a\u8d5b\u5236' },
+        ]}
+      />
       {loading ? (
         <div className="loading-container">
           <Spin size="large" />
         </div>
+      ) : circuits.length === 0 ? (
+        <div className="circuit-atlas-empty">当前赛季暂无赛道数据。</div>
       ) : (
-        <div className="list-container">
+        <>
+        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道图鉴" description="选择一条赛道进入工程档案，查看完整轮廓、技术参数与本赛季比赛信息。" />
+        <div className="circuit-atlas-grid">
           {circuits.map((circuit) => (
             <Card
               key={circuit.circuitId}
-              className="list-item"
+              className="circuit-atlas-card"
               hoverable
               style={{ animationDelay: `${circuit.index * 0.06}s` }}
               onClick={() => navigate(`/circuits/${circuit.circuitId}`, { state: { circuit } })}
             >
-              <div className="item-content">
-                <div className="item-left">
-                  <div className="item-info">
-                    <h3 className="item-title">
-                      {circuit.circuitName}
-                    </h3>
-                    <div className="item-stats">
-                      <span className="stat-item"><EnvironmentOutlined /> {circuit.Location.locality}, {circuit.Location.country}</span>
-                    </div>
-                  </div>
-                </div>
+              <div className="circuit-atlas-map" aria-hidden="true">
+                <CircuitImage circuitId={circuit.circuitId} alt={circuit.circuitName} className="circuit-atlas-image" />
+                <span className="circuit-atlas-index">T{String(circuit.index + 1).padStart(2, '0')}</span>
               </div>
+              <div className="circuit-atlas-copy">
+                <span className="circuit-atlas-country">{circuit.Location.country}</span>
+                <h2>{circuit.circuitName}</h2>
+                <p><EnvironmentOutlined /> {circuit.Location.locality}</p>
+              </div>
+              <div className="circuit-atlas-specs">
+                <span><small>Length</small><strong>{formatCircuitLength(circuit.length)}</strong></span>
+                <span><small>Turns</small><strong>{circuit.turns || '--'}</strong></span>
+                <span><small>First GP</small><strong>{circuit.first_race || '--'}</strong></span>
+              </div>
+              <span className="circuit-atlas-open">VIEW DOSSIER &#8594;</span>
             </Card>
           ))}
         </div>
+        </>
       )}
     </div>
   );

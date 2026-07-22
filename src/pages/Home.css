@@ -1,6 +1,18 @@
-/* ========================================
-   Home Page - Lightweight Hero
-   ======================================== */
+/* Home — season command center */
+
+.home-command-primary,
+.home-command-secondary {
+  padding: 0 18px;
+  border: 1px solid var(--f1-red);
+  border-radius: var(--radius-control);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.home-command-primary { color: #fff; background: var(--f1-red); }
+.home-command-secondary { color: #fff; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.24); }
+.home-command-primary:hover { background: var(--f1-red-light); }
+.home-command-secondary:hover { border-color: rgba(255, 255, 255, 0.52); }
 
 .stats-grid {
   display: grid;
@@ -360,7 +372,8 @@
 }
 
 .next-race-card-f1 {
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(251, 191, 36, 0.05) 100%);
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--accent-yellow) 7%, var(--bg-card)) 100%);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -368,7 +381,7 @@
   transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   cursor: pointer;
   width: 100%;
-  padding: var(--space-5);
+  padding: clamp(22px, 4vw, 38px);
   text-align: left;
 }
 
@@ -386,7 +399,9 @@
 }
 
 .next-race-title {
-  font-size: var(--text-xl);
+  font-family: var(--font-display);
+  font-size: clamp(25px, 4vw, 42px);
+  letter-spacing: -0.04em;
   font-weight: var(--font-bold);
   color: var(--text-primary);
   margin-bottom: var(--space-2);
@@ -553,6 +568,8 @@
 }
 
 @media (max-width: 768px) {
+  .home-command-primary,
+  .home-command-secondary { flex: 1 1 140px; }
   .next-race-content-f1 {
     flex-direction: column;
     align-items: flex-start;

@@ -16,14 +16,6 @@ const constructorHistoryProfileCache = new Map<string, ConstructorHistoryProfile
 const driverHistoryProfileInFlight = new Map<string, Promise<DriverHistoryProfile | null>>();
 const constructorHistoryProfileInFlight = new Map<string, Promise<ConstructorHistoryProfile | null>>();
 
-type DriverNationalityRow = {
-  nationality?: string | null;
-};
-
-type ConstructorNationalityRow = {
-  nationality?: string | null;
-};
-
 function normalizeOptionalText(value: string | null | undefined): string {
   const normalized = (value || '').trim();
   if (!normalized || normalized === '-' || normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'n/a') {
@@ -124,7 +116,7 @@ async function getDriverSummaryProfile(driverId: string): Promise<DriverHistoryP
     };
   }
 
-  const driver = await supabaseApi.drivers.getById<DriverNationalityRow>(driverId);
+  const driver = await supabaseApi.drivers.getById(driverId);
   const baseNationality = normalizeOptionalText(driver?.nationality);
   if (baseNationality) {
     return {
@@ -160,7 +152,7 @@ async function getConstructorSummaryProfile(constructorId: string): Promise<Cons
     };
   }
 
-  const constructor = await supabaseApi.constructors.getById<ConstructorNationalityRow>(constructorId);
+  const constructor = await supabaseApi.constructors.getById(constructorId);
   const baseNationality = normalizeOptionalText(constructor?.nationality);
   if (baseNationality) {
     return {

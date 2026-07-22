@@ -149,7 +149,6 @@ const CircuitImage = ({ alt, circuitId, className, showSectors = false }: Circui
         src={imageUrl}
         alt={alt}
         className={className}
-        fetchPriority="high"
         decoding="async"
         onError={() => setImageFailed(true)}
       />

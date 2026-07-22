@@ -91,6 +91,38 @@ describe('supabaseApi metadata queries', () => {
     await expect(supabaseApi.drivers.getListMetadata()).rejects.toThrow('permission denied');
   });
 
+  it('returns metadata only after runtime schema validation', async () => {
+    const { supabaseApi } = await import('./supabase');
+    const row = {
+      driver_id: 'max_verstappen',
+      total_wins: 65,
+      total_pole_positions: 45,
+      total_fastest_laps: 35,
+      total_race_starts: 220,
+    };
+    supabaseMock.state.response = { data: [row], error: null };
+
+    await expect(supabaseApi.drivers.getListMetadata()).resolves.toEqual([row]);
+  });
+
+  it('rejects metadata with drifted field types at the API boundary', async () => {
+    const { SupabaseDataValidationError, supabaseApi } = await import('./supabase');
+    supabaseMock.state.response = {
+      data: [{
+        driver_id: 'max_verstappen',
+        total_wins: '65',
+        total_pole_positions: 45,
+        total_fastest_laps: 35,
+        total_race_starts: 220,
+      }],
+      error: null,
+    };
+
+    const request = supabaseApi.drivers.getListMetadata();
+    await expect(request).rejects.toBeInstanceOf(SupabaseDataValidationError);
+    await expect(request).rejects.toThrow('0.total_wins');
+  });
+
   it('requests precise detail columns for detail pages', async () => {
     const { SUPABASE_COLUMNS, supabaseApi } = await import('./supabase');
 

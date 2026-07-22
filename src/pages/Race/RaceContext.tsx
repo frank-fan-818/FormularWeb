@@ -4,14 +4,11 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { seasonApi } from '@/api/ergast';
-import { raceSessionResultsApi } from '@/api/raceSessionResults';
 import {
   useFiaRaceUpgrades,
   useFastF1RaceAnalytics,
@@ -21,6 +18,8 @@ import {
   useRacePreviewSummary,
   useSeasonRacesCached,
 } from '@/hooks';
+import { useRaceDeferredSessions } from '@/hooks/race/useRaceDeferredSessions';
+import { useRacePrimaryResults } from '@/hooks/race/useRacePrimaryResults';
 import { useAppStore } from '@/store';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import type {
@@ -29,33 +28,17 @@ import type {
   QualifyingResult,
   Race,
   RacePreviewSummary,
+  RaceClassificationSessionKey,
+  DeferredRaceSessionKey,
+  RaceSessionCode,
   RaceWeekendMode,
   Result,
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import {
-  getPendingSessionTabs,
-  getScheduledDeferredSessionTabs,
-  mergeUniqueSessionTabs,
-  removeSessionTabs,
-} from '@/pages/Race/shared/sessionData';
+import { getRaceRouteSection } from '@/utils/race/raceSessionState';
 
 // ---- Types for context ----
-
-type DataViewMode = 'chart' | 'table';
-type TelemetryMetric = 'throttle' | 'brake' | 'gear' | 'rpm';
-
-interface DataViewModesState {
-  telemetrySummary: DataViewMode;
-}
-
-interface CollapsedDataPanelsState {
-  recentResults: boolean;
-  interruptionRisk: boolean;
-  telemetrySummary: boolean;
-  raceResults: boolean;
-}
 
 export interface RaceDataContextValue {
   // Core identifiers
@@ -78,62 +61,51 @@ export interface RaceDataContextValue {
   fp1Results: Result[];
   fp2Results: Result[];
   fp3Results: Result[];
-  availableDbSessions: string[];
+  availableDbSessions: RaceSessionCode[];
 
   // FastF1 analytics
   fastF1Analytics: FastF1RaceAnalytics | null;
+  fastF1AnalyticsLoading: boolean;
+  fastF1AnalyticsError: Error | null;
+  retryFastF1Analytics: () => void;
   fastF1QualifyingAnalytics: FastF1RaceAnalytics | null;
   fastF1SprintQualifyingAnalytics: FastF1RaceAnalytics | null;
   fastF1SprintShootoutAnalytics: FastF1RaceAnalytics | null;
   fastF1SprintAnalytics: FastF1RaceAnalytics | null;
-  fastF1Practice1Analytics: FastF1RaceAnalytics | null;
-  fastF1Practice2Analytics: FastF1RaceAnalytics | null;
-  fastF1Practice3Analytics: FastF1RaceAnalytics | null;
 
   // Telemetry & preview
   postRaceTelemetrySummary: DriverPostRaceTelemetrySummary[];
   racePreviewSummary: RacePreviewSummary | null;
   racePreviewLoading: boolean;
+  racePreviewError: Error | null;
+  retryRacePreview: () => void;
 
   // Telemetry (lazy loaded)
   fastF1Telemetry: FastF1TelemetryAnalysis | null;
   fastF1TelemetryLoading: boolean;
+  fastF1TelemetryError: Error | null;
   loadFastF1Telemetry: () => void;
 
   // FIA upgrades
   raceUpgradeSummary: FiaRaceUpgradeSummary | null;
   raceUpgradeLoading: boolean;
   raceUpgradeError: Error | null;
+  retryRaceUpgrades: () => void;
 
   // Weekend mode
-  selectedWeekendMode: RaceWeekendMode | null;
   activeWeekendMode: RaceWeekendMode;
-  setSelectedWeekendMode: (mode: RaceWeekendMode | null) => void;
 
   // Session loading
   loadingSessionTabs: string[];
   loadedSessionTabs: string[];
   sessionLoadErrors: Record<string, string>;
   retryActiveSession: () => void;
+  retrySession: (sessionKey: DeferredRaceSessionKey) => void;
 
   // UI state
   isMobile: boolean;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  selectedLapDrivers: string[];
-  selectedDuelDrivers: string[];
-  selectedTelemetryDrivers: string[];
-  selectedTelemetryMetrics: TelemetryMetric[];
-  dataViewModes: DataViewModesState;
-  collapsedDataPanels: CollapsedDataPanelsState;
-
-  // Handlers
-  setSelectedLapDrivers: (drivers: string[]) => void;
-  setSelectedDuelDrivers: (drivers: string[]) => void;
-  setSelectedTelemetryDrivers: (drivers: string[]) => void;
-  setSelectedTelemetryMetrics: (metrics: TelemetryMetric[]) => void;
-  setDataViewModes: React.Dispatch<React.SetStateAction<DataViewModesState>>;
-  setCollapsedDataPanels: React.Dispatch<React.SetStateAction<CollapsedDataPanelsState>>;
+  activeSessionTab: RaceClassificationSessionKey;
+  setActiveSessionTab: (tab: RaceClassificationSessionKey) => void;
 }
 
 const RaceDataContext = createContext<RaceDataContextValue | null>(null);
@@ -165,59 +137,34 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
 
   // ---- State ----
 
-  const [qualifyingResults, setQualifyingResults] = useState<QualifyingResult[]>([]);
-  const [raceResults, setRaceResults] = useState<Result[]>([]);
-  const [sprintResults, setSprintResults] = useState<Result[]>([]);
-  const [sprintQualifyingResults, setSprintQualifyingResults] = useState<QualifyingResult[]>([]);
-  const [fp1Results, setFp1Results] = useState<Result[]>([]);
-  const [fp2Results, setFp2Results] = useState<Result[]>([]);
-  const [fp3Results, setFp3Results] = useState<Result[]>([]);
-  const [availableDbSessions, setAvailableDbSessions] = useState<string[]>([]);
-  const [primaryLoading, setPrimaryLoading] = useState(false);
-  const [primaryError, setPrimaryError] = useState<Error | null>(null);
-  const [primaryReloadKey, setPrimaryReloadKey] = useState(0);
-  const [loadingSessionTabs, setLoadingSessionTabs] = useState<string[]>([]);
-  const [loadedSessionTabs, setLoadedSessionTabs] = useState<string[]>([]);
-  const [sessionLoadErrors, setSessionLoadErrors] = useState<Record<string, string>>({});
-  const [sessionReloadKey, setSessionReloadKey] = useState(0);
-  const loadingSessionTabsRef = useRef<string[]>([]);
-  const loadedSessionTabsRef = useRef<string[]>([]);
-  const [activeTab, setActiveTab] = useState(() => {
-    const segments = location.pathname.split('/').filter(Boolean);
-    return segments[segments.length - 1] || 'results';
-  });
+  const [activeSessionTab, setActiveSessionTab] = useState<RaceClassificationSessionKey>('race');
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedLapDrivers, setSelectedLapDrivers] = useState<string[]>([]);
-  const [selectedDuelDrivers, setSelectedDuelDrivers] = useState<string[]>([]);
-  const [selectedTelemetryDrivers, setSelectedTelemetryDrivers] = useState<string[]>([]);
-  const [selectedTelemetryMetrics, setSelectedTelemetryMetrics] = useState<TelemetryMetric[]>([
-    'throttle',
-    'brake',
-    'gear',
-    'rpm',
-  ]);
-  const [selectedWeekendMode, setSelectedWeekendMode] = useState<RaceWeekendMode | null>(null);
-  const [dataViewModes, setDataViewModes] = useState<DataViewModesState>({
-    telemetrySummary: 'chart',
-  });
-  const [collapsedDataPanels, setCollapsedDataPanels] = useState<CollapsedDataPanelsState>({
-    recentResults: false,
-    interruptionRisk: false,
-    telemetrySummary: false,
-    raceResults: false,
-  });
 
   // ---- Derived ----
 
-  const raceInfo = races.find((race) => race.round === round) || null;
-  const scheduledDeferredSessionTabs = useMemo(
-    () => getScheduledDeferredSessionTabs(raceInfo),
-    [raceInfo],
+  const routeSection = useMemo(
+    () => getRaceRouteSection(location.pathname),
+    [location.pathname],
   );
+  const raceInfo = races.find((race) => race.round === round && race.season === currentSeason) || null;
+  const primaryResults = useRacePrimaryResults(currentSeason, round);
+  const retryPrimaryResults = primaryResults.retry;
+  const deferredSessions = useRaceDeferredSessions({
+    season: currentSeason,
+    round,
+    raceInfo,
+    routeSection,
+    activeSessionTab,
+  });
   const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
   // Race analytics also powers the weather summary on the information tab.
-  const shouldLoadRaceFastF1 = activeTab === 'race' || activeTab === 'info';
-  const { data: fastF1Analytics } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
+  const shouldLoadRaceFastF1 = routeSection === 'race' || routeSection === 'info';
+  const {
+    data: fastF1Analytics,
+    loading: fastF1AnalyticsLoading,
+    error: fastF1AnalyticsError,
+    retry: retryFastF1Analytics,
+  } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
     [raceInfo],
@@ -225,12 +172,15 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const {
     data: racePreviewSummary,
     loading: racePreviewLoading,
-  } = useRacePreviewSummary(currentSeason, round, previewCircuitId, activeTab === 'info');
+    error: racePreviewError,
+    retry: retryRacePreview,
+  } = useRacePreviewSummary(currentSeason, round, previewCircuitId, routeSection === 'info');
   const {
     data: raceUpgradeSummary,
     loading: raceUpgradeLoading,
     error: raceUpgradeError,
-  } = useFiaRaceUpgrades(currentSeason, round, activeTab === 'info');
+    retry: retryRaceUpgrades,
+  } = useFiaRaceUpgrades(currentSeason, round, routeSection === 'info');
   const postRaceTelemetrySummary = usePostRaceTelemetrySummary(fastF1Analytics);
   const defaultWeekendMode: RaceWeekendMode = useMemo(() => {
     if (!raceInfo) {
@@ -238,12 +188,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     }
     return isPastRace ? 'post' : 'pre';
   }, [isPastRace, raceInfo]);
-  const activeWeekendMode = selectedWeekendMode || defaultWeekendMode;
-  const shouldLoadFastF1Qualifying = activeTab === 'qualifying';
-  const shouldLoadFastF1SprintQualifying = scheduledDeferredSessionTabs.includes('sprintQualifying')
-    && activeTab === 'sprintQualifying';
-  const shouldLoadFastF1Sprint = scheduledDeferredSessionTabs.includes('sprint')
-    && activeTab === 'sprint';
+  const activeWeekendMode = defaultWeekendMode;
+  const shouldLoadFastF1Qualifying = routeSection === 'qualifying';
+  const shouldLoadFastF1SprintQualifying = deferredSessions.availableTabs.includes('sprintQualifying')
+    && (routeSection === 'qualifying' || routeSection === 'sprint');
+  const shouldLoadFastF1Sprint = deferredSessions.availableTabs.includes('sprint')
+    && routeSection === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'Q', shouldLoadFastF1Qualifying,
   );
@@ -256,27 +206,10 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
     currentSeason, round, 'S', shouldLoadFastF1Sprint,
   );
-  const { data: fastF1Practice1Analytics } = useFastF1SessionAnalytics(
-    currentSeason,
-    round,
-    'FP1',
-    scheduledDeferredSessionTabs.includes('fp1') && activeTab === 'fp1',
-  );
-  const { data: fastF1Practice2Analytics } = useFastF1SessionAnalytics(
-    currentSeason,
-    round,
-    'FP2',
-    scheduledDeferredSessionTabs.includes('fp2') && activeTab === 'fp2',
-  );
-  const { data: fastF1Practice3Analytics } = useFastF1SessionAnalytics(
-    currentSeason,
-    round,
-    'FP3',
-    scheduledDeferredSessionTabs.includes('fp3') && activeTab === 'fp3',
-  );
   const {
     data: fastF1Telemetry,
     loading: fastF1TelemetryLoading,
+    error: fastF1TelemetryError,
     load: loadFastF1Telemetry,
   } = useFastF1RaceTelemetry(currentSeason, round, 'R');
 
@@ -292,366 +225,109 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, []);
 
   useEffect(() => {
-    setSelectedLapDrivers([]);
-    setSelectedDuelDrivers([]);
-    setSelectedTelemetryDrivers([]);
-    setSelectedTelemetryMetrics(['throttle', 'brake', 'gear', 'rpm']);
-    setSelectedWeekendMode(null);
-    loadedSessionTabsRef.current = [];
-    loadingSessionTabsRef.current = [];
-    setLoadedSessionTabs([]);
-    setLoadingSessionTabs([]);
-    setSprintResults([]);
-    setSprintQualifyingResults([]);
-    setFp1Results([]);
-    setFp2Results([]);
-    setFp3Results([]);
-    setAvailableDbSessions([]);
-    setSessionLoadErrors({});
+    setActiveSessionTab('race');
   }, [currentSeason, round]);
-
-  useEffect(() => {
-    if (!round) {
-      setPrimaryLoading(false);
-      return;
-    }
-    let cancelled = false;
-    const loadAvailableSessions = async () => {
-      const sessions = await raceSessionResultsApi.getAvailableSessions(currentSeason, round);
-      if (!cancelled) {
-        setAvailableDbSessions(sessions);
-      }
-    };
-    void loadAvailableSessions().catch(() => {
-      // Optional session discovery must not reject the whole race page.
-    });
-    return () => { cancelled = true; };
-  }, [currentSeason, round]);
-
-  useEffect(() => {
-    if (!round) {
-      return;
-    }
-    let cancelled = false;
-    // Preserve already rendered data during a refresh to avoid a flash of empty UI.
-    setPrimaryLoading(true);
-    setPrimaryError(null);
-
-    const loadPrimaryData = async () => {
-      const [qualifyingData, raceResultsData] = await Promise.allSettled([
-        seasonApi.getQualifyingResults(currentSeason, round),
-        seasonApi.getRaceResults(currentSeason, round),
-      ]);
-      if (cancelled) {
-        return;
-      }
-      setQualifyingResults(
-        qualifyingData.status === 'fulfilled' ? qualifyingData.value?.QualifyingResults || [] : [],
-      );
-      setRaceResults(
-        raceResultsData.status === 'fulfilled' ? raceResultsData.value?.Results || [] : [],
-      );
-      if (qualifyingData.status === 'rejected' || raceResultsData.status === 'rejected') {
-        setPrimaryError(new Error(
-          qualifyingData.status === 'rejected' && raceResultsData.status === 'rejected'
-            ? 'Race and qualifying results are temporarily unavailable'
-            : 'Part of the race results is temporarily unavailable',
-        ));
-      }
-      setPrimaryLoading(false);
-    };
-    void loadPrimaryData();
-    return () => { cancelled = true; };
-  }, [currentSeason, primaryReloadKey, round]);
-
-  useEffect(() => {
-    if (!round || !scheduledDeferredSessionTabs.includes(activeTab) || loadedSessionTabs.includes(activeTab)) {
-      return;
-    }
-    let cancelled = false;
-    setLoadingSessionTabs((currentTabs) => {
-      const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
-      loadingSessionTabsRef.current = nextTabs;
-      return nextTabs;
-    });
-    const loadDeferredSession = async () => {
-      let sessionData: Race | null = null;
-      if (activeTab === 'sprint') {
-        sessionData = await raceSessionResultsApi.getSprintResult(currentSeason, round)
-          || await seasonApi.getSprintResults(currentSeason, round);
-      } else if (activeTab === 'sprintQualifying') {
-        sessionData = await raceSessionResultsApi.getSprintQualifyingResult(currentSeason, round)
-          || await seasonApi.getSprintQualifyingResults(currentSeason, round);
-      } else if (activeTab === 'fp1') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 1)
-          || await seasonApi.getPracticeResults(currentSeason, round, 1);
-      } else if (activeTab === 'fp2') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 2)
-          || await seasonApi.getPracticeResults(currentSeason, round, 2);
-      } else if (activeTab === 'fp3') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 3)
-          || await seasonApi.getPracticeResults(currentSeason, round, 3);
-      }
-      if (cancelled) {
-        return;
-      }
-      if (activeTab === 'sprint') {
-        setSprintResults(sessionData?.Results || sessionData?.SprintResults || []);
-      } else if (activeTab === 'sprintQualifying') {
-        setSprintQualifyingResults(sessionData?.QualifyingResults || []);
-      } else if (activeTab === 'fp1') {
-        setFp1Results(sessionData?.Results || []);
-      } else if (activeTab === 'fp2') {
-        setFp2Results(sessionData?.Results || []);
-      } else if (activeTab === 'fp3') {
-        setFp3Results(sessionData?.Results || []);
-      }
-      setLoadedSessionTabs((currentTabs) => {
-        const nextTabs = mergeUniqueSessionTabs(currentTabs, [activeTab]);
-        loadedSessionTabsRef.current = nextTabs;
-        return nextTabs;
-      });
-      setSessionLoadErrors((current) => {
-        if (!current[activeTab]) return current;
-        const next = { ...current };
-        delete next[activeTab];
-        return next;
-      });
-      setLoadingSessionTabs((currentTabs) => {
-        const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
-        loadingSessionTabsRef.current = nextTabs;
-        return nextTabs;
-      });
-    };
-    loadDeferredSession().catch(() => {
-      if (!cancelled) {
-        setSessionLoadErrors((current) => ({
-          ...current,
-          [activeTab]: '\u8be5\u573a\u6b21\u6570\u636e\u6682\u65f6\u672a\u80fd\u5b8c\u6574\u52a0\u8f7d',
-        }));
-        setLoadingSessionTabs((currentTabs) => {
-          const nextTabs = removeSessionTabs(currentTabs, [activeTab]);
-          loadingSessionTabsRef.current = nextTabs;
-          return nextTabs;
-        });
-      }
-    });
-    return () => { cancelled = true; };
-  }, [activeTab, currentSeason, loadedSessionTabs, round, scheduledDeferredSessionTabs, sessionReloadKey]);
-
-  useEffect(() => {
-    // Sessions are loaded on demand by the active-tab effect above. Keep this
-    // bulk loader dormant so opening results/info never downloads every session.
-    if (!round || activeWeekendMode !== 'post' || activeTab !== 'allSessions') {
-      return;
-    }
-    const pendingTabs = getPendingSessionTabs(
-      scheduledDeferredSessionTabs,
-      loadedSessionTabsRef.current,
-      loadingSessionTabsRef.current,
-    );
-    if (!pendingTabs.length) {
-      return;
-    }
-    let cancelled = false;
-    setLoadingSessionTabs((currentTabs) => {
-      const nextTabs = mergeUniqueSessionTabs(currentTabs, pendingTabs);
-      loadingSessionTabsRef.current = nextTabs;
-      return nextTabs;
-    });
-    const loadSessionByTab = async (tabKey: string): Promise<[string, Race | null]> => {
-      let sessionData: Race | null = null;
-      if (tabKey === 'sprint') {
-        sessionData = await raceSessionResultsApi.getSprintResult(currentSeason, round)
-          || await seasonApi.getSprintResults(currentSeason, round);
-      } else if (tabKey === 'sprintQualifying') {
-        sessionData = await raceSessionResultsApi.getSprintQualifyingResult(currentSeason, round)
-          || await seasonApi.getSprintQualifyingResults(currentSeason, round);
-      } else if (tabKey === 'fp1') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 1)
-          || await seasonApi.getPracticeResults(currentSeason, round, 1);
-      } else if (tabKey === 'fp2') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 2)
-          || await seasonApi.getPracticeResults(currentSeason, round, 2);
-      } else if (tabKey === 'fp3') {
-        sessionData = await raceSessionResultsApi.getPracticeResult(currentSeason, round, 3)
-          || await seasonApi.getPracticeResults(currentSeason, round, 3);
-      }
-      return [tabKey, sessionData];
-    };
-    const loadPostRaceSessions = async () => {
-      const settledSessions = await Promise.allSettled(pendingTabs.map(loadSessionByTab));
-      if (cancelled) {
-        return;
-      }
-      const completedTabs: string[] = [];
-      settledSessions.forEach((result) => {
-        if (result.status !== 'fulfilled') {
-          return;
-        }
-        const [tabKey, sessionData] = result.value;
-        completedTabs.push(tabKey);
-        if (tabKey === 'sprint') {
-          setSprintResults(sessionData?.Results || sessionData?.SprintResults || []);
-        } else if (tabKey === 'sprintQualifying') {
-          setSprintQualifyingResults(sessionData?.QualifyingResults || []);
-        } else if (tabKey === 'fp1') {
-          setFp1Results(sessionData?.Results || []);
-        } else if (tabKey === 'fp2') {
-          setFp2Results(sessionData?.Results || []);
-        } else if (tabKey === 'fp3') {
-          setFp3Results(sessionData?.Results || []);
-        }
-      });
-      setLoadedSessionTabs((currentTabs) => {
-        const nextTabs = mergeUniqueSessionTabs(currentTabs, completedTabs);
-        loadedSessionTabsRef.current = nextTabs;
-        return nextTabs;
-      });
-      setLoadingSessionTabs((currentTabs) => {
-        const nextTabs = removeSessionTabs(currentTabs, pendingTabs);
-        loadingSessionTabsRef.current = nextTabs;
-        return nextTabs;
-      });
-    };
-    void loadPostRaceSessions();
-    return () => {
-      cancelled = true;
-      setLoadingSessionTabs((currentTabs) => {
-        const nextTabs = removeSessionTabs(currentTabs, pendingTabs);
-        loadingSessionTabsRef.current = nextTabs;
-        return nextTabs;
-      });
-    };
-  }, [activeTab, activeWeekendMode, currentSeason, round, scheduledDeferredSessionTabs]);
 
   const retryRaceData = useCallback(() => {
     refetchSeason();
-    setPrimaryReloadKey((value) => value + 1);
-  }, [refetchSeason]);
-  const retryActiveSession = useCallback(() => {
-    setSessionLoadErrors((current) => {
-      const next = { ...current };
-      delete next[activeTab];
-      return next;
-    });
-    setSessionReloadKey((value) => value + 1);
-  }, [activeTab]);
+    retryPrimaryResults();
+  }, [refetchSeason, retryPrimaryResults]);
 
-  const raceLoadError = seasonError ?? primaryError;
+  const raceLoadError = seasonError ?? primaryResults.error;
 
   const value: RaceDataContextValue = useMemo(() => ({
     season: currentSeason,
     round: round || '',
     raceInfo,
     seasonLoading,
-    primaryLoading,
+    primaryLoading: primaryResults.loading,
     raceLoadError,
     retryRaceData,
     isPastRace,
-    qualifyingResults,
-    raceResults,
-    sprintResults,
-    sprintQualifyingResults,
-    fp1Results,
-    fp2Results,
-    fp3Results,
-    availableDbSessions,
+    qualifyingResults: primaryResults.qualifyingResults,
+    raceResults: primaryResults.raceResults,
+    sprintResults: deferredSessions.sprintResults,
+    sprintQualifyingResults: deferredSessions.sprintQualifyingResults,
+    fp1Results: deferredSessions.fp1Results,
+    fp2Results: deferredSessions.fp2Results,
+    fp3Results: deferredSessions.fp3Results,
+    availableDbSessions: deferredSessions.availableDbSessions,
     fastF1Analytics,
+    fastF1AnalyticsLoading,
+    fastF1AnalyticsError,
+    retryFastF1Analytics,
     fastF1QualifyingAnalytics,
     fastF1SprintQualifyingAnalytics,
     fastF1SprintShootoutAnalytics,
     fastF1SprintAnalytics,
-    fastF1Practice1Analytics,
-    fastF1Practice2Analytics,
-    fastF1Practice3Analytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
     fastF1TelemetryLoading,
+    fastF1TelemetryError,
     loadFastF1Telemetry,
     racePreviewSummary,
     racePreviewLoading,
+    racePreviewError,
+    retryRacePreview,
     raceUpgradeSummary,
     raceUpgradeLoading,
     raceUpgradeError,
-    selectedWeekendMode,
+    retryRaceUpgrades,
     activeWeekendMode,
-    setSelectedWeekendMode,
-    loadingSessionTabs,
-    loadedSessionTabs,
-    sessionLoadErrors,
-    retryActiveSession,
+    loadingSessionTabs: deferredSessions.loadingSessionTabs,
+    loadedSessionTabs: deferredSessions.loadedSessionTabs,
+    sessionLoadErrors: deferredSessions.sessionLoadErrors,
+    retryActiveSession: deferredSessions.retryActiveSession,
+    retrySession: deferredSessions.retrySession,
     isMobile,
-    activeTab,
-    setActiveTab,
-    selectedLapDrivers,
-    selectedDuelDrivers,
-    selectedTelemetryDrivers,
-    selectedTelemetryMetrics,
-    dataViewModes,
-    collapsedDataPanels,
-    setSelectedLapDrivers,
-    setSelectedDuelDrivers,
-    setSelectedTelemetryDrivers,
-    setSelectedTelemetryMetrics,
-    setDataViewModes,
-    setCollapsedDataPanels,
+    activeSessionTab,
+    setActiveSessionTab,
   }), [
     currentSeason,
     round,
     raceInfo,
     seasonLoading,
-    primaryLoading,
+    primaryResults.loading,
     raceLoadError,
     retryRaceData,
     isPastRace,
-    qualifyingResults,
-    raceResults,
-    sprintResults,
-    sprintQualifyingResults,
-    fp1Results,
-    fp2Results,
-    fp3Results,
-    availableDbSessions,
+    primaryResults.qualifyingResults,
+    primaryResults.raceResults,
+    deferredSessions.sprintResults,
+    deferredSessions.sprintQualifyingResults,
+    deferredSessions.fp1Results,
+    deferredSessions.fp2Results,
+    deferredSessions.fp3Results,
+    deferredSessions.availableDbSessions,
     fastF1Analytics,
+    fastF1AnalyticsLoading,
+    fastF1AnalyticsError,
+    retryFastF1Analytics,
     fastF1QualifyingAnalytics,
     fastF1SprintQualifyingAnalytics,
     fastF1SprintShootoutAnalytics,
     fastF1SprintAnalytics,
-    fastF1Practice1Analytics,
-    fastF1Practice2Analytics,
-    fastF1Practice3Analytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
     fastF1TelemetryLoading,
+    fastF1TelemetryError,
     loadFastF1Telemetry,
     racePreviewSummary,
     racePreviewLoading,
+    racePreviewError,
+    retryRacePreview,
     raceUpgradeSummary,
     raceUpgradeLoading,
     raceUpgradeError,
-    selectedWeekendMode,
+    retryRaceUpgrades,
     activeWeekendMode,
-    setSelectedWeekendMode,
-    loadingSessionTabs,
-    loadedSessionTabs,
-    sessionLoadErrors,
-    retryActiveSession,
+    deferredSessions.loadingSessionTabs,
+    deferredSessions.loadedSessionTabs,
+    deferredSessions.sessionLoadErrors,
+    deferredSessions.retryActiveSession,
+    deferredSessions.retrySession,
     isMobile,
-    activeTab,
-    setActiveTab,
-    selectedLapDrivers,
-    selectedDuelDrivers,
-    selectedTelemetryDrivers,
-    selectedTelemetryMetrics,
-    dataViewModes,
-    collapsedDataPanels,
-    setSelectedLapDrivers,
-    setSelectedDuelDrivers,
-    setSelectedTelemetryDrivers,
-    setSelectedTelemetryMetrics,
-    setDataViewModes,
-    setCollapsedDataPanels,
+    activeSessionTab,
   ]);
 
   return (

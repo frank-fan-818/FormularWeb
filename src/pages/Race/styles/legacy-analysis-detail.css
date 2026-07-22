@@ -1,0 +1,612 @@
+.race-weekend-subtable {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.race-weekend-subtable h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.race-weekend-status-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.race-weekend-status-tags .ant-tag {
+  margin: 0;
+  border-radius: var(--radius-control);
+  font-weight: 800;
+}
+
+.duel-summary-pills {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.duel-summary-pills > span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.duel-stint-pill {
+  gap: 8px;
+}
+
+.duel-stint-pill strong {
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+}
+
+.duel-stint-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.duel-stint-token em {
+  color: var(--text-primary);
+  font-style: normal;
+  font-weight: var(--font-bold);
+}
+
+.qualifying-gap-grid,
+.duel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.qualifying-gap-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px 16px 18px;
+  background: linear-gradient(180deg, var(--bg-card), var(--bg-secondary));
+}
+
+.qualifying-gap-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--f1-red);
+}
+
+.qualifying-gap-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.qualifying-gap-card-header span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+}
+
+.qualifying-gap-card-header strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.qualifying-gap-total {
+  display: flex;
+  min-height: 78px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.qualifying-gap-total span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+}
+
+.qualifying-gap-total strong {
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.qualifying-gap-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.qualifying-sector-gap-grid {
+  display: contents;
+}
+
+.duel-sector-gap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.qualifying-sector-gap,
+.duel-sector-gap-card {
+  min-width: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+  background: var(--bg-card);
+}
+
+.qualifying-sector-gap {
+  display: flex;
+  min-height: 78px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+}
+
+.qualifying-sector-gap em,
+.duel-sector-gap-card span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+}
+
+.qualifying-sector-gap strong,
+.duel-sector-gap-card strong {
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+.qualifying-gap-total.is-faster strong,
+.qualifying-sector-gap.is-faster strong,
+.duel-sector-gap-card.is-faster strong {
+  color: var(--success);
+}
+
+.qualifying-gap-total.is-slower strong,
+.qualifying-sector-gap.is-slower strong,
+.duel-sector-gap-card.is-slower strong {
+  color: var(--f1-red);
+}
+
+.qualifying-gap-total.is-even strong,
+.qualifying-sector-gap.is-even strong,
+.duel-sector-gap-card.is-even strong {
+  color: var(--text-secondary);
+}
+
+.duel-sector-panel {
+  min-width: 0;
+}
+
+.duel-sector-gap-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.duel-sector-gap-card {
+  display: grid;
+  gap: 5px;
+}
+
+.duel-sector-gap-card strong {
+  font-size: 20px;
+}
+
+.duel-sector-gap-card em {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: var(--font-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duel-empty-state {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border-secondary);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: var(--font-semibold);
+}
+
+.driver-duel-card .driver-legend {
+  gap: 10px;
+}
+
+.driver-duel-card .driver-legend-item {
+  min-height: 34px;
+  border-color: var(--border-secondary);
+  padding: 0 10px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+}
+
+.driver-duel-card .driver-legend-item:hover,
+.driver-duel-card .driver-legend-item:focus-visible {
+  border-color: rgba(255, 24, 1, 0.28);
+  background: rgba(255, 24, 1, 0.04);
+}
+
+.driver-duel-card .driver-legend-item.is-active {
+  border-color: rgba(255, 24, 1, 0.5);
+  background: linear-gradient(180deg, rgba(255, 24, 1, 0.12), rgba(255, 24, 1, 0.05));
+  color: var(--text-primary);
+  box-shadow: 0 8px 18px rgba(255, 24, 1, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.driver-duel-card .driver-legend-item.is-muted {
+  opacity: 0.28;
+}
+
+.duel-pick-badge {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--f1-red);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  line-height: 1;
+}
+
+.duel-corner-panel {
+  grid-column: 1 / -1;
+}
+
+.duel-corner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.duel-corner-card {
+  min-width: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  background: linear-gradient(180deg, var(--bg-card), var(--bg-secondary));
+}
+
+.duel-corner-head,
+.duel-corner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.duel-corner-head {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.duel-corner-head em {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: var(--font-semibold);
+}
+
+.duel-corner-row {
+  min-height: 23px;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.duel-corner-row strong {
+  color: var(--text-secondary);
+  font-weight: var(--font-bold);
+}
+
+.duel-corner-row span {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+.duel-corner-row.is-delta {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.duel-corner-row.is-delta span {
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+}
+
+.weather-summary-pills,
+.weather-rain-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.weather-summary-pills {
+  max-width: 460px;
+}
+
+.weather-summary-pills span,
+.weather-rain-legend span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.weather-rain-legend {
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.weather-rain-swatch {
+  width: 16px;
+  min-height: 10px !important;
+  height: 10px;
+  border-color: rgba(2, 132, 199, 0.32) !important;
+  border-radius: 3px !important;
+  padding: 0 !important;
+  background: rgba(14, 165, 233, 0.16) !important;
+}
+
+.fastf1-weather-tooltip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.16);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.telemetry-card .ant-table {
+  margin-top: 8px;
+}
+
+.telemetry-driver-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+}
+
+.telemetry-metric-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.telemetry-metric-button {
+  min-height: 28px;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+}
+
+.telemetry-metric-button:hover,
+.telemetry-metric-button:focus-visible {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.telemetry-metric-button.is-active {
+  border-color: rgba(255, 24, 1, 0.28);
+  background: rgba(255, 24, 1, 0.08);
+  color: var(--f1-red);
+}
+
+.telemetry-metric-button.is-muted {
+  opacity: 0.46;
+}
+
+.telemetry-chart-divider {
+  height: 1px;
+  margin: 10px 0 14px;
+  background: var(--border-secondary);
+}
+
+.telemetry-heatmap-panel {
+  margin-top: 12px;
+}
+
+.telemetry-panel-title {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.telemetry-heat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: -8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.telemetry-heat-legend span {
+  width: 24px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.telemetry-heat-low {
+  background: linear-gradient(90deg, #2563eb, #16a34a);
+}
+
+.telemetry-heat-high {
+  background: linear-gradient(90deg, #f59e0b, #dc2626);
+}
+
+.telemetry-corner-table {
+  margin-top: 14px;
+}
+
+.corner-label {
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+}
+
+.corner-distance {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.fastf1-tooltip {
+  min-width: 250px;
+  color: #f8fafc;
+}
+
+.fastf1-tooltip-title {
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+}
+
+.fastf1-tooltip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+  row-gap: 6px;
+}
+
+.fastf1-tooltip-grid-stint {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 280px;
+}
+
+.fastf1-tooltip-row {
+  display: grid;
+  grid-template-columns: 10px minmax(96px, 1fr) max-content;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.fastf1-tooltip-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.fastf1-tooltip-marker.is-empty {
+  background: transparent;
+}
+
+.fastf1-tooltip-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #e2e8f0;
+  font-weight: var(--font-semibold);
+  text-overflow: ellipsis;
+}
+
+.fastf1-tooltip-row strong {
+  color: #f8fafc;
+  font-variant-numeric: tabular-nums;
+}
+
+.fastf1-tyre-age-badge {
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fastf1-tooltip-single {
+  min-width: 180px;
+}
+
+.fastf1-tooltip-driver {
+  display: grid;
+  grid-template-columns: 10px minmax(36px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.fastf1-tooltip-driver strong {
+  color: #f8fafc;
+  font-variant-numeric: tabular-nums;
+}

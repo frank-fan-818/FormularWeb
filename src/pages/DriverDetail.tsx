@@ -4,17 +4,27 @@ import { Button, Card, Col, Empty, Row, Tag } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import dayjs from 'dayjs';
+import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { driverApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { BestFinishSummary, DriverHistoryProfile, DriverStanding } from '@/types';
+import type {
+  BestFinishSummary,
+  DriverHistoryProfile,
+  DriverStanding,
+  Race,
+  Result,
+  SupabaseDriverDetailRow,
+} from '@/types';
 import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { escapeHtml, getFirstTooltipParam } from '@/utils/chartTooltip';
 import './DriverDetail.css';
 
 interface DriverProfile {
@@ -83,7 +93,7 @@ const TEXT = {
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
-function mapSupabaseDriver(driver: Record<string, any>): DriverProfile {
+function mapSupabaseDriver(driver: SupabaseDriverDetailRow): DriverProfile {
   return {
     driverId: driver.driver_id,
     permanentNumber: driver.permanent_number || '',
@@ -193,8 +203,8 @@ const DriverDetail = () => {
 
   const [driver, setDriver] = useState<DriverProfile | null>(null);
   const [driverHistory, setDriverHistory] = useState<DriverHistoryProfile | null>(null);
-  const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
-  const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
+  const [seasonRaceResults, setSeasonRaceResults] = useState<Race[]>([]);
+  const [seasonSprintResults, setSeasonSprintResults] = useState<Race[]>([]);
   const [loading, setLoading] = useState(false);
   const [seasonResultsLoading, setSeasonResultsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -402,7 +412,7 @@ const DriverDetail = () => {
     const sprintPointsMap: Record<string, number> = {};
     seasonSprintResults.forEach((sprintRace) => {
       if (sprintRace.SprintResults && sprintRace.SprintResults.length > 0) {
-        const driverResult = sprintRace.SprintResults.find((result: any) => result.Driver.driverId === resolvedDriverId);
+        const driverResult = sprintRace.SprintResults.find((result: Result) => result.Driver.driverId === resolvedDriverId);
         if (driverResult) {
           sprintPointsMap[sprintRace.round] = parseFloat(driverResult.points);
         }
@@ -443,19 +453,21 @@ const DriverDetail = () => {
         },
         padding: [12, 16],
         extraCssText: 'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px;',
-        formatter: (params: any) => {
-          const index = params[0].dataIndex;
+        formatter: (params: TooltipComponentFormatterCallbackParams) => {
+          const firstParam = getFirstTooltipParam(params);
+          if (!firstParam) return '';
+          const index = firstParam.dataIndex;
           const round = seasonRaceResults[index]?.round;
           const sprintPoints = sprintPointsMap[round] || 0;
           const racePoints = singlePoints[index] - sprintPoints;
 
-          let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
+          let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${escapeHtml(firstParam.name)}</div>`;
           result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.racePoints}:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
             result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.sprintPoints}:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
           result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>${TEXT.roundTotal}:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${escapeHtml(firstParam.value)}</span></div>`;
           return result;
         },
       },
@@ -659,6 +671,12 @@ const DriverDetail = () => {
           </Card>
         </div>
 
+        <ProductSectionHeader
+          index="01"
+          eyebrow={`${currentSeason} / FORM`}
+          title={TEXT.pointsTrend}
+          description="用每一站的积分变化读取车手当前状态，而不是只看一个静态排名。"
+        />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
@@ -700,6 +718,7 @@ const DriverDetail = () => {
                       chartKey={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}`}
                       option={getPointsChartOption()}
                       height={chartHeight}
+                      ariaLabel="车手本赛季各分站积分与累计积分趋势图。"
                     />
                   </Suspense>
                 ) : (

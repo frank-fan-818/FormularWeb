@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Button, Card, Segmented } from 'antd';
 import { TEXT } from '../constants';
 
@@ -28,6 +29,7 @@ function DataViewPanel({
   chart,
   table,
 }: DataViewPanelProps) {
+  const bodyId = useId();
   return (
     <Card
       className={`race-weekend-card data-view-card ${className}`}
@@ -50,13 +52,13 @@ function DataViewPanel({
               { label: TEXT.table, value: 'table' },
             ]}
           />
-          <Button type="text" size="small" onClick={onToggleCollapse}>
+          <Button type="text" size="small" aria-expanded={!collapsed} aria-controls={bodyId} onClick={onToggleCollapse}>
             {collapsed ? TEXT.expand : TEXT.collapse}
           </Button>
         </div>
       )}
     >
-      {collapsed ? null : mode === 'chart' ? chart : table}
+      {collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{mode === 'chart' ? chart : table}</div>}
     </Card>
   );
 }
@@ -80,6 +82,7 @@ function TableOnlyPanel({
   onToggleCollapse,
   children,
 }: TableOnlyPanelProps) {
+  const bodyId = useId();
   return (
     <Card
       className={`race-weekend-card data-view-card ${className}`}
@@ -91,12 +94,12 @@ function TableOnlyPanel({
         </div>
       )}
       extra={(
-        <Button type="text" size="small" onClick={onToggleCollapse}>
+        <Button type="text" size="small" aria-expanded={!collapsed} aria-controls={bodyId} onClick={onToggleCollapse}>
           {collapsed ? TEXT.expand : TEXT.collapse}
         </Button>
       )}
     >
-      {collapsed ? null : children}
+      {collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{children}</div>}
     </Card>
   );
 }

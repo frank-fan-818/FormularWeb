@@ -56,6 +56,8 @@
 }
 
 .driver-profile-hero {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-5);
@@ -68,6 +70,31 @@
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
   color: #ffffff;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+}
+
+.driver-profile-hero::before {
+  position: absolute;
+  top: 22px;
+  left: var(--space-7);
+  z-index: -1;
+  color: rgba(255, 255, 255, 0.3);
+  content: 'DRIVER DOSSIER / CURRENT SEASON';
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.driver-profile-hero::after {
+  position: absolute;
+  right: -8%;
+  bottom: -72%;
+  z-index: -1;
+  width: 48%;
+  aspect-ratio: 1;
+  content: '';
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 50%;
+  box-shadow: 0 0 0 46px rgba(255, 255, 255, 0.025), 0 0 0 92px rgba(255, 255, 255, 0.015);
 }
 
 .driver-profile-kicker {
@@ -93,7 +120,8 @@
   color: #ffffff;
   font-size: clamp(3rem, 8vw, 6.5rem);
   line-height: 0.92;
-  letter-spacing: 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.055em;
 }
 
 .driver-profile-name span,
@@ -137,7 +165,12 @@
 
 .driver-current-stat-card .ant-card-body {
   padding: var(--space-5);
+  min-height: 118px;
+  display: grid;
+  align-content: center;
 }
+
+.driver-current-stat-card .stat-value { font-family: var(--font-display); font-size: clamp(24px, 3vw, 38px); letter-spacing: -0.04em; }
 
 .stats-row {
   display: grid;
@@ -408,8 +441,19 @@
   .driver-profile-hero {
     grid-template-columns: 1fr;
     min-height: 0;
-    padding: var(--space-5);
+    padding: 54px var(--space-5) var(--space-5);
   }
+
+  .driver-profile-hero > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+    width: 100%;
+  }
+
+  .driver-profile-copy { width: 100%; }
+  .driver-profile-name { max-width: 100%; font-size: clamp(2.25rem, 11.5vw, 3rem); overflow-wrap: anywhere; }
+  .driver-profile-name span { font-size: 1.25rem; }
+  .driver-profile-tags { max-width: 100%; }
 
   .driver-profile-number {
     justify-self: start;
@@ -441,6 +485,7 @@
 }
 
 @media (max-width: 480px) {
+  .driver-profile-hero::before { top: 20px; left: var(--space-5); }
   .driver-detail-container {
     padding: var(--space-3);
   }

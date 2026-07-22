@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fiaCarUpgradesApi } from '@/api/fiaCarUpgrades';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 
@@ -6,10 +6,15 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
   const [data, setData] = useState<FiaRaceUpgradeSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [dataIdentity, setDataIdentity] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const requestIdentity = `${season}:${round || ''}`;
+  const identityCurrent = enabled && Boolean(season && round) && dataIdentity === requestIdentity;
 
   useEffect(() => {
     if (!enabled || !season || !round) {
       setData(null);
+      setDataIdentity(null);
       setLoading(false);
       setError(null);
       return;
@@ -23,11 +28,13 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
       .then((summary) => {
         if (!cancelled) {
           setData(summary);
+          setDataIdentity(requestIdentity);
         }
       })
       .catch((requestError: unknown) => {
         if (!cancelled) {
           setData(null);
+          setDataIdentity(requestIdentity);
           setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
         }
       })
@@ -40,7 +47,13 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
     return () => {
       cancelled = true;
     };
-  }, [enabled, round, season]);
+  }, [enabled, reloadKey, requestIdentity, round, season]);
 
-  return { data, loading, error };
+  const retry = useCallback(() => setReloadKey((value) => value + 1), []);
+  return {
+    data: identityCurrent ? data : null,
+    loading: identityCurrent ? loading : enabled && Boolean(season && round),
+    error: identityCurrent ? error : null,
+    retry,
+  };
 }

@@ -3,14 +3,22 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
+import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { constructorApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
-import type { HistoryCareerSummary } from '@/types';
+import type {
+  HistoryCareerSummary,
+  Race,
+  Result,
+  SupabaseConstructorDetailRow,
+} from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
+import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { escapeHtml, getFirstTooltipParam } from '@/utils/chartTooltip';
 import './ConstructorDetail.css';
 
 interface ConstructorProfile {
@@ -62,7 +70,7 @@ const EMPTY_CAREER_STATS: HistoryCareerSummary = {
   totalPoints: 0,
 };
 
-function mapSupabaseConstructor(constructor: Record<string, any>): ConstructorProfile {
+function mapSupabaseConstructor(constructor: SupabaseConstructorDetailRow): ConstructorProfile {
   return {
     constructorId: constructor.constructor_id,
     url: '#',
@@ -86,8 +94,8 @@ const ConstructorDetail = () => {
 
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
   const [careerStats, setCareerStats] = useState<HistoryCareerSummary>(EMPTY_CAREER_STATS);
-  const [seasonRaceResults, setSeasonRaceResults] = useState<any[]>([]);
-  const [seasonSprintResults, setSeasonSprintResults] = useState<any[]>([]);
+  const [seasonRaceResults, setSeasonRaceResults] = useState<Race[]>([]);
+  const [seasonSprintResults, setSeasonSprintResults] = useState<Race[]>([]);
   const [loading, setLoading] = useState(false);
   const [seasonResultsLoading, setSeasonResultsLoading] = useState(false);
   const [careerStatsLoading, setCareerStatsLoading] = useState(false);
@@ -292,7 +300,7 @@ const ConstructorDetail = () => {
     seasonSprintResults.forEach((sprintRace) => {
       if (sprintRace.SprintResults && sprintRace.SprintResults.length > 0) {
         let sprintPoints = 0;
-        sprintRace.SprintResults.forEach((result: any) => {
+        sprintRace.SprintResults.forEach((result: Result) => {
           if (result.Constructor.constructorId === constructorId) {
             sprintPoints += parseFloat(result.points);
           }
@@ -308,7 +316,7 @@ const ConstructorDetail = () => {
       let raceTotalPoints = 0;
 
       if (race.Results && race.Results.length > 0) {
-        race.Results.forEach((result: any) => {
+        race.Results.forEach((result: Result) => {
           if (result.Constructor.constructorId === constructorId) {
             raceTotalPoints += parseFloat(result.points);
           }
@@ -341,19 +349,21 @@ const ConstructorDetail = () => {
         },
         padding: [12, 16],
         extraCssText: 'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px;',
-        formatter: (params: any) => {
-          const index = params[0].dataIndex;
+        formatter: (params: TooltipComponentFormatterCallbackParams) => {
+          const firstParam = getFirstTooltipParam(params);
+          if (!firstParam) return '';
+          const index = firstParam.dataIndex;
           const round = seasonRaceResults[index]?.round;
           const sprintPoints = sprintPointsMap[round] || 0;
           const racePoints = singlePoints[index] - sprintPoints;
 
-          let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].name}</div>`;
+          let result = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${escapeHtml(firstParam.name)}</div>`;
           result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.racePoints}:</span><span style="font-weight: 600;">${racePoints}</span></div>`;
           if (sprintPoints > 0) {
             result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 4px;"><span>${TEXT.sprintPoints}:</span><span style="font-weight: 600; color: #52c41a;">+${sprintPoints}</span></div>`;
           }
           result += `<div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;"><span>${TEXT.roundTotal}:</span><span style="font-weight: 600;">${singlePoints[index]}</span></div>`;
-          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${params[0].value}</span></div>`;
+          result += `<div style="display: flex; justify-content: space-between; gap: 20px; align-items: center;"><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${teamColor};"></span>${TEXT.cumulativePoints}:</span><span style="font-weight: 700; font-size: 16px; color: ${teamColor};">${escapeHtml(firstParam.value)}</span></div>`;
           return result;
         },
       },
@@ -553,6 +563,12 @@ const ConstructorDetail = () => {
           </Card>
         </div>
 
+        <ProductSectionHeader
+          index="01"
+          eyebrow={`${currentSeason} / TEAM FORM`}
+          title={TEXT.pointsTrend}
+          description="用分站积分轨迹判断车队竞争力是在上升、持平还是回落。"
+        />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
@@ -594,6 +610,7 @@ const ConstructorDetail = () => {
                       chartKey={`${constructorId}-${currentSeason}-${seasonRaceResults.length}`}
                       option={getPointsChartOption()}
                       height={chartHeight}
+                      ariaLabel="车队本赛季各分站积分与累计积分趋势图。"
                     />
                   </Suspense>
                 ) : (

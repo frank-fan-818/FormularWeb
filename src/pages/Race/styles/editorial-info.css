@@ -1,0 +1,79 @@
+/* Weekend intelligence */
+
+.race-info-overview {
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+  gap: var(--space-5);
+}
+
+.race-info-section {
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--surface-dark);
+}
+
+.race-info-section-heading {
+  align-items: flex-end;
+  padding: 0;
+}
+
+.race-info-section-heading > span {
+  font-family: var(--race-display);
+  font-size: 26px;
+  letter-spacing: -0.015em;
+}
+
+.race-info-section-heading small {
+  max-width: 620px;
+  text-align: right;
+}
+
+.race-info-schedule-card .ant-card-body {
+  padding: var(--space-4);
+}
+
+.weekend-schedule {
+  width: 100%;
+  margin: 0;
+  border-color: var(--surface-dark);
+  border-top-width: 4px;
+  border-radius: var(--radius-control);
+  box-shadow: none;
+}
+
+.weekend-session {
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.weekend-session:hover {
+  background: color-mix(in srgb, var(--f1-red-glow) 55%, var(--bg-card));
+  transform: translateX(2px);
+}
+
+.race-weekend-metric {
+  border-top: 3px solid var(--race-control-track);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+}
+
+.race-weekend-metric strong,
+.race-weekend-risk-item strong {
+  font-family: var(--race-display);
+  font-size: 28px;
+}
+
+.upgrade-summary-card .ant-card-body,
+.upgrade-metric-grid,
+.upgrade-summary-table,
+.upgrade-summary-card .viewport-table-anchor {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.upgrade-summary-card .ant-card-body {
+  overflow: hidden;
+}
+
+.upgrade-summary-table,
+.upgrade-summary-card .viewport-table-anchor {
+  overflow-x: auto;
+}

@@ -1,10 +1,8 @@
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
-import type { Race } from '@/types';
+import type { Race, RaceSessionCode } from '@/types';
 import { withRetry } from '@/utils/withRetry';
 import { RaceSchema } from '@/api/schemas';
-
-export type RaceSessionCode = 'FP1' | 'FP2' | 'FP3' | 'SQ' | 'SS' | 'S';
 
 interface RaceSessionResultRow {
   season: number;
