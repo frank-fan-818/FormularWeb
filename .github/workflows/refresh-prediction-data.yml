@@ -29,7 +29,11 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - name: Install development toolchain
+        run: npm ci --include=dev
+
+      - name: Verify local toolchain
+        run: npm run toolchain:verify
 
       - name: Resolve season
         id: season
