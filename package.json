@@ -1,8 +1,11 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.11.2",
+  "version": "0.11.3",
   "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -22,11 +25,11 @@
     "fia:import-upgrades-db": "ts-node-esm ./scripts/import-fia-car-upgrades-db.ts",
     "fia:import-tech-updates": "ts-node-esm ./scripts/import-fia-tech-updates.ts",
     "import:race-sessions": "ts-node-esm ./scripts/import-race-session-results.ts",
-    "prediction:sync": "ts-node-esm ./scripts/sync-current-season-prediction-data.ts",
-    "prediction:backtest": "ts-node-esm ./scripts/backtest-winner-prediction.ts",
+    "prediction:sync": "tsx ./scripts/sync-current-season-prediction-data.ts",
+    "prediction:backtest": "tsx ./scripts/backtest-winner-prediction.ts",
     "toolchain:verify": "node ./scripts/verify-local-toolchain.mjs",
     "lighthouse:config:verify": "node ./scripts/verify-lighthouse-config.mjs",
-    "lighthouse": "lhci autorun --config=.lighthouserc.cjs",
+    "lighthouse": "node ./scripts/run-lighthouse-ci.mjs",
     "budget:performance": "node scripts/check-performance-budget.mjs"
   },
   "dependencies": {
@@ -54,7 +57,7 @@
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.59.1",
-    "@types/node": "^25.5.0",
+    "@types/node": "^24.13.3",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
@@ -67,6 +70,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "sharp": "^0.34.5",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.5",
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-pwa": "^1.3.0",

@@ -13,69 +13,75 @@ if (assertConfig.preset) {
   );
 }
 
-const requiredBlockingAssertions = new Set([
-  'categories:performance',
-  'categories:accessibility',
-  'categories:best-practices',
-  'categories:seo',
-  'largest-contentful-paint',
-  'cumulative-layout-shift',
-  'total-blocking-time',
-  'errors-in-console',
-  'http-status-code',
-  'document-title',
-  'html-has-lang',
-  'viewport',
-]);
-
-const requiredDiagnosticAssertions = new Set([
-  'network-dependency-tree-insight',
-  'unused-javascript',
-  'render-blocking-insight',
-  'render-blocking-resources',
-]);
+const expectedAssertions = {
+  'categories:performance': ['error', { minScore: 0.9, aggregationMethod: 'median' }],
+  'categories:accessibility': ['error', { minScore: 0.95, aggregationMethod: 'median' }],
+  'categories:best-practices': ['error', { minScore: 0.9, aggregationMethod: 'median' }],
+  'categories:seo': ['error', { minScore: 0.9, aggregationMethod: 'median' }],
+  'largest-contentful-paint': ['error', { maxNumericValue: 2500, aggregationMethod: 'median' }],
+  'cumulative-layout-shift': ['error', { maxNumericValue: 0.1, aggregationMethod: 'median' }],
+  'total-blocking-time': ['error', { maxNumericValue: 250, aggregationMethod: 'median' }],
+  'errors-in-console': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+  'http-status-code': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+  'document-title': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+  'html-has-lang': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+  viewport: ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+  'first-contentful-paint': ['warn', { maxNumericValue: 2000, aggregationMethod: 'median' }],
+  'speed-index': ['warn', { maxNumericValue: 3000, aggregationMethod: 'median' }],
+  interactive: ['warn', { maxNumericValue: 3500, aggregationMethod: 'median' }],
+  'total-byte-weight': ['warn', { maxNumericValue: 700000 }],
+  'network-dependency-tree-insight': ['warn', { minScore: 1 }],
+  'unused-javascript': ['warn', { maxLength: 0 }],
+  'render-blocking-insight': ['warn', { maxLength: 0 }],
+  'render-blocking-resources': ['warn', { maxLength: 0 }],
+};
 
 const failures = [];
 
-for (const assertionId of requiredBlockingAssertions) {
+for (const [assertionId, [expectedLevel, expectedOptions]] of Object.entries(
+  expectedAssertions,
+)) {
   const assertion = assertions[assertionId];
-  const level = Array.isArray(assertion) ? assertion[0] : assertion;
 
-  if (level !== 'error') {
-    failures.push(`${assertionId} must remain a blocking assertion`);
+  if (!assertion) {
+    failures.push(`${assertionId} is missing`);
+    continue;
   }
-}
 
-for (const assertionId of requiredDiagnosticAssertions) {
-  const assertion = assertions[assertionId];
-  const level = Array.isArray(assertion) ? assertion[0] : assertion;
-
-  if (level !== 'warn') {
-    failures.push(`${assertionId} must remain a non-blocking diagnostic`);
-  }
-}
-
-for (const [assertionId, assertion] of Object.entries(assertions)) {
   const [level, options = {}] = Array.isArray(assertion)
     ? assertion
     : [assertion, {}];
+
+  if (level !== expectedLevel) {
+    failures.push(`${assertionId} must use the ${expectedLevel} level`);
+  }
+
+  for (const [optionName, expectedValue] of Object.entries(expectedOptions)) {
+    if (options[optionName] !== expectedValue) {
+      failures.push(
+        `${assertionId}.${optionName} must equal ${expectedValue}`,
+      );
+    }
+  }
 
   if (level === 'error' && Object.hasOwn(options, 'maxLength')) {
     failures.push(
       `${assertionId} uses a diagnostic item count as a blocking assertion`,
     );
   }
+}
 
-  if (level === 'error' && !requiredBlockingAssertions.has(assertionId)) {
+for (const [assertionId, assertion] of Object.entries(assertions)) {
+  const level = Array.isArray(assertion) ? assertion[0] : assertion;
+
+  if (level === 'error' && !Object.hasOwn(expectedAssertions, assertionId)) {
     failures.push(`${assertionId} is not an approved blocking assertion`);
-  }
-
-  if (level === 'error' && options.aggregationMethod !== 'median') {
-    failures.push(`${assertionId} must use median aggregation across runs`);
   }
 }
 
-if (lighthouseConfig.ci.collect.numberOfRuns < 5) {
+const numberOfRuns = lighthouseConfig?.ci?.collect?.numberOfRuns;
+
+if (!Number.isInteger(numberOfRuns) || numberOfRuns < 5) {
   failures.push('Lighthouse must collect at least five runs to reduce variance');
 }
 

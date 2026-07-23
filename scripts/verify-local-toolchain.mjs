@@ -2,6 +2,7 @@ import { constants } from 'node:fs';
 import { access, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const packageJsonPath = resolve(projectRoot, 'package.json');
@@ -16,13 +17,28 @@ const [packageJson, packageLock] = await Promise.all(
 const requiredTools = [
   {
     packageName: 'ts-node',
+    packageBinName: 'ts-node-esm',
     binaryName: process.platform === 'win32' ? 'ts-node-esm.cmd' : 'ts-node-esm',
+  },
+  {
+    packageName: 'tsx',
+    packageBinName: 'tsx',
+    binaryName: process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
   },
 ];
 
 const failures = [];
+const predictionScripts = ['prediction:sync', 'prediction:backtest'];
 
-for (const { packageName, binaryName } of requiredTools) {
+for (const scriptName of predictionScripts) {
+  const script = packageJson.scripts?.[scriptName];
+
+  if (typeof script !== 'string' || !/^tsx(?:\s|$)/.test(script)) {
+    failures.push(`${scriptName} must run through the declared tsx toolchain`);
+  }
+}
+
+for (const { packageName, packageBinName, binaryName } of requiredTools) {
   const declaredVersion = packageJson.devDependencies?.[packageName];
   const lockedVersion = packageLock.packages?.['']?.devDependencies?.[packageName];
 
@@ -45,6 +61,40 @@ for (const { packageName, binaryName } of requiredTools) {
     );
   } catch {
     failures.push(`${packageName} has no local executable at ${binaryPath}`);
+    continue;
+  }
+
+  const installedPackageJsonPath = resolve(
+    projectRoot,
+    'node_modules',
+    packageName,
+    'package.json',
+  );
+  const installedPackage = JSON.parse(
+    await readFile(installedPackageJsonPath, 'utf8'),
+  );
+  const packageBins = typeof installedPackage.bin === 'string'
+    ? { [packageName]: installedPackage.bin }
+    : installedPackage.bin;
+  const packageBinEntry = packageBins?.[packageBinName];
+
+  if (!packageBinEntry) {
+    failures.push(`${packageName} does not declare the ${packageBinName} binary`);
+    continue;
+  }
+
+  const packageBinPath = resolve(
+    dirname(installedPackageJsonPath),
+    packageBinEntry,
+  );
+  const smokeResult = spawnSync(process.execPath, [packageBinPath, '--version'], {
+    encoding: 'utf8',
+  });
+
+  if (smokeResult.status !== 0) {
+    failures.push(
+      `${packageName} executable failed its smoke test: ${smokeResult.stderr.trim() || `exit ${smokeResult.status}`}`,
+    );
   }
 }
 
