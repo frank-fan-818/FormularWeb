@@ -65,7 +65,7 @@ jobs:
       - name: Refresh rolling backtest
         run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: prediction-refresh-diagnostics
