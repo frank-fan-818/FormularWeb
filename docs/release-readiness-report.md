@@ -1,7 +1,7 @@
 # Release Readiness Report
 
 Date: 2026-07-28
-Candidate version: 0.12.0
+Candidate version: 0.12.1
 
 ## Outcome
 
@@ -10,9 +10,9 @@ dashboard. Automated gates cover source quality, dependency risk, secrets,
 database policy regressions, unit coverage, production builds, bundle budgets,
 Lighthouse, and multi-viewport browser smoke tests.
 
-Production release is conditional only on the deployment-time items listed
-below. Those actions depend on the target Supabase and hosting projects and
-cannot be proven by repository checks alone.
+The production database and authentication configuration have now been
+hardened and verified against the intended Supabase project. The final
+repository gate and Vercel deployment verification are recorded below.
 
 ## Gap closure
 
@@ -29,7 +29,7 @@ cannot be proven by repository checks alone.
 | Resilience | No production offline shell | Versioned service worker with bounded data caching and stale-cache cleanup |
 | Performance | Search eagerly loaded Supabase; route waterfall | Intent-loaded search/i18n, eager home shell, 96.1 KiB gzip home path |
 | Browser quality | No repeatable release evidence | Desktop 1440×900, tablet 768×1024, mobile 375×812; console, asset, route, and overflow assertions |
-| Release process | No single reproducible gate | `npm run quality:check`, release checklist, security policy, SemVer 0.12.0 |
+| Release process | No single reproducible gate | `npm run quality:check`, release checklist, security policy, SemVer 0.12.1 |
 
 ## Verified evidence
 
@@ -49,6 +49,14 @@ cannot be proven by repository checks alone.
 - Live Jolpica proxy check returned HTTP 200 and a valid `MRData` payload.
 - Dependency gate found zero high or critical vulnerabilities.
 - Secret/policy scan passed across tracked and untracked release-candidate files.
+- Production Supabase verification found zero browser write grants, zero
+  unexpected browser write policies, zero public-read tables missing RLS, and
+  12 matching public-read policies.
+- The Supabase security advisor returned no issues after the migration.
+- Supabase Auth `site_url` is `https://formular-web.vercel.app` and its
+  redirect allow-list contains `https://formular-web.vercel.app/login`.
+- Both temporary Supabase management tokens used for deployment verification
+  were deleted locally and revoked from the account.
 
 ## Accepted and bounded residuals
 
@@ -62,16 +70,16 @@ cannot be proven by repository checks alone.
   Vitals and the blocking score thresholds pass; further CSS extraction is an
   optimization opportunity, not a release blocker.
 
-## Required deployment-time checks
+## Production rollout verification
 
-1. Apply `scripts/sql/2026-07-28-production-security-hardening.sql` to the
-   intended Supabase project after taking a schema backup.
-2. Verify the production anonymous key, URL, and Auth `/login` redirect
-   allow-list; keep the service-role key in protected server/CI secrets only.
-3. Run read/write permission probes with anonymous, authenticated, and
-   service-role identities.
-4. Deploy the saved build, verify CSP/security/cache headers and the
-   `/f1-api` rewrite on the production URL, then complete
-   `docs/release-checklist.md`.
-5. Confirm GitHub CodeQL/Dependabot checks and branch protection are enabled
-   before tagging `v0.12.0`.
+1. `scripts/sql/2026-07-28-production-security-hardening.sql` was applied
+   transactionally to project `zmihswdvixurhjjsazrl` and re-run to verify
+   idempotency.
+2. Anonymous and authenticated write grants were removed from all public
+   application tables. The only retained browser write policy is the
+   authenticated, user-bound diagnostic insert policy.
+3. Supabase Auth production site and `/login` redirect URLs were written
+   through the Management API and independently read back.
+4. The Vercel production deployment, security/cache headers, critical routes,
+   and `/f1-api` rewrite are verified after the `v0.12.1` release commit.
+5. Post-release monitoring remains an ongoing operational responsibility.
