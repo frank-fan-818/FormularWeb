@@ -86,13 +86,30 @@ for (const route of routes) {
 test('global search navigates to every supported entity type', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'The interaction is viewport-independent.');
 
+  const browserErrors: string[] = [];
+  page.on('pageerror', (error) => browserErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') browserErrors.push(message.text());
+  });
+
   await page.route('**/f1-api/**', async (requestRoute) => {
+    const requestUrl = new URL(requestRoute.request().url());
+    const hasDriverRaceResults = requestUrl.pathname.endsWith('/drivers/max_verstappen/results.json');
     await requestRoute.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({
         MRData: {
-          total: '0',
-          RaceTable: { Races: [] },
+          total: hasDriverRaceResults ? '1' : '0',
+          RaceTable: {
+            Races: hasDriverRaceResults
+              ? [{
+                season: '2026',
+                round: '1',
+                raceName: 'Australian Grand Prix',
+                Results: [{ points: '25' }],
+              }]
+              : [],
+          },
           SeasonTable: { Seasons: [] },
           StandingsTable: { StandingsLists: [] },
         },
@@ -104,10 +121,17 @@ test('global search navigates to every supported entity type', async ({ page }, 
     const rows = pathname.endsWith('/drivers')
       ? [{
         driver_id: 'max_verstappen',
+        permanent_number: '1',
         first_name: 'Max',
         last_name: 'Verstappen',
         code: 'VER',
+        date_of_birth: '1997-09-30',
         nationality: 'Dutch',
+        total_wins: 65,
+        total_podiums: 117,
+        total_pole_positions: 44,
+        total_fastest_laps: 35,
+        total_race_starts: 225,
       }]
       : pathname.endsWith('/constructors')
         ? [{ constructor_id: 'red_bull', name: 'Red Bull', nationality: 'Austrian' }]
@@ -153,5 +177,11 @@ test('global search navigates to every supported entity type', async ({ page }, 
     await input.fill(searchCase.query);
     await page.getByRole('option', { name: searchCase.name }).click();
     await expect(page).toHaveURL(new RegExp(`${searchCase.path.replace(/[?]/g, '\\?')}$`));
+
+    if (searchCase.path.includes('/history/drivers/')) {
+      await expect(page.locator('canvas').first()).toBeVisible();
+    }
   }
+
+  expect(browserErrors, 'console/page errors after global search navigation').toEqual([]);
 });

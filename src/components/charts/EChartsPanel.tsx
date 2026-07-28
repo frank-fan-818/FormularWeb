@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import ReactEChartsCore from 'echarts-for-react/lib/core';
+import ReactEChartsCore from 'echarts-for-react/esm/core';
 import { BarChart, LineChart, LinesChart, ScatterChart } from 'echarts/charts';
 import {
   GridComponent,
