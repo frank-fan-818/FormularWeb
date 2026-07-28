@@ -114,4 +114,4 @@ function TyreStrategyTimeline({
   );
 }
 
-export { getTyreTimelineRows, TyreStrategyTimeline };
+export { TyreStrategyTimeline };

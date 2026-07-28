@@ -14,6 +14,11 @@ function dedupKey(module: string, fnName: string, error: string): string {
   return `${module}::${fnName}::${error.slice(0, 120)}`;
 }
 
+export function getSafePageUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  return `${window.location.origin}${window.location.pathname}`.slice(0, 512);
+}
+
 export function reportError(payload: {
   module: string;
   function: string;
@@ -51,7 +56,7 @@ export function reportError(payload: {
         error: payload.error,
         level: payload.level || 'error',
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 256) : null,
-        url: typeof window !== 'undefined' ? window.location.href.slice(0, 512) : null,
+        url: getSafePageUrl(),
       });
   })).catch(() => {
     // Error reporting must never create a second user-visible failure.

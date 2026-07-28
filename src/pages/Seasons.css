@@ -97,16 +97,6 @@
   gap: var(--space-1);
 }
 
-/* Tabs 样式优化 */
-:global(.ant-tabs-nav) {
-  margin-bottom: var(--space-4) !important;
-}
-
-:global(.ant-tabs-tab) {
-  font-size: var(--text-base) !important;
-  font-weight: var(--font-medium) !important;
-}
-
 /* 响应式调整 */
 @media (max-width: 768px) {
   .list-page-container {

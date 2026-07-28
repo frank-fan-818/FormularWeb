@@ -29,8 +29,7 @@ Flags:
 
 Environment:
   SUPABASE_URL or VITE_SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY
-  Fallback: SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY
+  SUPABASE_SERVICE_ROLE_KEY (required; never use a browser anon key)
 `);
 }
 
@@ -86,10 +85,7 @@ function parseArgs(args: string[]): {
 
 function createSupabaseAdminClient() {
   const envSupabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const envSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.VITE_SUPABASE_ANON_KEY
-    || '';
+  const envSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
   if (!envSupabaseUrl || !envSupabaseKey) {
     throw new Error('Missing Supabase credentials. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before running this script.');
@@ -224,10 +220,6 @@ async function main(): Promise<void> {
   if (options.help) {
     printHelp();
     return;
-  }
-
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('SUPABASE_SERVICE_ROLE_KEY is not set. The script will fall back to anon credentials and may hit write-permission limits.');
   }
 
   const client = createSupabaseAdminClient();

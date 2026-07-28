@@ -1,22 +1,15 @@
--- Temporary import policy for browser-anon/service-script backfills.
--- Prefer SUPABASE_SERVICE_ROLE_KEY for imports when possible, then remove these policies.
+-- SECURITY NOTICE
+-- Anonymous import policies are intentionally no longer supported.
+-- Run import scripts with SUPABASE_SERVICE_ROLE_KEY instead.
 
-grant select, insert, update on public.race_session_results to anon;
+begin;
 
 drop policy if exists "race session results temporary insert" on public.race_session_results;
-create policy "race session results temporary insert"
-  on public.race_session_results
-  for insert
-  with check (true);
-
 drop policy if exists "race session results temporary update" on public.race_session_results;
-create policy "race session results temporary update"
-  on public.race_session_results
-  for update
-  using (true)
-  with check (true);
 
--- After import, lock this back down:
--- drop policy if exists "race session results temporary insert" on public.race_session_results;
--- drop policy if exists "race session results temporary update" on public.race_session_results;
--- revoke insert, update on public.race_session_results from anon;
+revoke insert, update, delete, truncate on public.race_session_results from anon;
+revoke insert, update, delete, truncate on public.race_session_results from authenticated;
+
+grant select on public.race_session_results to anon, authenticated;
+
+commit;

@@ -3,8 +3,6 @@ import {
   mapConstructorHistorySummary,
   mapDriverHistorySummary,
 } from '@/api/historySummaries';
-import { supabaseApi } from '@/api/supabase';
-import { supabase } from '@/utils/supabase';
 import { logger } from '@/utils/logger';
 import { validateOrWarn } from '@/api/validation';
 import { RaceSchema } from '@/api/schemas';
@@ -29,8 +27,16 @@ import type {
   SupabaseDriverDetailRow,
 } from '@/types';
 
-// Use the local Vite proxy in development and Jolpica directly in production.
-const baseURL = import.meta.env.DEV ? '/f1-api' : 'https://api.jolpi.ca/ergast/f1';
+async function getSupabaseClient() {
+  return (await import('@/utils/supabase')).supabase;
+}
+
+async function getSupabaseApi() {
+  return (await import('@/api/supabase')).supabaseApi;
+}
+
+// Same-origin proxy avoids browser CORS failures in development and production.
+const baseURL = '/f1-api';
 
 const ergastApi = axios.create({
   baseURL,
@@ -153,6 +159,7 @@ export const seasonApi = {
 
     // Try Supabase first
     if (Number.isInteger(seasonNumber)) {
+      const supabase = await getSupabaseClient();
       const { data: dbRaces, error } = await supabase
         .from('races')
         .select('*')
@@ -201,6 +208,7 @@ export const seasonApi = {
 
   getDriverStandings: async (season: string): Promise<DriverStanding[]> => {
     // Try Supabase first
+    const supabase = await getSupabaseClient();
     const { data: dbData, error } = await supabase
       .from('season_driver_standings')
       .select('*')
@@ -239,6 +247,7 @@ export const seasonApi = {
 
   getConstructorStandings: async (season: string): Promise<ConstructorStanding[]> => {
     // Try Supabase first
+    const supabase = await getSupabaseClient();
     const { data: dbData, error } = await supabase
       .from('season_constructor_standings')
       .select('*')
@@ -562,6 +571,7 @@ async function loadConstructorCareerStandings(
 
 export const circuitApi = {
   getAllCircuits: async (limit = 100): Promise<Circuit[]> => {
+    const supabase = await getSupabaseClient();
     const { data } = await supabase
       .from('circuits')
       .select('*')
@@ -584,6 +594,7 @@ export const circuitApi = {
 
 export const driverApi = {
   getAllDrivers: async (limit = 1000): Promise<Driver[]> => {
+    const supabase = await getSupabaseClient();
     const { data } = await supabase
       .from('drivers')
       .select('*')
@@ -666,6 +677,7 @@ export const driverApi = {
 
 export const constructorApi = {
   getAllConstructors: async (limit = 200): Promise<Constructor[]> => {
+    const supabase = await getSupabaseClient();
     const { data } = await supabase
       .from('constructors')
       .select('*')
@@ -973,11 +985,13 @@ async function resolveDriverHistoryIdentity(
 }
 
 async function getDriverHistorySummaryProfile(driverId: string): Promise<DriverHistoryProfile | null> {
+  const supabaseApi = await getSupabaseApi();
   const summary = await supabaseApi.driverHistorySummaries.getById(driverId);
   return mapDriverHistorySummary(summary);
 }
 
 async function getConstructorHistorySummaryProfile(constructorId: string): Promise<ConstructorHistoryProfile | null> {
+  const supabaseApi = await getSupabaseApi();
   const summary = await supabaseApi.constructorHistorySummaries.getById(constructorId);
   return mapConstructorHistorySummary(summary);
 }
@@ -1044,6 +1058,7 @@ export const historyApi = {
       return directSummaryProfile;
     }
 
+    const supabaseApi = await getSupabaseApi();
     const exactSupabaseDriver = await supabaseApi.drivers.getById(driverId);
     const { resolvedDriverId, standingsLists } = await resolveDriverHistoryIdentity(driverId, exactSupabaseDriver
       ? {
@@ -1136,6 +1151,7 @@ export const historyApi = {
       return summaryProfile;
     }
 
+    const supabaseApi = await getSupabaseApi();
     const constructorInfo = await supabaseApi.constructors.getById(constructorId);
     const standingsLists = await getConstructorCareerStandings(constructorId);
     const seasons = mapConstructorSeasonHistory(standingsLists);

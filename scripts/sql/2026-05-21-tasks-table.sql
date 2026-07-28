@@ -27,6 +27,9 @@ CREATE INDEX IF NOT EXISTS idx_tasks_type_status ON tasks (task_type, status);
 -- Index for finding stale/in-progress tasks
 CREATE INDEX IF NOT EXISTS idx_tasks_status_created ON tasks (status, created_at DESC);
 
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE tasks FROM anon, authenticated;
+
 -- Trigger to auto-update updated_at
 CREATE OR REPLACE FUNCTION update_tasks_updated_at()
 RETURNS TRIGGER AS $$

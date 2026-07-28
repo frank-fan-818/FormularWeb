@@ -6,9 +6,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // 初始化Supabase客户端
-const supabaseUrl = process.env.VITE_SUPABASE_URL!;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  throw new Error('Missing SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+}
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 // Ergast API客户端
 const ergastApi = axios.create({

@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './i18n';
 import App from '@/App';
 import { initWebVitals } from '@/utils/performance';
 import './index.css';
@@ -12,6 +11,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 initWebVitals();
+
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+  });
+}
 
 // Auto-reload when old JS chunks 404 after Vercel deployment
 window.addEventListener('unhandledrejection', (e) => {

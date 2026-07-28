@@ -22,6 +22,13 @@ export interface CircuitSearchSource {
   country?: string | null;
 }
 
+export interface RaceSearchSource {
+  season: number | string;
+  round: number | string;
+  race_name: string;
+  circuit_id?: string | null;
+}
+
 interface SearchableEntry {
   entry: SearchIndexEntry;
   primaryKeywords: string[];
@@ -32,6 +39,7 @@ export interface SearchSources {
   drivers: DriverSearchSource[];
   constructors: ConstructorSearchSource[];
   circuits: CircuitSearchSource[];
+  races: RaceSearchSource[];
 }
 
 const RESULT_LIMIT_PER_GROUP = 5;
@@ -151,11 +159,42 @@ function buildCircuitEntry(circuit: CircuitSearchSource): SearchableEntry {
   };
 }
 
+function buildRaceEntry(race: RaceSearchSource): SearchableEntry {
+  const season = String(race.season);
+  const round = String(race.round);
+
+  return {
+    entry: {
+      type: 'race',
+      id: `${season}-${round}`,
+      title: race.race_name,
+      subtitle: `${season} \u00b7 \u7b2c ${round} \u7ad9`,
+      route: `/races/${encodeURIComponent(round)}/info?season=${encodeURIComponent(season)}`,
+      keywords: uniqueNormalized([
+        race.race_name,
+        race.circuit_id,
+        season,
+        round,
+        `${season} ${race.race_name}`,
+      ]),
+    },
+    primaryKeywords: uniqueNormalized([
+      race.race_name,
+      race.circuit_id,
+      season,
+      round,
+      `${season} ${race.race_name}`,
+    ]),
+    aliasKeywords: [],
+  };
+}
+
 export function buildSearchIndex(params: SearchSources): SearchableEntry[] {
   return [
     ...params.drivers.map(buildDriverEntry),
     ...params.constructors.map(buildConstructorEntry),
     ...params.circuits.map(buildCircuitEntry),
+    ...params.races.map(buildRaceEntry),
   ];
 }
 
@@ -225,6 +264,7 @@ const groupLabels: Record<SearchEntityType, string> = {
   driver: '\u8f66\u624b',
   constructor: '\u8f66\u961f',
   circuit: '\u8d5b\u9053',
+  race: '\u8d5b\u4e8b',
 };
 
 export function searchIndex(entries: SearchableEntry[], rawQuery: string): SearchResultGroup[] {
@@ -263,7 +303,7 @@ export function searchIndex(entries: SearchableEntry[], rawQuery: string): Searc
     }
   });
 
-  return (['driver', 'constructor', 'circuit'] as SearchEntityType[])
+  return (['driver', 'constructor', 'circuit', 'race'] as SearchEntityType[])
     .map((type) => {
       const items = grouped.get(type) || [];
       return {

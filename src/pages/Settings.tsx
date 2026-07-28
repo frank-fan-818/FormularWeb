@@ -155,10 +155,10 @@ const Settings = () => {
               <Text strong>{t('settingsDataSources')}</Text>
             </div>
             <Space className="setting-links" size="middle">
-              <Link href="https://api.jolpi.ca/ergast/" target="_blank">
+              <Link href="https://api.jolpi.ca/ergast/" target="_blank" rel="noreferrer">
                 Jolpica / Ergast
               </Link>
-              <Link href="https://github.com/theOehrly/Fast-F1" target="_blank">
+              <Link href="https://github.com/theOehrly/Fast-F1" target="_blank" rel="noreferrer">
                 FastF1
               </Link>
             </Space>

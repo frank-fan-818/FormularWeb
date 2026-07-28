@@ -1,0 +1,38 @@
+.privacy-page {
+  width: min(100%, 880px);
+  margin: 0 auto;
+}
+
+.privacy-page > header {
+  margin-bottom: var(--space-6);
+}
+
+.privacy-page h1 {
+  margin: var(--space-2) 0 !important;
+  font-family: var(--font-display);
+}
+
+.privacy-page h2 {
+  margin-top: var(--space-6);
+  font-size: var(--text-lg);
+}
+
+.privacy-page h2:first-child {
+  margin-top: 0;
+}
+
+.privacy-page p {
+  line-height: 1.8;
+}
+
+.privacy-kicker {
+  color: var(--f1-red);
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+@media (max-width: 600px) {
+  .privacy-page .ant-card-body {
+    padding: var(--space-5);
+  }
+}

@@ -7,7 +7,7 @@ import {
   type SearchSources,
 } from '@/utils/search';
 
-const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v1';
+const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v2';
 const SEARCH_INDEX_TTL = 24 * 60 * 60 * 1000;
 const BACKGROUND_REFRESH_INTERVAL = 5 * 60 * 1000;
 

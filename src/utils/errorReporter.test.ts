@@ -26,7 +26,7 @@ vi.mock('@/utils/supabase', () => ({
   supabase: supabaseMock.client,
 }));
 
-import { reportError } from './errorReporter';
+import { getSafePageUrl, reportError } from './errorReporter';
 
 describe('errorReporter', () => {
   beforeEach(() => {
@@ -57,5 +57,18 @@ describe('errorReporter', () => {
 
     await vi.waitFor(() => expect(supabaseMock.insert).toHaveBeenCalledOnce());
     expect(supabaseMock.from).toHaveBeenCalledWith('error_logs');
+  });
+
+  it('removes query strings and fragments from reported page URLs', () => {
+    vi.stubGlobal('window', {
+      location: {
+        origin: 'https://f1.example',
+        pathname: '/login',
+        search: '?code=sensitive',
+        hash: '#access_token=sensitive',
+      },
+    });
+
+    expect(getSafePageUrl()).toBe('https://f1.example/login');
   });
 });

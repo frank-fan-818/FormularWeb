@@ -98,6 +98,16 @@
   margin-bottom: var(--space-4);
 }
 
+.login-feedback {
+  margin-bottom: var(--space-5);
+  text-align: left;
+}
+
+.login-session-actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .login-button {
   height: 44px !important;
   font-size: var(--text-base) !important;
@@ -140,6 +150,11 @@
 
 .login-signup-link {
   padding: 0 !important;
+}
+
+.login-privacy-link {
+  margin-top: var(--space-4);
+  text-align: center;
 }
 
 @media (max-width: 480px) {

@@ -2,16 +2,34 @@ import { Suspense, lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Home from '@/pages/Home';
 
-const Home = lazy(() => import('@/pages/Home'));
 const Seasons = lazy(() => import('@/pages/Seasons'));
 const Races = lazy(() => import('@/pages/Races'));
-const RaceLayout = lazy(() => import('@/pages/Race/RaceLayout'));
-const RaceResults = lazy(() => import('@/pages/Race/RaceResults'));
-const RaceQualifying = lazy(() => import('@/pages/Race/RaceQualifying'));
-const RaceAnalysis = lazy(() => import('@/pages/Race/RaceAnalysis'));
-const RaceSprint = lazy(() => import('@/pages/Race/RaceSprint'));
-const RaceInfo = lazy(() => import('@/pages/Race/RaceInfo'));
+const RaceLayout = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceLayout');
+});
+const RaceResults = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceResults');
+});
+const RaceQualifying = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceQualifying');
+});
+const RaceAnalysis = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceAnalysis');
+});
+const RaceSprint = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceSprint');
+});
+const RaceInfo = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Race/RaceInfo');
+});
 const Drivers = lazy(() => import('@/pages/Drivers'));
 const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
 const Constructors = lazy(() => import('@/pages/Constructors'));
@@ -19,8 +37,13 @@ const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
 const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
 const Circuits = lazy(() => import('@/pages/Circuits'));
 const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
-const Settings= lazy(() => import('@/pages/Settings'));
+const Settings = lazy(async () => {
+  await import('@/i18n');
+  return import('@/pages/Settings');
+});
 const Login = lazy(() => import('@/pages/Login'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function withSuspense(element: JSX.Element) {
   return (
@@ -60,7 +83,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: withSuspense(<Home />),
+        element: <Home />,
       },
       {
         path: '/seasons',
@@ -128,6 +151,14 @@ const router = createBrowserRouter([
       {
         path: '/login',
         element: withSuspense(<Login />),
+      },
+      {
+        path: '/privacy',
+        element: withSuspense(<Privacy />),
+      },
+      {
+        path: '*',
+        element: withSuspense(<NotFound />),
       },
     ],
   },

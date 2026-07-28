@@ -50,6 +50,7 @@ function createSources(name = 'Mercedes'): SearchSources {
         country: 'USA',
       },
     ],
+    races: [],
   };
 }
 
@@ -98,7 +99,7 @@ describe('global search index cache', () => {
   it('returns a localStorage hit before refreshing in the background', async () => {
     const storage = createStorage();
     storage.setItem(
-      'global-search-index-v1',
+      'global-search-index-v2',
       JSON.stringify({
         timestamp: 1_000,
         data: [
@@ -135,7 +136,7 @@ describe('global search index cache', () => {
   it('ignores older cache version keys', async () => {
     const storage = createStorage();
     storage.setItem(
-      'global-search-index-v0',
+      'global-search-index-v1',
       JSON.stringify({
         timestamp: 1_000,
         data: [],

@@ -81,6 +81,8 @@ const ConstructorHistoryDetail = () => {
   const seasons = constructor?.seasons || [];
   const firstSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
   const latestSeason = seasons[0] || null;
+  const latestSeasonPosition = latestSeason?.position;
+  const latestSeasonYear = latestSeason?.season;
   const latestSeasonCanBeChampion = latestSeason?.position === '1' ? isLatestSeasonComplete : true;
   const bestFinish = constructor?.bestRaceFinish;
   const championshipSeasons = getCountableChampionshipSeasons(seasons, latestSeason, latestSeasonCanBeChampion);
@@ -92,13 +94,13 @@ const ConstructorHistoryDetail = () => {
     let cancelled = false;
 
     const loadLatestSeasonStatus = async () => {
-      if (!latestSeason || latestSeason.position !== '1') {
+      if (!latestSeasonYear || latestSeasonPosition !== '1') {
         setIsLatestSeasonComplete(true);
         return;
       }
 
       try {
-        const races = await seasonApi.getSeasonRaces(latestSeason.season);
+        const races = await seasonApi.getSeasonRaces(latestSeasonYear);
         if (!cancelled) {
           setIsLatestSeasonComplete(isSeasonComplete(races));
         }
@@ -114,7 +116,7 @@ const ConstructorHistoryDetail = () => {
     return () => {
       cancelled = true;
     };
-  }, [latestSeason?.position, latestSeason?.season]);
+  }, [latestSeasonPosition, latestSeasonYear]);
 
   if (!loading && !constructor) {
     return (

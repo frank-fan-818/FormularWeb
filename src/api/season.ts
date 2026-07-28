@@ -9,7 +9,7 @@ import { withRetry } from '@/utils/withRetry';
 import { assertCompleteList, assertContiguousRounds, assertUniqueValues } from '@/utils/dataCompleteness';
 import { measureRequest } from '@/utils/performance';
 
-const baseURL = import.meta.env.DEV ? '/f1-api' : 'https://api.jolpi.ca/ergast/f1';
+const baseURL = '/f1-api';
 
 function getJolpica<T>(path: string): Promise<T> {
   return withRetry((signal) => measureRequest('jolpica', path, async () => {

@@ -38,7 +38,7 @@ module.exports = {
         'http-status-code': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
         'document-title': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
         'html-has-lang': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
-        viewport: ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
+        'meta-viewport': ['error', { minScore: 1, aggregationMethod: 'pessimistic' }],
         'first-contentful-paint': [
           'warn',
           { maxNumericValue: 2000, aggregationMethod: 'median' },

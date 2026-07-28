@@ -16,12 +16,6 @@ function resolveId(driverId: string): string {
   return driverId;
 }
 
-export function getDriverImageUrl(driverId: string): string | null {
-  const resolved = resolveId(driverId);
-  if (FALLBACK_IDS.has(resolved)) return null;
-  return `/images/drivers/${resolved}.png`;
-}
-
 function getInitials(givenName?: string, familyName?: string): string {
   const first = givenName ? givenName.charAt(0) : '';
   const last = familyName ? familyName.charAt(0) : '';

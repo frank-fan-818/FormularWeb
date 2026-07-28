@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
 import { useAppStore } from '@/store';
 import './Layout.css';
@@ -15,10 +14,11 @@ const TEXT = {
   constructors: '\u8f66\u961f',
   circuits: '\u8d5b\u9053',
   searching: '\u52a0\u8f7d\u641c\u7d22\u4e2d...',
-  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
+  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b',
   appName: 'F1 \u6570\u636e\u4e2d\u5fc3',
   currentSeason: '\u5f53\u524d\u8d5b\u5b63',
   settings: '\u8bbe\u7f6e',
+  account: '\u8d26\u53f7',
 };
 
 interface IconProps {
@@ -154,18 +154,6 @@ const SearchIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
-type NavigatorWithConnection = Navigator & {
-  connection?: {
-    saveData?: boolean;
-    effectiveType?: string;
-  };
-};
-
-type WindowWithIdleCallback = Window & typeof globalThis & {
-  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
-  cancelIdleCallback?: (handle: number) => void;
-};
-
 const SettingIcon = ({ className }: IconProps) => (
   <IconBase className={className}>
     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -221,8 +209,10 @@ const LayoutComponent = () => {
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
   const [searchActivated, setSearchActivated] = useState(false);
+  const [language, setLanguage] = useState(() => (
+    localStorage.getItem('i18nextLng') === 'en' ? 'en' : 'zh-CN'
+  ));
   const { seasons } = useSeasonsCached();
-  const { i18n } = useTranslation();
   const activeNavKey = resolveActiveNavKey(location.pathname);
 
   useEffect(() => {
@@ -235,30 +225,6 @@ const LayoutComponent = () => {
     setMounted(true);
 
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    const connection = (navigator as NavigatorWithConnection).connection;
-    if (connection?.saveData || (connection?.effectiveType && connection.effectiveType !== '4g')) {
-      return undefined;
-    }
-
-    const preloadSearch = () => {
-      void import('@/hooks/useGlobalSearch')
-        .then(({ preloadGlobalSearchIndex }) => preloadGlobalSearchIndex())
-        .catch(() => {
-          // Search still loads on demand if idle preloading fails.
-        });
-    };
-
-    const idleWindow = window as WindowWithIdleCallback;
-    if (idleWindow.requestIdleCallback) {
-      const idleHandle = idleWindow.requestIdleCallback(preloadSearch, { timeout: 8000 });
-      return () => idleWindow.cancelIdleCallback?.(idleHandle);
-    }
-
-    const timeoutId = window.setTimeout(preloadSearch, 8000);
-    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const handleMenuClick = (key: string) => {
@@ -321,10 +287,12 @@ const LayoutComponent = () => {
   const langSwitcher = (
     <label className="season-switcher lang-switcher">
       <select
-        value={i18n.language}
+        value={language}
         onChange={(event) => {
-          i18n.changeLanguage(event.target.value);
-          localStorage.setItem('i18nextLng', event.target.value);
+          const nextLanguage = event.target.value === 'en' ? 'en' : 'zh-CN';
+          setLanguage(nextLanguage);
+          localStorage.setItem('i18nextLng', nextLanguage);
+          void import('@/i18n').then(({ default: i18n }) => i18n.changeLanguage(nextLanguage));
         }}
         className="season-select-native"
       >
@@ -351,6 +319,22 @@ const LayoutComponent = () => {
       aria-label={`Theme: ${theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System'}`}
     >
       {themeIcon}
+    </button>
+  );
+
+  const handleAuthAction = () => {
+    navigate('/login');
+  };
+
+  const authButton = (
+    <button
+      type="button"
+      className="auth-trigger-btn"
+      onClick={handleAuthAction}
+      aria-label={TEXT.account}
+      title={TEXT.account}
+    >
+      {TEXT.account}
     </button>
   );
 
@@ -422,6 +406,7 @@ const LayoutComponent = () => {
                   {seasonSwitcher}
                   {langSwitcher}
                   <div className="header-mobile-actions">
+                    {authButton}
                     {themeToggle}
                     {!searchActivated ? searchTrigger : null}
                     {menuButton}
@@ -433,6 +418,7 @@ const LayoutComponent = () => {
                   {seasonSwitcher}
                   {langSwitcher}
                   {themeToggle}
+                  {authButton}
                 </>
               )}
             </div>

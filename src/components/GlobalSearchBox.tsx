@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import type { SearchIndexEntry } from '@/types';
+import { isSafeInternalRoute } from '@/utils/safeNavigation';
 
 const TEXT = {
   searching: '\u641c\u7d22\u4e2d...',
   searchUnavailable: '\u641c\u7d22\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002',
-  noSearchResults: '\u6ca1\u6709\u627e\u5230\u5339\u914d\u7684\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053\u3002',
-  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u6216\u8d5b\u9053',
+  noSearchResults: '\u6ca1\u6709\u627e\u5230\u5339\u914d\u7684\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b\u3002',
+  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b',
 };
 
 interface GlobalSearchBoxProps {
@@ -82,7 +83,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
   }, []);
 
   const handleSelect = (item: SearchIndexEntry) => {
-    navigate(item.route);
+    navigate(isSafeInternalRoute(item.route) ? item.route : '/');
     setSearchValue('');
     setDropdownOpen(false);
     reset();

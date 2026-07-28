@@ -1,66 +1,50 @@
-# F1 数据看板
+# F1 数据中心
 
-一个功能完整的F1赛事数据可视化网站，包含历史赛季数据、积分榜、赛历、比赛详情、车手/车队/赛道信息等功能。
+面向桌面和移动端的 Formula 1 数据产品，提供赛季积分、赛历、车手、车队、赛道、比赛周末分析、遥测和预测等功能。公开赛事数据无需登录；可选 Supabase 配置用于账号会话和经过脱敏的错误诊断。
 
-## 🚀 快速启动
+## 本地启动
 
-### 1. 切换到项目目录
+要求 Node.js 24。
+
 ```powershell
-cd "d:\Programming Projects\Trae Projects\FormularOneWeb"
-```
-
-### 2. 安装依赖
-```powershell
-npm install
-```
-
-### 3. 启动开发服务
-```powershell
+npm ci
+Copy-Item .env.example .env
 npm run dev
 ```
 
-启动成功后访问：`http://localhost:3000`
+默认地址为 `http://localhost:3000`。未配置 Supabase 时，公开数据功能仍可使用，账号入口会明确显示未配置状态。
 
-## 📋 功能说明
+浏览器只允许使用 `VITE_SUPABASE_ANON_KEY`。`SUPABASE_SERVICE_ROLE_KEY` 仅供本地或受保护 CI 中的管理脚本使用，绝不能添加 `VITE_` 前缀。
 
-### 核心模块
-- **首页**：赛季概览、积分榜TOP3、赛事倒计时、下一场比赛预告
-- **赛季中心**：车手积分榜、车队积分榜，支持历史赛季切换
-- **分站赛事**：完整赛季赛历，点击比赛可查看详细成绩
-- **车手库**：当前赛季参赛车手列表，点击查看车手详情
-- **车队库**：当前赛季参赛车队列表，点击查看车队详情
-- **赛道库**：当前赛季使用的赛道列表
-- **历史荣誉**：近30年赛季的车手/车队冠军时间轴
+## 核心命令
 
-### 比赛详情功能
-点击赛历中的任意比赛，可查看：
-- 🚦 排位赛成绩：Q1/Q2/Q3三个阶段的圈速排名
-- 🏁 正赛成绩：完整排名、发车位置、完赛成绩、最快圈、积分等
-- ⚡ 冲刺赛：自动识别是否有冲刺赛，展示冲刺赛成绩
-
-## 🛠️ 技术栈
-- 前端框架：React 18 + TypeScript + Vite
-- UI组件库：Ant Design
-- 路由：React Router v6
-- 状态管理：Zustand
-- 图表：ECharts
-- 数据源：Ergast F1 API（带模拟数据降级）
-- 时间处理：Day.js
-
-## 📦 构建部署
 ```powershell
-# 构建生产版本
-npm run build
-
-# 预览构建结果
-npm run preview
+npm test                 # 单元测试
+npm run test:coverage    # 全量覆盖率与基线门禁
+npm run test:e2e         # Chromium 桌面/移动端路由烟雾测试
+npm run lint:strict      # 零警告 ESLint
+npm run type-check       # TypeScript
+npm run build            # 生产构建
+npm run quality:check    # 本地完整发布前门禁
 ```
 
-## 🔧 常见问题
-### Q: 页面没有数据？
-A: 项目内置了双重数据源保障：
-1. 优先使用国内Ergast镜像源获取真实数据
-2. 如果网络请求失败，会自动降级到内置模拟数据
+`npm run lighthouse` 会对已生成的 `dist` 启动本地预览并执行 Lighthouse 门禁；CI 运行五次并取中位数。
 
-### Q: 如何切换赛季？
-A: 页面顶部导航栏有赛季选择器，可切换从1950年至今的所有历史赛季数据，所有页面会自动同步更新。
+## 数据库与安全
+
+按顺序执行 `scripts/sql/` 中的基础表结构和最新生产加固迁移。发布前至少执行：
+
+```powershell
+npm run security:check
+npm run security:audit
+```
+
+安全检查会阻止跟踪环境文件、私钥、常见硬编码凭据、浏览器匿名写权限、危险 HTML/动态代码以及生产源码中的 `console.log`。漏洞报告方式见 [SECURITY.md](./SECURITY.md)。
+
+## 发布
+
+CI 对安全扫描、全部依赖的高危漏洞、严格 lint、类型、覆盖率、构建、性能预算、Lighthouse、CodeQL 和浏览器 QA 设有阻断门禁。当前候选版本的差距闭环与残余风险见 [发布就绪报告](./docs/release-readiness-report.md)，上线前还需完成 [发布检查清单](./docs/release-checklist.md)。
+
+## 数据来源
+
+赛事数据主要来自 Jolpica/Ergast 兼容接口、项目内缓存数据和经过处理的 FastF1/FIA 数据。上游暂不可用时，页面应显示加载、空状态或错误状态，不应以虚构结果冒充实时数据。

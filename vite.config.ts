@@ -1,57 +1,131 @@
 import { defineConfig } from 'vite'
+import type { OutputBundle, OutputChunk } from 'rollup'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { VitePWA } from 'vite-plugin-pwa'
+import { createHash } from 'node:crypto'
+
+const f1ApiProxy = {
+  '/f1-api': {
+    target: 'https://api.jolpi.ca',
+    changeOrigin: true,
+    secure: true,
+    rewrite: (requestPath: string) => requestPath.replace(/^\/f1-api/, '/ergast/f1'),
+  },
+}
+
+function createServiceWorkerPlugin() {
+  return {
+    name: 'f1-service-worker',
+    apply: 'build' as const,
+    generateBundle(_options: unknown, bundle: OutputBundle) {
+      const shellFiles = new Set([
+        '/index.html',
+        '/manifest.webmanifest',
+        '/favicon-192.png',
+        '/favicon-512.png',
+      ])
+      const chunksByFile = new Map(
+        Object.values(bundle)
+          .filter((entry): entry is OutputChunk => entry.type === 'chunk')
+          .map((entry) => [entry.fileName, entry]),
+      )
+
+      const addChunk = (fileName: string) => {
+        if (shellFiles.has(`/${fileName}`)) return
+        const chunk = chunksByFile.get(fileName)
+        if (!chunk) return
+        shellFiles.add(`/${fileName}`)
+        chunk.imports.forEach(addChunk)
+      }
+
+      for (const output of Object.values(bundle)) {
+        if (output.type === 'chunk' && output.isEntry) addChunk(output.fileName)
+        if (output.type === 'asset' && /\.(?:css|woff2)$/.test(output.fileName)) {
+          shellFiles.add(`/${output.fileName}`)
+        }
+      }
+
+      const cacheVersion = createHash('sha256')
+        .update([...shellFiles].sort().join('\n'))
+        .digest('hex')
+        .slice(0, 12)
+      const source = `
+const SHELL_CACHE = 'f1-shell-${cacheVersion}';
+const DATA_CACHE = 'f1-data-v1';
+const APP_SHELL = ${JSON.stringify([...shellFiles].sort())};
+
+async function trimCache(cache, maxEntries) {
+  const keys = await cache.keys();
+  await Promise.all(keys.slice(0, Math.max(0, keys.length - maxEntries)).map((key) => cache.delete(key)));
+}
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys
+        .filter((key) => key.startsWith('f1-shell-') && key !== SHELL_CACHE)
+        .map((key) => caches.delete(key)),
+    )),
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/index.html')),
+    );
+    return;
+  }
+
+  if (/\\/fastf1\\/.*\\.json$/.test(url.pathname)) {
+    event.respondWith(
+      caches.open(DATA_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        const network = fetch(request).then((response) => {
+          if (response.ok) {
+            void cache.put(request, response.clone()).then(() => trimCache(cache, 80));
+          }
+          return response;
+        }).catch(() => cached);
+        return cached || network;
+      }),
+    );
+    return;
+  }
+
+  if (APP_SHELL.includes(url.pathname)
+      || ['script', 'style', 'font', 'image'].includes(request.destination)) {
+    event.respondWith(
+      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+        if (response.ok) {
+          void caches.open(SHELL_CACHE).then((cache) => cache.put(request, response.clone()));
+        }
+        return response;
+      })),
+    );
+  }
+});
+`
+
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source })
+    },
+  }
+}
 
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon-192.png', 'favicon-512.png'],
-      manifest: {
-        name: 'F1 Data Center',
-        short_name: 'F1 Data',
-        theme_color: '#ff1801',
-        background_color: '#ffffff',
-        display: 'standalone',
-        icons: [
-          { src: '/favicon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
-        ],
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        navigateFallback: '/index.html',
-        globPatterns: [
-          '**/*.{css,html,woff2}',
-          'assets/app-*.js',
-          'assets/Home-*.js',
-          'assets/state-vendor-*.js',
-        ],
-        runtimeCaching: [
-          {
-            urlPattern: ({ request, url }) => url.origin === self.location.origin
-              && ['script', 'style', 'font'].includes(request.destination),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'app-assets-v1',
-              expiration: { maxEntries: 80, maxAgeSeconds: 30 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/fastf1\/.*\.json$/,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'fastf1-analysis-v1',
-              expiration: { maxEntries: 80, maxAgeSeconds: 7 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
-      },
-    }),
+    createServiceWorkerPlugin(),
   ],
   resolve: {
     alias: {
@@ -81,7 +155,6 @@ export default defineConfig({
             return 'chart-vendor'
           }
 
-          if (normalizedId.includes('/@supabase/')) return 'supabase-vendor'
           if (normalizedId.includes('/axios/')) return 'axios-vendor'
 
           if (normalizedId.includes('/zustand/')) return 'state-vendor'
@@ -93,19 +166,37 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
-    proxy: {
-      '/f1-api': {
-        target: 'https://api.jolpi.ca',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/f1-api/, '/ergast/f1'),
-      }
-    }
+    open: false,
+    proxy: f1ApiProxy,
+  },
+  preview: {
+    proxy: f1ApiProxy,
   },
   test: {
     environment: 'node',
     globals: true,
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: 'coverage',
+      include: [
+        'src/api/**/*.ts',
+        'src/hooks/**/*.ts',
+        'src/pages/Race/shared/**/*.ts',
+        'src/utils/**/*.ts',
+      ],
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/utils/mockData.ts',
+        'src/utils/evals/**',
+      ],
+      thresholds: {
+        statements: 44,
+        branches: 38,
+        functions: 45,
+        lines: 44,
+      },
+    },
   }
 })

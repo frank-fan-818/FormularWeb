@@ -89,7 +89,7 @@ Description:
 
 Environment:
   SUPABASE_URL or VITE_SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY (recommended)
+  SUPABASE_SERVICE_ROLE_KEY (required; never use a browser anon key)
 `);
 }
 
@@ -99,10 +99,7 @@ function isSupabaseError(error: unknown): error is { code?: string; message?: st
 
 function createSupabaseAdminClient() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.VITE_SUPABASE_ANON_KEY
-    || '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase credentials. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
@@ -633,8 +630,7 @@ main().catch((error) => {
   console.error(error);
   if (isSupabaseError(error) && error.code === '42501') {
     console.error('');
-    console.error('RLS denied the write. Use SUPABASE_SERVICE_ROLE_KEY, or run scripts/sql/2026-04-23-history-summary-temporary-backfill-policy.sql before retrying.');
-    console.error('After the backfill succeeds, run scripts/sql/2026-04-23-history-summary-lockdown-after-backfill.sql to remove temporary anon write access.');
+    console.error('RLS denied the write. Use SUPABASE_SERVICE_ROLE_KEY; anonymous write policies are intentionally unsupported.');
   }
   process.exitCode = 1;
 });

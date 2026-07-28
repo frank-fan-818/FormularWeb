@@ -421,8 +421,7 @@ Flags:
 
 Environment:
   SUPABASE_URL or VITE_SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY (recommended — required for table creation)
-  Fallback: SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY
+  SUPABASE_SERVICE_ROLE_KEY (required; never use a browser anon key)
 
 Tables:
   Run scripts/sql/2026-06-04-standings-tables.sql in your Supabase SQL editor
@@ -515,11 +514,7 @@ function sleep(ms: number): Promise<void> {
 
 function createSupabaseAdminClient(): SupabaseClient {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const supabaseKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    process.env.VITE_SUPABASE_ANON_KEY ||
-    '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(

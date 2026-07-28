@@ -15,12 +15,6 @@ function resolveId(constructorId: string): string {
   return ALIASES[constructorId] || constructorId;
 }
 
-export function getConstructorLogoUrl(constructorId: string): string | null {
-  const resolved = resolveId(constructorId);
-  if (FALLBACK_IDS.has(resolved)) return null;
-  return `/images/constructors/${resolved}.png`;
-}
-
 interface ConstructorLogoProps {
   constructorId: string;
   size?: number;

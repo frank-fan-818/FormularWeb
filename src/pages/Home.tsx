@@ -44,6 +44,7 @@ const TEXT = {
   retry: '\u91cd\u8bd5',
   moduleLoading: '\u6b63\u5728\u8865\u9f50\u6570\u636e...',
   moduleUnavailable: '\u8be5\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
+  moduleEmpty: '\u5f53\u524d\u8d5b\u5b63\u6682\u65e0\u79ef\u5206\u699c\u6570\u636e',
   controlRoom: '\u8d5b\u5b63\u6307\u6325\u5ba4',
   briefing: '\u4ece\u4e0b\u4e00\u7ad9\u3001\u51a0\u519b\u4e89\u593a\u5230\u6700\u65b0\u6392\u540d\uff0c\u4e00\u5c4f\u638c\u63e1\u5f53\u524d F1 \u8d5b\u5b63\u7684\u6700\u91cd\u8981\u4fe1\u53f7\u3002',
   seasonProgressShort: '\u8d5b\u5b63\u8fdb\u5ea6',
@@ -300,6 +301,8 @@ const Home = () => {
                 <div className="standings-module-state">{TEXT.moduleLoading}</div>
               ) : resources.drivers.error && driverStandings.length === 0 ? (
                 <div className="standings-module-state is-error">{TEXT.moduleUnavailable}</div>
+              ) : driverStandings.length === 0 ? (
+                <div className="standings-module-state">{TEXT.moduleEmpty}</div>
               ) : null}
               {driverStandings.slice(0, 3).map((item, index) => {
                 const constructor = item.Constructors[0];
@@ -354,6 +357,8 @@ const Home = () => {
                 <div className="standings-module-state">{TEXT.moduleLoading}</div>
               ) : resources.constructors.error && constructorStandings.length === 0 ? (
                 <div className="standings-module-state is-error">{TEXT.moduleUnavailable}</div>
+              ) : constructorStandings.length === 0 ? (
+                <div className="standings-module-state">{TEXT.moduleEmpty}</div>
               ) : null}
               {constructorStandings.slice(0, 3).map((item, index) => {
                 const teamColor = getTeamColor(item.Constructor.constructorId);

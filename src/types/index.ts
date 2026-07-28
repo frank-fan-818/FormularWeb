@@ -177,6 +177,7 @@ export interface Season {
 }
 
 export interface ErgastResponse<_T> {
+  readonly _responseType?: _T;
   MRData: {
     xmlns: string;
     series: string;
@@ -213,7 +214,7 @@ export interface ErgastResponse<_T> {
   };
 }
 
-export type SearchEntityType = 'driver' | 'constructor' | 'circuit';
+export type SearchEntityType = 'driver' | 'constructor' | 'circuit' | 'race';
 
 export interface SearchIndexEntry {
   type: SearchEntityType;

@@ -27,6 +27,14 @@ const searchSources: SearchSources = {
       country: 'USA',
     },
   ],
+  races: [
+    {
+      season: 2024,
+      round: 6,
+      race_name: 'Miami Grand Prix',
+      circuit_id: 'miami',
+    },
+  ],
 };
 
 describe('global search index', () => {
@@ -46,6 +54,8 @@ describe('global search index', () => {
     expect(groups.find((group) => group.type === 'driver')?.items[0].route).toBe('/history/drivers/max_verstappen');
     expect(searchIndex(buildSearchIndex(searchSources), 'mercedes')[0].items[0].route).toBe('/history/constructors/mercedes');
     expect(searchIndex(buildSearchIndex(searchSources), 'austin')[0].items[0].route).toBe('/circuits/americas');
+    expect(searchIndex(buildSearchIndex(searchSources), 'miami grand prix')[0].items[0].route)
+      .toBe('/races/6/info?season=2024');
   });
 
   it('limits each result group to five entries', () => {
@@ -59,6 +69,7 @@ describe('global search index', () => {
       })),
       constructors: [],
       circuits: [],
+      races: [],
     };
 
     const driverGroup = searchIndex(buildSearchIndex(manyDrivers), 'test').find((group) => group.type === 'driver');

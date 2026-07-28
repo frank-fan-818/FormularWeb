@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - uses: actions/setup-node@v4
         with:
@@ -38,9 +40,15 @@ jobs:
       - name: Resolve season
         id: season
         shell: bash
+        env:
+          REQUESTED_SEASON: ${{ inputs.season }}
         run: |
-          season="${{ inputs.season }}"
+          season="$REQUESTED_SEASON"
           if [ -z "$season" ]; then season="$(date -u +%Y)"; fi
+          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then
+            echo "::error::Season must be a four-digit year between 1950 and 2100."
+            exit 1
+          fi
           echo "value=$season" >> "$GITHUB_OUTPUT"
 
       - name: Sync completed races
@@ -50,6 +58,9 @@ jobs:
         run: npx vitest run src/utils/currentSeasonPredictionData.test.ts src/utils/raceWinnerPrediction.test.ts
 
       - run: npm run type-check
+
+      - name: Run security checks
+        run: npm run security:check
 
       - name: Refresh rolling backtest
         run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear

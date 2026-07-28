@@ -10,14 +10,16 @@ import {
 import { useLocation, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {
-  useFiaRaceUpgrades,
   useFastF1RaceAnalytics,
   useFastF1RaceTelemetry,
   useFastF1SessionAnalytics,
+} from '@/hooks/useFastF1RaceAnalytics';
+import { useFiaRaceUpgrades } from '@/hooks/useFiaCarUpgrades';
+import {
   usePostRaceTelemetrySummary,
   useRacePreviewSummary,
-  useSeasonRacesCached,
-} from '@/hooks';
+} from '@/hooks/useRaceWeekendAnalytics';
+import { useSeasonRacesCached } from '@/hooks/useSeasonDataCached';
 import { useRaceDeferredSessions } from '@/hooks/race/useRaceDeferredSessions';
 import { useRacePrimaryResults } from '@/hooks/race/useRacePrimaryResults';
 import { useAppStore } from '@/store';
@@ -37,6 +39,7 @@ import type {
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import { getRaceRouteSection } from '@/utils/race/raceSessionState';
+import { getRaceSeasonFromSearch } from '@/utils/raceRoute';
 
 // ---- Types for context ----
 
@@ -127,13 +130,14 @@ interface RaceDataProviderProps {
 export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { round } = useParams<{ round: string }>();
   const location = useLocation();
-  const { currentSeason } = useAppStore();
+  const { currentSeason, setCurrentSeason } = useAppStore();
+  const season = getRaceSeasonFromSearch(location.search, currentSeason);
   const {
     races,
     loading: seasonLoading,
     error: seasonError,
     refetch: refetchSeason,
-  } = useSeasonRacesCached(currentSeason);
+  } = useSeasonRacesCached(season);
 
   // ---- State ----
 
@@ -146,11 +150,11 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     () => getRaceRouteSection(location.pathname),
     [location.pathname],
   );
-  const raceInfo = races.find((race) => race.round === round && race.season === currentSeason) || null;
-  const primaryResults = useRacePrimaryResults(currentSeason, round);
+  const raceInfo = races.find((race) => race.round === round && race.season === season) || null;
+  const primaryResults = useRacePrimaryResults(season, round);
   const retryPrimaryResults = primaryResults.retry;
   const deferredSessions = useRaceDeferredSessions({
-    season: currentSeason,
+    season,
     round,
     raceInfo,
     routeSection,
@@ -164,7 +168,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     loading: fastF1AnalyticsLoading,
     error: fastF1AnalyticsError,
     retry: retryFastF1Analytics,
-  } = useFastF1RaceAnalytics(currentSeason, round, shouldLoadRaceFastF1);
+  } = useFastF1RaceAnalytics(season, round, shouldLoadRaceFastF1);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
     [raceInfo],
@@ -174,13 +178,13 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     loading: racePreviewLoading,
     error: racePreviewError,
     retry: retryRacePreview,
-  } = useRacePreviewSummary(currentSeason, round, previewCircuitId, routeSection === 'info');
+  } = useRacePreviewSummary(season, round, previewCircuitId, routeSection === 'info');
   const {
     data: raceUpgradeSummary,
     loading: raceUpgradeLoading,
     error: raceUpgradeError,
     retry: retryRaceUpgrades,
-  } = useFiaRaceUpgrades(currentSeason, round, routeSection === 'info');
+  } = useFiaRaceUpgrades(season, round, routeSection === 'info');
   const postRaceTelemetrySummary = usePostRaceTelemetrySummary(fastF1Analytics);
   const defaultWeekendMode: RaceWeekendMode = useMemo(() => {
     if (!raceInfo) {
@@ -195,23 +199,23 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const shouldLoadFastF1Sprint = deferredSessions.availableTabs.includes('sprint')
     && routeSection === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'Q', shouldLoadFastF1Qualifying,
+    season, round, 'Q', shouldLoadFastF1Qualifying,
   );
   const { data: fastF1SprintQualifyingAnalytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'SQ', shouldLoadFastF1SprintQualifying,
+    season, round, 'SQ', shouldLoadFastF1SprintQualifying,
   );
   const { data: fastF1SprintShootoutAnalytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'SS', shouldLoadFastF1SprintQualifying,
+    season, round, 'SS', shouldLoadFastF1SprintQualifying,
   );
   const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
-    currentSeason, round, 'S', shouldLoadFastF1Sprint,
+    season, round, 'S', shouldLoadFastF1Sprint,
   );
   const {
     data: fastF1Telemetry,
     loading: fastF1TelemetryLoading,
     error: fastF1TelemetryError,
     load: loadFastF1Telemetry,
-  } = useFastF1RaceTelemetry(currentSeason, round, 'R');
+  } = useFastF1RaceTelemetry(season, round, 'R');
 
   // ---- Effects ----
 
@@ -225,8 +229,14 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, []);
 
   useEffect(() => {
+    if (season !== currentSeason) {
+      setCurrentSeason(season);
+    }
+  }, [currentSeason, season, setCurrentSeason]);
+
+  useEffect(() => {
     setActiveSessionTab('race');
-  }, [currentSeason, round]);
+  }, [season, round]);
 
   const retryRaceData = useCallback(() => {
     refetchSeason();
@@ -236,7 +246,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const raceLoadError = seasonError ?? primaryResults.error;
 
   const value: RaceDataContextValue = useMemo(() => ({
-    season: currentSeason,
+    season,
     round: round || '',
     raceInfo,
     seasonLoading,
@@ -283,7 +293,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     activeSessionTab,
     setActiveSessionTab,
   }), [
-    currentSeason,
+    season,
     round,
     raceInfo,
     seasonLoading,
