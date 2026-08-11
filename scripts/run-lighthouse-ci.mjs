@@ -12,7 +12,10 @@ const chromeProfileDir = resolve(projectRoot, '.lighthouseci', 'chrome-profile')
 const serverEntry = resolve(projectRoot, 'scripts', 'serve-dist.mjs');
 const previewUrl = 'http://127.0.0.1:4173/';
 const configuredRuns = lighthouseConfig?.ci?.collect?.numberOfRuns || 1;
-const numberOfRuns = process.env.CI ? configuredRuns : 1;
+const requestedRuns = Number(process.env.LIGHTHOUSE_RUNS || configuredRuns);
+const numberOfRuns = Number.isInteger(requestedRuns) && requestedRuns > 0
+  ? requestedRuns
+  : configuredRuns;
 
 rmSync(reportDir, { recursive: true, force: true });
 rmSync(chromeProfileDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
@@ -24,7 +27,7 @@ const preview = spawn(
   [serverEntry],
   {
     cwd: projectRoot,
-    env: { ...process.env, F1_API_MOCK_EMPTY: '1' },
+    env: { ...process.env, F1_API_MOCK_CANONICAL: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
   },

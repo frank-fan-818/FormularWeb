@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
-import type { SearchIndexEntry } from '@/types';
+import type { SearchEntityType, SearchIndexEntry } from '@/types';
 import { isSafeInternalRoute } from '@/utils/safeNavigation';
-
-const TEXT = {
-  searching: '\u641c\u7d22\u4e2d...',
-  searchUnavailable: '\u641c\u7d22\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002',
-  noSearchResults: '\u6ca1\u6709\u627e\u5230\u5339\u914d\u7684\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b\u3002',
-  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b',
-};
 
 interface GlobalSearchBoxProps {
   autoFocus?: boolean;
@@ -29,6 +23,7 @@ const SearchIcon = () => (
 );
 
 const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalSearchBoxProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<number | null>(null);
@@ -54,7 +49,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
     const timeoutId = window.setTimeout(() => {
       inputRef.current?.focus();
       setDropdownOpen(true);
-      void ensureLoaded();
+      void ensureLoaded().catch(() => undefined);
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
@@ -91,6 +86,12 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
 
   const showFeedback = dropdownOpen && (searchLoading || searchError || (searchValue.trim() && groups.length === 0));
   const showResults = dropdownOpen && groups.length > 0;
+  const groupLabels: Record<SearchEntityType, string> = {
+    driver: t('searchGroupDrivers'),
+    constructor: t('searchGroupConstructors'),
+    circuit: t('searchGroupCircuits'),
+    race: t('searchGroupRaces'),
+  };
 
   return (
     <div className={`global-search ${mobileOptimized ? 'is-mobile-optimized' : ''}`}>
@@ -100,7 +101,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
           ref={inputRef}
           className="global-search-input"
           value={searchValue}
-          placeholder={TEXT.searchPlaceholder}
+          placeholder={t('searchPlaceholder')}
           onChange={(event) => {
             setSearchValue(event.target.value);
             setDropdownOpen(true);
@@ -117,7 +118,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
             if (searchError) {
               reset();
             }
-            void ensureLoaded();
+            void ensureLoaded().catch(() => undefined);
           }}
           onBlur={() => {
             blurTimeoutRef.current = window.setTimeout(() => {
@@ -127,7 +128,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
           role="combobox"
           aria-expanded={dropdownOpen}
           aria-autocomplete="list"
-          aria-label={TEXT.searchPlaceholder}
+          aria-label={t('searchPlaceholder')}
           enterKeyHint="search"
           autoCapitalize="none"
           autoCorrect="off"
@@ -143,7 +144,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
               reset();
               inputRef.current?.focus();
             }}
-            aria-label="\u6e05\u7a7a\u641c\u7d22"
+            aria-label={t('clearSearch')}
           >
             x
           </button>
@@ -154,7 +155,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
         <div className="global-search-dropdown" role="listbox">
           {groups.map((group) => (
             <div className="global-search-group" key={group.type}>
-              <div className="search-group-label">{group.label}</div>
+              <div className="search-group-label">{groupLabels[group.type]}</div>
               {group.items.map((item) => (
                 <button
                   type="button"
@@ -181,12 +182,12 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
           {searchLoading ? (
             <>
               <span className="global-search-spinner" />
-              <span>{TEXT.searching}</span>
+              <span>{t('searching')}</span>
             </>
           ) : searchError ? (
-            TEXT.searchUnavailable
+            t('searchUnavailable')
           ) : (
-            TEXT.noSearchResults
+            t('noSearchResults')
           )}
         </div>
       ) : null}

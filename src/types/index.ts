@@ -228,7 +228,6 @@ export interface SearchIndexEntry {
 
 export interface SearchResultGroup {
   type: SearchEntityType;
-  label: string;
   items: SearchIndexEntry[];
 }
 

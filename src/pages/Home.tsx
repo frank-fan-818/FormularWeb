@@ -231,7 +231,9 @@ const Home = () => {
           <button
             type="button"
             className="next-race-card-f1"
-            onClick={() => navigate(`/races/${nextRace.round}/info`)}
+            onClick={() => navigate(
+              `/races/${nextRace.round}/info?season=${encodeURIComponent(nextRace.season)}`,
+            )}
             onPointerEnter={preloadRaceInfoRoute}
             onFocus={preloadRaceInfoRoute}
           >
@@ -263,7 +265,13 @@ const Home = () => {
             <span className="section-title-accent section-title-accent-live" />
             {TEXT.ongoingRace}
           </h2>
-          <button type="button" className="ongoing-card-f1" onClick={() => navigate(`/races/${ongoingRace.round}/race`)}>
+          <button
+            type="button"
+            className="ongoing-card-f1"
+            onClick={() => navigate(
+              `/races/${ongoingRace.round}/race?season=${encodeURIComponent(ongoingRace.season)}`,
+            )}
+          >
             <div className="ongoing-content-f1">
               <div className="ongoing-info-f1">
                 <div className="ongoing-race-title">{ongoingRace.raceName}</div>
@@ -337,7 +345,7 @@ const Home = () => {
                       {TEXT.gap}: {formatGap(item.points, driverLeaderPoints)}
                     </span>
                   </div>
-                  <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
+                  <div className="standings-points-f1">
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>
@@ -387,7 +395,7 @@ const Home = () => {
                       {TEXT.gap}: {formatGap(item.points, constructorLeaderPoints)}
                     </span>
                   </div>
-                  <div className="standings-points-f1" style={{ color: 'var(--f1-red)' }}>
+                  <div className="standings-points-f1">
                     {item.points}
                     <span className="points-unit">pts</span>
                   </div>

@@ -29,6 +29,23 @@ const requiredTools = [
 
 const failures = [];
 const predictionScripts = ['prediction:sync', 'prediction:backtest'];
+const expectedNodeVersion = '24.13.0';
+const expectedNpmVersion = packageJson.packageManager?.match(/^npm@(\d+\.\d+\.\d+)$/)?.[1];
+
+if (process.versions.node !== expectedNodeVersion) {
+  failures.push(`Node.js ${expectedNodeVersion} is required; found ${process.versions.node}`);
+}
+
+if (!expectedNpmVersion) {
+  failures.push('packageManager must pin npm to an exact semantic version');
+}
+
+const activeNpmVersion = process.env.npm_config_user_agent?.match(/\bnpm\/([^\s]+)/)?.[1];
+if (!activeNpmVersion) {
+  failures.push('npm version could not be identified; run this verifier through npm');
+} else if (expectedNpmVersion && activeNpmVersion !== expectedNpmVersion) {
+  failures.push(`npm ${expectedNpmVersion} is required; found ${activeNpmVersion}`);
+}
 
 for (const scriptName of predictionScripts) {
   const script = packageJson.scripts?.[scriptName];

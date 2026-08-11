@@ -183,7 +183,7 @@ const InnerLayout = () => {
         className="race-subpage-tabs"
         activeKey={routeTab}
         onChange={(key) => {
-          navigate(`/races/${raceInfo.round}/${key}`, { replace: true });
+          navigate(`/races/${raceInfo.round}/${key}${location.search}`, { replace: true });
         }}
         items={[
           {

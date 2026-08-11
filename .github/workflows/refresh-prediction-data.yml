@@ -11,25 +11,34 @@ on:
         type: string
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: refresh-prediction-data
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: '24.13.0'
+  NPM_VERSION: '11.12.0'
+
 jobs:
   refresh:
+    name: Generate and verify with read-only permissions
     runs-on: ubuntu-latest
+    outputs:
+      season: ${{ steps.season.outputs.value }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          persist-credentials: true
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Use pinned npm
+        run: npm install --global npm@$NPM_VERSION
 
       - name: Install development toolchain
         run: npm ci --include=dev
@@ -65,22 +74,53 @@ jobs:
       - name: Refresh rolling backtest
         run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload verified refresh output
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: prediction-refresh-output
+          path: |
+            data/prediction/seasons/
+            docs/model-artifacts/winner-prediction-backtest.json
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload failure diagnostics
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         if: failure()
         with:
           name: prediction-refresh-diagnostics
           path: |
             data/prediction/seasons/
             docs/model-artifacts/winner-prediction-backtest.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  publish:
+    name: Publish verified changes
+    needs: refresh
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Download verified refresh output
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: prediction-refresh-output
+          path: .
 
       - name: Create or update refresh PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: automation/prediction-data-${{ steps.season.outputs.value }}
+          branch: automation/prediction-data-${{ needs.refresh.outputs.season }}
           delete-branch: true
           commit-message: 'chore: refresh F1 prediction data'
-          title: 'chore: refresh F1 prediction data (${{ steps.season.outputs.value }})'
+          title: 'chore: refresh F1 prediction data (${{ needs.refresh.outputs.season }})'
           body: |
             Automated refresh of completed Jolpica races and the rolling prediction backtest.
             Incomplete race weekends are excluded; merge only after CI passes.

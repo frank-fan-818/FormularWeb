@@ -1,0 +1,66 @@
+rules:
+  - id: typescript.browser-location-to-network-request
+    message: User-controlled browser location data must not flow directly into a network request.
+    severity: ERROR
+    languages: [typescript, javascript]
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: window.location.search
+          - pattern: window.location.hash
+          - pattern: document.location.search
+          - pattern: document.location.hash
+    pattern-sinks:
+      - pattern-either:
+          - pattern: fetch($URL, ...)
+          - pattern: axios.get($URL, ...)
+          - pattern: axios.post($URL, ...)
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: encodeURIComponent(...)
+          - pattern: isSafeInternalRoute(...)
+
+  - id: typescript.browser-location-to-navigation
+    message: Validate browser-controlled data before using it as a navigation target.
+    severity: ERROR
+    languages: [typescript, javascript]
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: window.location.search
+          - pattern: window.location.hash
+          - pattern: document.location.search
+          - pattern: document.location.hash
+    pattern-sinks:
+      - pattern-either:
+          - pattern: window.location.assign($URL)
+          - pattern: window.location.replace($URL)
+          - pattern: window.open($URL, ...)
+    pattern-sanitizers:
+      - pattern: isSafeInternalRoute(...)
+
+  - id: node.untrusted-command-execution
+    message: Do not pass command-line or request data into a shell command.
+    severity: ERROR
+    languages: [typescript, javascript]
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: process.argv[$INDEX]
+          - pattern: $REQUEST.query
+          - pattern: $REQUEST.query.$FIELD
+          - pattern: $REQUEST.body
+    pattern-sinks:
+      - pattern-either:
+          - pattern: exec($COMMAND, ...)
+          - pattern: execSync($COMMAND, ...)
+          - pattern: 'spawn($COMMAND, $ARGS, { ..., shell: true, ... })'
+
+  - id: typescript.dynamic-code-execution
+    message: Dynamic code execution is forbidden in application and automation code.
+    severity: ERROR
+    languages: [typescript, javascript]
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: Function(...)

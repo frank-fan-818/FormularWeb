@@ -130,7 +130,7 @@ interface RaceDataProviderProps {
 export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const { round } = useParams<{ round: string }>();
   const location = useLocation();
-  const { currentSeason, setCurrentSeason } = useAppStore();
+  const { currentSeason } = useAppStore();
   const season = getRaceSeasonFromSearch(location.search, currentSeason);
   const {
     races,
@@ -227,12 +227,6 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (season !== currentSeason) {
-      setCurrentSeason(season);
-    }
-  }, [currentSeason, season, setCurrentSeason]);
 
   useEffect(() => {
     setActiveSessionTab('race');

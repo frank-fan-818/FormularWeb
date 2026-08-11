@@ -77,9 +77,10 @@ describe('global search index', () => {
     expect(driverGroup?.items).toHaveLength(5);
   });
 
-  it('uses readable Chinese group labels', () => {
+  it('keeps presentation-neutral group identities for localization', () => {
     const groups = searchIndex(buildSearchIndex(searchSources), 'max');
 
-    expect(groups[0].label).toBe('车手');
+    expect(groups[0].type).toBe('driver');
+    expect(groups[0]).not.toHaveProperty('label');
   });
 });

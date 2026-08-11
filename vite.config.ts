@@ -3,6 +3,7 @@ import type { OutputBundle, OutputChunk } from 'rollup'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 
 const f1ApiProxy = {
   '/f1-api': {
@@ -45,8 +46,23 @@ function createServiceWorkerPlugin() {
         }
       }
 
+      const cacheVersionInput = [...shellFiles].sort().map((fileName) => {
+        const bundleEntry = bundle[fileName.slice(1)]
+        if (bundleEntry?.type === 'chunk') {
+          return `${fileName}:${createHash('sha256').update(bundleEntry.code).digest('hex')}`
+        }
+        if (bundleEntry?.type === 'asset') {
+          return `${fileName}:${createHash('sha256').update(bundleEntry.source).digest('hex')}`
+        }
+
+        const sourcePath = fileName === '/index.html'
+          ? path.resolve(process.cwd(), 'index.html')
+          : path.resolve(process.cwd(), 'public', fileName.slice(1))
+        const contents = existsSync(sourcePath) ? readFileSync(sourcePath) : fileName
+        return `${fileName}:${createHash('sha256').update(contents).digest('hex')}`
+      })
       const cacheVersion = createHash('sha256')
-        .update([...shellFiles].sort().join('\n'))
+        .update(cacheVersionInput.join('\n'))
         .digest('hex')
         .slice(0, 12)
       const source = `
@@ -59,20 +75,61 @@ async function trimCache(cache, maxEntries) {
   await Promise.all(keys.slice(0, Math.max(0, keys.length - maxEntries)).map((key) => cache.delete(key)));
 }
 
+function requestClientBuildId(client) {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timeout = setTimeout(() => resolve(null), 1000);
+    channel.port1.onmessage = (event) => {
+      clearTimeout(timeout);
+      resolve(typeof event.data?.buildId === 'string' ? event.data.buildId : null);
+    };
+    client.postMessage({ type: 'GET_CLIENT_BUILD_ID' }, [channel.port2]);
+  });
+}
+
+async function pruneUnusedShellCaches() {
+  const allClients = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  const clientBuildIds = await Promise.all(allClients.map(requestClientBuildId));
+  if (clientBuildIds.some((buildId) => buildId !== SHELL_CACHE)) return;
+
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames
+      .filter((cacheName) => cacheName.startsWith('f1-shell-') && cacheName !== SHELL_CACHE)
+      .map((cacheName) => caches.delete(cacheName)),
+  );
+}
+
+function isExpectedResponse(request, response) {
+  if (!response || !response.ok || response.type === 'opaque') return false;
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  if (request.destination === 'script') return /(?:java|ecma)script/.test(contentType);
+  if (request.destination === 'style') return contentType.includes('text/css');
+  if (request.destination === 'font') return contentType.includes('font/') || contentType.includes('application/font');
+  if (request.destination === 'image') return contentType.startsWith('image/');
+  if (request.destination === 'manifest') return contentType.includes('json');
+  return true;
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(
-      keys
-        .filter((key) => key.startsWith('f1-shell-') && key !== SHELL_CACHE)
-        .map((key) => caches.delete(key)),
-    )),
-  );
-  self.clients.claim();
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'GET_BUILD_ID') {
+    event.ports[0]?.postMessage({ buildId: SHELL_CACHE });
+    return;
+  }
+  if (event.data?.type === 'SKIP_WAITING') {
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
+  if (event.data?.type === 'PRUNE_UNUSED_SHELL_CACHES') {
+    event.waitUntil(pruneUnusedShellCaches());
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -82,36 +139,40 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html')),
+      fetch(request).catch(() => caches.open(SHELL_CACHE).then((cache) => cache.match('/index.html'))),
     );
     return;
   }
 
   if (/\\/fastf1\\/.*\\.json$/.test(url.pathname)) {
+    const cachePromise = caches.open(DATA_CACHE);
+    const network = cachePromise.then(async (cache) => {
+      const response = await fetch(request);
+      if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
+        await cache.put(request, response.clone());
+        await trimCache(cache, 80);
+      }
+      return response;
+    });
+    event.waitUntil(network.then(() => undefined, () => undefined));
     event.respondWith(
-      caches.open(DATA_CACHE).then(async (cache) => {
+      cachePromise.then(async (cache) => {
         const cached = await cache.match(request);
-        const network = fetch(request).then((response) => {
-          if (response.ok) {
-            void cache.put(request, response.clone()).then(() => trimCache(cache, 80));
-          }
-          return response;
-        }).catch(() => cached);
         return cached || network;
       }),
     );
     return;
   }
 
-  if (APP_SHELL.includes(url.pathname)
-      || ['script', 'style', 'font', 'image'].includes(request.destination)) {
+  if (APP_SHELL.includes(url.pathname) || url.pathname.startsWith('/assets/')) {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-        if (response.ok) {
-          void caches.open(SHELL_CACHE).then((cache) => cache.put(request, response.clone()));
+      caches.open(SHELL_CACHE).then((cache) => cache.match(request).then((cached) => cached || fetch(request).then((response) => {
+        if (!isExpectedResponse(request, response)) {
+          return response;
         }
-        return response;
-      })),
+        return cache.put(request, response.clone())
+          .then(() => response);
+      }))),
     );
   }
 });

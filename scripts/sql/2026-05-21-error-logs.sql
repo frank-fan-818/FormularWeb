@@ -20,8 +20,9 @@ CREATE INDEX IF NOT EXISTS idx_error_logs_module ON error_logs (module);
 CREATE INDEX IF NOT EXISTS idx_error_logs_user_timestamp ON error_logs (user_id, timestamp DESC);
 
 ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE error_logs FROM anon;
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE error_logs FROM authenticated;
+REVOKE ALL ON TABLE error_logs FROM PUBLIC, anon, authenticated;
+GRANT INSERT (module, function, error, level, user_agent, url)
+  ON TABLE error_logs TO authenticated;
 
 DROP POLICY IF EXISTS "authenticated error insert" ON error_logs;
 CREATE POLICY "authenticated error insert"
