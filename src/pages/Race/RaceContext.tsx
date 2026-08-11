@@ -22,6 +22,7 @@ import {
 import { useSeasonRacesCached } from '@/hooks/useSeasonDataCached';
 import { useRaceDeferredSessions } from '@/hooks/race/useRaceDeferredSessions';
 import { useRacePrimaryResults } from '@/hooks/race/useRacePrimaryResults';
+import { getRaceAggregateState, useRaceDiagnostics } from '@/hooks/race/useRaceDiagnostics';
 import { useAppStore } from '@/store';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import type {
@@ -47,6 +48,7 @@ export interface RaceDataContextValue {
   // Core identifiers
   season: string;
   round: string;
+  diagnosticFlowId: string;
 
   // Race info
   raceInfo: Race | null;
@@ -150,8 +152,9 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     () => getRaceRouteSection(location.pathname),
     [location.pathname],
   );
+  const { flowId: diagnosticFlowId, logAggregateState } = useRaceDiagnostics(season, round || '', routeSection);
   const raceInfo = races.find((race) => race.round === round && race.season === season) || null;
-  const primaryResults = useRacePrimaryResults(season, round);
+  const primaryResults = useRacePrimaryResults(season, round, diagnosticFlowId);
   const retryPrimaryResults = primaryResults.retry;
   const deferredSessions = useRaceDeferredSessions({
     season,
@@ -159,6 +162,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     raceInfo,
     routeSection,
     activeSessionTab,
+    flowId: diagnosticFlowId,
   });
   const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
   // Race analytics also powers the weather summary on the information tab.
@@ -168,7 +172,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     loading: fastF1AnalyticsLoading,
     error: fastF1AnalyticsError,
     retry: retryFastF1Analytics,
-  } = useFastF1RaceAnalytics(season, round, shouldLoadRaceFastF1);
+  } = useFastF1RaceAnalytics(season, round, shouldLoadRaceFastF1, diagnosticFlowId);
   const previewCircuitId = useMemo(
     () => getSupabaseCircuitId(raceInfo?.Circuit.circuitId),
     [raceInfo],
@@ -199,23 +203,23 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   const shouldLoadFastF1Sprint = deferredSessions.availableTabs.includes('sprint')
     && routeSection === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'Q', shouldLoadFastF1Qualifying,
+    season, round, 'Q', shouldLoadFastF1Qualifying, diagnosticFlowId,
   );
   const { data: fastF1SprintQualifyingAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'SQ', shouldLoadFastF1SprintQualifying,
+    season, round, 'SQ', shouldLoadFastF1SprintQualifying, diagnosticFlowId,
   );
   const { data: fastF1SprintShootoutAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'SS', shouldLoadFastF1SprintQualifying,
+    season, round, 'SS', shouldLoadFastF1SprintQualifying, diagnosticFlowId,
   );
   const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'S', shouldLoadFastF1Sprint,
+    season, round, 'S', shouldLoadFastF1Sprint, diagnosticFlowId,
   );
   const {
     data: fastF1Telemetry,
     loading: fastF1TelemetryLoading,
     error: fastF1TelemetryError,
     load: loadFastF1Telemetry,
-  } = useFastF1RaceTelemetry(season, round, 'R');
+  } = useFastF1RaceTelemetry(season, round, 'R', diagnosticFlowId);
 
   // ---- Effects ----
 
@@ -238,10 +242,31 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, [refetchSeason, retryPrimaryResults]);
 
   const raceLoadError = seasonError ?? primaryResults.error;
+  const aggregateState = getRaceAggregateState({
+    loading: seasonLoading || primaryResults.loading,
+    hasRace: Boolean(raceInfo),
+    hasBlockingError: Boolean(raceLoadError),
+    hasPartialError: Boolean(
+      raceLoadError
+      || fastF1AnalyticsError
+      || racePreviewError
+      || raceUpgradeError
+      || fastF1TelemetryError
+      || Object.keys(deferredSessions.sessionLoadErrors).length,
+    ),
+  });
+
+  useEffect(() => {
+    logAggregateState(
+      aggregateState,
+      primaryResults.raceResults.length + primaryResults.qualifyingResults.length,
+    );
+  }, [aggregateState, logAggregateState, primaryResults.qualifyingResults.length, primaryResults.raceResults.length]);
 
   const value: RaceDataContextValue = useMemo(() => ({
     season,
     round: round || '',
+    diagnosticFlowId,
     raceInfo,
     seasonLoading,
     primaryLoading: primaryResults.loading,
@@ -289,6 +314,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }), [
     season,
     round,
+    diagnosticFlowId,
     raceInfo,
     seasonLoading,
     primaryResults.loading,

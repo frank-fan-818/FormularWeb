@@ -70,6 +70,22 @@ describe('errorReporter', () => {
     expect(supabaseMock.from).toHaveBeenCalledWith('error_logs');
   });
 
+  it('persists allowlisted RaceDetail correlation fields', async () => {
+    supabaseMock.state.session = { user: { id: 'test-user' } };
+    await sendErrorReport({
+      module: 'race_detail', function: 'load', error: 'Failed to fetch',
+      flowId: 'flow-1', feature: 'race_detail', season: '2026', round: '1',
+      section: 'results', operation: 'race results', outcome: 'failed',
+      source: 'jolpica', reasonCode: 'network', durationMs: 123.4,
+    });
+
+    expect(supabaseMock.insert).toHaveBeenCalledWith(expect.objectContaining({
+      flow_id: 'flow-1', feature: 'race_detail', season: '2026', round: '1',
+      section: 'results', operation: 'race_results', outcome: 'failed',
+      source: 'jolpica', reason_code: 'network', duration_ms: 123,
+    }));
+  });
+
   it('surfaces a rejected Supabase insert to the async reporting boundary', async () => {
     supabaseMock.state.session = { user: { id: 'test-user' } };
     supabaseMock.state.insertError = new Error('permission denied');

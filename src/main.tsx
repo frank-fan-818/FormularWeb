@@ -4,6 +4,8 @@ import '@/i18n';
 import App from '@/App';
 import { initWebVitals } from '@/utils/performance';
 import './index.css';
+import { logger } from '@/utils/logger';
+import { getLatestDiagnosticContext } from '@/utils/diagnostics';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -172,7 +174,23 @@ window.addEventListener('unhandledrejection', (event) => {
       || message.includes('Loading chunk')
       || name === 'ChunkLoadError') {
     recoverFromStaleChunk();
+    return;
   }
+  logger.error({
+    event: 'exit', module: 'global', function: 'unhandledrejection',
+    status: 'failed', error: message || 'Unhandled promise rejection',
+    ...getLatestDiagnosticContext(),
+    operation: 'unhandled_promise', outcome: 'failed', reasonCode: 'unknown',
+  });
+});
+
+window.addEventListener('error', (event) => {
+  logger.error({
+    event: 'exit', module: 'global', function: 'window.error',
+    status: 'failed', error: event.message || 'Unhandled window error',
+    ...getLatestDiagnosticContext(),
+    operation: 'window_error', outcome: 'failed', reasonCode: 'unknown',
+  });
 });
 
 let lastProactiveUpdateCheck = 0;

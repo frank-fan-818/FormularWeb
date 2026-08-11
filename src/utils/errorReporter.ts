@@ -5,11 +5,22 @@
  * Fire-and-forget: does not block the caller, silently fails if unreachable.
  */
 const ERROR_LOGS_TABLE = 'error_logs';
-type ErrorReportPayload = {
+export type ErrorReportPayload = {
   module: string;
   function: string;
   error: string;
   level?: 'error' | 'warn';
+  flowId?: string;
+  feature?: string;
+  season?: string;
+  round?: string;
+  section?: string;
+  session?: string;
+  operation?: string;
+  outcome?: string;
+  source?: string;
+  reasonCode?: string;
+  durationMs?: number;
 };
 
 // Deduplicate within a short window to avoid flooding on repeated errors
@@ -75,8 +86,8 @@ export function resetErrorReporterStateForTests(): void {
   seenErrors.clear();
 }
 
-function dedupKey(module: string, fnName: string, error: string): string {
-  return `${module}::${fnName}::${error.slice(0, 120)}`;
+function dedupKey(payload: ErrorReportPayload, error: string): string {
+  return `${payload.flowId || 'global'}::${payload.operation || payload.function}::${payload.outcome || 'failed'}::${error.slice(0, 120)}`;
 }
 
 export function getSafePageUrl(): string | null {
@@ -98,7 +109,7 @@ export async function sendErrorReport(payload: ErrorReportPayload): Promise<'sen
   // third-party input surface and can contain credentials in formats no
   // regular-expression redactor can exhaustively enumerate.
   const safeError = await buildSafeErrorRecord(payload.error);
-  const key = dedupKey(payload.module, payload.function, safeError);
+  const key = dedupKey(payload, safeError);
   const now = Date.now();
   const lastSent = seenErrors.get(key);
 
@@ -119,6 +130,17 @@ export async function sendErrorReport(payload: ErrorReportPayload): Promise<'sen
       level: payload.level || 'error',
       user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 256) : null,
       url: getSafePageUrl(),
+      flow_id: payload.flowId ? safeDiagnosticLabel(payload.flowId, 64) : null,
+      feature: payload.feature ? safeDiagnosticLabel(payload.feature, 32) : null,
+      season: payload.season ? safeDiagnosticLabel(payload.season, 8) : null,
+      round: payload.round ? safeDiagnosticLabel(payload.round, 8) : null,
+      section: payload.section ? safeDiagnosticLabel(payload.section, 32) : null,
+      session: payload.session ? safeDiagnosticLabel(payload.session, 8) : null,
+      operation: payload.operation ? safeDiagnosticLabel(payload.operation, 96) : null,
+      outcome: payload.outcome ? safeDiagnosticLabel(payload.outcome, 24) : null,
+      source: payload.source ? safeDiagnosticLabel(payload.source, 32) : null,
+      reason_code: payload.reasonCode ? safeDiagnosticLabel(payload.reasonCode, 32) : null,
+      duration_ms: Number.isFinite(payload.durationMs) ? Math.max(0, Math.round(payload.durationMs!)) : null,
     });
   if (error) {
     throw error;

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-08-11
+
+### Added
+
+- 为 RaceDetail 增加贯穿路由、数据源、降级、Hook 状态和渲染聚合的关联诊断日志
+- 增加安全诊断编号、浏览器会话环形缓冲、Supabase 诊断字段和排查手册
+
 ## [0.12.3] - 2026-07-28
 
 ### Fixed

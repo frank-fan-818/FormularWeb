@@ -17,6 +17,7 @@ import {
   getRaceIdentity,
   isRaceIdentityCurrent,
 } from '@/utils/race/raceSessionState';
+import { createLoggerScope, type DiagnosticLoggerScope } from '@/utils/logger';
 
 const EMPTY_CODES: RaceSessionCode[] = [];
 const EMPTY_TABS: string[] = [];
@@ -30,19 +31,26 @@ interface UseRaceDeferredSessionsOptions {
   raceInfo: Race | null;
   routeSection: RaceRouteSection;
   activeSessionTab: RaceClassificationSessionKey;
+  flowId?: string;
 }
 
 export async function loadRaceSessionWithFallback(
   primary: () => Promise<Race | null>,
   fallback: () => Promise<Race | null>,
+  diagnostics?: DiagnosticLoggerScope | null,
+  operation = 'deferred_session',
 ): Promise<Race | null> {
   try {
     const primaryData = await primary();
     if (primaryData) return primaryData;
-  } catch {
+    diagnostics?.log({ operation, outcome: 'degraded', source: 'supabase', reasonCode: 'source_empty' });
+  } catch (error) {
+    diagnostics?.log({ operation, outcome: 'degraded', source: 'supabase', error });
     // The official source remains usable when optional database data is unavailable.
   }
-  return fallback();
+  const fallbackData = await fallback();
+  diagnostics?.log({ operation, outcome: fallbackData ? 'succeeded' : 'empty', source: 'jolpica' });
+  return fallbackData;
 }
 
 export function getDeferredSessionsToLoad(
@@ -69,6 +77,7 @@ export function useRaceDeferredSessions({
   raceInfo,
   routeSection,
   activeSessionTab,
+  flowId,
 }: UseRaceDeferredSessionsOptions) {
   const [sprintResults, setSprintResults] = useState<Result[]>([]);
   const [sprintQualifyingResults, setSprintQualifyingResults] = useState<QualifyingResult[]>([]);
@@ -86,6 +95,9 @@ export function useRaceDeferredSessions({
   const loadedTabsRef = useRef<DeferredRaceSessionKey[]>([]);
   const loadingTabsRef = useRef<DeferredRaceSessionKey[]>([]);
   const raceIdentity = getRaceIdentity(season, round);
+  const diagnostics = useMemo(() => flowId ? createLoggerScope({
+    flowId, feature: 'race_detail', season, round: round || '', section: routeSection,
+  }) : null, [flowId, round, routeSection, season]);
   const availableCurrent = isRaceIdentityCurrent(availableIdentity, season, round);
   const dataCurrent = isRaceIdentityCurrent(dataIdentity, season, round);
   const visibleAvailableSessions = availableCurrent ? availableDbSessions : EMPTY_CODES;
@@ -119,9 +131,11 @@ export function useRaceDeferredSessions({
     if (!round) return;
     let cancelled = false;
     const requestedIdentity = raceIdentity;
+    diagnostics?.log({ operation: 'session_discovery', outcome: 'started', source: 'supabase' });
     void raceSessionResultsApi.getAvailableSessions(season, round)
       .then((sessions) => {
         if (!cancelled) {
+          diagnostics?.log({ operation: 'session_discovery', outcome: sessions.length ? 'succeeded' : 'empty', source: 'supabase', itemCount: sessions.length });
           setAvailableDbSessions(sessions);
           setAvailableIdentity(requestedIdentity);
           setLoadErrors((current) => {
@@ -132,8 +146,9 @@ export function useRaceDeferredSessions({
           });
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (!cancelled) {
+          diagnostics?.log({ operation: 'session_discovery', outcome: 'failed', source: 'supabase', error });
           setLoadErrors((current) => ({
             ...current,
             discovery: '场次列表暂时无法完整更新',
@@ -141,7 +156,7 @@ export function useRaceDeferredSessions({
         }
       });
     return () => { cancelled = true; };
-  }, [discoveryReloadKey, raceIdentity, round, season]);
+  }, [diagnostics, discoveryReloadKey, raceIdentity, round, season]);
 
   useEffect(() => {
     if (!round || !sessionsToLoad.length) {
@@ -163,6 +178,8 @@ export function useRaceDeferredSessions({
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getSprintResult(season, round),
           () => seasonApi.getSprintResults(season, round),
+          diagnostics,
+          'sprint_results',
         );
       } else if (sessionKey === 'sprintQualifying') {
         sessionData = await raceSessionResultsApi.getSprintQualifyingResult(season, round);
@@ -170,19 +187,27 @@ export function useRaceDeferredSessions({
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 1),
           () => seasonApi.getPracticeResults(season, round, 1),
+          diagnostics,
+          'fp1_results',
         );
       } else if (sessionKey === 'fp2') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 2),
           () => seasonApi.getPracticeResults(season, round, 2),
+          diagnostics,
+          'fp2_results',
         );
       } else if (sessionKey === 'fp3') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 3),
           () => seasonApi.getPracticeResults(season, round, 3),
+          diagnostics,
+          'fp3_results',
         );
       }
       if (cancelled) return;
+      const resultCount = Math.max(sessionData?.Results?.length || 0, sessionData?.QualifyingResults?.length || 0, sessionData?.SprintResults?.length || 0);
+      diagnostics?.log({ operation: `${sessionKey}_state`, outcome: resultCount ? 'succeeded' : 'empty', itemCount: resultCount, session: sessionKey });
       if (sessionKey === 'sprint') setSprintResults(sessionData?.Results || sessionData?.SprintResults || []);
       if (sessionKey === 'sprintQualifying') setSprintQualifyingResults(sessionData?.QualifyingResults || []);
       if (sessionKey === 'fp1') setFp1Results(sessionData?.Results || []);
@@ -202,8 +227,9 @@ export function useRaceDeferredSessions({
     };
 
     pendingSessions.forEach((sessionKey) => {
-      void load(sessionKey).catch(() => {
+      void load(sessionKey).catch((error) => {
         if (cancelled) return;
+        diagnostics?.log({ operation: `${sessionKey}_state`, outcome: 'failed', error, session: sessionKey });
         loadingTabsRef.current = removeSessionTabs(loadingTabsRef.current, [sessionKey]) as DeferredRaceSessionKey[];
         setLoadErrors((current) => ({
           ...current,
@@ -218,7 +244,7 @@ export function useRaceDeferredSessions({
       loadingTabsRef.current = removeSessionTabs(loadingTabsRef.current, pendingSessions) as DeferredRaceSessionKey[];
       setLoadingTabs((current) => removeSessionTabs(current, pendingSessions));
     };
-  }, [raceIdentity, reloadKey, round, season, sessionsToLoad]);
+  }, [diagnostics, raceIdentity, reloadKey, round, season, sessionsToLoad]);
 
   const retrySession = useCallback((sessionKey: DeferredRaceSessionKey) => {
     loadedTabsRef.current = removeSessionTabs(loadedTabsRef.current, [sessionKey]) as DeferredRaceSessionKey[];
