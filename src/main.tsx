@@ -14,6 +14,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
 initWebVitals();
 
+window.requestIdleCallback(() => {
+  void import('@/hooks/useGlobalSearch')
+    .then(({ preloadGlobalSearchIndex }) => preloadGlobalSearchIndex())
+    .catch(() => { /* Search remains lazy and retryable from the input. */ });
+}, { timeout: 2_000 });
+
 let loadedShellBuildId: string | null = null;
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

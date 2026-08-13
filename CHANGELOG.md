@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.13.2] - 2026-08-13
+
+### Fixed
+
+- Prefer bundled FastF1 snapshots so a Supabase outage cannot block RaceDetail analytics.
+- Fall back to a hedged Jolpica search index when Supabase is unavailable or returns an empty index.
+- Invalidate stale empty search caches and avoid persisting incomplete fallback indexes.
+
 ## [0.13.1] - 2026-08-13
 
 ### Fixed

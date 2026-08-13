@@ -7,8 +7,10 @@ import {
   type SearchSources,
 } from '@/utils/search';
 
-const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v3';
-const LEGACY_SEARCH_INDEX_CACHE_KEYS = ['global-search-index-v1', 'global-search-index-v2'];
+const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v4';
+const LEGACY_SEARCH_INDEX_CACHE_KEYS = [
+  'global-search-index-v1', 'global-search-index-v2', 'global-search-index-v3',
+];
 const SEARCH_INDEX_TTL = 24 * 60 * 60 * 1000;
 const BACKGROUND_REFRESH_INTERVAL = 5 * 60 * 1000;
 
@@ -139,7 +141,7 @@ async function fetchFreshSearchIndex(options?: SearchIndexOptions): Promise<Sear
   loadingPromise = fetchSources()
     .then((sources) => {
       const index = buildSearchIndex(sources);
-      writeCachedIndex(index, options);
+      if (sources.cacheable !== false) writeCachedIndex(index, options);
       return index;
     })
     .finally(() => {
