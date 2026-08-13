@@ -3,8 +3,7 @@ import type { SearchSources } from '@/utils/search';
 import type { ErgastResponse } from '@/types';
 
 const SEARCH_SOURCE_TIMEOUT_MS = 3_000;
-const JOLPICA_SEARCH_TIMEOUT_MS = 8_000;
-const FALLBACK_HEDGE_DELAY_MS = 500;
+const JOLPICA_SEARCH_TIMEOUT_MS = 15_000;
 
 async function listSearchRows<T>(params: {
   table: string;
@@ -62,42 +61,75 @@ async function getJolpicaSearchSources(): Promise<SearchSources> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), JOLPICA_SEARCH_TIMEOUT_MS);
   const get = async (path: string) => {
-    const response = await fetch(`/f1-api/${path}`, { signal: controller.signal });
-    if (!response.ok) throw new Error(`Jolpica search fallback failed with ${response.status}`);
-    return response.json() as Promise<ErgastResponse<never>>;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetch(`/f1-api/${path}`, { signal: controller.signal });
+        if (!response.ok) throw new Error(`Jolpica search fallback failed with ${response.status}`);
+        return await response.json() as ErgastResponse<never>;
+      } catch (error) {
+        lastError = error;
+        if (controller.signal.aborted) throw error;
+      }
+    }
+    throw lastError;
+  };
+  const getComplete = async <T>(
+    path: string,
+    readRows: (response: ErgastResponse<never>) => T[],
+  ): Promise<T[]> => {
+    const first = await get(`${path}?limit=100&offset=0`);
+    const firstRows = readRows(first);
+    const total = Number(first.MRData.total);
+    if (!Number.isFinite(total) || firstRows.length >= total || firstRows.length === 0) return firstRows;
+
+    const pageSize = firstRows.length;
+    const offsets = Array.from(
+      { length: Math.ceil((total - pageSize) / pageSize) },
+      (_, index) => pageSize * (index + 1),
+    );
+    const remaining = await Promise.allSettled(
+      offsets.map((offset) => get(`${path}?limit=${pageSize}&offset=${offset}`).then(readRows)),
+    );
+    return [
+      ...firstRows,
+      ...remaining.flatMap((result) => result.status === 'fulfilled' ? result.value : []),
+    ];
   };
   const [driverResult, constructorResult, circuitResult, raceResult] = await Promise.allSettled([
-    get('drivers.json?limit=2000'), get('constructors.json?limit=1000'),
-    get('circuits.json?limit=1000'), get('races.json?limit=2000'),
+    getComplete('drivers.json', (response) => response.MRData.DriverTable?.Drivers || []),
+    getComplete('constructors.json', (response) => response.MRData.ConstructorTable?.Constructors || []),
+    getComplete('circuits.json', (response) => response.MRData.CircuitTable?.Circuits || []),
+    getComplete('races.json', (response) => response.MRData.RaceTable?.Races || []),
   ]).finally(() => clearTimeout(timeoutId));
   if ([driverResult, constructorResult, circuitResult, raceResult].every((result) => result.status === 'rejected')) {
     throw driverResult.status === 'rejected' ? driverResult.reason : new Error('Jolpica search unavailable');
   }
-  const driverResponse = driverResult.status === 'fulfilled' ? driverResult.value : null;
-  const constructorResponse = constructorResult.status === 'fulfilled' ? constructorResult.value : null;
-  const circuitResponse = circuitResult.status === 'fulfilled' ? circuitResult.value : null;
-  const raceResponse = raceResult.status === 'fulfilled' ? raceResult.value : null;
+  const drivers = driverResult.status === 'fulfilled' ? driverResult.value : [];
+  const constructors = constructorResult.status === 'fulfilled' ? constructorResult.value : [];
+  const circuits = circuitResult.status === 'fulfilled' ? circuitResult.value : [];
+  const races = raceResult.status === 'fulfilled' ? raceResult.value : [];
 
   return {
-    drivers: (driverResponse?.MRData.DriverTable?.Drivers || []).map((driver) => ({
+    drivers: drivers.map((driver) => ({
       driver_id: driver.driverId,
       first_name: driver.givenName,
       last_name: driver.familyName,
       code: driver.code,
       nationality: driver.nationality,
     })),
-    constructors: (constructorResponse?.MRData.ConstructorTable?.Constructors || []).map((constructor) => ({
+    constructors: constructors.map((constructor) => ({
       constructor_id: constructor.constructorId,
       name: constructor.name,
       nationality: constructor.nationality,
     })),
-    circuits: (circuitResponse?.MRData.CircuitTable?.Circuits || []).map((circuit) => ({
+    circuits: circuits.map((circuit) => ({
       circuit_id: circuit.circuitId,
       name: circuit.circuitName,
       locality: circuit.Location.locality,
       country: circuit.Location.country,
     })),
-    races: (raceResponse?.MRData.RaceTable?.Races || []).map((race) => ({
+    races: races.map((race) => ({
       season: race.season,
       round: race.round,
       race_name: race.raceName,
@@ -108,39 +140,46 @@ async function getJolpicaSearchSources(): Promise<SearchSources> {
   };
 }
 
+function mergeByKey<T>(primary: T[], fallback: T[], getKey: (item: T) => string): T[] {
+  const merged = new Map(fallback.map((item) => [getKey(item), item]));
+  primary.forEach((item) => merged.set(getKey(item), item));
+  return [...merged.values()];
+}
+
+export function mergeSearchSources(
+  supabaseSources: SearchSources | null,
+  jolpicaSources: SearchSources | null,
+): SearchSources {
+  const database = supabaseSources || { drivers: [], constructors: [], circuits: [], races: [] };
+  const upstream = jolpicaSources || { drivers: [], constructors: [], circuits: [], races: [] };
+  return {
+    drivers: mergeByKey(database.drivers, upstream.drivers, (driver) => driver.driver_id),
+    constructors: mergeByKey(database.constructors, upstream.constructors, (constructor) => constructor.constructor_id),
+    circuits: mergeByKey(database.circuits, upstream.circuits, (circuit) => circuit.circuit_id),
+    races: mergeByKey(database.races, upstream.races, (race) => `${race.season}:${race.round}`),
+    cacheable: Boolean(supabaseSources && jolpicaSources?.cacheable !== false),
+  };
+}
+
 export const searchApi = {
   async getSearchSources(): Promise<SearchSources> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), SEARCH_SOURCE_TIMEOUT_MS);
-    let fallbackStarted = false;
-    let startFallback!: () => void;
-    const jolpicaFallback = new Promise<{ data: SearchSources | null; error: unknown }>((resolve) => {
-      startFallback = () => {
-        if (fallbackStarted) return;
-        fallbackStarted = true;
-        void getJolpicaSearchSources().then(
-          (data) => resolve({ data, error: null }),
-          (error: unknown) => resolve({ data: null, error }),
-        );
-      };
-    });
-    const fallbackTimer = setTimeout(startFallback, FALLBACK_HEDGE_DELAY_MS);
-    try {
-      const sources = await getSupabaseSearchSources(controller.signal);
-      clearTimeout(fallbackTimer);
-      return sources;
-    } catch (supabaseError) {
-      try {
-        startFallback();
-        const fallback = await jolpicaFallback;
-        if (fallback.data) return fallback.data;
-        throw fallback.error;
-      } catch {
-        throw supabaseError;
-      }
-    } finally {
+    const [supabaseResult, jolpicaResult] = await Promise.allSettled([
+      getSupabaseSearchSources(controller.signal),
+      getJolpicaSearchSources(),
+    ]).finally(() => {
       clearTimeout(timeoutId);
-      clearTimeout(fallbackTimer);
+    });
+
+    const supabaseSources = supabaseResult.status === 'fulfilled' ? supabaseResult.value : null;
+    const jolpicaSources = jolpicaResult.status === 'fulfilled' ? jolpicaResult.value : null;
+    if (!supabaseSources && !jolpicaSources) {
+      throw supabaseResult.status === 'rejected'
+        ? supabaseResult.reason
+        : new Error('All search sources are unavailable');
     }
+
+    return mergeSearchSources(supabaseSources, jolpicaSources);
   },
 };
