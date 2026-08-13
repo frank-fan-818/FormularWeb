@@ -92,6 +92,30 @@ export const fastF1AnalyticsApi = {
     diagnostics?: DiagnosticLoggerScope | null,
   ): Promise<FastF1RaceAnalytics | null> {
     const sessionCode = session.toUpperCase();
+    const response = await withRetry(
+      (attemptSignal) => measureRequest('fetch', `fastf1/${season}/${round}/${sessionCode}.json`, async () => {
+        const result = await fetch(buildAnalyticsUrl(season, round, sessionCode), {
+          signal: attemptSignal,
+          cache: import.meta.env.DEV ? 'no-cache' : 'default',
+        });
+        if (!result.ok && result.status !== 404) {
+          const error = new Error(`FastF1 analytics request failed with ${result.status}`) as Error & { status: number };
+          error.status = result.status;
+          throw error;
+        }
+        return result;
+      }),
+      { timeoutMs: 8000, maxRetries: 2, signal },
+    );
+
+    if (response.ok) {
+      const payload = FastF1AnalyticsEnvelopeSchema.parse(await response.json()) as FastF1RaceAnalytics;
+      assertSnapshotIdentity(payload, season, round, sessionCode);
+      diagnostics?.log({ operation: 'fastf1_static', outcome: 'succeeded', source: 'fastf1_static', session: sessionCode, itemCount: payload.lapTimeSeries.length });
+      return payload;
+    }
+
+    diagnostics?.log({ operation: 'fastf1_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
 
     try {
       const databaseAnalytics = await withRetry(
@@ -120,35 +144,7 @@ export const fastF1AnalyticsApi = {
       diagnostics?.log({ operation: 'fastf1_source', outcome: 'degraded', source: 'supabase', error, session: sessionCode });
     }
 
-    const response = await withRetry(
-      (attemptSignal) => measureRequest('fetch', `fastf1/${season}/${round}/${sessionCode}.json`, async () => {
-        const result = await fetch(buildAnalyticsUrl(season, round, sessionCode), {
-          signal: attemptSignal,
-          cache: import.meta.env.DEV ? 'no-cache' : 'default',
-        });
-        if (!result.ok && result.status !== 404) {
-          const error = new Error(`FastF1 analytics request failed with ${result.status}`) as Error & { status: number };
-          error.status = result.status;
-          throw error;
-        }
-        return result;
-      }),
-      { timeoutMs: 8000, maxRetries: 2, signal },
-    );
-
-    if (response.status === 404) {
-      diagnostics?.log({ operation: 'fastf1_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new Error(`FastF1 analytics request failed with ${response.status}`);
-    }
-
-    const payload = FastF1AnalyticsEnvelopeSchema.parse(await response.json()) as FastF1RaceAnalytics;
-    assertSnapshotIdentity(payload, season, round, sessionCode);
-    diagnostics?.log({ operation: 'fastf1_static', outcome: 'succeeded', source: 'fastf1_static', session: sessionCode, itemCount: payload.lapTimeSeries.length });
-    return payload;
+    return null;
   },
 
   async getRaceTelemetry(

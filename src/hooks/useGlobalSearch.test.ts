@@ -99,7 +99,7 @@ describe('global search index cache', () => {
   it('returns a localStorage hit before refreshing in the background', async () => {
     const storage = createStorage();
     storage.setItem(
-      'global-search-index-v3',
+      'global-search-index-v4',
       JSON.stringify({
         timestamp: 1_000,
         data: [
@@ -133,7 +133,7 @@ describe('global search index cache', () => {
     expect(callCount).toBe(1);
   });
 
-  it('removes the truncated v2 cache and fetches a complete v3 index', async () => {
+  it('removes the truncated v2 cache and fetches a complete v4 index', async () => {
     const storage = createStorage();
     storage.setItem(
       'global-search-index-v2',
@@ -156,6 +156,6 @@ describe('global search index cache', () => {
     expect(callCount).toBe(1);
     expect(index.length).toBeGreaterThan(0);
     expect(storage.getItem('global-search-index-v2')).toBeNull();
-    expect(storage.getItem('global-search-index-v3')).not.toBeNull();
+    expect(storage.getItem('global-search-index-v4')).not.toBeNull();
   });
 });
