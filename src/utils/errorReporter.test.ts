@@ -125,6 +125,7 @@ describe('errorReporter', () => {
 
   it('persists only an allowlisted category and fingerprint, never raw error text', async () => {
     supabaseMock.state.session = { user: { id: 'test-user' } };
+    supabaseMock.insert.mockClear();
     const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.abcdefghijklmnopqrstuvwxyz';
     // Assemble credential-shaped fixtures at runtime so the release secret scanner
     // still rejects literal credentials in tracked files.
