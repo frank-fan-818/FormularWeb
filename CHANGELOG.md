@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.13.3] - 2026-08-13
+
+### Fixed
+
+- Paginate Jolpica's server-capped search endpoints so historical and famous drivers are included.
+- Merge Supabase and Jolpica entities by stable identity instead of accepting a non-empty but incomplete database index.
+- Keep partial fallback indexes for the active session while avoiding stale long-term persistence.
+
 ## [0.13.2] - 2026-08-13
 
 ### Fixed

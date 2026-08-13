@@ -41,7 +41,7 @@ vi.mock('@/utils/logger', () => ({
   logger: { warn: vi.fn() },
 }));
 
-import { searchApi } from './search';
+import { mergeSearchSources, searchApi } from './search';
 
 describe('searchApi', () => {
   beforeEach(() => {
@@ -115,5 +115,27 @@ describe('searchApi', () => {
     expect(sources.constructors[0]?.constructor_id).toBe('red_bull');
     expect(sources.circuits[0]?.circuit_id).toBe('monaco');
     expect(sources.races[0]?.race_name).toBe('Australian Grand Prix');
+  });
+
+  it('merges historical Jolpica drivers into a non-empty Supabase index', () => {
+    const merged = mergeSearchSources(
+      {
+        drivers: [{ driver_id: 'max_verstappen', first_name: 'Max', last_name: 'Verstappen' }],
+        constructors: [], circuits: [], races: [],
+      },
+      {
+        drivers: [
+          { driver_id: 'max_verstappen', first_name: 'Max', last_name: 'Verstappen' },
+          { driver_id: 'senna', first_name: 'Ayrton', last_name: 'Senna' },
+          { driver_id: 'michael_schumacher', first_name: 'Michael', last_name: 'Schumacher' },
+        ],
+        constructors: [], circuits: [], races: [], cacheable: true,
+      },
+    );
+
+    expect(merged.drivers.map((driver) => driver.driver_id)).toEqual([
+      'max_verstappen', 'senna', 'michael_schumacher',
+    ]);
+    expect(merged.cacheable).toBe(true);
   });
 });
