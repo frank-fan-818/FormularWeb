@@ -3,6 +3,7 @@ import type {
   DiagnosticEvent,
   DiagnosticReasonCode,
 } from '@/types/diagnostics';
+import type { DiagnosticLogDetails, LogPayload } from '@/utils/logger';
 
 const STORAGE_KEY = 'f1-diagnostic-trace-v1';
 const MAX_TRACE_EVENTS = 100;
@@ -82,6 +83,42 @@ export function appendDiagnosticEvent(
   } catch {
     // Diagnostics must never become a user-visible failure.
   }
+}
+
+export function buildDiagnosticLog(
+  context: DiagnosticBaseContext,
+  details: DiagnosticLogDetails,
+): { level: 'info' | 'warn' | 'error'; payload: LogPayload } {
+  const event: DiagnosticEvent = {
+    ...context,
+    session: details.session ?? context.session,
+    timestamp: new Date().toISOString(),
+    operation: details.operation,
+    outcome: details.outcome,
+    source: details.source,
+    reasonCode: details.reasonCode
+      ?? (details.error === undefined ? undefined : classifyDiagnosticError(details.error)),
+    durationMs: details.durationMs,
+    itemCount: details.itemCount,
+    attempt: details.attempt,
+  };
+  appendDiagnosticEvent(event);
+
+  return {
+    level: details.outcome === 'failed'
+      ? 'error'
+      : details.outcome === 'degraded' ? 'warn' : 'info',
+    payload: {
+      event: details.outcome === 'started' ? 'entry' : 'step',
+      module: context.feature,
+      function: details.operation,
+      status: details.outcome === 'failed' ? 'failed' : undefined,
+      error: details.error === undefined
+        ? undefined
+        : details.error instanceof Error ? details.error.message : String(details.error),
+      ...event,
+    },
+  };
 }
 
 export function getDiagnosticTrace(

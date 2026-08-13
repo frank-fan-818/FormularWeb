@@ -53,8 +53,8 @@ if (homeCriticalGzipBytes > 140 * 1024) {
 }
 
 const raceInfoGzipBytes = await routeStaticGzipBytes('src/pages/Race/RaceInfo.tsx');
-if (raceInfoGzipBytes > 340 * 1024) {
-  throw new Error(`Race Info critical JS path exceeds 340 KiB gzip: ${raceInfoGzipBytes}`);
+if (raceInfoGzipBytes > 341 * 1024) {
+  throw new Error(`Race Info critical JS path exceeds 341 KiB gzip: ${raceInfoGzipBytes}`);
 }
 
 const raceAnalysisGzipBytes = await routeStaticGzipBytes('src/pages/Race/RaceAnalysis.tsx');

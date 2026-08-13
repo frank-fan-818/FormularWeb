@@ -5,7 +5,7 @@
  * output by intercepting process.stdout. Direct console mocking conflicts
  * with Vite's module isolation in test mode.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createLoggerScope, withLogging } from '@/utils/logger';
 // Re-import to pick up module-level state
 import { logger } from '@/utils/logger';
@@ -132,11 +132,12 @@ describe('logger output', () => {
     expect(exitLog.error).toContain('boom');
   });
 
-  it('emits correlated RaceDetail diagnostic events', () => {
+  it('emits correlated RaceDetail diagnostic events', async () => {
     createLoggerScope({
       flowId: 'flow-1', feature: 'race_detail', season: '2026', round: '1', section: 'results',
     }).log({ operation: 'race_results', outcome: 'failed', error: new Error('Failed to fetch') });
 
+    await vi.waitFor(() => expect(captured).toHaveLength(1));
     const parsed = JSON.parse(captured[0]);
     expect(parsed.flowId).toBe('flow-1');
     expect(parsed.operation).toBe('race_results');

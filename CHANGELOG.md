@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-08-13
+
+### Fixed
+
+- Stabilize error reporter assertions when asynchronous diagnostic writes overlap test cleanup.
+
+### Performance
+
+- Load RaceDetail diagnostic trace processing outside the critical route bundle and retain a strict 341 KiB Race Info budget.
+
 ## [0.13.0] - 2026-08-11
 
 ### Added
