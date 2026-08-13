@@ -40,11 +40,15 @@ async function routeStaticGzipBytes(sourceSuffix) {
   }
   return total;
 }
-const homeAsset = assetNames.find((name) => /^Home-.*\.js$/.test(name));
-const homeGzipBytes = homeAsset
-  ? gzipSync(await readFile(path.join(distDir, 'assets', homeAsset))).byteLength
-  : 0;
-if (initialJsGzipBytes + homeGzipBytes > 140 * 1024) {
+const homeRouteEntry = Object.entries(manifest)
+  .find(([key, value]) => key.endsWith('src/pages/Home.tsx') || value.src?.endsWith('src/pages/Home.tsx'));
+const homeCriticalGzipBytes = homeRouteEntry
+  ? await routeStaticGzipBytes('src/pages/Home.tsx')
+  : initialJsGzipBytes;
+if (!homeRouteEntry && !manifest['index.html']?.isEntry) {
+  throw new Error('Home is neither a route chunk nor part of the verified application entry.');
+}
+if (homeCriticalGzipBytes > 140 * 1024) {
   throw new Error('Home critical JS path exceeds 140 KiB gzip');
 }
 
@@ -75,7 +79,7 @@ const serviceWorker = path.join(distDir, 'sw.js');
 await stat(serviceWorker);
 process.stdout.write(
   `Initial JS: ${(initialJsGzipBytes / 1024).toFixed(1)} KiB gzip; `
-  + `Home path: ${((initialJsGzipBytes + homeGzipBytes) / 1024).toFixed(1)} KiB gzip; `
+  + `Home path: ${(homeCriticalGzipBytes / 1024).toFixed(1)} KiB gzip; `
   + `Race Info: ${(raceInfoGzipBytes / 1024).toFixed(1)} KiB gzip; `
   + `Race Analysis shell: ${(raceAnalysisGzipBytes / 1024).toFixed(1)} KiB gzip; `
   + `largest chunk: ${largestAsyncName} ${(largestAsyncGzipBytes / 1024).toFixed(1)} KiB gzip; service worker present.\n`,

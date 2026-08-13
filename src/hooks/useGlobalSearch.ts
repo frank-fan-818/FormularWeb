@@ -7,7 +7,8 @@ import {
   type SearchSources,
 } from '@/utils/search';
 
-const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v2';
+const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v3';
+const LEGACY_SEARCH_INDEX_CACHE_KEYS = ['global-search-index-v1', 'global-search-index-v2'];
 const SEARCH_INDEX_TTL = 24 * 60 * 60 * 1000;
 const BACKGROUND_REFRESH_INTERVAL = 5 * 60 * 1000;
 
@@ -80,6 +81,7 @@ function readPersistentCachedIndex(options?: SearchIndexOptions): SearchIndex | 
   }
 
   try {
+    LEGACY_SEARCH_INDEX_CACHE_KEYS.forEach((key) => storage.removeItem(key));
     const rawValue = storage.getItem(SEARCH_INDEX_CACHE_KEY);
     if (!rawValue) {
       return null;

@@ -228,7 +228,6 @@ export interface SearchIndexEntry {
 
 export interface SearchResultGroup {
   type: SearchEntityType;
-  label: string;
   items: SearchIndexEntry[];
 }
 
@@ -687,6 +686,7 @@ export interface FastF1RaceAnalytics {
 
 export * from './raceDetail';
 export * from './supabaseRows';
+export * from './diagnostics';
 
 export interface FastF1TelemetryPayload {
   source: 'fastf1';

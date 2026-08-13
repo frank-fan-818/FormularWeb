@@ -55,23 +55,21 @@ for (const rule of requiredIgnoreRules) {
 }
 
 const scannableExtensions = new Set([
-  '.cjs', '.css', '.html', '.js', '.json', '.jsx', '.md', '.mjs',
-  '.sql', '.ts', '.tsx', '.yaml', '.yml',
+  '.cjs', '.conf', '.config', '.css', '.csv', '.env', '.example', '.html',
+  '.ini', '.js', '.json', '.jsx', '.lock', '.md', '.mjs', '.properties',
+  '.ps1', '.py', '.sh', '.sql', '.svg', '.toml', '.ts', '.tsx', '.txt',
+  '.xml', '.yaml', '.yml',
 ]);
-const excludedPrefixes = [
-  'data/',
-  'f1db-main/',
-  'src/assets/',
-];
 const excludedFiles = new Set([
-  'package-lock.json',
   'scripts/security-check.mjs',
 ]);
+let scannedFileCount = 0;
 
 const secretPatterns = [
   { label: 'private key material', pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/ },
   { label: 'AWS access key', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
   { label: 'GitHub token', pattern: /\bgh[pousr]_[A-Za-z0-9_]{30,}\b/ },
+  { label: 'GitHub fine-grained token', pattern: /\bgithub_pat_[A-Za-z0-9_]{40,}\b/ },
   { label: 'Slack token', pattern: /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/ },
   { label: 'credential-bearing database URL', pattern: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?):\/\/[^:\s/]+:[^@\s/]+@/i },
   { label: 'JWT-like credential', pattern: /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/ },
@@ -81,10 +79,11 @@ const assignmentPattern = /\b(api[_-]?key|client[_-]?secret|password|token|webho
 const placeholderPattern = /(example|placeholder|redacted|your-|dummy|mock|test-only|not-a-real|\$\{\{|<[^>]+>)/i;
 
 for (const file of candidateFiles) {
-  if (excludedFiles.has(file) || excludedPrefixes.some((prefix) => file.startsWith(prefix))) continue;
+  if (excludedFiles.has(file)) continue;
   if (!scannableExtensions.has(path.extname(file).toLowerCase())) continue;
-
   const content = readFileSync(path.join(projectRoot, file), 'utf8');
+  if (content.includes('\0')) continue;
+  scannedFileCount += 1;
   const lines = content.split(/\r?\n/);
 
   for (const secretPattern of secretPatterns) {
@@ -120,14 +119,21 @@ for (const file of candidateFiles) {
       const normalized = statement.replace(/--.*$/gm, ' ').replace(/\s+/g, ' ').trim();
       if (!normalized) continue;
 
-      if (/\bgrant\b[^;]*\b(insert|update|delete|truncate)\b[^;]*\bto\s+anon\b/i.test(normalized)) {
-        addFailure(file, 'anonymous database write grant detected');
+      if (/\bgrant\b[^;]*\b(insert|update|delete|truncate|all(?:\s+privileges)?)\b[^;]*\bto\s+(?:public|anon)\b/i.test(normalized)) {
+        addFailure(file, 'public or anonymous database write grant detected');
       }
 
       if (/\bcreate\s+policy\b/i.test(normalized)
         && /\bfor\s+(insert|update|delete|all)\b/i.test(normalized)
         && !/\bto\s+(authenticated|service_role)\b/i.test(normalized)) {
         addFailure(file, 'write policy must explicitly target authenticated or service_role');
+      }
+
+      if (/\bcreate\s+policy\b/i.test(normalized)
+        && /\bfor\s+(insert|update|delete|all)\b/i.test(normalized)
+        && /\bto\s+authenticated\b/i.test(normalized)
+        && /\b(?:using|with\s+check)\s*\(\s*true\s*\)/i.test(normalized)) {
+        addFailure(file, 'authenticated write policy must be bound to the current user');
       }
     }
   }
@@ -139,6 +145,7 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   console.info(
-    `Security check passed: ${candidateFiles.length} tracked and untracked release-candidate files reviewed.`,
+    `Security check passed: ${scannedFileCount} text files scanned; `
+      + `${candidateFiles.length} release-candidate paths enumerated.`,
   );
 }

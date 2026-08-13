@@ -6,7 +6,7 @@
  * with Vite's module isolation in test mode.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { withLogging } from '@/utils/logger';
+import { createLoggerScope, withLogging } from '@/utils/logger';
 // Re-import to pick up module-level state
 import { logger } from '@/utils/logger';
 
@@ -130,5 +130,16 @@ describe('logger output', () => {
     );
     expect(exitLog.status).toBe('failed');
     expect(exitLog.error).toContain('boom');
+  });
+
+  it('emits correlated RaceDetail diagnostic events', () => {
+    createLoggerScope({
+      flowId: 'flow-1', feature: 'race_detail', season: '2026', round: '1', section: 'results',
+    }).log({ operation: 'race_results', outcome: 'failed', error: new Error('Failed to fetch') });
+
+    const parsed = JSON.parse(captured[0]);
+    expect(parsed.flowId).toBe('flow-1');
+    expect(parsed.operation).toBe('race_results');
+    expect(parsed.reasonCode).toBe('network');
   });
 });

@@ -1,7 +1,8 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.12.2",
+  "version": "0.13.0",
+  "packageManager": "npm@11.12.0",
   "type": "module",
   "engines": {
     "node": ">=24 <25"
@@ -20,10 +21,15 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint . --report-unused-disable-directives",
     "lint:strict": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "encoding:check": "node ./scripts/check-text-encoding.mjs",
+    "deployment:verify": "node ./scripts/verify-deployment-config.mjs",
+    "service-worker:verify": "node ./scripts/verify-built-service-worker.mjs",
     "security:check": "node ./scripts/security-check.mjs",
+    "sast:check": "node ./scripts/run-semgrep.mjs",
     "security:audit": "npm audit --audit-level=high",
     "security:audit:production": "npm audit --omit=dev --audit-level=high",
-    "quality:check": "npm run security:check && npm run security:audit && npm run lint:strict && npm run type-check && npm run test:coverage && npm run build && npm run budget:performance && npm run lighthouse:config:verify && npm run lighthouse && npm run test:e2e:built",
+    "workflows:verify": "node --test ./scripts/workflow-policy.test.mjs && node ./scripts/verify-github-workflows.mjs",
+    "quality:check": "npm run workflows:verify && npm run deployment:verify && npm run encoding:check && npm run security:check && npm run sast:check && npm run security:audit && npm run lint:strict && npm run type-check && npm run test:coverage && npm run build && npm run service-worker:verify && npm run budget:performance && npm run lighthouse:config:verify && npm run lighthouse && npm run test:e2e:built",
     "preview": "vite preview",
     "fastf1:export-race": "python scripts/export-fastf1-race-data.py",
     "fastf1:export-season": "python scripts/export-fastf1-season-data.py",
@@ -58,6 +64,9 @@
     "web-vitals": "^5.3.0",
     "zod": "^4.4.3",
     "zustand": "^4.5.2"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.9"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",

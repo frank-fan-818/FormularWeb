@@ -3,15 +3,15 @@
 .home-command-primary,
 .home-command-secondary {
   padding: 0 18px;
-  border: 1px solid var(--f1-red);
+  border: 1px solid var(--f1-red-dark);
   border-radius: var(--radius-control);
   font-weight: var(--font-bold);
   cursor: pointer;
 }
 
-.home-command-primary { color: #fff; background: var(--f1-red); }
+.home-command-primary { color: #fff; background: var(--f1-red-dark); }
 .home-command-secondary { color: #fff; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.24); }
-.home-command-primary:hover { background: var(--f1-red-light); }
+.home-command-primary:hover { background: color-mix(in srgb, var(--f1-red-dark) 84%, #000); }
 .home-command-secondary:hover { border-color: rgba(255, 255, 255, 0.52); }
 
 .stats-grid {
@@ -47,7 +47,7 @@
 }
 
 .season-pulse-kicker {
-  color: var(--f1-red);
+  color: var(--f1-red-text);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
   text-transform: uppercase;
@@ -56,7 +56,7 @@
 
 .season-pulse p {
   margin: var(--space-1) 0 0;
-  color: var(--text-secondary);
+  color: var(--surface-strong-muted);
   line-height: var(--leading-normal);
 }
 
@@ -257,7 +257,7 @@
 }
 
 .official-standings-header strong {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
 }
 
@@ -325,6 +325,9 @@
 }
 
 .standings-link-f1 {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
   border: none;
   background: transparent;
   padding: 0;
@@ -333,7 +336,7 @@
 
 .standings-team-f1 {
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-weight: var(--font-medium);
 }
 
@@ -346,12 +349,13 @@
   display: flex;
   align-items: baseline;
   gap: var(--space-1);
+  color: var(--f1-red-text);
 }
 
 .standings-points-f1 .points-unit {
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 .standings-gap-f1 {
@@ -361,7 +365,7 @@
   padding: 2px 7px;
   border-radius: var(--radius-full);
   background: var(--bg-secondary);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 10px;
   font-weight: var(--font-semibold);
   text-transform: uppercase;

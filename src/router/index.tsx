@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter, useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Home from '@/pages/Home';
@@ -76,6 +76,11 @@ function withSuspense(element: JSX.Element) {
   );
 }
 
+function RaceIndexRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: 'results', search }} replace />;
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -97,7 +102,7 @@ const router = createBrowserRouter([
         path: '/races/:round',
         element: withSuspense(<RaceLayout />),
         children: [
-          { index: true, element: <Navigate to="results" replace /> },
+          { index: true, element: <RaceIndexRedirect /> },
           { path: 'results', element: withSuspense(<RaceResults />) },
           { path: 'qualifying', element: withSuspense(<RaceQualifying />) },
           {

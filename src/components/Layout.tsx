@@ -1,25 +1,12 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
 import { useAppStore } from '@/store';
+import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
 import './Layout.css';
 
 const GlobalSearchBox = lazy(() => import('@/components/GlobalSearchBox'));
-
-const TEXT = {
-  home: '\u9996\u9875',
-  seasonStandings: '\u8d5b\u5b63\u79ef\u5206',
-  races: '\u5206\u7ad9\u8d5b\u4e8b',
-  drivers: '\u8f66\u624b',
-  constructors: '\u8f66\u961f',
-  circuits: '\u8d5b\u9053',
-  searching: '\u52a0\u8f7d\u641c\u7d22\u4e2d...',
-  searchPlaceholder: '\u641c\u7d22\u8f66\u624b\u3001\u8f66\u961f\u3001\u8d5b\u9053\u6216\u8d5b\u4e8b',
-  appName: 'F1 \u6570\u636e\u4e2d\u5fc3',
-  currentSeason: '\u5f53\u524d\u8d5b\u5b63',
-  settings: '\u8bbe\u7f6e',
-  account: '\u8d26\u53f7',
-};
 
 interface IconProps {
   className?: string;
@@ -161,16 +148,6 @@ const SettingIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
-const navItems = [
-  { key: '/', icon: HomeIcon, label: TEXT.home },
-  { key: '/seasons', icon: SeasonIcon, label: TEXT.seasonStandings },
-  { key: '/races', icon: RaceIcon, label: TEXT.races },
-  { key: '/drivers', icon: DriverIcon, label: TEXT.drivers },
-  { key: '/constructors', icon: ConstructorIcon, label: TEXT.constructors },
-  { key: '/circuits', icon: CircuitIcon, label: TEXT.circuits },
-  { key: '/settings', icon: SettingIcon, label: TEXT.settings },
-];
-
 const resolveActiveNavKey = (pathname: string) => {
   if (pathname === '/') {
     return '/';
@@ -202,6 +179,7 @@ const resolveActiveNavKey = (pathname: string) => {
 const LayoutComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { i18n, t } = useTranslation();
   const { currentSeason, setCurrentSeason, sidebarCollapsed, toggleSidebar, theme, setTheme } = useAppStore();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -209,11 +187,28 @@ const LayoutComponent = () => {
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
   const [searchActivated, setSearchActivated] = useState(false);
-  const [language, setLanguage] = useState(() => (
-    localStorage.getItem('i18nextLng') === 'en' ? 'en' : 'zh-CN'
-  ));
+  const text = {
+    searching: t('searchLoading'),
+    searchPlaceholder: t('searchPlaceholder'),
+    appName: t('appName'),
+    currentSeason: t('currentSeason'),
+    account: t('account'),
+  };
+  const navItems = [
+    { key: '/', icon: HomeIcon, label: t('home') },
+    { key: '/seasons', icon: SeasonIcon, label: t('seasonStandings') },
+    { key: '/races', icon: RaceIcon, label: t('races') },
+    { key: '/drivers', icon: DriverIcon, label: t('drivers') },
+    { key: '/constructors', icon: ConstructorIcon, label: t('constructors') },
+    { key: '/circuits', icon: CircuitIcon, label: t('circuits') },
+    { key: '/settings', icon: SettingIcon, label: t('settings') },
+  ];
+  const language = i18n.resolvedLanguage === 'en' || i18n.language === 'en' ? 'en' : 'zh-CN';
   const { seasons } = useSeasonsCached();
   const activeNavKey = resolveActiveNavKey(location.pathname);
+  const displayedSeason = location.pathname.startsWith('/races/')
+    ? getRaceSeasonFromSearch(location.search, currentSeason)
+    : currentSeason;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -254,25 +249,37 @@ const LayoutComponent = () => {
       onClick={activateSearch}
       onFocus={activateSearch}
       onMouseEnter={() => void import('@/components/GlobalSearchBox')}
-      aria-label={TEXT.searchPlaceholder}
+      aria-label={text.searchPlaceholder}
     >
       <SearchIcon className="search-trigger-icon" />
-      <span className="search-trigger-text">{TEXT.searchPlaceholder}</span>
+      <span className="search-trigger-text">{text.searchPlaceholder}</span>
     </button>
   );
 
   const searchBox = searchActivated ? (
-    <Suspense fallback={<div className="search-loading-shell">{TEXT.searching}</div>}>
+    <Suspense fallback={<div className="search-loading-shell">{text.searching}</div>}>
       <GlobalSearchBox autoFocus mobileOptimized={isMobile} />
     </Suspense>
   ) : searchTrigger;
 
   const seasonSwitcher = (
     <label className="season-switcher">
-      <span className="season-label">{TEXT.currentSeason}</span>
+      <span className="season-label">{text.currentSeason}</span>
       <select
-        value={currentSeason}
-        onChange={(event) => setCurrentSeason(event.target.value)}
+        value={displayedSeason}
+        onChange={(event) => {
+          const nextSeason = event.target.value;
+          setCurrentSeason(nextSeason);
+          const currentPathname = window.location.pathname;
+          if (currentPathname.startsWith('/races/')) {
+            const nextLocation = buildRaceSeasonLocation(
+              currentPathname,
+              window.location.search,
+              nextSeason,
+            );
+            if (nextLocation) navigate(nextLocation, { replace: true });
+          }
+        }}
         className="season-select-native"
       >
         {seasons.map((season) => (
@@ -290,11 +297,11 @@ const LayoutComponent = () => {
         value={language}
         onChange={(event) => {
           const nextLanguage = event.target.value === 'en' ? 'en' : 'zh-CN';
-          setLanguage(nextLanguage);
           localStorage.setItem('i18nextLng', nextLanguage);
-          void import('@/i18n').then(({ default: i18n }) => i18n.changeLanguage(nextLanguage));
+          void i18n.changeLanguage(nextLanguage);
         }}
         className="season-select-native"
+        aria-label={t('settingsLanguage')}
       >
         <option value="zh-CN">中文</option>
         <option value="en">EN</option>
@@ -316,7 +323,9 @@ const LayoutComponent = () => {
       type="button"
       onClick={cycleTheme}
       className="theme-toggle-btn"
-      aria-label={`Theme: ${theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System'}`}
+      aria-label={`${t('settingsTheme')}: ${
+        theme === 'dark' ? t('settingsDark') : theme === 'light' ? t('settingsLight') : t('settingsSystem')
+      }`}
     >
       {themeIcon}
     </button>
@@ -331,10 +340,10 @@ const LayoutComponent = () => {
       type="button"
       className="auth-trigger-btn"
       onClick={handleAuthAction}
-      aria-label={TEXT.account}
-      title={TEXT.account}
+      aria-label={text.account}
+      title={text.account}
     >
-      {TEXT.account}
+      {text.account}
     </button>
   );
 
@@ -344,8 +353,8 @@ const LayoutComponent = () => {
       onClick={isMobile ? () => setMobileSidebarOpen((previous) => !previous) : toggleSidebar}
       className="menu-toggle-btn"
       aria-label={mobileSidebarOpen || !sidebarCollapsed
-        ? '\u6536\u8d77\u4fa7\u8fb9\u680f'
-        : '\u5c55\u5f00\u4fa7\u8fb9\u680f'}
+        ? t('collapseSidebar')
+        : t('expandSidebar')}
     >
       {isMobile
         ? (mobileSidebarOpen ? <MenuFoldIcon className="menu-toggle-icon" /> : <MenuUnfoldIcon className="menu-toggle-icon" />)
@@ -370,10 +379,10 @@ const LayoutComponent = () => {
           onTouchEnd={handleTouchEnd}
         >
           <div className="sidebar-logo">
-            {isMobile ? TEXT.appName : (sidebarCollapsed ? 'F1' : TEXT.appName)}
+            {isMobile ? text.appName : (sidebarCollapsed ? 'F1' : text.appName)}
           </div>
 
-          <nav className="sidebar-nav" aria-label={TEXT.appName}>
+          <nav className="sidebar-nav" aria-label={text.appName}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeNavKey === item.key;

@@ -18,6 +18,7 @@ export default [
       'node_modules/**',
       'scripts/**',
       '.claude/**',
+      '.cache/**',
       '.trae/**',
       'import-*.ts',
       'test-*.ts',

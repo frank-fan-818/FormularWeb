@@ -168,7 +168,7 @@ function buildRaceEntry(race: RaceSearchSource): SearchableEntry {
       type: 'race',
       id: `${season}-${round}`,
       title: race.race_name,
-      subtitle: `${season} \u00b7 \u7b2c ${round} \u7ad9`,
+      subtitle: `${season} \u00b7 R${round}`,
       route: `/races/${encodeURIComponent(round)}/info?season=${encodeURIComponent(season)}`,
       keywords: uniqueNormalized([
         race.race_name,
@@ -260,13 +260,6 @@ function scoreEntry(entry: SearchableEntry, query: string): number {
   return Math.max(primaryScore, aliasScore);
 }
 
-const groupLabels: Record<SearchEntityType, string> = {
-  driver: '\u8f66\u624b',
-  constructor: '\u8f66\u961f',
-  circuit: '\u8d5b\u9053',
-  race: '\u8d5b\u4e8b',
-};
-
 export function searchIndex(entries: SearchableEntry[], rawQuery: string): SearchResultGroup[] {
   const query = normalizeSearchText(rawQuery);
   if (!query) {
@@ -308,7 +301,6 @@ export function searchIndex(entries: SearchableEntry[], rawQuery: string): Searc
       const items = grouped.get(type) || [];
       return {
         type,
-        label: groupLabels[type],
         items,
       };
     })

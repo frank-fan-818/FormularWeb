@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { seasonApi } from '@/api/ergast';
 import type { QualifyingResult, Result } from '@/types';
 import { getRaceIdentity, isRaceIdentityCurrent } from '@/utils/race/raceSessionState';
+import { createLoggerScope } from '@/utils/logger';
 
 const EMPTY_RESULTS: Result[] = [];
 const EMPTY_QUALIFYING_RESULTS: QualifyingResult[] = [];
 
-export function useRacePrimaryResults(season: string, round: string | undefined) {
+export function useRacePrimaryResults(season: string, round: string | undefined, flowId?: string) {
   const [qualifyingResults, setQualifyingResults] = useState<QualifyingResult[]>([]);
   const [raceResults, setRaceResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,13 @@ export function useRacePrimaryResults(season: string, round: string | undefined)
     }
 
     let cancelled = false;
+    let completed = false;
     const requestedIdentity = raceIdentity;
+    const diagnostics = flowId ? createLoggerScope({
+      flowId, feature: 'race_detail', season, round, section: 'primary',
+    }) : null;
+    const startedAt = performance.now();
+    diagnostics?.log({ operation: 'primary_results', outcome: 'started', source: 'jolpica' });
     setLoading(true);
     setError(null);
 
@@ -31,7 +38,26 @@ export function useRacePrimaryResults(season: string, round: string | undefined)
       seasonApi.getQualifyingResults(season, round),
       seasonApi.getRaceResults(season, round),
     ]).then(([qualifyingData, raceData]) => {
-      if (cancelled) return;
+      completed = true;
+      if (cancelled) {
+        diagnostics?.log({ operation: 'primary_results', outcome: 'stale_ignored', source: 'jolpica' });
+        return;
+      }
+      const durationMs = performance.now() - startedAt;
+      diagnostics?.log({
+        operation: 'qualifying_results',
+        outcome: qualifyingData.status === 'rejected' ? 'failed' : qualifyingData.value?.QualifyingResults?.length ? 'succeeded' : 'empty',
+        source: 'jolpica', durationMs,
+        itemCount: qualifyingData.status === 'fulfilled' ? qualifyingData.value?.QualifyingResults?.length || 0 : undefined,
+        error: qualifyingData.status === 'rejected' ? qualifyingData.reason : undefined,
+      });
+      diagnostics?.log({
+        operation: 'race_results',
+        outcome: raceData.status === 'rejected' ? 'failed' : raceData.value?.Results?.length ? 'succeeded' : 'empty',
+        source: 'jolpica', durationMs,
+        itemCount: raceData.status === 'fulfilled' ? raceData.value?.Results?.length || 0 : undefined,
+        error: raceData.status === 'rejected' ? raceData.reason : undefined,
+      });
       setQualifyingResults(
         qualifyingData.status === 'fulfilled' ? qualifyingData.value?.QualifyingResults || [] : [],
       );
@@ -47,8 +73,11 @@ export function useRacePrimaryResults(season: string, round: string | undefined)
       setLoading(false);
     });
 
-    return () => { cancelled = true; };
-  }, [raceIdentity, reloadKey, round, season]);
+    return () => {
+      cancelled = true;
+      if (!completed) diagnostics?.log({ operation: 'primary_results', outcome: 'aborted', source: 'jolpica' });
+    };
+  }, [flowId, raceIdentity, reloadKey, round, season]);
 
   const retry = useCallback(() => setReloadKey((value) => value + 1), []);
 

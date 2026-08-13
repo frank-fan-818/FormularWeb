@@ -36,6 +36,7 @@ const InnerLayout = () => {
     activeWeekendMode,
     sessionLoadErrors,
     retryActiveSession,
+    diagnosticFlowId,
   } = useRaceData();
 
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
@@ -67,6 +68,7 @@ const InnerLayout = () => {
           <strong>{'\u8d5b\u4e8b\u6570\u636e\u6682\u65f6\u65e0\u6cd5\u52a0\u8f7d'}</strong>
           <span>{'\u8bf7\u68c0\u67e5\u7f51\u7edc\u540e\u91cd\u8bd5\uff0c\u5df2\u7f13\u5b58\u6570\u636e\u4e0d\u4f1a\u88ab\u8986\u76d6\u3002'}</span>
           <Button type="primary" onClick={retryRaceData}>{'\u91cd\u8bd5'}</Button>
+          <small>{`诊断编号: ${diagnosticFlowId}`}</small>
         </div>
       </div>
     );
@@ -164,6 +166,7 @@ const InnerLayout = () => {
         <div className="race-partial-notice" role="status">
           <span>{'\u90e8\u5206\u8d5b\u4e8b\u6570\u636e\u6682\u65f6\u65e0\u6cd5\u66f4\u65b0\uff0c\u5df2\u52a0\u8f7d\u7684\u5185\u5bb9\u4ecd\u53ef\u67e5\u770b\u3002'}</span>
           <Button size="large" onClick={retryRaceData}>{'\u91cd\u8bd5'}</Button>
+          <small>{`诊断编号: ${diagnosticFlowId}`}</small>
         </div>
       ) : null}
       {sessionLoadErrors[activeSessionErrorKey] ? (
@@ -183,7 +186,7 @@ const InnerLayout = () => {
         className="race-subpage-tabs"
         activeKey={routeTab}
         onChange={(key) => {
-          navigate(`/races/${raceInfo.round}/${key}`, { replace: true });
+          navigate(`/races/${raceInfo.round}/${key}${location.search}`, { replace: true });
         }}
         items={[
           {

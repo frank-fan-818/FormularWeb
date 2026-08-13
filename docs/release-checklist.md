@@ -4,7 +4,7 @@
 
 - `npm ci`
 - `npm run quality:check`
-- GitHub CodeQL and Dependabot checks are green
+- Semgrep OSS, workflow safety validation, and Dependabot checks are green
 - Runtime and development dependencies have no high or critical findings
 
 ## Configuration and data
@@ -14,7 +14,9 @@
 - Latest `scripts/sql/` security hardening migration has been applied
 - Supabase Auth redirect URLs include the production `/login` callback
 - Anonymous users cannot insert, update, or delete application data
-- Authenticated error reports contain no query string, URL fragment, token, or password
+- Authenticated diagnostic rows persist only an allowlisted error category,
+  SHA-256 fingerprint, length, and sanitized static labels; raw error messages
+  and browser URL query/fragment data are never stored
 
 ## Browser QA
 

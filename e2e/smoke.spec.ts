@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const routes = [
   '/',
@@ -20,6 +20,88 @@ const compactViewportRoutes = new Set([
   '/settings',
   '/route-that-does-not-exist',
 ]);
+
+async function mockHistoricalRaceApi(page: Page) {
+  await page.route('**/f1-api/**', async (requestRoute) => {
+    const pathname = new URL(requestRoute.request().url()).pathname;
+    const isSeasonList = pathname.endsWith('/seasons.json');
+    const calendarSeason = pathname.endsWith('/2024.json')
+      ? '2024'
+      : pathname.endsWith('/2025.json')
+        ? '2025'
+        : null;
+    const races = calendarSeason
+      ? Array.from({ length: 6 }, (_, index) => {
+        const round = index + 1;
+        return {
+          season: calendarSeason,
+          round: String(round),
+          raceName: round === 6
+            ? `${calendarSeason === '2025' ? '2025 ' : ''}Miami Grand Prix`
+            : `${calendarSeason} Round ${round}`,
+          date: round === 6 ? `${calendarSeason}-05-05` : `${calendarSeason}-0${round}-01`,
+          time: '20:00:00Z',
+          Circuit: {
+            circuitId: round === 6 ? 'miami' : `circuit-${round}`,
+            circuitName: round === 6 ? 'Miami International Autodrome' : `Circuit ${round}`,
+            Location: {
+              locality: round === 6 ? 'Miami' : `City ${round}`,
+              country: 'USA',
+              lat: '25.9581',
+              long: '-80.2389',
+            },
+          },
+        };
+      })
+      : [];
+
+    await requestRoute.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        MRData: {
+          total: String(isSeasonList ? 2 : races.length),
+          RaceTable: { Races: races },
+          SeasonTable: { Seasons: isSeasonList ? [{ season: '2024' }, { season: '2025' }] : [] },
+          StandingsTable: { StandingsLists: [] },
+        },
+      }),
+    });
+  });
+}
+
+async function getControllerBuildId(page: Page): Promise<string | null> {
+  return page.evaluate(async () => {
+    const worker = navigator.serviceWorker.controller;
+    if (!worker) return null;
+
+    return new Promise<string | null>((resolve) => {
+      const channel = new MessageChannel();
+      const timeout = window.setTimeout(() => resolve(null), 1_000);
+      channel.port1.onmessage = (event: MessageEvent<{ buildId?: unknown }>) => {
+        window.clearTimeout(timeout);
+        resolve(typeof event.data?.buildId === 'string' ? event.data.buildId : null);
+      };
+      worker.postMessage({ type: 'GET_BUILD_ID' }, [channel.port2]);
+    });
+  });
+}
+
+async function ensureServiceWorkerController(page: Page, buildId: string) {
+  await page.goto('/');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  if (await getControllerBuildId(page) === null) {
+    await page.reload();
+  }
+  await expect.poll(() => getControllerBuildId(page)).toBe(buildId);
+}
+
+test('missing static assets return a real 404 instead of SPA HTML', async ({ request }) => {
+  const response = await request.get('/assets/removed-build-chunk.js');
+
+  expect(response.status()).toBe(404);
+  expect(response.headers()['content-type']).toContain('text/plain');
+  expect(await response.text()).not.toContain('<!doctype html>');
+});
 
 for (const route of routes) {
   test(`${route} renders without a browser error`, async ({ page }, testInfo) => {
@@ -43,6 +125,13 @@ for (const route of routes) {
         }),
       });
     });
+    await page.route('**/rest/v1/**', async (requestRoute) => {
+      await requestRoute.fulfill({
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: '[]',
+      });
+    });
 
     page.on('console', (message) => {
       if (message.type() === 'error') browserErrors.push(message.text());
@@ -61,7 +150,7 @@ for (const route of routes) {
     });
     expect(response?.status(), `navigation status for ${route}`).toBeLessThan(500);
     await expect(page.locator('main')).toBeVisible();
-    await expect(page.getByText('页面加载失败')).toHaveCount(0);
+    await expect(page.getByText('\u9875\u9762\u52a0\u8f7d\u5931\u8d25')).toHaveCount(0);
     await page.waitForTimeout(300);
 
     if (testInfo.project.name !== 'desktop-chromium') {
@@ -184,4 +273,116 @@ test('global search navigates to every supported entity type', async ({ page }, 
   }
 
   expect(browserErrors, 'console/page errors after global search navigation').toEqual([]);
+});
+
+test('historical race navigation preserves and updates the season identity', async ({ page, browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'The interaction is viewport-independent.');
+
+  await mockHistoricalRaceApi(page);
+  await page.goto('/races');
+  await page.locator('.season-switcher .season-select-native').first().selectOption('2024');
+  await page.getByRole('button', { name: /Miami Grand Prix/ }).click();
+  await expect(page).toHaveURL(/\/races\/6\/results\?season=2024$/);
+  await expect(page.getByRole('heading', { name: /Miami Grand Prix/ })).toBeVisible();
+  await expect(page.locator('.season-switcher .season-select-native').first()).toHaveValue('2024');
+
+  await page.locator('.season-switcher .season-select-native').first().selectOption('2025');
+  await expect(page).toHaveURL(/\/races\/6\/results\?season=2025$/);
+  await expect(page.getByRole('heading', { name: /2025 Miami Grand Prix/ })).toBeVisible();
+
+  const copiedUrl = page.url();
+  const freshContext = await browser.newContext();
+  const freshPage = await freshContext.newPage();
+  try {
+    await mockHistoricalRaceApi(freshPage);
+    await freshPage.goto(copiedUrl);
+    await expect(freshPage.locator('.season-switcher .season-select-native').first()).toHaveValue('2025');
+    await expect(freshPage.getByRole('heading', { name: /2025 Miami Grand Prix/ })).toBeVisible();
+
+    await freshPage.goto('/races/6?season=2024');
+    await expect(freshPage).toHaveURL(/\/races\/6\/results\?season=2024$/);
+  } finally {
+    await freshContext.close();
+  }
+});
+
+test('settings language changes stay synchronized with the header', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'The interaction is viewport-independent.');
+
+  await page.goto('/settings');
+  const headerLanguage = page.locator('.lang-switcher .season-select-native');
+  await expect(headerLanguage).toHaveValue('zh-CN');
+  await expect(headerLanguage).toHaveAccessibleName('语言');
+
+  await page.locator('.settings-card').first().locator('.ant-select').click();
+  const visibleEnglishOption = page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^English$/ });
+  await expect(visibleEnglishOption).toBeVisible();
+  await visibleEnglishOption.click();
+
+  await expect(headerLanguage).toHaveValue('en');
+  await expect(headerLanguage).toHaveAccessibleName('Language');
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Home' })).toBeVisible();
+  await expect(page.getByText('Current Season', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', {
+    name: 'Search drivers, teams, circuits or races',
+  })).toBeVisible();
+});
+
+test('service worker upgrades every long-lived tab before pruning the previous shell', async ({
+  page,
+  context,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'One lifecycle run covers all viewports.');
+
+  const firstBuildId = 'f1-shell-aaaaaaaaaaaa';
+  const secondBuildId = 'f1-shell-bbbbbbbbbbbb';
+  await context.addCookies([{
+    name: 'qa-sw-version',
+    value: 'aaaaaaaaaaaa',
+    domain: '127.0.0.1',
+    path: '/',
+  }]);
+  await ensureServiceWorkerController(page, firstBuildId);
+
+  const secondPage = await context.newPage();
+  await ensureServiceWorkerController(secondPage, firstBuildId);
+
+  await context.addCookies([{
+    name: 'qa-sw-version',
+    value: 'bbbbbbbbbbbb',
+    domain: '127.0.0.1',
+    path: '/',
+  }]);
+
+  const firstReload = page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame());
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event('vite:preloadError', { cancelable: true }));
+  });
+  await firstReload;
+  await expect.poll(() => getControllerBuildId(page)).toBe(secondBuildId);
+  await expect.poll(() => getControllerBuildId(secondPage)).toBe(secondBuildId);
+  await expect.poll(() => secondPage.evaluate(async () => (
+    (await caches.keys()).filter((cacheName) => cacheName.startsWith('f1-shell-')).sort()
+  ))).toEqual([firstBuildId, secondBuildId]);
+
+  const removedChunkResponse = secondPage.waitForResponse((response) => (
+    new URL(response.url()).pathname === '/assets/Settings-qa-removed.js'
+      && response.status() === 404
+  ));
+  const secondReload = secondPage.waitForEvent('framenavigated', (frame) => frame === secondPage.mainFrame());
+  await secondPage.bringToFront();
+  await secondPage.getByRole('button', { name: '\u8bbe\u7f6e' }).click();
+  await removedChunkResponse;
+  await secondReload;
+  await expect(secondPage).toHaveURL(/\/settings$/);
+  await expect(secondPage.getByRole('heading', { name: 'CONTROL SETTINGS' })).toBeVisible();
+  await expect(secondPage.getByText('\u9875\u9762\u52a0\u8f7d\u5931\u8d25')).toHaveCount(0);
+  await expect.poll(() => getControllerBuildId(secondPage)).toBe(secondBuildId);
+
+  await expect.poll(() => secondPage.evaluate(async () => (
+    (await caches.keys()).filter((cacheName) => cacheName.startsWith('f1-shell-'))
+  ))).toEqual([secondBuildId]);
 });

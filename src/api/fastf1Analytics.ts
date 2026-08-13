@@ -4,6 +4,7 @@ import { logger } from '@/utils/logger';
 import { supabase } from '@/utils/supabase';
 import { FastF1AnalyticsEnvelopeSchema, FastF1TelemetryEnvelopeSchema } from '@/api/schemas';
 import { withRetry } from '@/utils/withRetry';
+import type { DiagnosticLoggerScope } from '@/utils/logger';
 
 const PUBLIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 const FASTF1_SESSION_ANALYTICS_TABLE = 'fastf1_session_analytics';
@@ -88,6 +89,7 @@ export const fastF1AnalyticsApi = {
     round: string,
     session = 'R',
     signal?: AbortSignal,
+    diagnostics?: DiagnosticLoggerScope | null,
   ): Promise<FastF1RaceAnalytics | null> {
     const sessionCode = session.toUpperCase();
 
@@ -98,8 +100,10 @@ export const fastF1AnalyticsApi = {
       );
       if (databaseAnalytics) {
         assertSnapshotIdentity(databaseAnalytics, season, round, sessionCode);
+        diagnostics?.log({ operation: 'fastf1_source', outcome: 'succeeded', source: 'supabase', session: sessionCode });
         return databaseAnalytics;
       }
+      diagnostics?.log({ operation: 'fastf1_source', outcome: 'degraded', source: 'supabase', reasonCode: 'source_empty', session: sessionCode });
     } catch (error) {
       if (signal?.aborted) {
         throw error;
@@ -113,6 +117,7 @@ export const fastF1AnalyticsApi = {
           error: 'FastF1 数据库查询失败，降级到静态 JSON',
         });
       }
+      diagnostics?.log({ operation: 'fastf1_source', outcome: 'degraded', source: 'supabase', error, session: sessionCode });
     }
 
     const response = await withRetry(
@@ -132,6 +137,7 @@ export const fastF1AnalyticsApi = {
     );
 
     if (response.status === 404) {
+      diagnostics?.log({ operation: 'fastf1_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
       return null;
     }
 
@@ -141,6 +147,7 @@ export const fastF1AnalyticsApi = {
 
     const payload = FastF1AnalyticsEnvelopeSchema.parse(await response.json()) as FastF1RaceAnalytics;
     assertSnapshotIdentity(payload, season, round, sessionCode);
+    diagnostics?.log({ operation: 'fastf1_static', outcome: 'succeeded', source: 'fastf1_static', session: sessionCode, itemCount: payload.lapTimeSeries.length });
     return payload;
   },
 
@@ -149,6 +156,7 @@ export const fastF1AnalyticsApi = {
     round: string,
     session = 'R',
     signal?: AbortSignal,
+    diagnostics?: DiagnosticLoggerScope | null,
   ): Promise<FastF1TelemetryPayload | null> {
     const sessionCode = session.toUpperCase();
 
@@ -171,6 +179,7 @@ export const fastF1AnalyticsApi = {
     );
 
     if (response.status === 404) {
+      diagnostics?.log({ operation: 'fastf1_telemetry_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
       return null;
     }
 
@@ -180,6 +189,7 @@ export const fastF1AnalyticsApi = {
 
     const payload = FastF1TelemetryEnvelopeSchema.parse(await response.json()) as unknown as FastF1TelemetryPayload;
     assertSnapshotIdentity(payload, season, round, sessionCode);
+    diagnostics?.log({ operation: 'fastf1_telemetry_static', outcome: 'succeeded', source: 'fastf1_static', session: sessionCode });
     return payload;
   },
 };

@@ -10,13 +10,18 @@ updates:
     open-pull-requests-limit: 5
     versioning-strategy: increase-if-necessary
     groups:
-      production:
+      production-minor-patch:
         dependency-type: production
-      development:
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
         dependency-type: development
+        update-types:
+          - minor
+          - patch
     labels:
       - dependencies
-      - security
 
   - package-ecosystem: github-actions
     directory: /
@@ -24,4 +29,3 @@ updates:
       interval: monthly
     labels:
       - dependencies
-      - security

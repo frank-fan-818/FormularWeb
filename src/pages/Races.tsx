@@ -25,7 +25,9 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
       key={race.round}
       className={`race-calendar-row race-calendar-row--${status}`}
       style={{ animationDelay: `${index * 0.035}s`, '--race-status-color': color } as React.CSSProperties}
-      onClick={() => navigate(`/races/${race.round}`)}
+      onClick={() => navigate(
+        `/races/${race.round}/results?season=${encodeURIComponent(race.season)}`,
+      )}
     >
       <span className="race-calendar-round">R{String(race.round).padStart(2, '0')}</span>
       <div className="race-calendar-copy">
@@ -43,11 +45,12 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
 const Races = () => {
   const { currentSeason } = useAppStore();
   const { races, loading } = useSeasonData(currentSeason);
-  const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
-  const upcomingRaces = races.filter((race) => {
-    const round = Number(race.round);
-    return race !== ongoingRace && race !== nextRace && round > Number(nextRace?.round || 0);
-  });
+  const {
+    ongoingRace,
+    nextRace,
+    upcomingRaces,
+    completedRaces,
+  } = useRacesByStatus(races);
   const progress = Math.round((completedRaces.length / Math.max(races.length, 1)) * 100);
 
   return (

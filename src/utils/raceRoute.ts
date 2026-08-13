@@ -10,3 +10,19 @@ export function getRaceSeasonFromSearch(search: string, fallbackSeason: string):
     ? requestedSeason
     : fallbackSeason;
 }
+
+export function buildRaceSeasonLocation(
+  pathname: string,
+  search: string,
+  nextSeason: string,
+): string | null {
+  const supportedSeason = getRaceSeasonFromSearch(
+    `?season=${encodeURIComponent(nextSeason)}`,
+    '',
+  );
+  if (!supportedSeason) return null;
+
+  const searchParams = new URLSearchParams(search);
+  searchParams.set('season', supportedSeason);
+  return `${pathname}?${searchParams.toString()}`;
+}
