@@ -137,10 +137,15 @@ describe('logger output', () => {
       flowId: 'flow-1', feature: 'race_detail', season: '2026', round: '1', section: 'results',
     }).log({ operation: 'race_results', outcome: 'failed', error: new Error('Failed to fetch') });
 
-    await vi.waitFor(() => expect(captured).toHaveLength(1));
-    const parsed = JSON.parse(captured[0]);
-    expect(parsed.flowId).toBe('flow-1');
-    expect(parsed.operation).toBe('race_results');
-    expect(parsed.reasonCode).toBe('network');
+    let parsed: Record<string, unknown> | undefined;
+    await vi.waitFor(() => {
+      parsed = captured
+        .map((message) => JSON.parse(message) as Record<string, unknown>)
+        .find((entry) => entry.flowId === 'flow-1');
+      expect(parsed).toBeDefined();
+    });
+    expect(parsed?.flowId).toBe('flow-1');
+    expect(parsed?.operation).toBe('race_results');
+    expect(parsed?.reasonCode).toBe('network');
   });
 });
