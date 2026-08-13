@@ -1,6 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { logger } from '@/utils/logger';
-import { getLatestDiagnosticContext } from '@/utils/diagnostics';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -23,15 +22,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    const diagnostics = getLatestDiagnosticContext();
-    logger.error({
+    logger.errorWithDiagnosticContext({
       event: 'exit',
       module: 'ErrorBoundary',
       function: 'componentDidCatch',
       status: 'failed',
       error: error.message,
       input: info.componentStack?.slice(0, 200),
-      ...diagnostics,
       operation: 'react_render',
       outcome: 'failed',
       source: 'react',

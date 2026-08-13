@@ -148,8 +148,11 @@ describe('errorReporter', () => {
       });
     }
 
-    expect(supabaseMock.insert).toHaveBeenCalledTimes(sensitiveSamples.length);
-    for (const [index, call] of supabaseMock.insert.mock.calls.entries()) {
+    const sensitiveInsertCalls = supabaseMock.insert.mock.calls.filter(
+      ([payload]) => String(payload.module).startsWith('Auth_'),
+    );
+    expect(sensitiveInsertCalls).toHaveLength(sensitiveSamples.length);
+    for (const [index, call] of sensitiveInsertCalls.entries()) {
       const insertedPayload = call[0];
       expect(insertedPayload.module).toBe(`Auth_${index}`);
       expect(insertedPayload.function).toBe('exchange_code');

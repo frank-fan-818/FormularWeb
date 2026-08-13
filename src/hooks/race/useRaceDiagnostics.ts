@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { createFlowId } from '@/utils/diagnostics';
 import { createLoggerScope } from '@/utils/logger';
+
+function createFlowId(): string {
+  return globalThis.crypto.randomUUID();
+}
 
 export type RaceAggregateState = 'loading' | 'ready' | 'partial' | 'blocked' | 'not_found';
 
