@@ -45,6 +45,8 @@ npm run security:audit
 
 CI 对安全扫描、全部依赖的高危漏洞、严格 lint、类型、覆盖率、构建、性能预算、Lighthouse、CodeQL 和浏览器 QA 设有阻断门禁。当前候选版本的差距闭环与残余风险见 [发布就绪报告](./docs/release-readiness-report.md)，上线前还需完成 [发布检查清单](./docs/release-checklist.md)。
 
+分支采用 `main`（生产）与 `develop`（测试/集成）双层模型。新功能、维护和依赖更新先合入 `develop`；只有完整发布门禁通过后，才通过 Pull Request 将 `develop` 合入 `main`。详细规则见 [分支策略](./docs/branching-strategy.md)。
+
 ## 数据来源
 
 赛事数据主要来自 Jolpica/Ergast 兼容接口、项目内缓存数据和经过处理的 FastF1/FIA 数据。上游暂不可用时，页面应显示加载、空状态或错误状态，不应以虚构结果冒充实时数据。
