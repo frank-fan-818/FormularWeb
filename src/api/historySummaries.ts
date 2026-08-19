@@ -55,6 +55,13 @@ function mapCareerSummary(value: unknown): HistoryCareerSummary {
   };
 }
 
+function hasUsableCareerHistory(
+  summary: HistoryCareerSummary,
+  seasons: Array<{ season: string }>,
+): boolean {
+  return seasons.length > 0 && summary.raceCount > 0;
+}
+
 function mapBestFinishSummary(value: unknown): BestFinishSummary | null {
   if (!isRecord(value)) {
     return null;
@@ -140,6 +147,12 @@ export function mapDriverHistorySummary(
     return null;
   }
 
+  const careerSummary = mapCareerSummary(record.career_summary);
+  const seasons = mapDriverSeasonHistory(record.seasons);
+  if (!hasUsableCareerHistory(careerSummary, seasons)) {
+    return null;
+  }
+
   return {
     driverId: record.driver_id,
     permanentNumber: record.permanent_number || '',
@@ -151,9 +164,9 @@ export function mapDriverHistorySummary(
     nationality: record.nationality || '',
     recentConstructorName: record.recent_constructor_name || '',
     recentConstructorId: record.recent_constructor_id || '',
-    careerSummary: mapCareerSummary(record.career_summary),
+    careerSummary,
     bestRaceFinish: mapBestFinishSummary(record.best_race_finish),
-    seasons: mapDriverSeasonHistory(record.seasons),
+    seasons,
   };
 }
 
@@ -164,13 +177,19 @@ export function mapConstructorHistorySummary(
     return null;
   }
 
+  const careerSummary = mapCareerSummary(record.career_summary);
+  const seasons = mapConstructorSeasonHistory(record.seasons);
+  if (!hasUsableCareerHistory(careerSummary, seasons)) {
+    return null;
+  }
+
   return {
     constructorId: record.constructor_id,
     url: record.url || '#',
     name: record.name,
     nationality: record.nationality || '',
-    careerSummary: mapCareerSummary(record.career_summary),
+    careerSummary,
     bestRaceFinish: mapBestFinishSummary(record.best_race_finish),
-    seasons: mapConstructorSeasonHistory(record.seasons),
+    seasons,
   };
 }

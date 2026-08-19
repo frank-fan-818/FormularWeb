@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   getDriverIdCandidates,
+  getRaceSeasonIds,
   mapConstructorSeasonHistory,
   mapDriverSeasonHistory,
+  summarizeDriverRaceResults,
   type ConstructorCareerStandingList,
   type DriverCareerStandingList,
 } from '@/api/ergast';
@@ -116,5 +118,27 @@ describe('ergast history helpers', () => {
       { season: '2023', position: '1', points: 860, wins: 21 },
       { season: '2022', position: '1', points: 759, wins: 17 },
     ]);
+  });
+
+  it('limits historical standings lookup to seasons where the driver raced', () => {
+    expect(getRaceSeasonIds([
+      { season: '2023' } as never,
+      { season: '2021' } as never,
+      { season: '2023' } as never,
+      { season: '2024' } as never,
+    ])).toEqual(['2024', '2023', '2021']);
+  });
+
+  it('derives resilient career totals from paginated race results', () => {
+    expect(summarizeDriverRaceResults([
+      { Results: [{ position: '1', points: '25' }] } as never,
+      { Results: [{ position: '2', points: '18' }] } as never,
+      { Results: [{ position: '4', points: '12.5' }] } as never,
+    ])).toEqual({
+      raceCount: 3,
+      winCount: 1,
+      podiumCount: 2,
+      totalPoints: 55.5,
+    });
   });
 });

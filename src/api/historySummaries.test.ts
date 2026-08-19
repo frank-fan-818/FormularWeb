@@ -110,4 +110,34 @@ describe('history summary mapping', () => {
       updated_at: null,
     })).toBeNull();
   });
+
+  it('rejects structurally valid but empty summaries so live history can take over', () => {
+    expect(mapDriverHistorySummary({
+      driver_id: 'hamilton',
+      permanent_number: '44',
+      code: 'HAM',
+      url: null,
+      given_name: 'Lewis',
+      family_name: 'Hamilton',
+      date_of_birth: '1985-01-07',
+      nationality: 'British',
+      recent_constructor_name: null,
+      recent_constructor_id: null,
+      career_summary: {},
+      best_race_finish: null,
+      seasons: [],
+      updated_at: null,
+    })).toBeNull();
+
+    expect(mapConstructorHistorySummary({
+      constructor_id: 'ferrari',
+      url: null,
+      name: 'Ferrari',
+      nationality: 'Italian',
+      career_summary: { raceCount: 0 },
+      best_race_finish: null,
+      seasons: [],
+      updated_at: null,
+    })).toBeNull();
+  });
 });
