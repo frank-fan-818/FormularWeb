@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.13.4] - 2026-08-19
+
+### Fixed
+
+- Restore complete driver history data when Supabase summaries are partial or unavailable.
+- Preserve the driver-history editorial layout while rendering recovered season results.
+
+## [0.13.3] - 2026-08-13
+
+### Fixed
+
+- Paginate Jolpica's server-capped search endpoints so historical and famous drivers are included.
+- Merge Supabase and Jolpica entities by stable identity instead of accepting a non-empty but incomplete database index.
+- Keep partial fallback indexes for the active session while avoiding stale long-term persistence.
+
+## [0.13.2] - 2026-08-13
+
+### Fixed
+
+- Prefer bundled FastF1 snapshots so a Supabase outage cannot block RaceDetail analytics.
+- Fall back to a hedged Jolpica search index when Supabase is unavailable or returns an empty index.
+- Invalidate stale empty search caches and avoid persisting incomplete fallback indexes.
+
+## [0.13.1] - 2026-08-13
+
+### Fixed
+
+- Stabilize error reporter assertions when asynchronous diagnostic writes overlap test cleanup.
+
+### Performance
+
+- Load RaceDetail diagnostic trace processing outside the critical route bundle and retain a strict 341 KiB Race Info budget.
+
 ## [0.13.0] - 2026-08-11
 
 ### Added

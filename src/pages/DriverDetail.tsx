@@ -536,11 +536,6 @@ const DriverDetail = () => {
           const maxVal = Math.max(value.max, totalPoints) * 1.1;
           return Math.ceil(maxVal / 10) * 10;
         },
-        interval: (value: { max: number }) => {
-          const maxVal = Math.max(value.max, totalPoints) * 1.1;
-          const roundedMax = Math.ceil(maxVal / 10) * 10;
-          return Math.ceil(roundedMax / 5 / 10) * 10;
-        },
       },
       series: [
         {
@@ -619,7 +614,10 @@ const DriverDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={!driver && (seasonLoading || loading)} className="driver-profile-shell">
+      {!driver && (seasonLoading || loading) ? (
+        <Card loading className="driver-profile-loading-card" />
+      ) : (
+      <div className="driver-profile-shell">
         <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
             <DriverAvatar driverId={driver?.driverId || resolvedDriverId || driverId || ''} size={96} />
@@ -742,10 +740,17 @@ const DriverDetail = () => {
             <div className="driver-history-heading">
               <h3>{TEXT.careerStats}</h3>
               <div className="history-inline-note">
-                {historyLoading ? TEXT.loadingCareerStats : TEXT.loadedCareerStats}
+                {historyLoading
+                  ? TEXT.loadingCareerStats
+                  : driverHistory
+                    ? TEXT.loadedCareerStats
+                    : TEXT.historyUnavailable}
               </div>
             </div>
-            <Row gutter={[16, 16]} className="driver-career-stat-grid">
+            {historyLoading ? (
+              <Card loading className="driver-history-loading-card" />
+            ) : driverHistory ? (
+              <Row gutter={[16, 16]} className="driver-career-stat-grid">
               <Col xs={24} sm={8}>
                 <Card className="driver-career-stat-card">
                   <div className="driver-career-stat-label">
@@ -806,7 +811,12 @@ const DriverDetail = () => {
                   </div>
                 </Card>
               </Col>
-            </Row>
+              </Row>
+            ) : (
+              <Card className="driver-history-empty-card">
+                <Empty description={TEXT.historyUnavailable} />
+              </Card>
+            )}
 
             {driverHistory ? (
               <>
@@ -882,13 +892,7 @@ const DriverDetail = () => {
                   )}
                 </Card>
               </>
-            ) : (
-              !historyLoading ? (
-                <Card style={{ marginBottom: 24 }}>
-                  <Empty description={TEXT.historyUnavailable} />
-                </Card>
-              ) : null
-            )}
+            ) : null}
           </section>
         ) : null}
 
@@ -909,7 +913,8 @@ const DriverDetail = () => {
             </Col>
           </Row>
         </Card>
-      </Card>
+      </div>
+      )}
     </div>
   );
 };

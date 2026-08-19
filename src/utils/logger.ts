@@ -9,7 +9,6 @@ import type {
   DiagnosticReasonCode,
   DiagnosticSource,
 } from '@/types/diagnostics';
-import { appendDiagnosticEvent, classifyDiagnosticError } from '@/utils/diagnostics';
 
 export function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -107,6 +106,14 @@ export const logger = {
     emit('error', payload);
   },
 
+  errorWithDiagnosticContext(payload: LogPayload): void {
+    void import('@/utils/diagnostics')
+      .then(({ getLatestDiagnosticContext }) => emit('error', {
+        ...payload,
+        ...getLatestDiagnosticContext(),
+      }));
+  },
+
   debug(payload: LogPayload): void {
     emit('debug', payload);
   },
@@ -134,32 +141,12 @@ export function createLoggerScope(context: DiagnosticBaseContext): DiagnosticLog
   return {
     context: immutableContext,
     log(details) {
-      const reasonCode = details.reasonCode
-        ?? (details.error === undefined ? undefined : classifyDiagnosticError(details.error));
-      const event = {
-        ...immutableContext,
-        session: details.session ?? immutableContext.session,
-        timestamp: new Date().toISOString(),
-        operation: details.operation,
-        outcome: details.outcome,
-        source: details.source,
-        reasonCode,
-        durationMs: details.durationMs,
-        itemCount: details.itemCount,
-        attempt: details.attempt,
-      };
-      appendDiagnosticEvent(event);
-      const payload: LogPayload = {
-        event: details.outcome === 'started' ? 'entry' : 'step',
-        module: immutableContext.feature,
-        function: details.operation,
-        status: details.outcome === 'failed' ? 'failed' : undefined,
-        error: details.error === undefined ? undefined : getErrorMessage(details.error),
-        ...event,
-      };
-      if (details.outcome === 'failed') logger.error(payload);
-      else if (details.outcome === 'degraded') logger.warn(payload);
-      else logger.info(payload);
+      void import('@/utils/diagnostics')
+        .then(({ buildDiagnosticLog }) => {
+          const { level, payload } = buildDiagnosticLog(immutableContext, details);
+          emit(level, payload);
+        })
+        .catch(() => { /* local trace storage is best-effort */ });
     },
   };
 }

@@ -40,6 +40,7 @@ export interface SearchSources {
   constructors: ConstructorSearchSource[];
   circuits: CircuitSearchSource[];
   races: RaceSearchSource[];
+  cacheable?: boolean;
 }
 
 const RESULT_LIMIT_PER_GROUP = 5;

@@ -125,6 +125,7 @@ describe('errorReporter', () => {
 
   it('persists only an allowlisted category and fingerprint, never raw error text', async () => {
     supabaseMock.state.session = { user: { id: 'test-user' } };
+    supabaseMock.insert.mockClear();
     const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.abcdefghijklmnopqrstuvwxyz';
     // Assemble credential-shaped fixtures at runtime so the release secret scanner
     // still rejects literal credentials in tracked files.
@@ -147,8 +148,11 @@ describe('errorReporter', () => {
       });
     }
 
-    expect(supabaseMock.insert).toHaveBeenCalledTimes(sensitiveSamples.length);
-    for (const [index, call] of supabaseMock.insert.mock.calls.entries()) {
+    const sensitiveInsertCalls = supabaseMock.insert.mock.calls.filter(
+      ([payload]) => String(payload.module).startsWith('Auth_'),
+    );
+    expect(sensitiveInsertCalls).toHaveLength(sensitiveSamples.length);
+    for (const [index, call] of sensitiveInsertCalls.entries()) {
       const insertedPayload = call[0];
       expect(insertedPayload.module).toBe(`Auth_${index}`);
       expect(insertedPayload.function).toBe('exchange_code');

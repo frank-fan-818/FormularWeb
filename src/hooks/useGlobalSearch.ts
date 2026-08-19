@@ -7,8 +7,11 @@ import {
   type SearchSources,
 } from '@/utils/search';
 
-const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v3';
-const LEGACY_SEARCH_INDEX_CACHE_KEYS = ['global-search-index-v1', 'global-search-index-v2'];
+const SEARCH_INDEX_CACHE_KEY = 'global-search-index-v5';
+const LEGACY_SEARCH_INDEX_CACHE_KEYS = [
+  'global-search-index-v1', 'global-search-index-v2', 'global-search-index-v3',
+  'global-search-index-v4',
+];
 const SEARCH_INDEX_TTL = 24 * 60 * 60 * 1000;
 const BACKGROUND_REFRESH_INTERVAL = 5 * 60 * 1000;
 
@@ -107,13 +110,17 @@ function readCachedIndex(options?: SearchIndexOptions): SearchIndex | null {
   return readMemoryCachedIndex(now) || readPersistentCachedIndex(options);
 }
 
-function writeCachedIndex(index: SearchIndex, options?: SearchIndexOptions): void {
+function writeCachedIndex(
+  index: SearchIndex,
+  options?: SearchIndexOptions,
+  persist = true,
+): void {
   const timestamp = options?.now ?? Date.now();
   cachedIndex = index;
   cachedIndexTimestamp = timestamp;
 
   const storage = getStorage(options);
-  if (!storage) {
+  if (!storage || !persist) {
     return;
   }
 
@@ -139,7 +146,7 @@ async function fetchFreshSearchIndex(options?: SearchIndexOptions): Promise<Sear
   loadingPromise = fetchSources()
     .then((sources) => {
       const index = buildSearchIndex(sources);
-      writeCachedIndex(index, options);
+      writeCachedIndex(index, options, sources.cacheable !== false);
       return index;
     })
     .finally(() => {
