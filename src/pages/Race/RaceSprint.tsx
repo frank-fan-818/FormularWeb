@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { Button, Card, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';

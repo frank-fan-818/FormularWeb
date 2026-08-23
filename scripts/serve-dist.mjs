@@ -14,6 +14,12 @@ const buildManifest = JSON.parse(
 const appEntryPath = `/${buildManifest['index.html'].file}`;
 const settingsAssetPath = `/${buildManifest['src/pages/Settings.tsx'].file}`;
 const removedSettingsAssetPath = '/assets/Settings-qa-removed.js';
+const settingsImporterPaths = new Set([
+  appEntryPath,
+  ...Object.values(buildManifest)
+    .filter((entry) => entry.dynamicImports?.includes('src/pages/Settings.tsx'))
+    .map((entry) => `/${entry.file}`),
+]);
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -125,8 +131,8 @@ const server = createServer((request, response) => {
     }
   }
 
-  if (qaVersion === 'aaaaaaaaaaaa' && pathname === appEntryPath) {
-    const oldAppEntry = readFileSync(resolve(distRoot, appEntryPath.slice(1)), 'utf8')
+  if (qaVersion === 'aaaaaaaaaaaa' && settingsImporterPaths.has(pathname)) {
+    const oldAppEntry = readFileSync(resolve(distRoot, pathname.slice(1)), 'utf8')
       .replaceAll(settingsAssetPath.split('/').at(-1), removedSettingsAssetPath.split('/').at(-1));
     response.statusCode = 200;
     response.setHeader('Cache-Control', 'no-store');

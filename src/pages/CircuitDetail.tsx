@@ -1,7 +1,7 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button, Card, Spin, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
@@ -85,10 +85,7 @@ const CircuitDetail = () => {
   if (loading) {
     return (
       <div className="circuit-detail-container">
-        <Helmet>
-          <title>&#x8d5b;&#x9053;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8d5b;&#x9053;&#x8be6;&#x60c5;, &#x8d5b;&#x9053;&#x957f;&#x5ea6;&#x3001;&#x5f2f;&#x9053;&#x6570;&#x91cf;&#x3001;&#x5386;&#x53f2;&#x6570;&#x636e;&#x7b49;" />
-        </Helmet>
+        <DocumentHead title="赛道详情 — F1 Dashboard" description="F1赛道详情，赛道长度、弯道数量、历史数据等" />
         <div className="loading-container">
           <Spin size="large" />
           <div style={{ marginTop: 12 }}>{TEXT.loading}</div>
@@ -100,10 +97,7 @@ const CircuitDetail = () => {
   if (!circuit) {
     return (
       <div className="circuit-detail-container">
-        <Helmet>
-          <title>&#x8d5b;&#x9053;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8d5b;&#x9053;&#x8be6;&#x60c5;, &#x8d5b;&#x9053;&#x957f;&#x5ea6;&#x3001;&#x5f2f;&#x9053;&#x6570;&#x91cf;&#x3001;&#x5386;&#x53f2;&#x6570;&#x636e;&#x7b49;" />
-        </Helmet>
+        <DocumentHead title="赛道详情 — F1 Dashboard" description="F1赛道详情，赛道长度、弯道数量、历史数据等" />
         <div className="loading-container">{TEXT.unavailable}</div>
       </div>
     );
@@ -122,10 +116,10 @@ const CircuitDetail = () => {
 
   return (
     <div className="circuit-detail-container circuit-engineering-page">
-      <Helmet>
-        <title>{circuit?.circuitName ? `${circuit.circuitName} \u2014 F1 Dashboard` : '\u8d5b\u9053\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
-        <meta name="description" content={`${circuit?.circuitName || ''} F1\u8d5b\u9053\u8be6\u60c5, \u8d5b\u9053\u957f\u5ea6\u3001\u5f2f\u9053\u6570\u91cf\u3001\u5386\u53f2\u6570\u636e\u7b49`} />
-      </Helmet>
+      <DocumentHead
+        title={circuit?.circuitName ? `${circuit.circuitName} — F1 Dashboard` : '赛道详情 — F1 Dashboard'}
+        description={`${circuit?.circuitName || ''} F1赛道详情，赛道长度、弯道数量、历史数据等`}
+      />
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}

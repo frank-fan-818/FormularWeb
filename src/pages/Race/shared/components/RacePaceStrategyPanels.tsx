@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Button, Card } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type { FastF1RaceAnalytics } from '@/types';
 import { TRACK_STATUS_STYLES } from '@/pages/Race/shared/constants';
 import { getCompoundColor } from '@/pages/Race/shared/charts/helpers';

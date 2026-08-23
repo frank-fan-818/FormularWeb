@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import {
   Card, Segmented, Select, Switch, Typography, Space, Divider,
 } from 'antd';
@@ -91,8 +91,7 @@ const Settings = () => {
             <Select
               value={i18n.language}
               onChange={(lang) => {
-                i18n.changeLanguage(lang);
-                localStorage.setItem('i18nextLng', lang);
+                void i18n.changeLanguage(lang);
               }}
               options={languageOptions}
               style={{ width: 160 }}

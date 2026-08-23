@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { describe, expect, it } from 'vitest';
 import type { Race } from '@/types';
 import { getRacesByStatus } from './useRaceStatus';
@@ -28,7 +27,7 @@ describe('getRacesByStatus', () => {
   it('keeps completed races out of the upcoming calendar when the season has ended', () => {
     const races = [race('1', '2024-03-01'), race('2', '2024-03-15')];
 
-    const result = getRacesByStatus(races, dayjs('2026-07-28T12:00:00'));
+    const result = getRacesByStatus(races, new Date('2026-07-28T12:00:00'));
 
     expect(result.nextRace).toBeUndefined();
     expect(result.upcomingRaces).toEqual([]);
@@ -43,7 +42,7 @@ describe('getRacesByStatus', () => {
       race('4', '2026-08-19'),
     ];
 
-    const result = getRacesByStatus(races, dayjs('2026-07-28T12:00:00'));
+    const result = getRacesByStatus(races, new Date('2026-07-28T12:00:00'));
 
     expect(result.ongoingRace?.round).toBe('2');
     expect(result.nextRace?.round).toBe('3');

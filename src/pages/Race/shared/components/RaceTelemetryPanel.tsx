@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { TEXT } from '@/pages/Race/shared/constants';
 import type { TelemetryMetric } from '@/hooks/race/useRaceAnalysisControls';
 import type { FastF1TelemetryAnalysis, FastF1TelemetryDriver } from '@/types';

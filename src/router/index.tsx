@@ -1,73 +1,36 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, createBrowserRouter, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import Home from '@/pages/Home';
+import { routeModules } from './routeModules';
 
-const Seasons = lazy(() => import('@/pages/Seasons'));
-const Races = lazy(() => import('@/pages/Races'));
-const RaceLayout = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceLayout');
-});
-const RaceResults = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceResults');
-});
-const RaceQualifying = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceQualifying');
-});
-const RaceAnalysis = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceAnalysis');
-});
-const RaceSprint = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceSprint');
-});
-const RaceInfo = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Race/RaceInfo');
-});
-const Drivers = lazy(() => import('@/pages/Drivers'));
-const DriverDetail = lazy(() => import('@/pages/DriverDetail'));
-const Constructors = lazy(() => import('@/pages/Constructors'));
-const ConstructorDetail = lazy(() => import('@/pages/ConstructorDetail'));
-const ConstructorHistoryDetail = lazy(() => import('@/pages/ConstructorHistoryDetail'));
-const Circuits = lazy(() => import('@/pages/Circuits'));
-const CircuitDetail = lazy(() => import('@/pages/CircuitDetail'));
-const Settings = lazy(async () => {
-  await import('@/i18n');
-  return import('@/pages/Settings');
-});
-const Login = lazy(() => import('@/pages/Login'));
-const Privacy = lazy(() => import('@/pages/Privacy'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
+const Home = lazy(routeModules.home);
+const Seasons = lazy(routeModules.seasons);
+const Races = lazy(routeModules.races);
+const RaceLayout = lazy(routeModules.raceLayout);
+const RaceResults = lazy(routeModules.raceResults);
+const RaceQualifying = lazy(routeModules.raceQualifying);
+const RaceAnalysis = lazy(routeModules.raceAnalysis);
+const RaceSprint = lazy(routeModules.raceSprint);
+const RaceInfo = lazy(routeModules.raceInfo);
+const Drivers = lazy(routeModules.drivers);
+const DriverDetail = lazy(routeModules.driverDetail);
+const Constructors = lazy(routeModules.constructors);
+const ConstructorDetail = lazy(routeModules.constructorDetail);
+const ConstructorHistoryDetail = lazy(routeModules.constructorHistoryDetail);
+const Circuits = lazy(routeModules.circuits);
+const CircuitDetail = lazy(routeModules.circuitDetail);
+const Settings = lazy(routeModules.settings);
+const Login = lazy(routeModules.login);
+const Privacy = lazy(routeModules.privacy);
+const NotFound = lazy(routeModules.notFound);
 
 function withSuspense(element: JSX.Element) {
   return (
     <Suspense
       fallback={(
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '64px 24px',
-          }}
-        >
-          <div
-            aria-label="loading"
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              border: '2px solid rgba(15, 23, 42, 0.16)',
-              borderTopColor: 'var(--f1-red, #ff1801)',
-              animation: 'route-spin 0.8s linear infinite',
-            }}
-          />
+        <div className="route-loading-surface" role="status" aria-label="loading">
+          <div className="route-loading-indicator">Loading telemetry</div>
         </div>
       )}
     >
@@ -81,92 +44,41 @@ function RaceIndexRedirect() {
   return <Navigate to={{ pathname: 'results', search }} replace />;
 }
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <ErrorBoundary><Layout /></ErrorBoundary>,
-    children: [
-      {
-        path: '/',
-        element: <Home />,
-      },
-      {
-        path: '/seasons',
-        element: withSuspense(<Seasons />),
-      },
-      {
-        path: '/races',
-        element: withSuspense(<Races />),
-      },
-      {
-        path: '/races/:round',
-        element: withSuspense(<RaceLayout />),
-        children: [
-          { index: true, element: <RaceIndexRedirect /> },
-          { path: 'results', element: withSuspense(<RaceResults />) },
-          { path: 'qualifying', element: withSuspense(<RaceQualifying />) },
-          {
-            path: 'race',
-            element: withSuspense(
-              <ErrorBoundary>
-                <RaceAnalysis />
-              </ErrorBoundary>,
-            ),
-          },
-          { path: 'sprint', element: withSuspense(<RaceSprint />) },
-          { path: 'info', element: withSuspense(<RaceInfo />) },
-        ],
-      },
-      {
-        path: '/drivers',
-        element: withSuspense(<Drivers />),
-      },
-      {
-        path: '/drivers/:driverId',
-        element: withSuspense(<DriverDetail />),
-      },
-      {
-        path: '/history/drivers/:driverId',
-        element: withSuspense(<DriverDetail />),
-      },
-      {
-        path: '/constructors',
-        element: withSuspense(<Constructors />),
-      },
-      {
-        path: '/constructors/:constructorId',
-        element: withSuspense(<ConstructorDetail />),
-      },
-      {
-        path: '/history/constructors/:constructorId',
-        element: withSuspense(<ConstructorHistoryDetail />),
-      },
-      {
-        path: '/circuits',
-        element: withSuspense(<Circuits />),
-      },
-      {
-        path: '/circuits/:circuitId',
-        element: withSuspense(<CircuitDetail />),
-      },
-      {
-        path: '/settings',
-        element: withSuspense(<Settings />),
-      },
-      {
-        path: '/login',
-        element: withSuspense(<Login />),
-      },
-      {
-        path: '/privacy',
-        element: withSuspense(<Privacy />),
-      },
-      {
-        path: '*',
-        element: withSuspense(<NotFound />),
-      },
-    ],
-  },
-]);
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
+      <Route index element={withSuspense(<Home />)} />
+      <Route path="seasons" element={withSuspense(<Seasons />)} />
+      <Route path="races" element={withSuspense(<Races />)} />
+      <Route path="races/:round" element={withSuspense(<RaceLayout />)}>
+        <Route index element={<RaceIndexRedirect />} />
+        <Route path="results" element={withSuspense(<RaceResults />)} />
+        <Route path="qualifying" element={withSuspense(<RaceQualifying />)} />
+        <Route
+          path="race"
+          element={withSuspense(
+            <ErrorBoundary>
+              <RaceAnalysis />
+            </ErrorBoundary>,
+          )}
+        />
+        <Route path="sprint" element={withSuspense(<RaceSprint />)} />
+        <Route path="info" element={withSuspense(<RaceInfo />)} />
+      </Route>
+      <Route path="drivers" element={withSuspense(<Drivers />)} />
+      <Route path="drivers/:driverId" element={withSuspense(<DriverDetail />)} />
+      <Route path="history/drivers/:driverId" element={withSuspense(<DriverDetail />)} />
+      <Route path="constructors" element={withSuspense(<Constructors />)} />
+      <Route path="constructors/:constructorId" element={withSuspense(<ConstructorDetail />)} />
+      <Route path="history/constructors/:constructorId" element={withSuspense(<ConstructorHistoryDetail />)} />
+      <Route path="circuits" element={withSuspense(<Circuits />)} />
+      <Route path="circuits/:circuitId" element={withSuspense(<CircuitDetail />)} />
+      <Route path="settings" element={withSuspense(<Settings />)} />
+      <Route path="login" element={withSuspense(<Login />)} />
+      <Route path="privacy" element={withSuspense(<Privacy />)} />
+      <Route path="*" element={withSuspense(<NotFound />)} />
+    </Route>
+  </Routes>
+);
 
-export default router;
+export default AppRoutes;

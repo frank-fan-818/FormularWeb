@@ -1,5 +1,5 @@
 import { Button, Card } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type {
   getDuelCornerRows,
   getDuelDriverItems,

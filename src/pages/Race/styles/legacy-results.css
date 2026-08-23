@@ -74,7 +74,9 @@
   border-radius: 50%;
   background-color: var(--border-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    width var(--motion-duration-standard) var(--motion-ease-emphasized),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .tab-dot.active {

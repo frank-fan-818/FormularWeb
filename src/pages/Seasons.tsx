@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Tabs } from 'antd';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
@@ -189,10 +189,7 @@ const Seasons = () => {
 
   return (
     <div className="list-page-container season-standings-page">
-      <Helmet>
-        <title>&#x5b63;&#x8282;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x8d5b;&#x5b63;&#x79ef;&#x5206;&#x699c;, &#x67e5;&#x770b;&#x8f66;&#x624b;&#x548c;&#x8f66;&#x961f;&#x6392;&#x540d;" />
-      </Helmet>
+      <DocumentHead title="季节列表 — F1 Dashboard" description="F1赛季积分榜，查看车手和车队排名" />
       <ProductMasthead
         index="01"
         eyebrow={`${currentSeason} / CHAMPIONSHIP`}

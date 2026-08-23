@@ -1,6 +1,6 @@
 import { Card, Descriptions, Tag } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import { formatCircuitDirection } from '@/utils/circuitEnhancements';
 import type { getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';

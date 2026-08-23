@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Button, Card } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type { FastF1WeatherAnalysis } from '@/types';
 import { formatWindSpeed } from '@/utils/raceDetailFormatters';
 import {

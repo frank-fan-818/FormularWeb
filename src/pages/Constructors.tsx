@@ -2,10 +2,11 @@ import { type ReactNode, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
+import { preloadRoute } from '@/utils/routePreload';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
@@ -74,10 +75,7 @@ const Constructors = () => {
 
   return (
     <div className="list-page-container constructors-page">
-      <Helmet>
-        <title>&#x8f66;&#x961f;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x8f66;&#x961f;&#x5217;&#x8868;&#xff0c;&#x67e5;&#x770b;&#x672c;&#x8d5b;&#x5b63;&#x8f66;&#x961f;&#x9635;&#x5bb9;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
-      </Helmet>
+      <DocumentHead title="车队列表 — F1 Dashboard" description="F1车队列表，查看本赛季车队阵容和数据统计" />
       <ProductMasthead
         index="04"
         eyebrow={`${currentSeason} / TEAM LIBRARY`}
@@ -145,6 +143,7 @@ const Constructors = () => {
                 className="constructor-profile-card"
                 hoverable
                 style={{ animationDelay: `${constructor.index * 0.045}s`, borderTopColor: teamColor }}
+                onPointerEnter={() => preloadRoute(`/constructors/${constructor.constructorId}`)}
                 onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
               >
                 <div className="constructor-card-topline">

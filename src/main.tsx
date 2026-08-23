@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '@/i18n';
+import { initializeI18n } from '@/i18n';
 import App from '@/App';
-import { initWebVitals } from '@/utils/performance';
 import './index.css';
-import { logger } from '@/utils/logger';
+import '@/pages/Home.css';
+import '@/styles/motion-system.css';
+
+await initializeI18n();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -12,7 +14,19 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 );
 
-initWebVitals();
+const startPerformanceMonitoring = () => {
+  void import('@/utils/performance')
+    .then(({ initWebVitals }) => initWebVitals())
+    .catch(() => {
+      // Telemetry is non-critical and must never delay or break the application.
+    });
+};
+
+if ('requestIdleCallback' in window) {
+  window.requestIdleCallback(startPerformanceMonitoring, { timeout: 2_000 });
+} else {
+  globalThis.setTimeout(startPerformanceMonitoring, 0);
+}
 
 let loadedShellBuildId: string | null = null;
 
@@ -175,18 +189,22 @@ window.addEventListener('unhandledrejection', (event) => {
     recoverFromStaleChunk();
     return;
   }
-  logger.errorWithDiagnosticContext({
-    event: 'exit', module: 'global', function: 'unhandledrejection',
-    status: 'failed', error: message || 'Unhandled promise rejection',
-    operation: 'unhandled_promise', outcome: 'failed', reasonCode: 'unknown',
+  void import('@/utils/logger').then(({ logger }) => {
+    logger.errorWithDiagnosticContext({
+      event: 'exit', module: 'global', function: 'unhandledrejection',
+      status: 'failed', error: message || 'Unhandled promise rejection',
+      operation: 'unhandled_promise', outcome: 'failed', reasonCode: 'unknown',
+    });
   });
 });
 
 window.addEventListener('error', (event) => {
-  logger.errorWithDiagnosticContext({
-    event: 'exit', module: 'global', function: 'window.error',
-    status: 'failed', error: event.message || 'Unhandled window error',
-    operation: 'window_error', outcome: 'failed', reasonCode: 'unknown',
+  void import('@/utils/logger').then(({ logger }) => {
+    logger.errorWithDiagnosticContext({
+      event: 'exit', module: 'global', function: 'window.error',
+      status: 'failed', error: event.message || 'Unhandled window error',
+      operation: 'window_error', outcome: 'failed', reasonCode: 'unknown',
+    });
   });
 });
 

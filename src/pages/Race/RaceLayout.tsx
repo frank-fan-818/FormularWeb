@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { Button, Card, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -16,6 +16,7 @@ import { RaceDataProvider, useRaceData } from './RaceContext';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { getRaceRouteSection } from '@/utils/race/raceSessionState';
+import { preloadRaceSectionRoute } from '@/utils/routePreload';
 import '../RaceDetail.css';
 
 const InnerLayout = () => {
@@ -49,6 +50,20 @@ const InnerLayout = () => {
   const insights = useMemo(
     () => buildRaceOverviewInsights(raceResults, qualifyingResults, fastF1Analytics),
     [fastF1Analytics, qualifyingResults, raceResults],
+  );
+  const tabLabel = (
+    key: string,
+    icon: JSX.Element,
+    title: string,
+    subtitle: string,
+  ) => (
+    <span
+      className="race-command-tab-label"
+      onPointerEnter={() => preloadRaceSectionRoute(key)}
+      onPointerDown={() => preloadRaceSectionRoute(key)}
+    >
+      {icon}<span><strong>{title}</strong><small>{subtitle}</small></span>
+    </span>
   );
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
@@ -191,23 +206,23 @@ const InnerLayout = () => {
         items={[
           {
             key: 'results',
-            label: <span className="race-command-tab-label"><TrophyOutlined /><span><strong>赛事概览</strong><small>OVERVIEW</small></span></span>,
+            label: tabLabel('results', <TrophyOutlined />, '赛事概览', 'OVERVIEW'),
           },
           {
             key: 'qualifying',
-            label: <span className="race-command-tab-label"><BarChartOutlined /><span><strong>排位解构</strong><small>QUALIFYING</small></span></span>,
+            label: tabLabel('qualifying', <BarChartOutlined />, '排位解构', 'QUALIFYING'),
           },
           {
             key: 'race',
-            label: <span className="race-command-tab-label"><FundProjectionScreenOutlined /><span><strong>比赛解读</strong><small>RACE ANALYSIS</small></span></span>,
+            label: tabLabel('race', <FundProjectionScreenOutlined />, '比赛解读', 'RACE ANALYSIS'),
           },
           ...(hasSprint ? [{
             key: 'sprint' as const,
-            label: <span className="race-command-tab-label"><ThunderboltOutlined /><span><strong>冲刺周末</strong><small>SPRINT</small></span></span>,
+            label: tabLabel('sprint', <ThunderboltOutlined />, '冲刺周末', 'SPRINT'),
           }] : []),
           {
             key: 'info',
-            label: <span className="race-command-tab-label"><CompassOutlined /><span><strong>周末情报</strong><small>INTELLIGENCE</small></span></span>,
+            label: tabLabel('info', <CompassOutlined />, '周末情报', 'INTELLIGENCE'),
           },
         ]}
       />
