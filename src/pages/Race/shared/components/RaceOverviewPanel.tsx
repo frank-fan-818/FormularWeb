@@ -23,8 +23,8 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
     return (
       <section className="race-overview-awaiting" aria-live="polite">
         <span>RACE DEBRIEF</span>
-        <h2>比赛故事将在方格旗后呈现</h2>
-        <p>当前可先查看周末各场次的已发布成绩，正赛结束后这里会汇总领奖台、关键变化和比赛脉搏。</p>
+        <h2>正赛结果尚未发布</h2>
+        <p>当前可查看已发布的练习、排位和冲刺赛成绩。</p>
       </section>
     );
   }
@@ -81,7 +81,7 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
       <div className="race-debrief-heading">
         <div>
           <span>RACE DEBRIEF / 赛后速览</span>
-          <h2>方格旗后的第一答案</h2>
+          <h2>比赛摘要</h2>
         </div>
         <p>
           {getDriverName(insights.winner)} 赢得比赛

@@ -1,5 +1,36 @@
 /* Weekend intelligence */
 
+.race-info-neighbor-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.45fr) minmax(0, 1fr);
+  gap: 1px;
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+  background: var(--border-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-control);
+}
+
+.race-info-neighbor-nav button {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  min-height: 62px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.race-info-neighbor-nav button:last-child { text-align: right; }
+.race-info-neighbor-nav button.is-calendar { text-align: center; }
+.race-info-neighbor-nav button:disabled { opacity: 0.42; cursor: default; }
+.race-info-neighbor-nav button:not(:disabled):hover { background: var(--bg-tertiary); }
+.race-info-neighbor-nav span { color: var(--text-tertiary); font: 700 10px/1.2 var(--font-mono); letter-spacing: 0.06em; }
+.race-info-neighbor-nav strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .race-info-overview {
   grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
   gap: var(--space-5);
@@ -47,6 +78,16 @@
 .weekend-session:hover {
   background: color-mix(in srgb, var(--f1-red-glow) 55%, var(--bg-card));
   transform: translateX(2px);
+}
+
+.weekend-session.is-completed { opacity: 0.66; }
+.weekend-session.is-next { box-shadow: inset 3px 0 0 var(--f1-red); }
+.weekend-session.is-live { background: color-mix(in srgb, var(--f1-red-glow) 62%, var(--bg-card)); }
+
+@media (max-width: 640px) {
+  .race-info-neighbor-nav { grid-template-columns: 1fr 92px 1fr; }
+  .race-info-neighbor-nav button { min-height: 56px; padding: 10px; }
+  .race-info-neighbor-nav strong { font-size: 12px; }
 }
 
 .race-weekend-metric {

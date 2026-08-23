@@ -18,8 +18,8 @@ interface LoginFormValues {
 
 const MODE_COPY: Record<AuthMode, { title: string; action: string; intro: string }> = {
   signIn: {
-    title: '登录个人围场',
-    action: '安全登录',
+    title: '登录',
+    action: '登录',
     intro: '管理账号会话。公开赛事数据无需登录即可浏览。',
   },
   signUp: {
@@ -110,12 +110,6 @@ const Login = () => {
         <div>
           <strong>F1</strong>
           <h1>YOUR RACE<br />INTELLIGENCE</h1>
-          <p>通过安全身份会话管理账号，同时保持公开赛事数据随时可浏览。</p>
-        </div>
-        <div className="login-brand-features">
-          <span><i />公开赛季数据</span>
-          <span><i />安全身份会话</span>
-          <span><i />密码恢复保护</span>
         </div>
       </section>
 

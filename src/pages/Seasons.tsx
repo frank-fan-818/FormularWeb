@@ -5,6 +5,8 @@ import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
 import ProductMasthead from '@/components/product/ProductMasthead';
+import { buildSeasonSummary } from '@/utils/seasonSummary';
+import { formatLocalDateTime } from '@/utils/dateTime';
 import './Seasons.css';
 
 const TEXT = {
@@ -39,20 +41,17 @@ const Seasons = () => {
   const {
     driverStandings,
     constructorStandings,
+    races,
     loading,
     error,
     isStale,
     refetch,
     resources,
+    updatedAt,
   } = useSeasonData(currentSeason);
   const maxDriverPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const maxConstructorPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
-  const driverGap = driverStandings[1]
-    ? Math.max(0, maxDriverPoints - parseFloat(driverStandings[1].points)).toFixed(0)
-    : '--';
-  const constructorGap = constructorStandings[1]
-    ? Math.max(0, maxConstructorPoints - parseFloat(constructorStandings[1].points)).toFixed(0)
-    : '--';
+  const seasonSummary = buildSeasonSummary(races, driverStandings, constructorStandings);
 
   const tabItems = [
     {
@@ -194,28 +193,31 @@ const Seasons = () => {
         index="01"
         eyebrow={`${currentSeason} / CHAMPIONSHIP`}
         title={<>{currentSeason}<br />STANDINGS</>}
-        description="冠军争夺不是一张静态表格。先看领跑者与关键差距，再深入每一位车手和车队的完整排名。"
-        metrics={[
-          {
-            label: '\u8f66\u624b\u699c\u9886\u8dd1',
-            value: driverStandings[0]
-              ? `${driverStandings[0].Driver.givenName[0]}. ${driverStandings[0].Driver.familyName}`
-              : '--',
-            detail: `${maxDriverPoints || '--'} PTS · +${driverGap}`,
-            accent: driverStandings[0]?.Constructors[0]
-              ? getTeamColor(driverStandings[0].Constructors[0].constructorId)
-              : undefined,
-          },
-          {
-            label: '\u8f66\u961f\u699c\u9886\u8dd1',
-            value: constructorStandings[0]?.Constructor.name || '--',
-            detail: `${maxConstructorPoints || '--'} PTS · +${constructorGap}`,
-            accent: constructorStandings[0] ? getTeamColor(constructorStandings[0].Constructor.constructorId) : undefined,
-          },
-          { label: '\u73b0\u5f79\u8f66\u624b', value: driverStandings.length || '--', detail: '\u5b8c\u6574\u6392\u540d' },
-          { label: '\u53c2\u8d5b\u8f66\u961f', value: constructorStandings.length || '--', detail: '\u8f66\u961f\u79ef\u5206' },
-        ]}
       />
+
+      <section className="championship-facts" aria-label="冠军形势">
+        <div>
+          <span>赛季进度</span>
+          <strong>{seasonSummary.completedRounds}/{seasonSummary.totalRounds || '--'}</strong>
+          <small>{seasonSummary.remainingRounds} 站未完成</small>
+        </div>
+        <div>
+          <span>车手榜</span>
+          <strong>{seasonSummary.driverLeader ? `${seasonSummary.driverLeader.Driver.givenName[0]}. ${seasonSummary.driverLeader.Driver.familyName}` : '--'}</strong>
+          <small>{seasonSummary.driverLeader ? `${seasonSummary.driverLeader.points} PTS · ${seasonSummary.driverLeader.wins} 胜${seasonSummary.driverGap === null ? '' : ` · +${seasonSummary.driverGap}`}` : '--'}</small>
+        </div>
+        <div>
+          <span>车队榜</span>
+          <strong>{seasonSummary.constructorLeader?.Constructor.name || '--'}</strong>
+          <small>{seasonSummary.constructorLeader ? `${seasonSummary.constructorLeader.points} PTS · ${seasonSummary.constructorLeader.wins} 胜${seasonSummary.constructorGap === null ? '' : ` · +${seasonSummary.constructorGap}`}` : '--'}</small>
+        </div>
+        <div>
+          <span>参赛规模</span>
+          <strong>{driverStandings.length} / {constructorStandings.length}</strong>
+          <small>{driverStandings.length} 位车手 · {constructorStandings.length} 支车队</small>
+        </div>
+        {updatedAt ? <time>更新于 {formatLocalDateTime(updatedAt)}</time> : null}
+      </section>
 
       {(isStale || (error && (driverStandings.length > 0 || constructorStandings.length > 0))) ? (
         <div className="season-data-notice" role="status">

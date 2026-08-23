@@ -350,7 +350,7 @@ const RaceAnalysis = () => {
         <RacePageIntro
           index="03"
           eyebrow="RACE DEBRIEF / 比赛解读"
-          title="正在建立比赛证据链"
+          title="正在读取比赛分析"
           description="正在读取比赛节奏、轮胎策略、天气和遥测摘要。"
         />
         <Card className="race-empty-command-card" loading>
@@ -366,8 +366,8 @@ const RaceAnalysis = () => {
         <RacePageIntro
           index="03"
           eyebrow="RACE DEBRIEF / 比赛解读"
-          title="比赛证据链仍在生成"
-          description="正赛数据可用后，这里会把比赛节奏、轮胎策略、车手攻防、天气和遥测串成完整的比赛故事。"
+          title="比赛分析尚不可用"
+          description="正赛数据发布后显示比赛节奏、轮胎策略、车手攻防、天气和遥测。"
         />
         <Card className="race-empty-command-card">
           <p>{fastF1AnalyticsError?.message || t('noFastF1Analysis')}</p>
@@ -387,8 +387,7 @@ const RaceAnalysis = () => {
       <RacePageIntro
         index="03"
         eyebrow="RACE DEBRIEF / 比赛解读"
-        title="从结果倒推，找到胜负真正发生的地方"
-        description="沿着比赛节奏、轮胎、对决、天气与遥测逐层深入；每个模块都是同一场比赛的不同证据，而不是彼此孤立的图表。"
+        title="比赛分析"
         aside={fastF1Summary ? (
           <div className="fastf1-summary-strip" aria-label={t('raceAnalysisGroup')}>
             <span>

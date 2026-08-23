@@ -4,56 +4,53 @@ import DocumentHead from '@/components/DocumentHead';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
-import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
-import { daysUntilLocalDate, formatLocalDateTime } from '@/utils/dateTime';
+import { formatRaceDateTimeFull, getRaceWeekendTimeline } from '@/utils/raceSchedule';
+import { formatLocalDateTime } from '@/utils/dateTime';
 import { getTeamColor } from '@/utils/teamColors';
-import ProductMasthead from '@/components/product/ProductMasthead';
+import { buildSeasonSummary } from '@/utils/seasonSummary';
 
 const preloadRoute = (pathname: string) => {
   void import('@/utils/routePreload').then((module) => module.preloadRoute(pathname));
 };
 
-const preloadRaceInfoRoute = () => preloadRoute('/races/next/info');
-
 const TEXT = {
-  completedRaces: '\u5df2\u5b8c\u6210\u5206\u7ad9',
-  activeDrivers: '\u6d3b\u8dc3\u8f66\u624b',
-  activeConstructors: '\u6d3b\u8dc3\u8f66\u961f',
-  daysUntilNextRace: '\u8ddd\u79bb\u4e0b\u4e00\u7ad9',
   seasonEnded: '\u8d5b\u5b63\u5df2\u7ed3\u675f',
-  nextRace: '\u4e0b\u4e00\u573a\u6bd4\u8d5b',
-  upcoming: '\u5373\u5c06\u5f00\u59cb',
-  ongoingRace: '\u8fdb\u884c\u4e2d\u7684\u6bd4\u8d5b',
-  live: '\u76f4\u64ad\u4e2d',
+  nextRace: '\u4e0b\u4e00\u7ad9',
+  ongoingRace: '\u5f53\u524d\u8d5b\u5468',
+  live: '\u8fdb\u884c\u4e2d',
   standingsTopThree: '\u79ef\u5206\u699c TOP 3',
   driverStandings: '\u8f66\u624b\u79ef\u5206\u699c',
   constructorStandings: '\u8f66\u961f\u79ef\u5206\u699c',
   points: '\u79ef\u5206',
   gap: '\u5dee\u8ddd',
   leader: '\u9886\u5148',
-  raceCircuit: '\u8d5b\u9053',
-  raceLocation: '\u5730\u70b9',
-  today: '\u4eca\u5929',
   loading: '\u6b63\u5728\u52a0\u8f7d\u9996\u9875\u6570\u636e...',
   staleData: '\u6570\u636e\u66f4\u65b0\u6682\u65f6\u5931\u8d25\uff0c\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e',
   offlineData: '\u5f53\u524d\u79bb\u7ebf\uff0c\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e',
   updatedAt: '\u66f4\u65b0\u4e8e',
-  seasonPulse: '\u8d5b\u5b63\u8109\u640f',
   viewFullStandings: '\u67e5\u770b\u5b8c\u6574\u79ef\u5206\u699c',
-  seasonProgress: '\u672c\u8d5b\u5b63\u5df2\u5b8c\u6210',
-  racesUnit: '\u7ad9',
-  driverLeader: '\u8f66\u624b\u699c\u9886\u5148',
-  constructorLeader: '\u8f66\u961f\u699c\u9886\u5148',
+  driverLeader: '\u8f66\u624b\u699c',
+  constructorLeader: '\u8f66\u961f\u699c',
   unavailable: '\u8d5b\u5b63\u6570\u636e\u6682\u65f6\u65e0\u6cd5\u52a0\u8f7d\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u540e\u91cd\u8bd5\u3002',
   retry: '\u91cd\u8bd5',
   moduleLoading: '\u6b63\u5728\u8865\u9f50\u6570\u636e...',
   moduleUnavailable: '\u8be5\u6570\u636e\u6682\u65f6\u4e0d\u53ef\u7528',
   moduleEmpty: '\u5f53\u524d\u8d5b\u5b63\u6682\u65e0\u79ef\u5206\u699c\u6570\u636e',
-  controlRoom: '\u8d5b\u5b63\u6307\u6325\u5ba4',
-  briefing: '\u4ece\u4e0b\u4e00\u7ad9\u3001\u51a0\u519b\u4e89\u593a\u5230\u6700\u65b0\u6392\u540d\uff0c\u4e00\u5c4f\u638c\u63e1\u5f53\u524d F1 \u8d5b\u5b63\u7684\u6700\u91cd\u8981\u4fe1\u53f7\u3002',
-  seasonProgressShort: '\u8d5b\u5b63\u8fdb\u5ea6',
-  nextSignal: '\u4e0b\u4e00\u4fe1\u53f7',
-  noRace: '\u5df2\u5b8c\u8d5b',
+  seasonProgress: '\u8d5b\u5b63\u8fdb\u5ea6',
+  latestCompleted: '\u6700\u8fd1\u5b8c\u8d5b',
+  weekendSchedule: '\u8d5b\u5468\u65e5\u7a0b',
+  viewRace: '\u67e5\u770b\u8d5b\u4e8b',
+  fullCalendar: '\u5b8c\u6574\u8d5b\u5386',
+};
+
+const WEEKEND_LABELS = {
+  fp1: '\u4e00\u7ec3',
+  fp2: '\u4e8c\u7ec3',
+  fp3: '\u4e09\u7ec3',
+  qualifying: '\u6392\u4f4d\u8d5b',
+  sprintQualifying: '\u51b2\u523a\u6392\u4f4d',
+  sprint: '\u51b2\u523a\u8d5b',
+  race: '\u6b63\u8d5b',
 };
 
 const Home = () => {
@@ -71,11 +68,9 @@ const Home = () => {
     refetch,
     resources,
   } = useSeasonDataCached(currentSeason);
-  const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
+  const { ongoingRace, nextRace } = useRacesByStatus(races);
   const driverLeaderPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const constructorLeaderPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
-  const nextRaceDayDistance = nextRace ? daysUntilLocalDate(nextRace.date) : null;
-  const daysUntilNextRace = nextRaceDayDistance === null ? null : Math.max(0, nextRaceDayDistance);
 
   if (loading) {
     return (
@@ -109,31 +104,14 @@ const Home = () => {
     );
   }
 
-  const statCards = [
-    {
-      value: completedRaces.length,
-      label: `${TEXT.completedRaces} / ${races.length}`,
-      color: 'var(--f1-red)',
-    },
-    {
-      value: driverStandings.length,
-      label: TEXT.activeDrivers,
-      color: 'var(--accent-blue)',
-    },
-    {
-      value: constructorStandings.length,
-      label: TEXT.activeConstructors,
-      color: 'var(--accent-green)',
-    },
-    {
-      value: daysUntilNextRace ?? '--',
-      label: nextRace ? TEXT.daysUntilNextRace : TEXT.seasonEnded,
-      color: 'var(--accent-yellow)',
-    },
-  ];
-
   const driverLeader = driverStandings[0];
   const constructorLeader = constructorStandings[0];
+  const seasonSummary = buildSeasonSummary(races, driverStandings, constructorStandings);
+  const focusRace = ongoingRace ?? nextRace;
+  const weekendTimeline = getRaceWeekendTimeline(focusRace ?? null, WEEKEND_LABELS);
+  const focusRacePath = focusRace
+    ? `/races/${focusRace.round}/info?season=${encodeURIComponent(focusRace.season)}`
+    : '/races';
 
   const getRankBadgeClass = (index: number) => {
     if (index === 0) return 'rank-badge-1';
@@ -161,128 +139,104 @@ const Home = () => {
           <button type="button" className="notice-retry" onClick={refetch}>{TEXT.retry}</button>
         </div>
       ) : null}
-      <ProductMasthead
-        index="00"
-        eyebrow={`${currentSeason} / ${TEXT.controlRoom}`}
-        title={<>{currentSeason}<br />SEASON CONTROL</>}
-        description={TEXT.briefing}
-        actions={(
-          <>
-            <button type="button" className="home-command-primary" onPointerEnter={() => preloadRoute('/races')} onFocus={() => preloadRoute('/races')} onClick={() => navigate('/races')}>
-              {TEXT.nextRace}
+      <section className="home-command-surface" aria-labelledby="home-command-title">
+        <div className="home-command-status">
+          <span>{currentSeason} SEASON</span>
+          <span className={ongoingRace ? 'is-live' : ''}>
+            <i />{ongoingRace ? TEXT.ongoingRace : focusRace ? TEXT.nextRace : TEXT.seasonEnded}
+          </span>
+        </div>
+
+        <div className="home-command-lead">
+          <div>
+            <h1 id="home-command-title">{focusRace?.raceName || `${currentSeason} ${TEXT.seasonEnded}`}</h1>
+            {focusRace ? (
+              <p>
+                <strong>{focusRace.Circuit.circuitName}</strong>
+                <span>{focusRace.Circuit.Location.locality} · {focusRace.Circuit.Location.country}</span>
+              </p>
+            ) : null}
+            <time>{focusRace ? formatRaceDateTimeFull(focusRace) : `${seasonSummary.completedRounds}/${seasonSummary.totalRounds}`}</time>
+          </div>
+          <div className="home-command-actions">
+            <button
+              type="button"
+              className="home-command-primary"
+              onPointerEnter={() => preloadRoute(focusRacePath)}
+              onFocus={() => preloadRoute(focusRacePath)}
+              onClick={() => navigate(focusRacePath)}
+            >
+              {focusRace ? TEXT.viewRace : TEXT.fullCalendar}
             </button>
-            <button type="button" className="home-command-secondary" onPointerEnter={() => preloadRoute('/seasons')} onFocus={() => preloadRoute('/seasons')} onClick={() => navigate('/seasons')}>
+            <button
+              type="button"
+              className="home-command-secondary"
+              onPointerEnter={() => preloadRoute('/seasons')}
+              onFocus={() => preloadRoute('/seasons')}
+              onClick={() => navigate('/seasons')}
+            >
               {TEXT.viewFullStandings}
             </button>
-          </>
-        )}
-        metrics={[
-          {
-            label: TEXT.seasonProgressShort,
-            value: `${completedRaces.length}/${races.length || '--'}`,
-            detail: `${TEXT.completedRaces} · ${Math.round((completedRaces.length / Math.max(races.length, 1)) * 100)}%`,
-          },
-          {
-            label: TEXT.driverLeader,
-            value: driverLeader ? `${driverLeader.Driver.givenName[0]}. ${driverLeader.Driver.familyName}` : '--',
-            detail: driverLeader ? `${driverLeader.points} PTS` : TEXT.moduleLoading,
-            accent: driverLeader?.Constructors[0]
-              ? getTeamColor(driverLeader.Constructors[0].constructorId)
-              : undefined,
-          },
-          {
-            label: TEXT.constructorLeader,
-            value: constructorLeader?.Constructor.name || '--',
-            detail: constructorLeader ? `${constructorLeader.points} PTS` : TEXT.moduleLoading,
-            accent: constructorLeader ? getTeamColor(constructorLeader.Constructor.constructorId) : undefined,
-          },
-          {
-            label: TEXT.nextSignal,
-            value: nextRace ? (daysUntilNextRace === 0 ? TEXT.today : `T-${daysUntilNextRace}`) : TEXT.noRace,
-            detail: nextRace?.raceName || TEXT.seasonEnded,
-            accent: 'var(--accent-yellow)',
-          },
-        ]}
-      />
-      {(driverLeader || constructorLeader || races.length > 0) ? (
-        <section className="season-pulse home-deferred-section home-deferred-section--compact" aria-labelledby="season-pulse-title">
-          <div>
-            <span className="season-pulse-kicker" id="season-pulse-title">{TEXT.seasonPulse}</span>
-            <p>
-              {TEXT.seasonProgress} <strong>{completedRaces.length}/{races.length} {TEXT.racesUnit}</strong>
-              {driverLeader ? <> · {TEXT.driverLeader} <strong>{driverLeader.Driver.givenName} {driverLeader.Driver.familyName}</strong></> : null}
-              {constructorLeader ? <> · {TEXT.constructorLeader} <strong>{constructorLeader.Constructor.name}</strong></> : null}
-            </p>
           </div>
-          <button type="button" className="standings-cta" onPointerEnter={() => preloadRoute('/seasons')} onFocus={() => preloadRoute('/seasons')} onClick={() => navigate('/seasons')}>
-            {TEXT.viewFullStandings}
-          </button>
-        </section>
-      ) : null}
-      {nextRace ? (
-        <section className="next-race-section home-deferred-section home-deferred-section--medium">
-          <h2 className="section-title-f1">
-            <span className="section-title-accent section-title-accent-warning" />
-            {TEXT.nextRace}
-          </h2>
-          <button
-            type="button"
-            className="next-race-card-f1"
-            onClick={() => navigate(
-              `/races/${nextRace.round}/info?season=${encodeURIComponent(nextRace.season)}`,
-            )}
-            onPointerEnter={preloadRaceInfoRoute}
-            onFocus={preloadRaceInfoRoute}
-          >
-            <div className="next-race-content-f1">
-              <div className="next-race-info-f1">
-                <div className="next-race-title">{nextRace.raceName}</div>
-                <p className="next-race-circuit">
-                  {TEXT.raceCircuit}: {nextRace.Circuit.circuitName}
-                </p>
-                <p className="next-race-location">
-                  {TEXT.raceLocation}: {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
-                </p>
-                <div className="next-race-date">
-                  {formatRaceDateTimeFull(nextRace)}
-                  <span className="countdown">
-                    {daysUntilNextRace === 0 ? TEXT.today : `\u8fd8\u6709 ${daysUntilNextRace} \u5929`}
-                  </span>
-                </div>
-              </div>
-              <span className="next-race-tag">{TEXT.upcoming}</span>
-            </div>
-          </button>
-        </section>
-      ) : null}
+        </div>
 
-      {ongoingRace ? (
-        <section className="ongoing-section home-deferred-section home-deferred-section--medium">
-          <h2 className="section-title-f1">
-            <span className="section-title-accent section-title-accent-live" />
-            {TEXT.ongoingRace}
-          </h2>
-          <button
-            type="button"
-            className="ongoing-card-f1"
-            onClick={() => navigate(
-              `/races/${ongoingRace.round}/race?season=${encodeURIComponent(ongoingRace.season)}`,
-            )}
-            onPointerEnter={() => preloadRoute(`/races/${ongoingRace.round}/race`)}
-            onFocus={() => preloadRoute(`/races/${ongoingRace.round}/race`)}
-          >
-            <div className="ongoing-content-f1">
-              <div className="ongoing-info-f1">
-                <div className="ongoing-race-title">{ongoingRace.raceName}</div>
-                <p>
-                  {ongoingRace.Circuit.circuitName}, {ongoingRace.Circuit.Location.locality}, {ongoingRace.Circuit.Location.country}
-                </p>
-              </div>
-              <span className="ongoing-tag">{TEXT.live}</span>
+        <dl className="home-core-facts">
+          <div>
+            <dt>{TEXT.seasonProgress}</dt>
+            <dd>{seasonSummary.completedRounds}/{seasonSummary.totalRounds || '--'}</dd>
+            <span>{seasonSummary.remainingRounds} 站未完成</span>
+          </div>
+          <div style={{ '--fact-accent': driverLeader?.Constructors[0] ? getTeamColor(driverLeader.Constructors[0].constructorId) : undefined } as CSSProperties}>
+            <dt>{TEXT.driverLeader}</dt>
+            <dd>{driverLeader ? `${driverLeader.Driver.givenName[0]}. ${driverLeader.Driver.familyName}` : '--'}</dd>
+            <span>{driverLeader
+              ? `${driverLeader.points} PTS${seasonSummary.driverGap === null ? '' : ` · +${seasonSummary.driverGap}`}`
+              : resources.drivers.loading
+                ? TEXT.moduleLoading
+                : resources.drivers.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span>
+          </div>
+          <div style={{ '--fact-accent': constructorLeader ? getTeamColor(constructorLeader.Constructor.constructorId) : undefined } as CSSProperties}>
+            <dt>{TEXT.constructorLeader}</dt>
+            <dd>{constructorLeader?.Constructor.name || '--'}</dd>
+            <span>{constructorLeader
+              ? `${constructorLeader.points} PTS${seasonSummary.constructorGap === null ? '' : ` · +${seasonSummary.constructorGap}`}`
+              : resources.constructors.loading
+                ? TEXT.moduleLoading
+                : resources.constructors.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span>
+          </div>
+          <div>
+            <dt>{TEXT.latestCompleted}</dt>
+            <dd>{seasonSummary.latestCompletedRace?.raceName || '--'}</dd>
+            {seasonSummary.latestCompletedRace ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/races/${seasonSummary.latestCompletedRace?.round}/results?season=${encodeURIComponent(currentSeason)}`)}
+              >
+                R{seasonSummary.latestCompletedRace.round} · 查看结果
+              </button>
+            ) : <span>--</span>}
+          </div>
+        </dl>
+
+        {weekendTimeline.length > 0 ? (
+          <div className="home-weekend-schedule" aria-label={TEXT.weekendSchedule}>
+            <div className="home-weekend-heading">
+              <h2>{TEXT.weekendSchedule}</h2>
+              <span>北京时间</span>
             </div>
-          </button>
-        </section>
-      ) : null}
+            <div className="home-weekend-sessions">
+              {weekendTimeline.slice(0, 5).map((session) => (
+                <div key={session.key} className={`home-weekend-session is-${session.state} ${session.isNext ? 'is-next' : ''}`}>
+                  <span>{session.code}</span>
+                  <strong>{session.label}</strong>
+                  <time>{session.timeLabel}</time>
+                  <small>{session.state === 'live' ? TEXT.live : session.state === 'completed' ? '\u5df2\u7ed3\u675f' : session.isNext ? '\u4e0b\u4e00\u573a' : '\u672a\u5f00\u59cb'}</small>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
 
       <div className="section-divider" />
 
@@ -412,21 +366,6 @@ const Home = () => {
         </div>
       </section>
 
-      <div className="section-divider" />
-
-      <section className="stats-grid home-deferred-section home-deferred-section--compact">
-        {statCards.map((card, index) => (
-        <div
-          key={index}
-          className="stat-card-f1"
-        >
-          <div className="stat-value" style={{ color: card.color }}>
-            {card.value}
-          </div>
-            <div className="stat-label">{card.label}</div>
-          </div>
-        ))}
-      </section>
     </div>
   );
 };

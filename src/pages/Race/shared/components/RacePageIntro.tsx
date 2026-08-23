@@ -4,7 +4,7 @@ interface RacePageIntroProps {
   index: string;
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   aside?: ReactNode;
 }
 export function RacePageIntro({
@@ -20,7 +20,7 @@ export function RacePageIntro({
       <div className="race-page-intro-copy">
         <span className="race-page-intro-eyebrow">{eyebrow}</span>
         <h2>{title}</h2>
-        <p>{description}</p>
+        {description ? <p>{description}</p> : null}
       </div>
       {aside ? <div className="race-page-intro-aside">{aside}</div> : null}
     </header>
