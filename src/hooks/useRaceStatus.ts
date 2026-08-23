@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
 import type { Race } from '@/types';
+import { isAfterLocalDateEnd, isLocalDateAfter, isWithinRaceWeekend } from '@/utils/dateTime';
 
 export type RaceStatus = 'ongoing' | 'completed' | 'upcoming';
 
@@ -13,13 +13,9 @@ interface RaceStatusInfo {
 
 export function useRaceStatus(race: Race): RaceStatusInfo {
   return useMemo(() => {
-    const raceDate = dayjs(race.date);
-    const today = dayjs();
-    const startDate = raceDate.subtract(1, 'day').startOf('day');
-    const endDate = raceDate.endOf('day');
-    
-    const isOngoingWeekend = today.isAfter(startDate) && today.isBefore(endDate);
-    const isCompleted = today.isAfter(raceDate.endOf('day'));
+    const today = new Date();
+    const isOngoingWeekend = isWithinRaceWeekend(race.date, today);
+    const isCompleted = isAfterLocalDateEnd(race.date, today);
 
     if (isOngoingWeekend) {
       return {
@@ -48,29 +44,20 @@ export function useRaceStatus(race: Race): RaceStatusInfo {
   }, [race.date]);
 }
 
-export function getRacesByStatus(races: Race[], today = dayjs()) {
+export function getRacesByStatus(races: Race[], today = new Date()) {
   const ongoingRace = races.find((race) => {
-    const raceDate = dayjs(race.date);
-    const startDate = raceDate.subtract(1, 'day').startOf('day');
-    const endDate = raceDate.endOf('day');
-    return today.isAfter(startDate) && today.isBefore(endDate);
+    return isWithinRaceWeekend(race.date, today);
   });
 
   const futureRaces = races.filter((race) => {
-    const raceDate = dayjs(race.date);
-    const startDate = raceDate.subtract(1, 'day').startOf('day');
-    const endDate = raceDate.endOf('day');
-    const isOngoingWeekend = today.isAfter(startDate) && today.isBefore(endDate);
-    return !isOngoingWeekend && raceDate.isAfter(today);
+    const isOngoingWeekend = isWithinRaceWeekend(race.date, today);
+    return !isOngoingWeekend && isLocalDateAfter(race.date, today);
   });
   const [nextRace, ...upcomingRaces] = futureRaces;
 
   const completedRaces = races.filter((race) => {
-    const raceDate = dayjs(race.date);
-    const startDate = raceDate.subtract(1, 'day').startOf('day');
-    const endDate = raceDate.endOf('day');
-    const isOngoingWeekend = today.isAfter(startDate) && today.isBefore(endDate);
-    const isCompleted = today.isAfter(raceDate.endOf('day'));
+    const isOngoingWeekend = isWithinRaceWeekend(race.date, today);
+    const isCompleted = isAfterLocalDateEnd(race.date, today);
     return isCompleted && !isOngoingWeekend;
   });
 

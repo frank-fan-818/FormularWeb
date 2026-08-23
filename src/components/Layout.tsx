@@ -1,10 +1,14 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
 import { useAppStore } from '@/store';
 import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
 import './Layout.css';
+
+const preloadRoute = (pathname: string) => {
+  void import('@/utils/routePreload').then((module) => module.preloadRoute(pathname));
+};
 
 const GlobalSearchBox = lazy(() => import('@/components/GlobalSearchBox'));
 
@@ -297,7 +301,6 @@ const LayoutComponent = () => {
         value={language}
         onChange={(event) => {
           const nextLanguage = event.target.value === 'en' ? 'en' : 'zh-CN';
-          localStorage.setItem('i18nextLng', nextLanguage);
           void i18n.changeLanguage(nextLanguage);
         }}
         className="season-select-native"
@@ -393,6 +396,9 @@ const LayoutComponent = () => {
                   type="button"
                   className={`sidebar-nav-button ${isActive ? 'is-active' : ''}`}
                   onClick={() => handleMenuClick(item.key)}
+                  onPointerEnter={() => preloadRoute(item.key)}
+                  onPointerDown={() => preloadRoute(item.key)}
+                  onFocus={() => preloadRoute(item.key)}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="sidebar-nav-icon" />
@@ -448,7 +454,9 @@ const LayoutComponent = () => {
 
         <main className="content">
           <div className="content-inner">
-            <Outlet />
+            <div className="motion-route-shell" key={location.pathname}>
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>

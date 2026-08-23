@@ -68,7 +68,7 @@
 .standings-inline-link {
   border: 0;
   background: transparent;
-  color: var(--f1-red-dark);
+  color: var(--f1-red-text);
   font-weight: var(--font-semibold);
   cursor: pointer;
   white-space: nowrap;
@@ -150,7 +150,7 @@
 
 .stat-card-f1 .stat-label {
   font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-weight: var(--font-medium);
 }
 
@@ -453,6 +453,25 @@
 
 .ongoing-section {
   margin-bottom: var(--space-6);
+}
+
+@supports (content-visibility: auto) {
+  .home-deferred-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 320px;
+  }
+
+  .home-deferred-section--compact {
+    contain-intrinsic-size: auto 160px;
+  }
+
+  .home-deferred-section--medium {
+    contain-intrinsic-size: auto 300px;
+  }
+
+  .home-deferred-section--large {
+    contain-intrinsic-size: auto 760px;
+  }
 }
 
 .ongoing-card-f1 {

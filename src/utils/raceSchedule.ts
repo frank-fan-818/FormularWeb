@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
 import type { Race } from '@/types';
+import { formatDateOnly } from '@/utils/dateTime';
 
 export interface RaceWeekendSession {
   key: string;
@@ -55,13 +55,13 @@ export function formatSessionDateTime(session: { date?: string; time?: string } 
   }
 
   if (!session.time) {
-    return dayjs(session.date).format('MM-DD');
+    return formatDateOnly(session.date).slice(5);
   }
 
   const normalizedTime = session.time.trim().endsWith('Z') ? session.time.trim() : `${session.time.trim()}Z`;
   const timestamp = Date.parse(`${session.date}T${normalizedTime}`);
   if (Number.isNaN(timestamp)) {
-    return dayjs(session.date).format('MM-DD');
+    return formatDateOnly(session.date).slice(5);
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
@@ -84,13 +84,13 @@ export function formatRaceDateTimeFull(race: Pick<Race, 'date' | 'time'>): strin
   }
 
   if (!race.time) {
-    return dayjs(race.date).format('YYYY-MM-DD');
+    return formatDateOnly(race.date);
   }
 
   const normalizedTime = race.time.trim().endsWith('Z') ? race.time.trim() : `${race.time.trim()}Z`;
   const timestamp = Date.parse(`${race.date}T${normalizedTime}`);
   if (Number.isNaN(timestamp)) {
-    return dayjs(race.date).format('YYYY-MM-DD');
+    return formatDateOnly(race.date);
   }
 
   return new Intl.DateTimeFormat('zh-CN', {

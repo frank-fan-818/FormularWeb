@@ -1,15 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import type { CSSProperties } from 'react';
-import dayjs from 'dayjs';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { daysUntilLocalDate, formatLocalDateTime } from '@/utils/dateTime';
 import { getTeamColor } from '@/utils/teamColors';
-import { preloadRaceInfoRoute } from '@/utils/routePreload';
 import ProductMasthead from '@/components/product/ProductMasthead';
-import './Home.css';
+
+const preloadRoute = (pathname: string) => {
+  void import('@/utils/routePreload').then((module) => module.preloadRoute(pathname));
+};
+
+const preloadRaceInfoRoute = () => preloadRoute('/races/next/info');
 
 const TEXT = {
   completedRaces: '\u5df2\u5b8c\u6210\u5206\u7ad9',
@@ -70,17 +74,13 @@ const Home = () => {
   const { ongoingRace, nextRace, completedRaces } = useRacesByStatus(races);
   const driverLeaderPoints = driverStandings[0] ? parseFloat(driverStandings[0].points) : 0;
   const constructorLeaderPoints = constructorStandings[0] ? parseFloat(constructorStandings[0].points) : 0;
-  const daysUntilNextRace = nextRace
-    ? Math.max(0, dayjs(nextRace.date).startOf('day').diff(dayjs().startOf('day'), 'day'))
-    : null;
+  const nextRaceDayDistance = nextRace ? daysUntilLocalDate(nextRace.date) : null;
+  const daysUntilNextRace = nextRaceDayDistance === null ? null : Math.max(0, nextRaceDayDistance);
 
   if (loading) {
     return (
       <div className="page-container">
-        <Helmet>
-          <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
-          <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
-        </Helmet>
+        <DocumentHead title="F1 Dashboard — 季节总览" description="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
         <div className="home-skeleton" role="status" aria-label={TEXT.loading}>
           <div className="skeleton-card skeleton-card-pulse" />
           <div className="skeleton-line skeleton-line-short" />
@@ -100,7 +100,7 @@ const Home = () => {
   if (error && !hasAnySeasonData) {
     return (
       <div className="page-container">
-        <Helmet><title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title></Helmet>
+        <DocumentHead title="F1 Dashboard — 季节总览" description="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
         <div className="home-error-state" role="alert">
           <strong>{TEXT.unavailable}</strong>
           <button type="button" onClick={refetch}>{TEXT.retry}</button>
@@ -153,14 +153,11 @@ const Home = () => {
 
   return (
     <div className="page-container">
-      <Helmet>
-        <title>F1 Dashboard &#8212; &#x5b63;&#x8282;&#x603b;&#x89c8;</title>
-        <meta name="description" content="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
-      </Helmet>
+      <DocumentHead title="F1 Dashboard — 季节总览" description="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
       {(isOffline || isStale || (error && (races.length > 0 || driverStandings.length > 0))) ? (
         <div className="data-freshness-notice" role="status">
           <strong>{isOffline ? TEXT.offlineData : TEXT.staleData}</strong>
-          {updatedAt ? <span>{TEXT.updatedAt} {dayjs(updatedAt).format('YYYY-MM-DD HH:mm')}</span> : null}
+          {updatedAt ? <span>{TEXT.updatedAt} {formatLocalDateTime(updatedAt)}</span> : null}
           <button type="button" className="notice-retry" onClick={refetch}>{TEXT.retry}</button>
         </div>
       ) : null}
@@ -171,10 +168,10 @@ const Home = () => {
         description={TEXT.briefing}
         actions={(
           <>
-            <button type="button" className="home-command-primary" onClick={() => navigate('/races')}>
+            <button type="button" className="home-command-primary" onPointerEnter={() => preloadRoute('/races')} onFocus={() => preloadRoute('/races')} onClick={() => navigate('/races')}>
               {TEXT.nextRace}
             </button>
-            <button type="button" className="home-command-secondary" onClick={() => navigate('/seasons')}>
+            <button type="button" className="home-command-secondary" onPointerEnter={() => preloadRoute('/seasons')} onFocus={() => preloadRoute('/seasons')} onClick={() => navigate('/seasons')}>
               {TEXT.viewFullStandings}
             </button>
           </>
@@ -208,7 +205,7 @@ const Home = () => {
         ]}
       />
       {(driverLeader || constructorLeader || races.length > 0) ? (
-        <section className="season-pulse" aria-labelledby="season-pulse-title">
+        <section className="season-pulse home-deferred-section home-deferred-section--compact" aria-labelledby="season-pulse-title">
           <div>
             <span className="season-pulse-kicker" id="season-pulse-title">{TEXT.seasonPulse}</span>
             <p>
@@ -217,13 +214,13 @@ const Home = () => {
               {constructorLeader ? <> · {TEXT.constructorLeader} <strong>{constructorLeader.Constructor.name}</strong></> : null}
             </p>
           </div>
-          <button type="button" className="standings-cta" onClick={() => navigate('/seasons')}>
+          <button type="button" className="standings-cta" onPointerEnter={() => preloadRoute('/seasons')} onFocus={() => preloadRoute('/seasons')} onClick={() => navigate('/seasons')}>
             {TEXT.viewFullStandings}
           </button>
         </section>
       ) : null}
       {nextRace ? (
-        <section className="next-race-section">
+        <section className="next-race-section home-deferred-section home-deferred-section--medium">
           <h2 className="section-title-f1">
             <span className="section-title-accent section-title-accent-warning" />
             {TEXT.nextRace}
@@ -260,7 +257,7 @@ const Home = () => {
       ) : null}
 
       {ongoingRace ? (
-        <section className="ongoing-section">
+        <section className="ongoing-section home-deferred-section home-deferred-section--medium">
           <h2 className="section-title-f1">
             <span className="section-title-accent section-title-accent-live" />
             {TEXT.ongoingRace}
@@ -271,6 +268,8 @@ const Home = () => {
             onClick={() => navigate(
               `/races/${ongoingRace.round}/race?season=${encodeURIComponent(ongoingRace.season)}`,
             )}
+            onPointerEnter={() => preloadRoute(`/races/${ongoingRace.round}/race`)}
+            onFocus={() => preloadRoute(`/races/${ongoingRace.round}/race`)}
           >
             <div className="ongoing-content-f1">
               <div className="ongoing-info-f1">
@@ -287,13 +286,13 @@ const Home = () => {
 
       <div className="section-divider" />
 
-      <section className="standings-section">
+      <section className="standings-section home-deferred-section home-deferred-section--large">
         <div className="section-heading-row">
           <h2 className="section-title-f1">
             <span className="section-title-accent section-title-accent-primary" />
             {TEXT.standingsTopThree}
           </h2>
-          <button type="button" className="standings-inline-link" onClick={() => navigate('/seasons')}>
+          <button type="button" className="standings-inline-link" onPointerEnter={() => preloadRoute('/seasons')} onFocus={() => preloadRoute('/seasons')} onClick={() => navigate('/seasons')}>
             {TEXT.viewFullStandings}
           </button>
         </div>
@@ -329,6 +328,8 @@ const Home = () => {
                     <button
                       type="button"
                       className="standings-link-f1 standings-name-f1 clickable-f1"
+                      onPointerEnter={() => preloadRoute(`/drivers/${item.Driver.driverId}`)}
+                      onFocus={() => preloadRoute(`/drivers/${item.Driver.driverId}`)}
                       onClick={() => navigate(`/drivers/${item.Driver.driverId}`)}
                     >
                       {item.Driver.givenName} {item.Driver.familyName}
@@ -337,6 +338,8 @@ const Home = () => {
                       type="button"
                       className="standings-link-f1 standings-team-f1 clickable-f1"
                       disabled={!constructor}
+                      onPointerEnter={() => constructor && preloadRoute(`/constructors/${constructor.constructorId}`)}
+                      onFocus={() => constructor && preloadRoute(`/constructors/${constructor.constructorId}`)}
                       onClick={() => constructor && navigate(`/constructors/${constructor.constructorId}`)}
                     >
                       {constructor?.name || '-'}
@@ -384,6 +387,8 @@ const Home = () => {
                     <button
                       type="button"
                       className="standings-link-f1 standings-name-f1 clickable-f1"
+                      onPointerEnter={() => preloadRoute(`/constructors/${item.Constructor.constructorId}`)}
+                      onFocus={() => preloadRoute(`/constructors/${item.Constructor.constructorId}`)}
                       onClick={() => navigate(`/constructors/${item.Constructor.constructorId}`)}
                     >
                       {item.Constructor.name}
@@ -409,7 +414,7 @@ const Home = () => {
 
       <div className="section-divider" />
 
-      <section className="stats-grid">
+      <section className="stats-grid home-deferred-section home-deferred-section--compact">
         {statCards.map((card, index) => (
         <div
           key={index}

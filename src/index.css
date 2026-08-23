@@ -135,7 +135,10 @@ code {
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-panel);
-  transition: all var(--transition-slow) var(--ease-spring);
+  transition:
+    transform var(--motion-duration-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-standard) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard);
   box-shadow: var(--shadow-sm);
 }
 
@@ -160,7 +163,12 @@ code {
 .ant-btn {
   border-radius: var(--radius-control);
   font-weight: var(--font-medium);
-  transition: all var(--transition-base);
+  transition:
+    transform var(--motion-duration-instant) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .ant-btn-primary {
@@ -319,7 +327,10 @@ code {
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  transition: all var(--transition-base);
+  transition:
+    transform var(--motion-duration-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-standard) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard);
   box-shadow: var(--shadow-sm);
 }
 
@@ -401,7 +412,10 @@ code {
 /* Clickable Items */
 .clickable-f1 {
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-instant) var(--motion-ease-standard);
 }
 
 .clickable-f1:hover {

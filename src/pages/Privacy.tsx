@@ -1,18 +1,12 @@
 import { Card, Typography } from 'antd';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import './Privacy.css';
 
 const { Paragraph, Text, Title } = Typography;
 
 const Privacy = () => (
   <>
-    <Helmet>
-      <title>隐私说明 — F1 数据中心</title>
-      <meta
-        name="description"
-        content="F1 数据中心的账号、诊断数据与本地偏好处理说明"
-      />
-    </Helmet>
+    <DocumentHead title="隐私说明 — F1 数据中心" description="F1 数据中心的账号、诊断数据与本地偏好处理说明" />
     <article className="privacy-page">
       <header>
         <Text className="privacy-kicker">PRIVACY / ACCOUNT</Text>

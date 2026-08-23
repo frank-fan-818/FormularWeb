@@ -1,7 +1,7 @@
 import { Button, Card, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type { FiaRaceUpgradeSummary, FiaRaceUpgradeTeamSummary } from '@/api/fiaCarUpgrades';
 import { UPGRADE_REASON_LABELS } from '@/pages/Race/shared/constants';
 import ViewportTable from '@/pages/Race/shared/components/ViewportTable';

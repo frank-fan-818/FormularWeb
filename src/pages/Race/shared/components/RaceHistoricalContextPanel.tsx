@@ -1,7 +1,7 @@
 import { Button, Card, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type {
   QualifyingResult,
   RacePreviewSummary,

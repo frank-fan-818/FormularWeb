@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
+import { isAfterLocalDateEnd } from '@/utils/dateTime';
 import {
   useFastF1RaceAnalytics,
   useFastF1RaceTelemetry,
@@ -164,7 +164,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     activeSessionTab,
     flowId: diagnosticFlowId,
   });
-  const isPastRace = Boolean(raceInfo && dayjs().isAfter(dayjs(raceInfo.date).endOf('day')));
+  const isPastRace = Boolean(raceInfo && isAfterLocalDateEnd(raceInfo.date));
   // Race analytics also powers the weather summary on the information tab.
   const shouldLoadRaceFastF1 = routeSection === 'race' || routeSection === 'info';
   const {

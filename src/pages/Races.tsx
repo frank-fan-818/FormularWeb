@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useRacesByStatus, useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Race } from '@/types';
+import { preloadRoute } from '@/utils/routePreload';
 import { formatRaceDateTime } from '@/utils/raceSchedule';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
@@ -28,6 +29,8 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
       onClick={() => navigate(
         `/races/${race.round}/results?season=${encodeURIComponent(race.season)}`,
       )}
+      onPointerEnter={() => preloadRoute(`/races/${race.round}/results`)}
+      onFocus={() => preloadRoute(`/races/${race.round}/results`)}
     >
       <span className="race-calendar-round">R{String(race.round).padStart(2, '0')}</span>
       <div className="race-calendar-copy">
@@ -55,10 +58,7 @@ const Races = () => {
 
   return (
     <div className="list-page-container races-calendar-page">
-      <Helmet>
-        <title>&#x6bd4;&#x8d5b;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x6bd4;&#x8d5b;&#x65e5;&#x7a0b;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x7ad9;&#x6bd4;&#x8d5b;&#x4fe1;&#x606f;" />
-      </Helmet>
+      <DocumentHead title="比赛列表 — F1 Dashboard" description="F1比赛日程列表，查看各站比赛信息" />
       <ProductMasthead
         index="02"
         eyebrow={`${currentSeason} / WORLD CHAMPIONSHIP`}

@@ -1,0 +1,296 @@
+/*
+ * FormularOneWeb motion language
+ * Causality > continuity > priority > decoration.
+ */
+
+@keyframes motion-route-enter {
+  from {
+    transform: translate3d(0, var(--motion-distance-route), 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-primary-enter {
+  from { transform: translate3d(0, var(--motion-distance-component), 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes motion-section-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-distance-component), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-timing-line {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes motion-status-ring {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 26%, transparent); }
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
+}
+
+@keyframes motion-skeleton-scan {
+  from { background-position: 180% 0; }
+  to { background-position: -180% 0; }
+}
+
+.motion-route-shell {
+  min-width: 0;
+  animation: motion-route-enter var(--motion-duration-route) var(--motion-ease-enter) both;
+}
+
+.motion-route-shell > :where(
+  .page-container,
+  .list-page-container,
+  .race-detail-page,
+  .detail-page-container,
+  .login-page,
+  .settings-page
+) > :where(header, section, .ant-card, .product-masthead, .product-section-header):not(.product-masthead) {
+  animation: motion-section-enter var(--motion-duration-standard) var(--motion-ease-enter) both;
+}
+
+.motion-route-shell > :where(.page-container, .list-page-container, .race-detail-page) > :nth-child(2) {
+  animation-delay: calc(var(--motion-stagger-step) * 1);
+}
+
+.motion-route-shell > :where(.page-container, .list-page-container, .race-detail-page) > :nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.motion-route-shell > :where(.page-container, .list-page-container, .race-detail-page) > :nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.motion-route-shell > :where(.page-container, .list-page-container, .race-detail-page) > :nth-child(n + 5) {
+  animation-delay: calc(var(--motion-stagger-step) * 4);
+}
+
+.motion-route-shell .product-masthead__eyebrow,
+.motion-route-shell .product-masthead__title,
+.motion-route-shell .product-masthead__description,
+.motion-route-shell .product-masthead__actions,
+.motion-route-shell .product-masthead__aside,
+.motion-route-shell .product-metric {
+  animation: motion-primary-enter var(--motion-duration-data) var(--motion-ease-emphasized) both;
+}
+
+.motion-route-shell .product-masthead__title { animation-delay: 35ms; }
+.motion-route-shell .product-masthead__description { animation-delay: 75ms; }
+.motion-route-shell .product-masthead__actions,
+.motion-route-shell .product-masthead__aside { animation-delay: 110ms; }
+.motion-route-shell .product-metric:nth-child(1) { animation-delay: 130ms; }
+.motion-route-shell .product-metric:nth-child(2) { animation-delay: 165ms; }
+.motion-route-shell .product-metric:nth-child(3) { animation-delay: 200ms; }
+.motion-route-shell .product-metric:nth-child(n + 4) { animation-delay: 235ms; }
+
+.motion-route-shell :where(
+  .driver-lineup-card,
+  .constructor-profile-card,
+  .circuit-atlas-card,
+  .race-calendar-row,
+  .official-season-row,
+  .official-standings-row
+) {
+  animation: motion-section-enter var(--motion-duration-standard) var(--motion-ease-enter) both;
+  animation-delay: 0ms;
+}
+
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(2) { animation-delay: 45ms; }
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(3) { animation-delay: 90ms; }
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(4) { animation-delay: 135ms; }
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(5) { animation-delay: 180ms; }
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(6) { animation-delay: 225ms; }
+.motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card, .race-calendar-row, .official-season-row, .official-standings-row):nth-child(n + 7) { animation-delay: 270ms; }
+
+.motion-route-shell :where(
+  .driver-lineup-card,
+  .constructor-profile-card,
+  .circuit-atlas-card,
+  .race-calendar-row,
+  .next-race-card-f1,
+  .ongoing-card-f1,
+  .standings-card-f1,
+  .stat-card-f1,
+  .ant-card
+) {
+  transition:
+    transform var(--motion-duration-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-standard) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .motion-route-shell :where(
+    .driver-lineup-card,
+    .constructor-profile-card,
+    .circuit-atlas-card,
+    .race-calendar-row,
+    .next-race-card-f1,
+    .ongoing-card-f1,
+    .standings-card-f1,
+    .stat-card-f1
+  ):hover {
+    transform: translate3d(0, calc(var(--motion-distance-control) * -1), 0);
+  }
+
+  .motion-route-shell .race-calendar-row:hover {
+    transform: translate3d(var(--motion-distance-control), 0, 0);
+  }
+}
+
+:where(button, [role='button'], a, .ant-btn, .ant-tabs-tab) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, [role='button'], .ant-btn):not(:disabled) {
+  transition:
+    transform var(--motion-duration-instant) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+:where(button, [role='button'], .ant-btn):not(:disabled):active {
+  transform: scale(0.985);
+  transition-duration: var(--motion-duration-instant);
+}
+
+.sidebar-nav-button::before {
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-enter);
+}
+
+.sidebar-nav-button.is-active::before { transform: scaleY(1); }
+
+.sidebar-nav-icon {
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.sidebar-nav-button:hover .sidebar-nav-icon,
+.sidebar-nav-button.is-active .sidebar-nav-icon {
+  transform: translate3d(2px, 0, 0);
+}
+
+.global-search-dropdown,
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-popover,
+.ant-tooltip {
+  transform-origin: top center;
+  animation: motion-section-enter var(--motion-duration-fast) var(--motion-ease-enter) both;
+}
+
+.ant-tabs-ink-bar {
+  transition:
+    width var(--motion-duration-standard) var(--motion-ease-emphasized),
+    left var(--motion-duration-standard) var(--motion-ease-emphasized),
+    transform var(--motion-duration-standard) var(--motion-ease-emphasized) !important;
+}
+
+.ant-table-tbody > tr > td {
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.section-title-accent-live,
+.race-command-state.is-live {
+  animation: motion-status-ring var(--motion-duration-ambient) var(--motion-ease-standard) infinite;
+}
+
+.skeleton-card,
+.skeleton-line,
+.season-skeleton-row,
+.race-weekend-skeleton-row {
+  animation: motion-skeleton-scan var(--motion-duration-ambient) linear infinite;
+}
+
+.route-loading-surface {
+  position: relative;
+  display: grid;
+  min-height: min(58vh, 520px);
+  place-items: center;
+  overflow: hidden;
+  color: var(--text-secondary);
+}
+
+.route-loading-surface::before {
+  position: absolute;
+  top: 50%;
+  left: 8%;
+  width: 84%;
+  height: 1px;
+  content: '';
+  background: linear-gradient(90deg, transparent, var(--f1-red), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: motion-timing-line var(--motion-duration-data) var(--motion-ease-enter) infinite alternate;
+}
+
+.route-loading-indicator {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  place-items: center;
+  padding: 18px 22px;
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.route-loading-indicator::before {
+  width: 28px;
+  height: 3px;
+  content: '';
+  background: var(--f1-red);
+  animation: motion-timing-line 640ms var(--motion-ease-emphasized) infinite alternate;
+  transform-origin: left;
+}
+
+@media (max-width: 768px) {
+  .motion-route-shell {
+    --motion-distance-route: 9px;
+    --motion-stagger-step: 28ms;
+  }
+
+  .motion-route-shell :where(.driver-lineup-card, .constructor-profile-card, .circuit-atlas-card) {
+    animation-delay: 0ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-route-shell,
+  .motion-route-shell *,
+  .motion-route-shell *::before,
+  .motion-route-shell *::after,
+  .sidebar-nav-button::before,
+  .global-search-dropdown,
+  .ant-dropdown,
+  .ant-select-dropdown,
+  .ant-popover,
+  .ant-tooltip,
+  .section-title-accent-live,
+  .race-command-state.is-live,
+  .route-loading-surface::before,
+  .route-loading-indicator::before {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}

@@ -2,9 +2,10 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spin } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
+import { preloadRoute } from '@/utils/routePreload';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import type { Circuit, Race } from '@/types';
@@ -78,10 +79,7 @@ const Circuits = () => {
 
   return (
     <div className="list-page-container circuit-atlas-page">
-      <Helmet>
-        <title>&#x8d5b;&#x9053;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x8d5b;&#x9053;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x8d5b;&#x9053;&#x4fe1;&#x606f;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
-      </Helmet>
+      <DocumentHead title="赛道列表 — F1 Dashboard" description="F1赛道列表，查看各赛道信息和数据统计" />
       <ProductMasthead
         index="05"
         eyebrow={`${currentSeason} / CIRCUIT ATLAS`}
@@ -109,6 +107,7 @@ const Circuits = () => {
               className="circuit-atlas-card"
               hoverable
               style={{ animationDelay: `${circuit.index * 0.06}s` }}
+              onPointerEnter={() => preloadRoute(`/circuits/${circuit.circuitId}`)}
               onClick={() => navigate(`/circuits/${circuit.circuitId}`, { state: { circuit } })}
             >
               <div className="circuit-atlas-map" aria-hidden="true">
