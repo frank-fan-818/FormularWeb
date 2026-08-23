@@ -84,7 +84,6 @@ const Circuits = () => {
         index="05"
         eyebrow={`${currentSeason} / CIRCUIT ATLAS`}
         title={<>TRACK<br />ENGINEERING</>}
-        description="从赛道轮廓开始认识每一站：地点、长度、弯道构成和历史纪录共同决定比赛会如何展开。"
         metrics={[
           { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--', detail: `${currentSeason} CALENDAR` },
           { label: '\u5df2\u8865\u5145\u5de5\u7a0b\u6570\u636e', value: circuits.filter((circuit) => circuit.length).length || '--', detail: '\u957f\u5ea6 / \u5f2f\u9053 / \u7eaa\u5f55' },
@@ -99,7 +98,7 @@ const Circuits = () => {
         <div className="circuit-atlas-empty">当前赛季暂无赛道数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道图鉴" description="选择一条赛道进入工程档案，查看完整轮廓、技术参数与本赛季比赛信息。" />
+        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道列表" />
         <div className="circuit-atlas-grid">
           {circuits.map((circuit) => (
             <Card

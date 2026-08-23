@@ -16,15 +16,19 @@ export interface RaceWeekendScheduleGroup {
   key: string;
   dayLabel: string;
   dateLabel: string;
-  sessions: Array<RaceWeekendSession & {
-    timeLabel: string;
-    timestamp: number | null;
-  }>;
+  sessions: RaceWeekendTimelineItem[];
+}
+
+export interface RaceWeekendTimelineItem extends RaceWeekendSession {
+  timestamp: number | null;
+  timeLabel: string;
+  state: 'completed' | 'live' | 'upcoming' | 'scheduled';
+  isNext: boolean;
 }
 
 const BEIJING_TIME_ZONE = 'Asia/Shanghai';
 
-function getSessionTimestamp(session: { date?: string; time?: string } | null | undefined): number | null {
+export function getSessionTimestamp(session: { date?: string; time?: string } | null | undefined): number | null {
   if (!session?.date || !session.time) {
     return null;
   }
@@ -33,6 +37,36 @@ function getSessionTimestamp(session: { date?: string; time?: string } | null | 
   const timestamp = Date.parse(`${session.date}T${normalizedTime}`);
 
   return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+const SESSION_ACTIVE_WINDOW_MS = 3 * 60 * 60 * 1000;
+
+export function getRaceWeekendTimeline(
+  race: Race | null,
+  labels: Parameters<typeof getRaceWeekendSchedule>[1],
+  now = new Date(),
+): RaceWeekendTimelineItem[] {
+  const nowTime = now.getTime();
+  const baseItems = getRaceWeekendSchedule(race, labels).map((item) => {
+    const timestamp = getSessionTimestamp(item.session);
+    let state: RaceWeekendTimelineItem['state'] = 'scheduled';
+    if (timestamp !== null) {
+      if (nowTime >= timestamp && nowTime < timestamp + SESSION_ACTIVE_WINDOW_MS) state = 'live';
+      else if (nowTime >= timestamp + SESSION_ACTIVE_WINDOW_MS) state = 'completed';
+      else state = 'upcoming';
+    }
+
+    return {
+      ...item,
+      timestamp,
+      timeLabel: formatSessionTimeLabel(item.session ?? {}),
+      state,
+      isNext: false,
+    };
+  });
+
+  const nextIndex = baseItems.findIndex((item) => item.state === 'live' || item.state === 'upcoming' || item.state === 'scheduled');
+  return baseItems.map((item, index) => ({ ...item, isNext: index === nextIndex }));
 }
 
 function getSessionDate(session: { date?: string; time?: string }): Date | null {
@@ -170,7 +204,7 @@ export function getRaceWeekendSchedule(
   ].filter((s) => s.session?.date) as RaceWeekendSession[];
 }
 
-export function getRaceWeekendScheduleGroups(sessions: RaceWeekendSession[]): RaceWeekendScheduleGroup[] {
+export function getRaceWeekendScheduleGroups(sessions: RaceWeekendTimelineItem[]): RaceWeekendScheduleGroup[] {
   const groups = new Map<string, RaceWeekendScheduleGroup>();
 
   sessions.forEach((item) => {

@@ -80,7 +80,6 @@ const Constructors = () => {
         index="04"
         eyebrow={`${currentSeason} / TEAM LIBRARY`}
         title={<>THE<br />CONSTRUCTORS</>}
-        description="车队颜色代表身份，积分与胜场代表当前竞争力。先理解本赛季格局，再进入每支车队的作战档案。"
         metrics={[
           { label: '\u53c2\u8d5b\u8f66\u961f', value: constructors.length || '--', detail: `${currentSeason} GRID` },
           { label: '\u79ef\u5206\u9886\u8dd1', value: constructors[0]?.name || '--', detail: constructors[0] ? `${constructors[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: constructors[0] ? getTeamColor(constructors[0].constructorId) : undefined },
@@ -95,7 +94,7 @@ const Constructors = () => {
         <div className="constructor-library-empty">当前赛季暂无车队数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队作战库" description="稳定的车队色、当前排名和历史数据共同构成每支车队的识别系统。" />
+        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队列表" />
         <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);

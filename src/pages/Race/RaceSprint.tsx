@@ -311,8 +311,7 @@ const RaceSprint = () => {
         <RacePageIntro
           index="04"
           eyebrow="SPRINT WEEKEND / 冲刺周末"
-          title="更短的赛程，更快的决策"
-          description="冲刺周末数据发布后，这里会把冲刺排位与冲刺正赛合并成一条紧凑的速度故事。"
+          title="本场比赛没有冲刺赛"
         />
         <Card className="race-empty-command-card">
           <p>{'\u672C\u573A\u6BD4\u8D5B\u65E0\u51B2\u523A\u8D5B'}</p>
@@ -649,8 +648,7 @@ const RaceSprint = () => {
       <RacePageIntro
         index="04"
         eyebrow="SPRINT WEEKEND / 冲刺周末"
-        title="短赛程，把每一次失误都放大"
-        description="从冲刺排位到冲刺正赛，连续阅读单圈速度、比赛节奏与有限轮胎选择下的得失。"
+        title="冲刺赛分析"
         aside={fastF1SprintSummary ? (
           <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
             <span>

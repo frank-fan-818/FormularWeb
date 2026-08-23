@@ -458,8 +458,8 @@ const RaceQualifying = () => {
         <RacePageIntro
           index="02"
           eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
-          title="速度边界仍在等待被写下"
-          description="排位数据发布后，这里会拆解晋级路径、赛段优势、单圈节奏和队友之间最细微的差距。"
+          title="排位赛数据尚不可用"
+          description="数据发布后显示晋级路径、赛段成绩、单圈速度和队友差距。"
         />
         <Card className="race-empty-command-card">
           <p>{t('noFastF1Analysis')}</p>
@@ -475,8 +475,7 @@ const RaceQualifying = () => {
       <RacePageIntro
         index="02"
         eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
-        title="一圈之内，速度在哪里被赢得"
-        description="从最终名次向内拆解到 Q1–Q3、三个赛段与队友差距，让杆位不再只是结果，而是一条可以验证的速度证据链。"
+        title="排位赛分析"
         aside={(
           <div className="race-page-pulse">
             <span><strong>{qSectorRows.length}</strong> 有效圈</span>

@@ -52,6 +52,7 @@ export interface RaceDataContextValue {
 
   // Race info
   raceInfo: Race | null;
+  seasonRaces: Race[];
   seasonLoading: boolean;
   primaryLoading: boolean;
   raceLoadError: Error | null;
@@ -268,6 +269,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     round: round || '',
     diagnosticFlowId,
     raceInfo,
+    seasonRaces: races,
     seasonLoading,
     primaryLoading: primaryResults.loading,
     raceLoadError,
@@ -316,6 +318,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     round,
     diagnosticFlowId,
     raceInfo,
+    races,
     seasonLoading,
     primaryResults.loading,
     raceLoadError,

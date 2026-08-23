@@ -670,7 +670,6 @@ const DriverDetail = () => {
           index="01"
           eyebrow={`${currentSeason} / FORM`}
           title={TEXT.pointsTrend}
-          description="用每一站的积分变化读取车手当前状态，而不是只看一个静态排名。"
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}

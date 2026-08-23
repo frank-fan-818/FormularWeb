@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
-import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
+import { useSeasonRacesCached, useSeasonsCached } from '@/hooks/useSeasonDataCached';
+import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
 import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
 import './Layout.css';
@@ -11,6 +12,8 @@ const preloadRoute = (pathname: string) => {
 };
 
 const GlobalSearchBox = lazy(() => import('@/components/GlobalSearchBox'));
+const RaceWeekendSignal = lazy(() => import('@/components/RaceWeekendSignal')
+  .then((module) => ({ default: module.RaceWeekendSignal })));
 
 interface IconProps {
   className?: string;
@@ -213,6 +216,9 @@ const LayoutComponent = () => {
   const displayedSeason = location.pathname.startsWith('/races/')
     ? getRaceSeasonFromSearch(location.search, currentSeason)
     : currentSeason;
+  const { races: shellRaces } = useSeasonRacesCached(displayedSeason);
+  const { ongoingRace: shellOngoingRace, nextRace: shellNextRace } = useRacesByStatus(shellRaces);
+  const shellFocusRace = shellOngoingRace ?? shellNextRace;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -451,6 +457,12 @@ const LayoutComponent = () => {
             </div>
           ) : null}
         </header>
+
+        {location.pathname !== '/' && shellFocusRace ? (
+          <Suspense fallback={null}>
+            <RaceWeekendSignal race={shellFocusRace} ongoing={Boolean(shellOngoingRace)} />
+          </Suspense>
+        ) : null}
 
         <main className="content">
           <div className="content-inner">

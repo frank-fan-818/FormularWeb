@@ -130,9 +130,8 @@ const CircuitDetail = () => {
 
       <ProductMasthead
         index="05"
-        eyebrow={`${currentSeason} / TRACK DOSSIER`}
+        eyebrow={`${circuit.Location.country} / ${circuit.Location.locality}`}
         title={<>{circuit.circuitName}</>}
-        description={`${circuit.Location.locality}, ${circuit.Location.country}。从赛道几何、方向与落差开始，理解这里为什么会形成独特的排位赛和正赛节奏。`}
         accent="var(--race-control-apex)"
         aside={(
           <div className="circuit-command-map">
@@ -152,10 +151,7 @@ const CircuitDetail = () => {
         ]}
       />
 
-      <h1 className="page-title"><span>{circuit.circuitName}</span></h1>
-      <p className="page-subtitle">{circuit.Location.locality}, {circuit.Location.country}</p>
-
-      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道工程参数" description="几何结构与比赛距离是理解赛道特征的第一层证据。" />
+      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道参数" />
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">

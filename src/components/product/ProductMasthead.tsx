@@ -12,7 +12,7 @@ interface ProductMastheadProps {
   index?: string;
   eyebrow: ReactNode;
   title: ReactNode;
-  description: ReactNode;
+  description?: ReactNode;
   metrics?: ProductMetric[];
   actions?: ReactNode;
   aside?: ReactNode;
@@ -44,7 +44,7 @@ const ProductMasthead = ({
           <span>{eyebrow}</span>
         </div>
         <h1 className="product-masthead__title">{title}</h1>
-        <p className="product-masthead__description">{description}</p>
+        {description ? <p className="product-masthead__description">{description}</p> : null}
         {actions ? <div className="product-masthead__actions">{actions}</div> : null}
       </div>
 

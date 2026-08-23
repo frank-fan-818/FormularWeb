@@ -106,7 +106,6 @@ const Drivers = () => {
         index="03"
         eyebrow={`${currentSeason} / GRID ROSTER`}
         title={<>THE<br />DRIVER GRID</>}
-        description="按车队阅读本赛季完整阵容，用车号、排名、积分与生涯关键数字快速建立每位车手的竞争位置。"
         metrics={[
           { label: '\u73b0\u5f79\u8f66\u624b', value: drivers.length || '--', detail: `${driverGroups.length} \u652f\u8f66\u961f` },
           { label: '\u79ef\u5206\u9886\u8dd1', value: drivers[0] ? `${drivers[0].givenName[0]}. ${drivers[0].familyName}` : '--', detail: drivers[0] ? `${drivers[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: drivers[0] ? getTeamColor(drivers[0].constructorId) : undefined },
@@ -121,7 +120,7 @@ const Drivers = () => {
         <div className="driver-lineup-empty">当前赛季暂无车手阵容数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="PADDOCK INDEX" title="围场阵容" description="车队是阅读阵容的第一层上下文；选择车手进入赛季表现与职业生涯档案。" />
+        <ProductSectionHeader index="01" eyebrow="PADDOCK INDEX" title="车手阵容" />
         <div className="driver-lineup-container">
           {driverGroups.map((group, groupIndex) => {
             const teamColor = getTeamColor(group.constructorId);

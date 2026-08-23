@@ -564,7 +564,6 @@ const ConstructorDetail = () => {
           index="01"
           eyebrow={`${currentSeason} / TEAM FORM`}
           title={TEXT.pointsTrend}
-          description="用分站积分轨迹判断车队竞争力是在上升、持平还是回落。"
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
