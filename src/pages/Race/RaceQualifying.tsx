@@ -24,6 +24,7 @@ import type {
   FastF1QualifyingBestLap,
   FastF1TeamMateComparison,
 } from '@/types';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -421,7 +422,7 @@ const RaceQualifying = () => {
             </div>
           }
         >
-          <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+          <Suspense fallback={<ChartLoadingBeacon label="Rendering qualifying order" />}>
             <LazyEChartsPanel
               chartKey={`qualifying-pace-${season}-${round}`}
               height={420}

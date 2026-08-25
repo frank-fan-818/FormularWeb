@@ -1,0 +1,262 @@
+.timing-beacon {
+  --beacon-pad: var(--space-5);
+  --beacon-min-height: 220px;
+  position: relative;
+  display: grid;
+  align-content: center;
+  width: 100%;
+  min-height: var(--beacon-min-height);
+  padding: var(--beacon-pad);
+  overflow: hidden;
+  color: var(--race-control-ink);
+  background:
+    linear-gradient(90deg, transparent 49.8%, var(--race-control-grid) 50%, transparent 50.2%),
+    linear-gradient(var(--race-control-grid) 1px, transparent 1px),
+    var(--bg-card);
+  background-size: 100% 100%, 100% 32px, 100% 100%;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+  isolation: isolate;
+  opacity: 0;
+  animation: timingBeaconEnter var(--motion-duration-standard) var(--motion-ease-enter) 120ms forwards;
+}
+
+.timing-beacon--page {
+  --beacon-pad: clamp(var(--space-5), 5vw, var(--space-8));
+  --beacon-min-height: min(620px, calc(100vh - 160px));
+  border-radius: var(--radius-lg);
+}
+
+.timing-beacon--inline {
+  --beacon-pad: var(--space-4);
+  --beacon-min-height: 132px;
+  box-shadow: none;
+}
+
+.timing-beacon::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background: linear-gradient(110deg, transparent 15%, var(--f1-red-glow) 49%, transparent 72%);
+  opacity: 0.55;
+  transform: translateX(-100%);
+  animation: timingBeaconSweep 2.6s var(--motion-ease-standard) infinite;
+}
+
+.timing-beacon__topline,
+.timing-beacon__stages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.16em;
+  color: var(--text-secondary);
+}
+
+.timing-beacon__sync {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--f1-red-text);
+}
+
+.timing-beacon__sync i {
+  width: 6px;
+  height: 6px;
+  background: var(--f1-red);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--f1-red-glow);
+  animation: timingBeaconPulse 1.2s var(--motion-ease-standard) infinite;
+}
+
+.timing-beacon__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  margin: var(--space-5) 0 var(--space-4);
+}
+
+.timing-beacon__rail {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--race-control-track);
+}
+
+.timing-beacon__scan {
+  position: absolute;
+  left: 0;
+  width: 24%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--f1-red));
+  filter: drop-shadow(0 0 5px var(--f1-red));
+  animation: timingBeaconScan 1.8s var(--motion-ease-standard) infinite;
+}
+
+.timing-beacon__marker {
+  position: absolute;
+  top: 9px;
+  left: 0;
+  width: 3px;
+  height: 22px;
+  background: var(--f1-red);
+  box-shadow: 0 0 12px var(--f1-red-glow);
+  animation: timingBeaconMarker 1.8s var(--motion-ease-standard) infinite;
+}
+
+.timing-beacon__node {
+  position: relative;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  background: var(--bg-card);
+  border: 1px solid var(--race-control-sector);
+  border-radius: 50%;
+}
+
+.timing-beacon__copy {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.timing-beacon__copy strong {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-lg), 2.4vw, var(--text-2xl));
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: 0.01em;
+}
+
+.timing-beacon__copy span {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.timing-beacon__stages {
+  justify-content: flex-start;
+  gap: clamp(var(--space-4), 5vw, var(--space-7));
+  padding-top: var(--space-5);
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--border-secondary);
+}
+
+.timing-beacon__stages span {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.timing-beacon__stages i {
+  font-style: normal;
+  color: var(--f1-red-text);
+}
+
+.timing-beacon__segments {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+  margin-top: var(--space-5);
+}
+
+.timing-beacon__segments i {
+  height: 3px;
+  background: var(--race-control-track);
+  transform: scaleX(0.2);
+  transform-origin: left;
+  animation: timingBeaconSegment 1.5s var(--motion-ease-standard) infinite;
+}
+
+.timing-beacon__segments i:nth-child(2) { animation-delay: 120ms; }
+.timing-beacon__segments i:nth-child(3) { animation-delay: 240ms; }
+.timing-beacon__segments i:nth-child(4) { animation-delay: 360ms; }
+.timing-beacon__segments i:nth-child(5) { animation-delay: 480ms; }
+
+.timing-beacon--inline .timing-beacon__track {
+  height: 24px;
+  margin: var(--space-3) 0;
+}
+
+.timing-beacon--inline .timing-beacon__marker {
+  top: 2px;
+  height: 20px;
+}
+
+.timing-beacon--inline .timing-beacon__copy strong {
+  font-size: var(--text-base);
+}
+
+.timing-beacon--inline .timing-beacon__segments {
+  margin-top: var(--space-3);
+}
+
+@keyframes timingBeaconEnter {
+  from { opacity: 0; transform: translateY(var(--motion-distance-component)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes timingBeaconSweep {
+  0%, 22% { transform: translateX(-100%); }
+  68%, 100% { transform: translateX(100%); }
+}
+
+@keyframes timingBeaconPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes timingBeaconScan {
+  from { transform: translateX(-25%); }
+  to { transform: translateX(420%); }
+}
+
+@keyframes timingBeaconMarker {
+  from { left: 0; }
+  to { left: calc(100% - 3px); }
+}
+
+@keyframes timingBeaconSegment {
+  0%, 18% { background: var(--race-control-track); transform: scaleX(0.2); }
+  48%, 66% { background: var(--f1-red); transform: scaleX(1); }
+  100% { background: var(--race-control-track); transform: scaleX(0.2); transform-origin: right; }
+}
+
+@media (max-width: 640px) {
+  .timing-beacon--page {
+    --beacon-min-height: min(520px, calc(100vh - 120px));
+  }
+
+  .timing-beacon__stages {
+    gap: var(--space-4);
+  }
+
+  .timing-beacon__stages span {
+    gap: var(--space-1);
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timing-beacon {
+    opacity: 1;
+    animation: none;
+  }
+
+  .timing-beacon::after,
+  .timing-beacon__scan,
+  .timing-beacon__marker,
+  .timing-beacon__sync i,
+  .timing-beacon__segments i {
+    animation: none;
+  }
+
+  .timing-beacon__marker { left: 50%; }
+  .timing-beacon__scan { left: 38%; }
+  .timing-beacon__segments i { transform: scaleX(1); }
+}

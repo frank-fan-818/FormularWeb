@@ -8,6 +8,9 @@ const routes = [
   '/constructors/red_bull',
   '/circuits/monaco',
   '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
   '/privacy',
   '/settings',
   '/route-that-does-not-exist',
@@ -16,6 +19,9 @@ const compactViewportRoutes = new Set([
   '/',
   '/races/1',
   '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
   '/privacy',
   '/settings',
   '/route-that-does-not-exist',
@@ -160,7 +166,7 @@ for (const route of routes) {
       expect(horizontalOverflow, `horizontal overflow on ${route}`).toBeLessThanOrEqual(1);
     }
 
-    if (['/', '/login', '/route-that-does-not-exist'].includes(route)) {
+    if (['/', '/login', '/register', '/forgot-password', '/reset-password', '/route-that-does-not-exist'].includes(route)) {
       await page.screenshot({
         path: testInfo.outputPath(`${route === '/' ? 'home' : route.slice(1)}.png`),
         fullPage: true,

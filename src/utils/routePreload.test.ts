@@ -8,6 +8,10 @@ describe('route preload policy', () => {
     expect(getRoutePreloadKeys('/races/7')).toEqual(['raceLayout', 'raceResults']);
     expect(getRoutePreloadKeys('/races/7/info')).toEqual(['raceLayout', 'raceInfo']);
     expect(getRoutePreloadKeys('/races/7/race')).toEqual(['raceLayout', 'raceAnalysis']);
+    expect(getRoutePreloadKeys('/login')).toEqual(['login']);
+    expect(getRoutePreloadKeys('/register')).toEqual(['register']);
+    expect(getRoutePreloadKeys('/forgot-password')).toEqual(['forgotPassword']);
+    expect(getRoutePreloadKeys('/reset-password')).toEqual(['resetPassword']);
   });
 
   it('does not prefetch the eager home route and uses not-found only for unknown paths', () => {

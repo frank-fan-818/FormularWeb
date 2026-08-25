@@ -61,7 +61,7 @@ export const authApi = {
       email: emailSchema.parse(email),
       password: newPasswordSchema.parse(password),
       options: {
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: `${window.location.origin}/login?verified=1`,
       },
     };
     const { error } = await supabase.auth.signUp(credentials);
@@ -72,7 +72,7 @@ export const authApi = {
     ensureAuthConfigured();
     const { error } = await supabase.auth.resetPasswordForEmail(
       emailSchema.parse(email),
-      { redirectTo: `${window.location.origin}/login` },
+      { redirectTo: `${window.location.origin}/reset-password` },
     );
     if (error) throw error;
   },

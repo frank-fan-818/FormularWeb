@@ -1,6 +1,6 @@
 import { type ReactNode, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin } from 'antd';
+import { Card } from 'antd';
 import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
@@ -11,6 +11,7 @@ import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Constructors.css';
 
 const TEXT = {
@@ -88,7 +89,7 @@ const Constructors = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Loading constructor standings" detail={`${currentSeason} teams · points · performance`} />
         </div>
       ) : constructors.length === 0 ? (
         <div className="constructor-library-empty">当前赛季暂无车队数据。</div>
