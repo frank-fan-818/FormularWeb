@@ -2,7 +2,6 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import { routeModules } from './routeModules';
 
 const Home = lazy(routeModules.home);
@@ -35,11 +34,11 @@ function withSuspense(element: JSX.Element) {
     <Suspense
       fallback={(
         <div className="route-loading-surface">
-          <TimingBeacon
-            variant="page"
-            label="Loading race control"
-            detail="Preparing the next data view"
-          />
+          <div className="route-loading-signal" role="status" aria-live="polite">
+            <span>LIVE DATA LINK</span>
+            <strong>Loading race control</strong>
+            <i aria-hidden="true" />
+          </div>
         </div>
       )}
     >
