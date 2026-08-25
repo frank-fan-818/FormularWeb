@@ -6,7 +6,7 @@ import DocumentHead from '@/components/DocumentHead';
 import { useDriverStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-import { preloadRoute } from '@/utils/routePreload';
+import { preloadDriverDetailRoute } from '@/utils/routePreload';
 import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
 import { ConstructorLogo } from '@/utils/constructorLogos';
@@ -146,7 +146,9 @@ const Drivers = () => {
                       key={driver.driverId}
                       className="driver-lineup-card"
                       hoverable
-                      onPointerEnter={() => preloadRoute(`/drivers/${driver.driverId}`)}
+                      onPointerEnter={() => preloadDriverDetailRoute(driver.driverId, currentSeason)}
+                      onPointerDown={() => preloadDriverDetailRoute(driver.driverId, currentSeason)}
+                      onFocus={() => preloadDriverDetailRoute(driver.driverId, currentSeason)}
                       onClick={() => navigate(`/drivers/${driver.driverId}`)}
                     >
                       <div className="driver-card-topline">
