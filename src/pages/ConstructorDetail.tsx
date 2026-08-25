@@ -7,7 +7,7 @@ import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { constructorApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
-import { useSeasonData } from '@/hooks';
+import { useConstructorStandingsCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import type {
   HistoryCareerSummary,
@@ -60,7 +60,9 @@ const TEXT = {
   chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
 };
 
-const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const loadEChartsPanel = () => import('@/components/charts/EChartsPanel');
+const LazyEChartsPanel = lazy(loadEChartsPanel);
+void loadEChartsPanel().catch(() => undefined);
 const EMPTY_CAREER_STATS: HistoryCareerSummary = {
   raceCount: 0,
   poleCount: 0,
@@ -89,7 +91,7 @@ const ConstructorDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { constructorStandings, loading: seasonLoading } = useConstructorStandingsCached(currentSeason);
   const showHistoryOverview = location.pathname.startsWith('/history/constructors/');
 
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
@@ -186,10 +188,38 @@ const ConstructorDetail = () => {
       setConstructor(null);
     }
 
-    const loadPrimaryData = async () => {
-      const constructorInfo = await Promise.allSettled([
-        supabaseApi.constructors.getById(constructorId),
+    const constructorInfoPromise = supabaseApi.constructors.getById(constructorId);
+    const raceResultsPromise = constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason);
+    const sprintResultsPromise = seasonApi.getSeasonSprintResults(currentSeason);
+    void constructorInfoPromise.catch(() => undefined);
+    void raceResultsPromise.catch(() => undefined);
+    void sprintResultsPromise.catch(() => undefined);
+
+    const loadSeasonResults = async () => {
+      const [raceResults, sprintResults] = await Promise.allSettled([
+        raceResultsPromise,
+        sprintResultsPromise,
       ]);
+
+      if (cancelled) return;
+
+      setSeasonRaceResults(
+        raceResults.status === 'fulfilled'
+          ? [...raceResults.value].sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            )
+          : [],
+      );
+      setSeasonSprintResults(
+        sprintResults.status === 'fulfilled' ? sprintResults.value : [],
+      );
+      setSeasonResultsLoading(false);
+    };
+
+    void loadSeasonResults();
+
+    const loadPrimaryData = async () => {
+      const constructorInfo = await Promise.allSettled([constructorInfoPromise]);
 
       if (cancelled) {
         return;
@@ -214,34 +244,11 @@ const ConstructorDetail = () => {
 
       setConstructor(baseConstructor);
       setLoading(false);
-
-      const [raceResults, sprintResults] = await Promise.allSettled([
-        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
-
-      if (!cancelled) {
-        if (raceResults.status === 'fulfilled') {
-          setSeasonRaceResults(
-            raceResults.value.sort(
-              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-            ),
-          );
-        } else {
-          setSeasonRaceResults([]);
-        }
-
-        setSeasonSprintResults(
-          sprintResults.status === 'fulfilled' ? sprintResults.value : [],
-        );
-        setSeasonResultsLoading(false);
-      }
     };
 
     void loadPrimaryData().catch(() => {
       if (!cancelled) {
         setLoading(false);
-        setSeasonResultsLoading(false);
       }
     });
 

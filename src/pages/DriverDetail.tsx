@@ -8,7 +8,7 @@ import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { driverApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
-import { useSeasonData } from '@/hooks';
+import { useDriverStandingsCached, useSeasonRacesCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import type {
   BestFinishSummary,
@@ -91,7 +91,9 @@ const TEXT = {
   chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
 };
 
-const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const loadEChartsPanel = () => import('@/components/charts/EChartsPanel');
+const LazyEChartsPanel = lazy(loadEChartsPanel);
+void loadEChartsPanel().catch(() => undefined);
 
 function mapSupabaseDriver(driver: SupabaseDriverDetailRow): DriverProfile {
   return {
@@ -198,7 +200,8 @@ const DriverDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { driverStandings, races: currentSeasonRaces, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { driverStandings, loading: seasonLoading } = useDriverStandingsCached(currentSeason);
+  const { races: currentSeasonRaces } = useSeasonRacesCached(currentSeason);
   const showHistoryOverview = location.pathname.startsWith('/history/drivers/');
 
   const [driver, setDriver] = useState<DriverProfile | null>(null);
@@ -304,6 +307,42 @@ const DriverDetail = () => {
       setDriver(null);
     }
 
+    const knownDriverId = currentStanding?.Driver.driverId || null;
+    const prefetchedRaceResults = knownDriverId
+      ? driverApi.getDriverSeasonRaceResults(knownDriverId, currentSeason)
+      : null;
+    const sprintResultsPromise = seasonApi.getSeasonSprintResults(currentSeason);
+    void prefetchedRaceResults?.catch(() => undefined);
+    void sprintResultsPromise.catch(() => undefined);
+
+    const loadSeasonResults = async (
+      targetDriverId: string,
+      raceResultsPromise = driverApi.getDriverSeasonRaceResults(targetDriverId, currentSeason),
+    ) => {
+      const [raceResultsResult, sprintResultsResult] = await Promise.allSettled([
+        raceResultsPromise,
+        sprintResultsPromise,
+      ]);
+
+      if (cancelled) return;
+
+      setSeasonRaceResults(
+        raceResultsResult.status === 'fulfilled'
+          ? [...raceResultsResult.value].sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            )
+          : [],
+      );
+      setSeasonSprintResults(
+        sprintResultsResult.status === 'fulfilled' ? sprintResultsResult.value : [],
+      );
+      setSeasonResultsLoading(false);
+    };
+
+    if (knownDriverId && prefetchedRaceResults) {
+      void loadSeasonResults(knownDriverId, prefetchedRaceResults);
+    }
+
     const loadPrimaryData = async () => {
       const [baseDriverResult, resolvedDriverIdResult] = await Promise.allSettled([
         resolveSupabaseDriverProfile(driverId, currentStanding),
@@ -333,33 +372,17 @@ const DriverDetail = () => {
       setResolvedDriverId(nextResolvedDriverId);
       setLoading(false);
 
-      const [raceResultsResult, sprintResultsResult] = await Promise.allSettled([
-        driverApi.getDriverSeasonRaceResults(nextResolvedDriverId, currentSeason),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
-
-      if (!cancelled) {
-        if (raceResultsResult.status === 'fulfilled') {
-          setSeasonRaceResults(
-            raceResultsResult.value.sort(
-              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-            ),
-          );
-        } else {
-          setSeasonRaceResults([]);
-        }
-
-        setSeasonSprintResults(
-          sprintResultsResult.status === 'fulfilled' ? sprintResultsResult.value : [],
-        );
-        setSeasonResultsLoading(false);
+      if (!knownDriverId || nextResolvedDriverId !== knownDriverId) {
+        void loadSeasonResults(nextResolvedDriverId);
       }
     };
 
     void loadPrimaryData().catch(() => {
       if (!cancelled) {
         setLoading(false);
-        setSeasonResultsLoading(false);
+        if (!knownDriverId) {
+          setSeasonResultsLoading(false);
+        }
       }
     });
 

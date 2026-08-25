@@ -6,7 +6,7 @@ import DocumentHead from '@/components/DocumentHead';
 import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
-import { preloadRoute } from '@/utils/routePreload';
+import { preloadConstructorDetailRoute } from '@/utils/routePreload';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
@@ -143,7 +143,9 @@ const Constructors = () => {
                 className="constructor-profile-card"
                 hoverable
                 style={{ animationDelay: `${constructor.index * 0.045}s`, borderTopColor: teamColor }}
-                onPointerEnter={() => preloadRoute(`/constructors/${constructor.constructorId}`)}
+                onPointerEnter={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
+                onPointerDown={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
+                onFocus={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
                 onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
               >
                 <div className="constructor-card-topline">

@@ -57,6 +57,36 @@ export function preloadRoute(pathname: string): void {
   });
 }
 
+export function preloadDriverDetailRoute(driverId: string, season: string): void {
+  if (!canPrefetch()) return;
+  const requests: Promise<unknown>[] = [
+    routeModules.driverDetail(),
+    import('@/components/charts/EChartsPanel'),
+    import('@/api/ergast').then(({ driverApi, seasonApi }) => Promise.all([
+      driverApi.getDriverSeasonRaceResults(driverId, season),
+      seasonApi.getSeasonSprintResults(season),
+    ])),
+  ];
+  void Promise.all(requests).catch(() => {
+    // Detail navigation owns recovery when speculative loading fails.
+  });
+}
+
+export function preloadConstructorDetailRoute(constructorId: string, season: string): void {
+  if (!canPrefetch()) return;
+  const requests: Promise<unknown>[] = [
+    routeModules.constructorDetail(),
+    import('@/components/charts/EChartsPanel'),
+    import('@/api/ergast').then(({ constructorApi, seasonApi }) => Promise.all([
+      constructorApi.getConstructorSeasonRaceResults(constructorId, season),
+      seasonApi.getSeasonSprintResults(season),
+    ])),
+  ];
+  void Promise.all(requests).catch(() => {
+    // Detail navigation owns recovery when speculative loading fails.
+  });
+}
+
 export function preloadRaceSectionRoute(
   section: string,
   season?: string,
