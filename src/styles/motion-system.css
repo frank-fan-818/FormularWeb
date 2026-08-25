@@ -221,9 +221,37 @@
 }
 
 .route-loading-surface {
-  display: block;
+  display: grid;
   width: 100%;
   min-height: min(58vh, 520px);
+  place-items: center;
+}
+
+.route-loading-signal {
+  display: grid;
+  width: min(480px, 84vw);
+  gap: var(--space-3);
+  padding: var(--space-5);
+  font-family: var(--font-mono);
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+}
+
+.route-loading-signal span {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--f1-red-text);
+}
+
+.route-loading-signal strong {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+}
+
+.route-loading-signal i {
+  height: 2px;
+  background: linear-gradient(90deg, var(--f1-red) 0 34%, var(--race-control-track) 34%);
+  animation: motion-timing-line var(--motion-duration-data) var(--motion-ease-enter) infinite alternate;
 }
 
 @media (max-width: 768px) {
