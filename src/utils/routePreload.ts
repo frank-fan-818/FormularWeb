@@ -42,6 +42,9 @@ export function getRoutePreloadKeys(pathname: string): RouteModuleKey[] {
   if (/^\/circuits\/[^/]+$/.test(normalizedPath)) return ['circuitDetail'];
   if (normalizedPath === '/settings') return ['settings'];
   if (normalizedPath === '/login') return ['login'];
+  if (normalizedPath === '/register') return ['register'];
+  if (normalizedPath === '/forgot-password') return ['forgotPassword'];
+  if (normalizedPath === '/reset-password') return ['resetPassword'];
   if (normalizedPath === '/privacy') return ['privacy'];
   return ['notFound'];
 }
@@ -54,10 +57,21 @@ export function preloadRoute(pathname: string): void {
   });
 }
 
-export function preloadRaceSectionRoute(section: string): void {
+export function preloadRaceSectionRoute(
+  section: string,
+  season?: string,
+  round?: string,
+): void {
   const moduleKey = raceSectionModules[section];
   if (!moduleKey || !canPrefetch()) return;
-  void routeModules[moduleKey]().catch(() => {
+  const requests: Promise<unknown>[] = [routeModules[moduleKey]()];
+  if (section === 'race' && season && round) {
+    requests.push(
+      import('@/api/fastf1Analytics')
+        .then(({ fastF1AnalyticsApi }) => fastF1AnalyticsApi.getRaceAnalytics(season, round, 'R')),
+    );
+  }
+  void Promise.all(requests).catch(() => {
     // Navigation remains the source of truth when speculative loading fails.
   });
 }

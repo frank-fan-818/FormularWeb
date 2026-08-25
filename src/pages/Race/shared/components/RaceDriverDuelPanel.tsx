@@ -56,6 +56,7 @@ export function RaceDriverDuelPanel({
       title={(
         <div className="fastf1-chart-header">
           <div>
+            <span className="analysis-module-kicker">03 / HEAD-TO-HEAD</span>
             <h3 className="fastf1-chart-title">{t('driverDuel')}</h3>
             <p>{t('driverDuelDescription')}</p>
           </div>

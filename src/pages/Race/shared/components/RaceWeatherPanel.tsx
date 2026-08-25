@@ -7,6 +7,8 @@ import {
   formatAnalysisLapRanges,
   formatAnalysisStatRange,
 } from '@/utils/race/raceAnalysisViewModel';
+import { AnalysisModuleState } from '@/pages/Race/shared/components/AnalysisModuleState';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -32,7 +34,19 @@ export function RaceWeatherPanel({
   onToggleCollapsed,
 }: RaceWeatherPanelProps) {
   const { t } = useTranslation();
-  if (!enabled || !weather || !option) return null;
+  if (!enabled) return null;
+  if (!weather || !option) {
+    return (
+      <AnalysisModuleState
+        id="analysis-weather"
+        index="04"
+        label="TRACK CONDITIONS"
+        title={t('weatherTrend')}
+        description="Weather samples are not available for this race session."
+        state="empty"
+      />
+    );
+  }
 
   return (
     <Card
@@ -42,6 +56,7 @@ export function RaceWeatherPanel({
       title={(
         <div className="fastf1-chart-header">
           <div>
+            <span className="analysis-module-kicker">04 / TRACK CONDITIONS</span>
             <h3 className="fastf1-chart-title">{t('weatherTrend')}</h3>
             <p>{t('weatherDescription')}</p>
           </div>
@@ -66,7 +81,7 @@ export function RaceWeatherPanel({
               <span>{t('rainfall')} {formatAnalysisLapRanges(weather.summary.rainLapRanges)}</span>
             </div>
           ) : null}
-          <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+          <Suspense fallback={<ChartLoadingBeacon label="Rendering weather evolution" />}>
             <LazyEChartsPanel
               chartKey={`fastf1-weather-${season}-${round}`}
               height={isMobile ? 280 : 360}

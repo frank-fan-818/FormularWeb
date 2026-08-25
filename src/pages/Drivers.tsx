@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin } from 'antd';
+import { Card } from 'antd';
 import { CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import { useDriverStandingsCached, useSupabaseMetadata } from '@/hooks';
@@ -13,6 +13,7 @@ import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import type { Driver } from '@/types';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Drivers.css';
 
 const TEXT = {
@@ -114,7 +115,7 @@ const Drivers = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Building the driver grid" detail={`${currentSeason} standings · teams · profiles`} />
         </div>
       ) : drivers.length === 0 ? (
         <div className="driver-lineup-empty">当前赛季暂无车手阵容数据。</div>

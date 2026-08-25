@@ -17,6 +17,7 @@ import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { getRaceRouteSection } from '@/utils/race/raceSessionState';
 import { preloadRaceSectionRoute } from '@/utils/routePreload';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import '../RaceDetail.css';
 
 const InnerLayout = () => {
@@ -24,6 +25,8 @@ const InnerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const {
+    season,
+    round,
     raceInfo,
     seasonLoading,
     primaryLoading,
@@ -59,8 +62,8 @@ const InnerLayout = () => {
   ) => (
     <span
       className="race-command-tab-label"
-      onPointerEnter={() => preloadRaceSectionRoute(key)}
-      onPointerDown={() => preloadRaceSectionRoute(key)}
+      onPointerEnter={() => preloadRaceSectionRoute(key, season, round)}
+      onPointerDown={() => preloadRaceSectionRoute(key, season, round)}
     >
       {icon}<span><strong>{title}</strong><small>{subtitle}</small></span>
     </span>
@@ -68,10 +71,15 @@ const InnerLayout = () => {
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
     return (
-      <div className="race-detail-page race-layout-skeleton" role="status" aria-label={t('loading')}>
-        <div className="race-skeleton-line" />
-        <div className="race-skeleton-hero" />
-        <div className="race-skeleton-tabs" />
+      <div className="race-detail-page race-layout-progressive">
+        <div className="race-layout-skeleton" role="status" aria-label={t('loading')}>
+          <div className="race-skeleton-line" />
+          <div className="race-skeleton-hero" />
+          <div className="race-skeleton-tabs" />
+        </div>
+        <Suspense fallback={<TimingBeacon label="Switching session view" detail="Loading the requested race module" />}>
+          <Outlet />
+        </Suspense>
       </div>
     );
   }
@@ -227,7 +235,7 @@ const InnerLayout = () => {
         ]}
       />
 
-      <Suspense fallback={<div className="race-route-skeleton" role="status" aria-live="polite" aria-label={t('loading')}><span /><span /><span /></div>}>
+      <Suspense fallback={<TimingBeacon label="Switching session view" detail="Keeping loaded race data in place" />}>
         <Outlet />
       </Suspense>
     </div>

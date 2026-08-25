@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Empty, Spin, Tag } from 'antd';
+import { Button, Card, Empty, Tag } from 'antd';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -15,6 +15,7 @@ import type { BestFinishSummary, ConstructorHistoryProfile } from '@/types';
 import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './HistoryDetail.css';
 
 function formatPoints(points: number): string {
@@ -144,7 +145,7 @@ const ConstructorHistoryDetail = () => {
 
       {loading ? (
         <Card className="history-loading-card">
-          <Spin size="large" />
+          <TimingBeacon label="Loading constructor archive" detail="Seasons · results · championship record" />
         </Card>
       ) : (
         <>

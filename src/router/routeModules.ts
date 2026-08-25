@@ -16,7 +16,11 @@ export const routeModules = {
   circuits: () => import('@/pages/Circuits'),
   circuitDetail: () => import('@/pages/CircuitDetail'),
   settings: () => import('@/pages/Settings'),
+  authShell: () => import('@/components/auth/AuthShell'),
   login: () => import('@/pages/Login'),
+  register: () => import('@/pages/Register'),
+  forgotPassword: () => import('@/pages/ForgotPassword'),
+  resetPassword: () => import('@/pages/ResetPassword'),
   privacy: () => import('@/pages/Privacy'),
   notFound: () => import('@/pages/NotFound'),
 } as const;

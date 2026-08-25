@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Button, Card, Spin, Tag } from 'antd';
+import { Button, Card, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import CircuitImage from '@/components/circuits/CircuitImage';
@@ -10,6 +10,7 @@ import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './CircuitDetail.css';
 
 const TEXT = {
@@ -87,8 +88,7 @@ const CircuitDetail = () => {
       <div className="circuit-detail-container">
         <DocumentHead title="赛道详情 — F1 Dashboard" description="F1赛道详情，赛道长度、弯道数量、历史数据等" />
         <div className="loading-container">
-          <Spin size="large" />
-          <div style={{ marginTop: 12 }}>{TEXT.loading}</div>
+          <TimingBeacon variant="page" label="Loading circuit profile" detail="Layout · engineering data · race history" />
         </div>
       </div>
     );
