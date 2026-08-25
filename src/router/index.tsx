@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import { routeModules } from './routeModules';
 
 const Home = lazy(routeModules.home);
@@ -21,7 +22,11 @@ const ConstructorHistoryDetail = lazy(routeModules.constructorHistoryDetail);
 const Circuits = lazy(routeModules.circuits);
 const CircuitDetail = lazy(routeModules.circuitDetail);
 const Settings = lazy(routeModules.settings);
+const AuthShell = lazy(routeModules.authShell);
 const Login = lazy(routeModules.login);
+const Register = lazy(routeModules.register);
+const ForgotPassword = lazy(routeModules.forgotPassword);
+const ResetPassword = lazy(routeModules.resetPassword);
 const Privacy = lazy(routeModules.privacy);
 const NotFound = lazy(routeModules.notFound);
 
@@ -29,8 +34,12 @@ function withSuspense(element: JSX.Element) {
   return (
     <Suspense
       fallback={(
-        <div className="route-loading-surface" role="status" aria-label="loading">
-          <div className="route-loading-indicator">Loading telemetry</div>
+        <div className="route-loading-surface">
+          <TimingBeacon
+            variant="page"
+            label="Loading race control"
+            detail="Preparing the next data view"
+          />
         </div>
       )}
     >
@@ -46,6 +55,12 @@ function RaceIndexRedirect() {
 
 const AppRoutes = () => (
   <Routes>
+    <Route element={withSuspense(<AuthShell />)}>
+      <Route path="login" element={withSuspense(<Login />)} />
+      <Route path="register" element={withSuspense(<Register />)} />
+      <Route path="forgot-password" element={withSuspense(<ForgotPassword />)} />
+      <Route path="reset-password" element={withSuspense(<ResetPassword />)} />
+    </Route>
     <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
       <Route index element={withSuspense(<Home />)} />
       <Route path="seasons" element={withSuspense(<Seasons />)} />
@@ -74,7 +89,6 @@ const AppRoutes = () => (
       <Route path="circuits" element={withSuspense(<Circuits />)} />
       <Route path="circuits/:circuitId" element={withSuspense(<CircuitDetail />)} />
       <Route path="settings" element={withSuspense(<Settings />)} />
-      <Route path="login" element={withSuspense(<Login />)} />
       <Route path="privacy" element={withSuspense(<Privacy />)} />
       <Route path="*" element={withSuspense(<NotFound />)} />
     </Route>

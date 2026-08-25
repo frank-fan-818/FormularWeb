@@ -27,6 +27,14 @@
 }
 
 @media (max-width: 768px) {
+  .analysis-module-state-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-module-state-stack > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
   .race-detail-page { gap: var(--space-3); }
 
   .race-command {

@@ -52,7 +52,7 @@ describe('authApi', () => {
 
     expect(resetPasswordForEmail).toHaveBeenCalledWith(
       'driver@example.com',
-      { redirectTo: 'https://f1.example/login' },
+      { redirectTo: 'https://f1.example/reset-password' },
     );
   });
 

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin } from 'antd';
+import { Card } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
@@ -12,6 +12,7 @@ import type { Circuit, Race } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Circuits.css';
 
 interface CircuitAtlasItem extends Circuit {
@@ -92,7 +93,7 @@ const Circuits = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Mapping championship circuits" detail={`${currentSeason} calendar · layouts · records`} />
         </div>
       ) : circuits.length === 0 ? (
         <div className="circuit-atlas-empty">当前赛季暂无赛道数据。</div>

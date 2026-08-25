@@ -133,7 +133,9 @@ export function useFastF1RaceTelemetry(
         if (controller.signal.aborted) return;
         setData(payload?.telemetry || null);
         setDataIdentity(requestIdentity);
-        loadedRef.current = true;
+        // Keep an empty response retryable: telemetry is published separately
+        // from the compact session snapshot and may arrive later.
+        loadedRef.current = Boolean(payload?.telemetry);
         diagnostics?.log({ operation: 'fastf1_telemetry', outcome: payload?.telemetry ? 'succeeded' : 'empty', source: 'fastf1_static', session });
       })
       .catch((requestError: unknown) => {

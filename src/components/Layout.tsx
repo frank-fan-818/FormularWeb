@@ -199,7 +199,7 @@ const LayoutComponent = () => {
     searchPlaceholder: t('searchPlaceholder'),
     appName: t('appName'),
     currentSeason: t('currentSeason'),
-    account: t('account'),
+    account: t('loginTitle'),
   };
   const navItems = [
     { key: '/', icon: HomeIcon, label: t('home') },
@@ -341,7 +341,9 @@ const LayoutComponent = () => {
   );
 
   const handleAuthAction = () => {
-    navigate('/login');
+    navigate('/login', {
+      state: { from: `${location.pathname}${location.search}` },
+    });
   };
 
   const authButton = (

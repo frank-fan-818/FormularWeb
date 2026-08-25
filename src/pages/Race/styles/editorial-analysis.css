@@ -32,7 +32,9 @@
   overflow: hidden;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  background: var(--surface-dark);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(232, 0, 45, 0.2), transparent 30%),
+    linear-gradient(135deg, #15171c 0%, #0b0c0f 100%);
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
@@ -42,7 +44,7 @@
   min-height: 138px;
   padding: var(--space-5);
   border-right: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), transparent 62%);
 }
 
 .race-analysis-brief article:first-child::before {
@@ -112,6 +114,21 @@
   max-width: 100%;
 }
 
+.fastf1-analytics-section {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.analysis-module-state-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.analysis-module-state-stack > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .fastf1-chart-card,
 .race-weekend-card,
 .race-weekend-post-card {
@@ -122,7 +139,9 @@
   border-radius: var(--radius-lg);
   padding: 0;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 98%, var(--f1-red) 2%), var(--bg-card));
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .fastf1-analytics-section,
@@ -152,21 +171,10 @@
 .race-weekend-card:hover {
   border-color: color-mix(in srgb, var(--f1-red) 30%, var(--border-primary));
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
 }
 
 .fastf1-chart-card[data-module-index]::after {
-  content: attr(data-module-index);
-  position: absolute;
-  z-index: 0;
-  right: var(--space-4);
-  top: -18px;
-  color: color-mix(in srgb, var(--text-primary) 5%, transparent);
-  font-family: var(--race-display);
-  font-size: 112px;
-  font-weight: 800;
-  line-height: 1;
-  pointer-events: none;
+  display: none;
 }
 
 .fastf1-chart-card .ant-card-head,
@@ -174,12 +182,21 @@
 .race-weekend-post-card .ant-card-head {
   position: relative;
   z-index: 1;
-  min-height: 76px;
+  min-height: 92px;
   border-bottom: 1px solid var(--border-primary);
-  border-left: 3px solid var(--f1-red);
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--race-control-panel) 65%, transparent), transparent),
+    linear-gradient(90deg, color-mix(in srgb, var(--race-control-panel) 82%, transparent), transparent 70%),
     var(--bg-secondary);
+}
+
+.fastf1-chart-card .ant-card-head::before,
+.race-weekend-card .ant-card-head::before,
+.race-weekend-post-card .ant-card-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--f1-red);
 }
 
 .fastf1-chart-card .ant-card-body,
@@ -197,6 +214,53 @@
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.015em;
+}
+
+.analysis-module-kicker {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--f1-red);
+  font-family: var(--race-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  line-height: 1;
+}
+
+.analysis-module-state-card {
+  min-height: 230px;
+}
+
+.analysis-module-state-card .ant-card-body {
+  display: flex;
+  min-height: 132px;
+  align-items: center;
+}
+
+.analysis-module-state-card[data-module-state='loading'] .ant-card-body {
+  align-items: flex-start;
+}
+
+.analysis-module-message {
+  max-width: 680px;
+}
+
+.analysis-module-status {
+  color: var(--text-tertiary);
+  font-family: var(--race-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.analysis-module-message p {
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.analysis-module-state-card[data-module-state='error'] {
+  border-color: color-mix(in srgb, var(--f1-red) 44%, var(--border-primary));
 }
 
 .fastf1-chart-header p {

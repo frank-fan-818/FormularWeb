@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import { useRacesByStatus, useRaceStatus, useSeasonData } from '@/hooks';
@@ -9,6 +8,7 @@ import { preloadRoute } from '@/utils/routePreload';
 import { formatRaceDateTime } from '@/utils/raceSchedule';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Races.css';
 
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
@@ -72,7 +72,7 @@ const Races = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Synchronising race calendar" detail={`${currentSeason} season · rounds · start times`} />
         </div>
       ) : races.length === 0 ? (
         <div className="race-calendar-empty">当前赛季暂无赛历数据。</div>

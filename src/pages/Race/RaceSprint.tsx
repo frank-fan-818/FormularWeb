@@ -26,6 +26,7 @@ import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -392,7 +393,7 @@ const RaceSprint = () => {
                 </div>
               }
             >
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint pace" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-qualifying-ranking-${season}-${round}`}
                   height={isMobile ? 340 : 440}
@@ -591,7 +592,7 @@ const RaceSprint = () => {
                   ))}
                 </div>
               ) : null}
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint strategy" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-laps-${season}-${round}`}
                   height={isMobile ? 300 : 430}
@@ -628,7 +629,7 @@ const RaceSprint = () => {
                 </div>
               }
             >
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint classification" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-tyre-strategy-${season}-${round}`}
                   height={isMobile ? 320 : 400}
