@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const files = execFileSync(
   'git',
@@ -8,6 +8,7 @@ const files = execFileSync(
 )
   .split('\0')
   .filter((file) => file !== 'scripts/check-text-encoding.mjs')
+  .filter((file) => existsSync(file))
   .filter((file) => /^(?:src|e2e|scripts)\/.*\.(?:[cm]?[jt]sx?|json|md|sql|ya?ml)$/.test(file));
 const mojibakePatterns = [
   { label: 'Unicode replacement character', pattern: /\uFFFD/ },

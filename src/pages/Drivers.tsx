@@ -160,7 +160,12 @@ const Drivers = () => {
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                        <DriverAvatar driverId={driver.driverId} size={48} />
+                        <DriverAvatar
+                          driverId={driver.driverId}
+                          size={48}
+                          givenName={driver.givenName}
+                          familyName={driver.familyName}
+                        />
                         <div style={{ flex: 1 }}>
                           <h3 className="driver-card-name" style={{ margin: 0 }}>
                             <span>{driver.givenName}</span>
