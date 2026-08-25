@@ -1,7 +1,7 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "0.16.1",
+  "version": "0.16.2",
   "packageManager": "npm@11.12.0",
   "type": "module",
   "engines": {
@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "media:check": "node --test ./scripts/f1-media-lib.test.mjs && node ./scripts/check-f1-media.mjs",
+    "media:discover": "node ./scripts/sync-f1-media.mjs --discover-only",
+    "media:sync": "node ./scripts/sync-f1-media.mjs",
     "backfill:history-summaries": "ts-node-esm ./scripts/backfill-history-summaries.ts",
     "audit:derived-data": "ts-node-esm ./scripts/audit-and-backfill-derived-data.ts",
     "audit:database": "ts-node-esm ./scripts/audit-database-completeness.ts",
@@ -29,7 +32,7 @@
     "security:audit": "npm audit --audit-level=high",
     "security:audit:production": "npm audit --omit=dev --audit-level=high",
     "workflows:verify": "node --test ./scripts/workflow-policy.test.mjs && node ./scripts/verify-github-workflows.mjs",
-    "quality:check": "npm run workflows:verify && npm run deployment:verify && npm run encoding:check && npm run security:check && npm run sast:check && npm run security:audit && npm run lint:strict && npm run type-check && npm run test:coverage && npm run build && npm run service-worker:verify && npm run budget:performance && npm run lighthouse:config:verify && npm run lighthouse && npm run test:e2e:built",
+    "quality:check": "npm run workflows:verify && npm run deployment:verify && npm run encoding:check && npm run media:check && npm run security:check && npm run sast:check && npm run security:audit && npm run lint:strict && npm run type-check && npm run test:coverage && npm run build && npm run service-worker:verify && npm run budget:performance && npm run lighthouse:config:verify && npm run lighthouse && npm run test:e2e:built",
     "preview": "vite preview",
     "fastf1:export-race": "python scripts/export-fastf1-race-data.py",
     "fastf1:export-season": "python scripts/export-fastf1-season-data.py",

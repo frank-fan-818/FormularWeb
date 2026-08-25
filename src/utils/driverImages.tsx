@@ -1,26 +1,9 @@
 import { useState } from 'react';
 
+import { getDriverFallbackInitials, getDriverMedia } from './f1Media';
+
 // Local cache fallback — if image fails, show initials
 const FALLBACK_IDS = new Set<string>();
-
-const ALIASES: Record<string, string> = {
-  antonelli: 'kimi_antonelli',
-  max_verstappen: 'max_verstappen',
-};
-
-function resolveId(driverId: string): string {
-  if (ALIASES[driverId]) return ALIASES[driverId];
-  // Try last-name-only variant (e.g. lewis_hamilton -> hamilton)
-  const parts = driverId.split('_');
-  if (parts.length > 1) return parts[parts.length - 1];
-  return driverId;
-}
-
-function getInitials(givenName?: string, familyName?: string): string {
-  const first = givenName ? givenName.charAt(0) : '';
-  const last = familyName ? familyName.charAt(0) : '';
-  return (first + last).toUpperCase() || '?';
-}
 
 function getDriverColor(driverId: string): string {
   const palette = [
@@ -49,11 +32,13 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
   familyName,
   className,
 }) => {
-  const resolvedId = resolveId(driverId);
-  const [errored, setErrored] = useState(() => FALLBACK_IDS.has(resolvedId));
+  const media = getDriverMedia(driverId);
+  const [errored, setErrored] = useState(
+    () => !media.isDeclared || FALLBACK_IDS.has(media.canonicalId),
+  );
 
   if (errored) {
-    const initials = getInitials(givenName, familyName);
+    const initials = getDriverFallbackInitials(driverId, givenName, familyName);
     const bgColor = getDriverColor(driverId);
     return (
       <span
@@ -72,7 +57,7 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
 
   return (
     <img
-      src={`/images/drivers/${resolvedId}.png`}
+      src={media.path}
       alt={`${givenName ?? ''} ${familyName ?? ''}`.trim() || driverId}
       className={className}
       style={{
@@ -80,7 +65,7 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
         objectFit: 'cover', flexShrink: 0,
       }}
       loading="lazy"
-      onError={() => { FALLBACK_IDS.add(resolvedId); setErrored(true); }}
+      onError={() => { FALLBACK_IDS.add(media.canonicalId); setErrored(true); }}
     />
   );
 };
