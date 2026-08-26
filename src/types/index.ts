@@ -45,6 +45,7 @@ export interface Race {
   Qualifying?: SessionSchedule;
   Sprint?: SessionSchedule;
   SprintQualifying?: SessionSchedule;
+  isSprintWeekend?: boolean;
 }
 
 export interface SessionSchedule {

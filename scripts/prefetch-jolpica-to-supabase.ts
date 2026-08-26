@@ -668,6 +668,7 @@ function transformRace(season: number, race: JolpicaRace): RaceRow {
     url: race.url || null,
     locality: race.Circuit.Location.locality || null,
     country: race.Circuit.Location.country || null,
+    is_sprint_weekend: Boolean(race.Sprint || race.SprintQualifying),
   };
 }
 

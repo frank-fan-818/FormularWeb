@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fiaCarUpgradesApi } from '@/api/fiaCarUpgrades';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
+import { RequestTimeoutError, withTimeout } from '@/utils/withRetry';
+
+const FIA_UPGRADES_TIMEOUT_MS = 8_000;
 
 export function useFiaRaceUpgrades(season: string, round: string | undefined, enabled = true) {
   const [data, setData] = useState<FiaRaceUpgradeSummary | null>(null);
@@ -24,7 +27,10 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
     setLoading(true);
     setError(null);
 
-    fiaCarUpgradesApi.getRaceUpgrades(season, round)
+    withTimeout(
+      fiaCarUpgradesApi.getRaceUpgrades(season, round),
+      FIA_UPGRADES_TIMEOUT_MS,
+    )
       .then((summary) => {
         if (!cancelled) {
           setData(summary);
@@ -35,7 +41,9 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
         if (!cancelled) {
           setData(null);
           setDataIdentity(requestIdentity);
-          setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
+          setError(requestError instanceof RequestTimeoutError
+            ? new Error('赛车升级数据请求超时，请稍后重试')
+            : requestError instanceof Error ? requestError : new Error(String(requestError)));
         }
       })
       .finally(() => {

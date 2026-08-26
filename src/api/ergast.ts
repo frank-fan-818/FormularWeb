@@ -197,6 +197,7 @@ export const seasonApi = {
             },
             date: row.date,
             time: row.time || undefined,
+            isSprintWeekend: Boolean(row.is_sprint_weekend),
           } as Race;
         });
       }

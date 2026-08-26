@@ -25,6 +25,8 @@ from typing import Any
 import fastf1
 import pandas as pd
 
+from fastf1_automation import session_is_ready
+
 
 DEFAULT_SESSIONS = ["R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"]
 VALID_SESSIONS = {"R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"}
@@ -55,6 +57,7 @@ class ManifestSession:
     telemetryDrivers: int
     qualifyingBestLaps: int
     complete: bool
+    eligible: bool
 
 
 def parse_args() -> argparse.Namespace:
@@ -85,6 +88,27 @@ def parse_args() -> argparse.Namespace:
         help="Maximum telemetry samples per driver after downsampling.",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite existing JSON files")
+    parser.add_argument(
+        "--analysis-only",
+        action="store_true",
+        help="Export only R/Q and detected Sprint classifications; omit practice sessions.",
+    )
+    parser.add_argument(
+        "--completed-only",
+        action="store_true",
+        help="Export only sessions whose scheduled start is outside the availability delay window.",
+    )
+    parser.add_argument(
+        "--refresh-incomplete",
+        action="store_true",
+        help="Overwrite an existing session file when its manifest checks are incomplete.",
+    )
+    parser.add_argument(
+        "--availability-delay-hours",
+        type=float,
+        default=4,
+        help="Hours after the scheduled session start before automated export is attempted (default: 4).",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print planned exports without writing files")
     return parser.parse_args()
 
@@ -104,7 +128,11 @@ def normalize_session_name(value: Any) -> str:
     return clean_text(value).strip().lower()
 
 
-def session_codes_for_event(event: pd.Series, requested_sessions: list[str] | None) -> list[str]:
+def session_codes_for_event(
+    event: pd.Series,
+    requested_sessions: list[str] | None,
+    analysis_only: bool = False,
+) -> list[str]:
     if requested_sessions:
         return requested_sessions
 
@@ -123,11 +151,11 @@ def session_codes_for_event(event: pd.Series, requested_sessions: list[str] | No
     if any(name == "sprint shootout" for name in session_names):
         sessions.append("SS")
 
-    if any(name == "practice 1" for name in session_names):
+    if not analysis_only and any(name == "practice 1" for name in session_names):
         sessions.append("FP1")
-    if any(name == "practice 2" for name in session_names):
+    if not analysis_only and any(name == "practice 2" for name in session_names):
         sessions.append("FP2")
-    if any(name == "practice 3" for name in session_names):
+    if not analysis_only and any(name == "practice 3" for name in session_names):
         sessions.append("FP3")
 
     return sessions
@@ -174,7 +202,12 @@ def build_export_command(args: argparse.Namespace, round_number: int, session: s
 def run_export(args: argparse.Namespace, round_number: int, session: str) -> ExportResult:
     path = output_path(Path(args.output), args.season, round_number, session)
     if path.exists() and not args.force:
-        return ExportResult(args.season, round_number, session, "skipped", str(path), "already exists")
+        existing = build_manifest_session(
+            Path(args.output), args.season, round_number, session, eligible=True,
+        )
+        if not args.refresh_incomplete or existing.complete:
+            reason = "already complete" if existing.complete else "already exists"
+            return ExportResult(args.season, round_number, session, "skipped", str(path), reason)
 
     command = build_export_command(args, round_number, session)
     if args.dry_run:
@@ -237,25 +270,44 @@ def build_manifest_session(
     season: int,
     round_number: int,
     session: str,
+    eligible: bool,
 ) -> ManifestSession:
     path = output_path(output_root, season, round_number, session)
     payload = read_payload(path) if path.exists() else {}
+    telemetry_path = output_path(output_root, season, round_number, f"{session}-telemetry")
+    telemetry_payload = read_payload(telemetry_path) if telemetry_path.exists() else {}
     weather_points = nested_list_count(payload.get("weather"), "points")
-    telemetry_drivers = nested_list_count(payload.get("telemetry"), "drivers")
+    telemetry_drivers = max(
+        nested_list_count(payload.get("telemetry"), "drivers"),
+        nested_list_count(telemetry_payload.get("telemetry"), "drivers"),
+    )
     qualifying_best_laps = nested_list_count(payload.get("qualifyingAnalysis"), "bestLaps")
     session_results = list_count(payload.get("sessionResults"))
     lap_time_series = list_count(payload.get("lapTimeSeries"))
     tyre_strategies = list_count(payload.get("tyreStrategies"))
 
-    common_complete = session_results > 0 and lap_time_series > 0 and tyre_strategies > 0
-    race_complete = session != "R" or (weather_points > 0 and telemetry_drivers > 0)
+    identity_complete = (
+        clean_text(payload.get("season")) == str(season)
+        and clean_text(payload.get("round")) == str(round_number)
+        and clean_text(payload.get("session")).upper() == session.upper()
+    )
+    telemetry_identity_complete = not telemetry_path.exists() or (
+        clean_text(telemetry_payload.get("season")) == str(season)
+        and clean_text(telemetry_payload.get("round")) == str(round_number)
+        and clean_text(telemetry_payload.get("session")).upper() == session.upper()
+    )
+    common_complete = identity_complete and session_results > 0 and lap_time_series > 0 and tyre_strategies > 0
+    race_complete = session != "R" or (
+        weather_points > 0 and telemetry_drivers > 0 and telemetry_identity_complete
+    )
     qualifying_complete = session not in {"Q", "SQ", "SS"} or qualifying_best_laps > 0
 
     return ManifestSession(
         session=session,
         path=str(path),
         exists=path.exists(),
-        bytes=path.stat().st_size if path.exists() else 0,
+        bytes=(path.stat().st_size if path.exists() else 0)
+        + (telemetry_path.stat().st_size if telemetry_path.exists() else 0),
         eventName=clean_text(payload.get("eventName")),
         sessionName=clean_text(payload.get("sessionName")),
         sessionResults=session_results,
@@ -265,6 +317,7 @@ def build_manifest_session(
         telemetryDrivers=telemetry_drivers,
         qualifyingBestLaps=qualifying_best_laps,
         complete=bool(path.exists() and common_complete and race_complete and qualifying_complete),
+        eligible=eligible,
     )
 
 
@@ -273,6 +326,10 @@ def write_manifest(
     output_root: Path,
     season: int,
     requested_sessions: list[str] | None,
+    analysis_only: bool,
+    completed_only: bool,
+    availability_delay_hours: float,
+    now: datetime,
     from_round: int,
     to_round: int,
 ) -> Path:
@@ -285,10 +342,17 @@ def write_manifest(
         if round_number < from_round or round_number > to_round:
             continue
 
-        sessions = [
-            build_manifest_session(output_root, season, round_number, session)
-            for session in session_codes_for_event(event, requested_sessions)
-        ]
+        sessions = []
+        for session in session_codes_for_event(event, requested_sessions, analysis_only):
+            eligible = not completed_only or session_is_ready(
+                event,
+                session,
+                now,
+                availability_delay_hours,
+            )
+            sessions.append(build_manifest_session(
+                output_root, season, round_number, session, eligible,
+            ))
         rounds.append({
             "round": round_number,
             "eventName": clean_text(event.get("EventName")),
@@ -311,6 +375,13 @@ def write_manifest(
             "completeRounds": sum(1 for round_item in rounds if round_item["complete"]),
             "completeSessions": sum(1 for session in all_sessions if session["complete"]),
             "missingSessions": sum(1 for session in all_sessions if not session["exists"]),
+            "eligibleSessions": sum(1 for session in all_sessions if session["eligible"]),
+            "completeEligibleSessions": sum(
+                1 for session in all_sessions if session["eligible"] and session["complete"]
+            ),
+            "incompleteEligibleSessions": sum(
+                1 for session in all_sessions if session["eligible"] and not session["complete"]
+            ),
             "bytes": sum(session["bytes"] for session in all_sessions),
         },
         "rounds": rounds,
@@ -329,6 +400,7 @@ def main() -> None:
     max_round = args.to_round or int(schedule["RoundNumber"].max())
     output_root = Path(args.output)
     results: list[ExportResult] = []
+    now = datetime.now(timezone.utc)
 
     for _, event in schedule.sort_values("RoundNumber").iterrows():
         round_number = int(event["RoundNumber"])
@@ -336,7 +408,14 @@ def main() -> None:
             continue
 
         event_name = clean_text(event.get("EventName")) or f"Round {round_number}"
-        sessions = session_codes_for_event(event, requested_sessions)
+        sessions = session_codes_for_event(event, requested_sessions, args.analysis_only)
+        if args.completed_only:
+            sessions = [
+                session for session in sessions
+                if session_is_ready(event, session, now, args.availability_delay_hours)
+            ]
+        if not sessions:
+            continue
         print(f"{args.season} round {round_number}: {console_text(event_name)} -> {', '.join(sessions)}")
 
         for session in sessions:
@@ -351,6 +430,10 @@ def main() -> None:
         output_root,
         args.season,
         requested_sessions,
+        args.analysis_only,
+        args.completed_only,
+        args.availability_delay_hours,
+        now,
         args.from_round,
         max_round,
     )
