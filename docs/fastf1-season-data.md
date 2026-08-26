@@ -102,3 +102,4 @@ npm run fastf1:import-sessions -- --season 2025 --dry-run
 ## Release 0.17.0
 
 Version 0.17.0 adds resilient Sprint classification loading and the verified post-session FastF1 export/import pipeline.
+The scheduled refresh checks completed Race, Qualifying, Sprint, Sprint Qualifying, and Sprint Shootout sessions before publishing snapshots.
