@@ -148,11 +148,15 @@ export function useRaceDeferredSessions({
       })
       .catch((error) => {
         if (!cancelled) {
-          diagnostics?.log({ operation: 'session_discovery', outcome: 'failed', source: 'supabase', error });
-          setLoadErrors((current) => ({
-            ...current,
-            discovery: '场次列表暂时无法完整更新',
-          }));
+          diagnostics?.log({ operation: 'session_discovery', outcome: 'degraded', source: 'supabase', error });
+          setAvailableDbSessions([]);
+          setAvailableIdentity(requestedIdentity);
+          setLoadErrors((current) => {
+            if (!current.discovery) return current;
+            const next = { ...current };
+            delete next.discovery;
+            return next;
+          });
         }
       });
     return () => { cancelled = true; };

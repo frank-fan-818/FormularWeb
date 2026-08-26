@@ -117,4 +117,37 @@ describe('FastF1 analytics source selection', () => {
     expect(second).toEqual(snapshot);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps a shared request alive when one caller aborts', async () => {
+    const snapshot = createSnapshot({
+      lapTimeSeries: [{ driver: 'NOR', team: 'McLaren', laps: [] }],
+    });
+    let resolveFetch: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn().mockImplementation((_input: RequestInfo | URL, init?: RequestInit) => (
+      new Promise<Response>((resolve, reject) => {
+        resolveFetch = resolve;
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('Request aborted', 'AbortError'));
+        }, { once: true });
+      })
+    ));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const firstController = new AbortController();
+    const firstRequest = fastF1AnalyticsApi.getRaceAnalytics(
+      '2026', '14', 'R', firstController.signal,
+    );
+    const secondRequest = fastF1AnalyticsApi.getRaceAnalytics('2026', '14', 'R');
+    const secondOutcome = secondRequest.catch((error: unknown) => error);
+
+    firstController.abort();
+    await expect(firstRequest).rejects.toMatchObject({ name: 'AbortError' });
+    resolveFetch?.(new Response(JSON.stringify(snapshot), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    expect(await secondOutcome).toEqual(snapshot);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });

@@ -21,6 +21,30 @@ interface AnalyticsCacheEntry {
 const analyticsCache = new Map<string, AnalyticsCacheEntry>();
 const analyticsRequests = new Map<string, Promise<FastF1RaceAnalytics | null>>();
 
+function callerAbortError(): DOMException {
+  return new DOMException('Request aborted', 'AbortError');
+}
+
+function waitForSharedRequest<T>(request: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return request;
+  if (signal.aborted) return Promise.reject(callerAbortError());
+
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(callerAbortError());
+    signal.addEventListener('abort', abort, { once: true });
+    request.then(
+      (value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(error);
+      },
+    );
+  });
+}
+
 type AnalyticsCollectionKey =
   | 'sessionResults'
   | 'lapTimeSeries'
@@ -128,11 +152,13 @@ export const fastF1AnalyticsApi = {
     const sessionCode = session.toUpperCase();
     const cacheKey = `${season}:${round}:${sessionCode}`;
     const cached = analyticsCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) return cached.data;
+    if (cached && cached.expiresAt > Date.now()) {
+      return waitForSharedRequest(Promise.resolve(cached.data), signal);
+    }
     if (cached) analyticsCache.delete(cacheKey);
 
     const activeRequest = analyticsRequests.get(cacheKey);
-    if (activeRequest) return activeRequest;
+    if (activeRequest) return waitForSharedRequest(activeRequest, signal);
 
     const request = (async () => {
     let staticAnalytics: FastF1RaceAnalytics | null = null;
@@ -152,7 +178,7 @@ export const fastF1AnalyticsApi = {
           }
           return result;
         }),
-        { timeoutMs: 4500, maxRetries: 1, signal },
+        { timeoutMs: 4500, maxRetries: 1 },
       );
 
       if (response.ok) {
@@ -167,7 +193,6 @@ export const fastF1AnalyticsApi = {
         diagnostics?.log({ operation: 'fastf1_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
       }
     } catch (error) {
-      if (signal?.aborted) throw error;
       staticError = error;
       diagnostics?.log({ operation: 'fastf1_static', outcome: 'degraded', source: 'fastf1_static', error, session: sessionCode });
     }
@@ -175,7 +200,7 @@ export const fastF1AnalyticsApi = {
     try {
       const databaseAnalytics = await withRetry(
         (attemptSignal) => getDatabaseAnalytics(season, round, sessionCode, attemptSignal),
-        { timeoutMs: 5000, maxRetries: 1, signal },
+        { timeoutMs: 5000, maxRetries: 1 },
       );
       if (databaseAnalytics) {
         assertSnapshotIdentity(databaseAnalytics, season, round, sessionCode);
@@ -188,9 +213,6 @@ export const fastF1AnalyticsApi = {
         diagnostics?.log({ operation: 'fastf1_source', outcome: 'degraded', source: 'supabase', reasonCode: 'source_empty', session: sessionCode });
       }
     } catch (error) {
-      if (signal?.aborted) {
-        throw error;
-      }
       if (import.meta.env.DEV && !isMissingAnalyticsTableError(error)) {
         logger.warn({
           event: 'exit',
@@ -211,17 +233,17 @@ export const fastF1AnalyticsApi = {
     return null;
     })();
 
-    analyticsRequests.set(cacheKey, request);
-    try {
-      const analytics = await request;
+    const sharedRequest = request.then((analytics) => {
       analyticsCache.set(cacheKey, {
         data: analytics,
         expiresAt: Date.now() + (analytics ? ANALYTICS_CACHE_TTL_MS : EMPTY_ANALYTICS_CACHE_TTL_MS),
       });
       return analytics;
-    } finally {
+    }).finally(() => {
       analyticsRequests.delete(cacheKey);
-    }
+    });
+    analyticsRequests.set(cacheKey, sharedRequest);
+    return waitForSharedRequest(sharedRequest, signal);
   },
 
   async getRaceTelemetry(
