@@ -15,6 +15,7 @@ import {
   buildConstructorLookup,
 } from '@/pages/Race/shared/sessionData';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { OfficialClassificationTable } from '@/pages/Race/shared/components/OfficialClassificationTable';
 import {
   formatSignedSeconds,
   getGapToneClassName,
@@ -23,6 +24,7 @@ import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
 import type {
   FastF1QualifyingBestLap,
   FastF1TeamMateComparison,
+  QualifyingResult,
 } from '@/types';
 import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
@@ -385,11 +387,21 @@ const RaceQualifying = () => {
   // ---- Render helpers ----
 
   const renderQualifyingSection = (
+    officialResults: QualifyingResult[],
+    officialTitle: string,
+    officialAriaLabel: string,
     sectorRows: SectorTimeRow[],
     paceOption: Record<string, unknown> | null,
     teamMateRows: TeamMateRow[],
   ) => (
     <div className="fastf1-analysis-stack">
+      <OfficialClassificationTable
+        ariaLabel={officialAriaLabel}
+        title={officialTitle}
+        variant="qualifying"
+        results={officialResults}
+      />
+
       {/* Sector Times Comparison */}
       {sectorRows.length > 0 ? (
         <Card
@@ -493,6 +505,9 @@ const RaceQualifying = () => {
             key: 'qualifying',
             label: t('qualifying'),
             children: renderQualifyingSection(
+              qualifyingResults,
+              '官方排位成绩',
+              'Official qualifying classification',
               qSectorRows,
               qPaceOption,
               qTeamMateRows,
@@ -504,6 +519,9 @@ const RaceQualifying = () => {
                   key: 'sprintQualifying',
                   label: t('sprintQualifying'),
                   children: renderQualifyingSection(
+                    sprintQualifyingTableData,
+                    '官方冲刺排位成绩',
+                    'Official sprint qualifying classification',
                     sqSectorRows,
                     sqPaceOption,
                     sqTeamMateRows,

@@ -22,6 +22,7 @@ import { RacePaceStrategyPanels } from '@/pages/Race/shared/components/RacePaceS
 import { RaceDriverDuelPanel } from '@/pages/Race/shared/components/RaceDriverDuelPanel';
 import { RaceWeatherPanel } from '@/pages/Race/shared/components/RaceWeatherPanel';
 import { AnalysisModuleState } from '@/pages/Race/shared/components/AnalysisModuleState';
+import { OfficialClassificationTable } from '@/pages/Race/shared/components/OfficialClassificationTable';
 import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import {
   buildFastF1Summary,
@@ -70,6 +71,7 @@ const RaceAnalysis = () => {
     fastF1AnalyticsLoading,
     fastF1AnalyticsError,
     retryFastF1Analytics,
+    raceResults,
     fastF1QualifyingAnalytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
@@ -344,6 +346,15 @@ const RaceAnalysis = () => {
 
   // ---- Data existence checks ----
 
+  const officialRaceClassification = (
+    <OfficialClassificationTable
+      ariaLabel="Official race classification"
+      title="官方正赛成绩"
+      variant="race"
+      results={raceResults}
+    />
+  );
+
   // ---- Early return when no FastF1 data ----
 
   if (fastF1AnalyticsLoading) {
@@ -355,6 +366,7 @@ const RaceAnalysis = () => {
           title="Building the race debrief"
           description="Synchronising timing, strategy, conditions and car-data channels. Each module becomes available independently."
         />
+        {officialRaceClassification}
         <div className="analysis-module-state-stack" aria-label="Race analysis loading">
           <AnalysisModuleState index="01" label="RACE PACE" title={t('lapPace')} description="Loading lap-by-lap pace traces." state="loading" />
           <AnalysisModuleState index="02" label="STINT MODEL" title={t('tyreStrategy')} description="Loading tyre and pit-window data." state="loading" />
@@ -375,6 +387,7 @@ const RaceAnalysis = () => {
           title="Race analysis is not available yet"
           description="The classification can still be viewed. FastF1 modules will unlock when a complete timing snapshot is published."
         />
+        {officialRaceClassification}
         <AnalysisModuleState
           index="DATA"
           label="FASTF1 SOURCE"
@@ -443,6 +456,8 @@ const RaceAnalysis = () => {
           </div>
         ) : null}
       />
+
+      {officialRaceClassification}
 
       <section className="race-analysis-brief" aria-label="Race analysis key findings">
         <article>
