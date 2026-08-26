@@ -98,3 +98,7 @@ Use a dry run first when validating a new export:
 ```bash
 npm run fastf1:import-sessions -- --season 2025 --dry-run
 ```
+
+## Release 0.17.0
+
+Version 0.17.0 adds resilient Sprint classification loading and the verified post-session FastF1 export/import pipeline.
