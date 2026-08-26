@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import {
   Card, Segmented, Select, Switch, Typography, Space, Divider,
 } from 'antd';
@@ -45,7 +45,6 @@ const Settings = () => {
         tone="utility"
         eyebrow="PREFERENCES / LOCAL"
         title="CONTROL SETTINGS"
-        description="调整界面、语言与默认赛季。所有选项都围绕更快进入你最常查看的数据上下文。"
         metrics={[
           { label: '\u5f53\u524d\u8d5b\u5b63', value: currentSeason },
           { label: '\u754c\u9762\u4e3b\u9898', value: theme.toUpperCase() },
@@ -91,8 +90,7 @@ const Settings = () => {
             <Select
               value={i18n.language}
               onChange={(lang) => {
-                i18n.changeLanguage(lang);
-                localStorage.setItem('i18nextLng', lang);
+                void i18n.changeLanguage(lang);
               }}
               options={languageOptions}
               style={{ width: 160 }}

@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { Button, Card, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -16,6 +16,8 @@ import { RaceDataProvider, useRaceData } from './RaceContext';
 import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { getRaceRouteSection } from '@/utils/race/raceSessionState';
+import { preloadRaceSectionRoute } from '@/utils/routePreload';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import '../RaceDetail.css';
 
 const InnerLayout = () => {
@@ -23,6 +25,8 @@ const InnerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const {
+    season,
+    round,
     raceInfo,
     seasonLoading,
     primaryLoading,
@@ -39,8 +43,14 @@ const InnerLayout = () => {
     diagnosticFlowId,
   } = useRaceData();
 
-  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
-  const hasSprint = (sprintResults && sprintResults.length > 0) || Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
+  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || Boolean(raceInfo?.isSprintWeekend)
+    || availableDbSessions.includes('SQ')
+    || availableDbSessions.includes('SS');
+  const hasSprint = (sprintResults && sprintResults.length > 0)
+    || Boolean(raceInfo?.Sprint)
+    || Boolean(raceInfo?.isSprintWeekend)
+    || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
   const routeTab = getRaceRouteSection(location.pathname);
   const activeSessionErrorKey = routeTab === 'qualifying' && sessionLoadErrors.sprintQualifying
@@ -50,13 +60,32 @@ const InnerLayout = () => {
     () => buildRaceOverviewInsights(raceResults, qualifyingResults, fastF1Analytics),
     [fastF1Analytics, qualifyingResults, raceResults],
   );
+  const tabLabel = (
+    key: string,
+    icon: JSX.Element,
+    title: string,
+    subtitle: string,
+  ) => (
+    <span
+      className="race-command-tab-label"
+      onPointerEnter={() => preloadRaceSectionRoute(key, season, round)}
+      onPointerDown={() => preloadRaceSectionRoute(key, season, round)}
+    >
+      {icon}<span><strong>{title}</strong><small>{subtitle}</small></span>
+    </span>
+  );
 
   if ((seasonLoading || primaryLoading) && !raceInfo) {
     return (
-      <div className="race-detail-page race-layout-skeleton" role="status" aria-label={t('loading')}>
-        <div className="race-skeleton-line" />
-        <div className="race-skeleton-hero" />
-        <div className="race-skeleton-tabs" />
+      <div className="race-detail-page race-layout-progressive">
+        <div className="race-layout-skeleton" role="status" aria-label={t('loading')}>
+          <div className="race-skeleton-line" />
+          <div className="race-skeleton-hero" />
+          <div className="race-skeleton-tabs" />
+        </div>
+        <Suspense fallback={<TimingBeacon label="Switching session view" detail="Loading the requested race module" />}>
+          <Outlet />
+        </Suspense>
       </div>
     );
   }
@@ -191,28 +220,28 @@ const InnerLayout = () => {
         items={[
           {
             key: 'results',
-            label: <span className="race-command-tab-label"><TrophyOutlined /><span><strong>赛事概览</strong><small>OVERVIEW</small></span></span>,
+            label: tabLabel('results', <TrophyOutlined />, '赛事概览', 'OVERVIEW'),
           },
           {
             key: 'qualifying',
-            label: <span className="race-command-tab-label"><BarChartOutlined /><span><strong>排位解构</strong><small>QUALIFYING</small></span></span>,
+            label: tabLabel('qualifying', <BarChartOutlined />, '排位解构', 'QUALIFYING'),
           },
           {
             key: 'race',
-            label: <span className="race-command-tab-label"><FundProjectionScreenOutlined /><span><strong>比赛解读</strong><small>RACE ANALYSIS</small></span></span>,
+            label: tabLabel('race', <FundProjectionScreenOutlined />, '比赛解读', 'RACE ANALYSIS'),
           },
           ...(hasSprint ? [{
             key: 'sprint' as const,
-            label: <span className="race-command-tab-label"><ThunderboltOutlined /><span><strong>冲刺周末</strong><small>SPRINT</small></span></span>,
+            label: tabLabel('sprint', <ThunderboltOutlined />, '冲刺周末', 'SPRINT'),
           }] : []),
           {
             key: 'info',
-            label: <span className="race-command-tab-label"><CompassOutlined /><span><strong>周末情报</strong><small>INTELLIGENCE</small></span></span>,
+            label: tabLabel('info', <CompassOutlined />, '周末情报', 'INTELLIGENCE'),
           },
         ]}
       />
 
-      <Suspense fallback={<div className="race-route-skeleton" role="status" aria-live="polite" aria-label={t('loading')}><span /><span /><span /></div>}>
+      <Suspense fallback={<TimingBeacon label="Switching session view" detail="Keeping loaded race data in place" />}>
         <Outlet />
       </Suspense>
     </div>

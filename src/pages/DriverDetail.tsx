@@ -2,13 +2,13 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Empty, Row, Tag } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
-import dayjs from 'dayjs';
+import DocumentHead from '@/components/DocumentHead';
+import { formatDateOnly } from '@/utils/dateTime';
 import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { driverApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
-import { useSeasonData } from '@/hooks';
+import { useDriverStandingsCached, useSeasonRacesCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import type {
   BestFinishSummary,
@@ -91,7 +91,9 @@ const TEXT = {
   chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
 };
 
-const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const loadEChartsPanel = () => import('@/components/charts/EChartsPanel');
+const LazyEChartsPanel = lazy(loadEChartsPanel);
+void loadEChartsPanel().catch(() => undefined);
 
 function mapSupabaseDriver(driver: SupabaseDriverDetailRow): DriverProfile {
   return {
@@ -198,7 +200,8 @@ const DriverDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { driverStandings, races: currentSeasonRaces, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { driverStandings, loading: seasonLoading } = useDriverStandingsCached(currentSeason);
+  const { races: currentSeasonRaces } = useSeasonRacesCached(currentSeason);
   const showHistoryOverview = location.pathname.startsWith('/history/drivers/');
 
   const [driver, setDriver] = useState<DriverProfile | null>(null);
@@ -304,6 +307,42 @@ const DriverDetail = () => {
       setDriver(null);
     }
 
+    const knownDriverId = currentStanding?.Driver.driverId || null;
+    const prefetchedRaceResults = knownDriverId
+      ? driverApi.getDriverSeasonRaceResults(knownDriverId, currentSeason)
+      : null;
+    const sprintResultsPromise = seasonApi.getSeasonSprintResults(currentSeason);
+    void prefetchedRaceResults?.catch(() => undefined);
+    void sprintResultsPromise.catch(() => undefined);
+
+    const loadSeasonResults = async (
+      targetDriverId: string,
+      raceResultsPromise = driverApi.getDriverSeasonRaceResults(targetDriverId, currentSeason),
+    ) => {
+      const [raceResultsResult, sprintResultsResult] = await Promise.allSettled([
+        raceResultsPromise,
+        sprintResultsPromise,
+      ]);
+
+      if (cancelled) return;
+
+      setSeasonRaceResults(
+        raceResultsResult.status === 'fulfilled'
+          ? [...raceResultsResult.value].sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            )
+          : [],
+      );
+      setSeasonSprintResults(
+        sprintResultsResult.status === 'fulfilled' ? sprintResultsResult.value : [],
+      );
+      setSeasonResultsLoading(false);
+    };
+
+    if (knownDriverId && prefetchedRaceResults) {
+      void loadSeasonResults(knownDriverId, prefetchedRaceResults);
+    }
+
     const loadPrimaryData = async () => {
       const [baseDriverResult, resolvedDriverIdResult] = await Promise.allSettled([
         resolveSupabaseDriverProfile(driverId, currentStanding),
@@ -333,33 +372,17 @@ const DriverDetail = () => {
       setResolvedDriverId(nextResolvedDriverId);
       setLoading(false);
 
-      const [raceResultsResult, sprintResultsResult] = await Promise.allSettled([
-        driverApi.getDriverSeasonRaceResults(nextResolvedDriverId, currentSeason),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
-
-      if (!cancelled) {
-        if (raceResultsResult.status === 'fulfilled') {
-          setSeasonRaceResults(
-            raceResultsResult.value.sort(
-              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-            ),
-          );
-        } else {
-          setSeasonRaceResults([]);
-        }
-
-        setSeasonSprintResults(
-          sprintResultsResult.status === 'fulfilled' ? sprintResultsResult.value : [],
-        );
-        setSeasonResultsLoading(false);
+      if (!knownDriverId || nextResolvedDriverId !== knownDriverId) {
+        void loadSeasonResults(nextResolvedDriverId);
       }
     };
 
     void loadPrimaryData().catch(() => {
       if (!cancelled) {
         setLoading(false);
-        setSeasonResultsLoading(false);
+        if (!knownDriverId) {
+          setSeasonResultsLoading(false);
+        }
       }
     });
 
@@ -590,10 +613,7 @@ const DriverDetail = () => {
   if (!driver && !loading && !seasonLoading) {
     return (
       <div className="driver-detail-container">
-        <Helmet>
-          <title>&#x8f66;&#x624b;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8f66;&#x624b;&#x8be6;&#x60c5;&#xff0c;&#x8d5b;&#x5b63;&#x6570;&#x636e;&#x3001;&#x751f;&#x6daf;&#x7edf;&#x8ba1;&#x548c;&#x79ef;&#x5206;&#x8d70;&#x52bf;" />
-        </Helmet>
+        <DocumentHead title="车手详情 — F1 Dashboard" description="F1车手详情，赛季数据、生涯统计和积分走势" />
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
           {TEXT.back}
         </Button>
@@ -606,10 +626,10 @@ const DriverDetail = () => {
 
   return (
     <div className="driver-detail-container">
-      <Helmet>
-        <title>{driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} \u2014 F1 Dashboard` : '\u8f66\u624b\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
-        <meta name="description" content={`${driver?.givenName || ''} ${driver?.familyName || ''} F1\u8f66\u624b\u8be6\u60c5, \u8d5b\u5b63\u6570\u636e\u3001\u751f\u6daf\u7edf\u8ba1\u548c\u79ef\u5206\u8d70\u52bf`} />
-      </Helmet>
+      <DocumentHead
+        title={driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} — F1 Dashboard` : '车手详情 — F1 Dashboard'}
+        description={`${driver?.givenName || ''} ${driver?.familyName || ''} F1车手详情，赛季数据、生涯统计和积分走势`}
+      />
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
         {TEXT.back}
       </Button>
@@ -673,7 +693,6 @@ const DriverDetail = () => {
           index="01"
           eyebrow={`${currentSeason} / FORM`}
           title={TEXT.pointsTrend}
-          description="用每一站的积分变化读取车手当前状态，而不是只看一个静态排名。"
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
@@ -905,7 +924,7 @@ const DriverDetail = () => {
               <p><strong>{TEXT.nationality}</strong>{driver?.nationality || '-'}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '-'}</p>
+              <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? formatDateOnly(driver.dateOfBirth) : '-'}</p>
               <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</p>
               {driverHistory?.recentConstructorName ? (
                 <p><strong>{TEXT.recentTeam}</strong>{driverHistory.recentConstructorName}</p>

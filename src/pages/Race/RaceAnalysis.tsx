@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button, Card, Table } from 'antd';
+import { useTranslation } from '@/i18n';
+import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
 import { LIGHT_TAG_COLORS, DEFAULT_TAG_COLOR } from '@/pages/Race/shared/constants';
@@ -21,6 +21,9 @@ import { RaceTelemetryPanel } from '@/pages/Race/shared/components/RaceTelemetry
 import { RacePaceStrategyPanels } from '@/pages/Race/shared/components/RacePaceStrategyPanels';
 import { RaceDriverDuelPanel } from '@/pages/Race/shared/components/RaceDriverDuelPanel';
 import { RaceWeatherPanel } from '@/pages/Race/shared/components/RaceWeatherPanel';
+import { AnalysisModuleState } from '@/pages/Race/shared/components/AnalysisModuleState';
+import { OfficialClassificationTable } from '@/pages/Race/shared/components/OfficialClassificationTable';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import {
   buildFastF1Summary,
   getDriverLegendItems,
@@ -68,6 +71,7 @@ const RaceAnalysis = () => {
     fastF1AnalyticsLoading,
     fastF1AnalyticsError,
     retryFastF1Analytics,
+    raceResults,
     fastF1QualifyingAnalytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
@@ -342,6 +346,15 @@ const RaceAnalysis = () => {
 
   // ---- Data existence checks ----
 
+  const officialRaceClassification = (
+    <OfficialClassificationTable
+      ariaLabel="Official race classification"
+      title="官方正赛成绩"
+      variant="race"
+      results={raceResults}
+    />
+  );
+
   // ---- Early return when no FastF1 data ----
 
   if (fastF1AnalyticsLoading) {
@@ -349,13 +362,18 @@ const RaceAnalysis = () => {
       <div className="fastf1-analytics-section">
         <RacePageIntro
           index="03"
-          eyebrow="RACE DEBRIEF / 比赛解读"
-          title="正在建立比赛证据链"
-          description="正在读取比赛节奏、轮胎策略、天气和遥测摘要。"
+          eyebrow="RACE DEBRIEF / DATA INTEGRATION"
+          title="Building the race debrief"
+          description="Synchronising timing, strategy, conditions and car-data channels. Each module becomes available independently."
         />
-        <Card className="race-empty-command-card" loading>
-          <p>{t('loading')}</p>
-        </Card>
+        {officialRaceClassification}
+        <div className="analysis-module-state-stack" aria-label="Race analysis loading">
+          <AnalysisModuleState index="01" label="RACE PACE" title={t('lapPace')} description="Loading lap-by-lap pace traces." state="loading" />
+          <AnalysisModuleState index="02" label="STINT MODEL" title={t('tyreStrategy')} description="Loading tyre and pit-window data." state="loading" />
+          <AnalysisModuleState index="03" label="HEAD-TO-HEAD" title={t('driverDuel')} description="Preparing driver comparison data." state="loading" />
+          <AnalysisModuleState index="04" label="TRACK CONDITIONS" title={t('weatherTrend')} description="Loading circuit condition samples." state="loading" />
+          <AnalysisModuleState index="05" label="CAR DATA" title={t('telemetryComparison')} description="Telemetry loads when this module enters view." state="loading" />
+        </div>
       </div>
     );
   }
@@ -365,14 +383,20 @@ const RaceAnalysis = () => {
       <div className="fastf1-analytics-section">
         <RacePageIntro
           index="03"
-          eyebrow="RACE DEBRIEF / 比赛解读"
-          title="比赛证据链仍在生成"
-          description="正赛数据可用后，这里会把比赛节奏、轮胎策略、车手攻防、天气和遥测串成完整的比赛故事。"
+          eyebrow="RACE DEBRIEF / DATA STATUS"
+          title="Race analysis is not available yet"
+          description="The classification can still be viewed. FastF1 modules will unlock when a complete timing snapshot is published."
         />
-        <Card className="race-empty-command-card">
-          <p>{fastF1AnalyticsError?.message || t('noFastF1Analysis')}</p>
-          {fastF1AnalyticsError ? <Button onClick={retryFastF1Analytics}>重试分析数据</Button> : null}
-        </Card>
+        {officialRaceClassification}
+        <AnalysisModuleState
+          index="DATA"
+          label="FASTF1 SOURCE"
+          title="Timing snapshot unavailable"
+          description={fastF1AnalyticsError?.message || t('noFastF1Analysis')}
+          state={fastF1AnalyticsError ? 'error' : 'empty'}
+          actionLabel="Retry analysis data"
+          onAction={retryFastF1Analytics}
+        />
       </div>
     );
   }
@@ -386,9 +410,8 @@ const RaceAnalysis = () => {
     <div className="fastf1-analytics-section">
       <RacePageIntro
         index="03"
-        eyebrow="RACE DEBRIEF / 比赛解读"
-        title="从结果倒推，找到胜负真正发生的地方"
-        description="沿着比赛节奏、轮胎、对决、天气与遥测逐层深入；每个模块都是同一场比赛的不同证据，而不是彼此孤立的图表。"
+        eyebrow="RACE DEBRIEF / ENGINEERING VIEW"
+        title="Race analysis"
         aside={fastF1Summary ? (
           <div className="fastf1-summary-strip" aria-label={t('raceAnalysisGroup')}>
             <span>
@@ -434,38 +457,40 @@ const RaceAnalysis = () => {
         ) : null}
       />
 
-      <section className="race-analysis-brief" aria-label="比赛关键结论">
+      {officialRaceClassification}
+
+      <section className="race-analysis-brief" aria-label="Race analysis key findings">
         <article>
-          <span>PACE SIGNAL / 速度基准</span>
+          <span>PACE SIGNAL</span>
           <strong>{fastF1Analytics.fastestLap?.driver || '—'}</strong>
           <p>
             {fastF1Analytics.fastestLap
               ? `L${fastF1Analytics.fastestLap.lapNumber} · ${formatSeconds(fastF1Analytics.fastestLap.lapTimeSeconds)}`
-              : '最快圈数据暂未生成'}
+              : 'Fastest-lap reference pending'}
           </p>
         </article>
         <article>
-          <span>STRATEGY SWING / 策略收益</span>
+          <span>STRATEGY SWING</span>
           <strong>{biggestStrategyGain?.driver || strategySummary?.pitStopCount || '—'}</strong>
           <p>
             {biggestStrategyGain
-              ? `L${biggestStrategyGain.pitLap} 进站窗口 · +${biggestStrategyGain.value} 位置`
-              : `${strategySummary?.pitStopCount || 0} 次进站记录`}
+              ? `Pit window L${biggestStrategyGain.pitLap} · +${biggestStrategyGain.value} positions`
+              : `${strategySummary?.pitStopCount || 0} recorded pit stops`}
           </p>
         </article>
         <article>
-          <span>RACE CONTROL / 比赛控制</span>
+          <span>RACE CONTROL</span>
           <strong>{fastF1Analytics.trackStatusPeriods?.length || 0}</strong>
-          <p>{fastF1Analytics.trackStatusPeriods?.length ? '段中断或管制阶段改变比赛节奏' : '未记录显著中断阶段'}</p>
+          <p>{fastF1Analytics.trackStatusPeriods?.length ? 'Control periods affected the race rhythm' : 'No significant control periods recorded'}</p>
         </article>
       </section>
 
       <nav className="analysis-section-nav" aria-label={t('raceAnalysisGroup')}>
         <span className="analysis-section-nav-label">ANALYSIS INDEX</span>
-        {lapPaceOption ? <a href="#analysis-lap-pace"><b>01</b>{t('lapPace')}</a> : null}
-        {fastF1Analytics.tyreStrategies.length ? <a href="#analysis-tyre"><b>02</b>{t('tyreStrategy')}</a> : null}
+        <a href="#analysis-lap-pace"><b>01</b>{t('lapPace')}</a>
+        <a href="#analysis-tyre"><b>02</b>{t('tyreStrategy')}</a>
         {duelEnabled ? <a href="#analysis-duel"><b>03</b>{t('driverDuel')}</a> : null}
-        {weatherEnabled && weatherOption ? <a href="#analysis-weather"><b>04</b>{t('weatherTrend')}</a> : null}
+        {weatherEnabled ? <a href="#analysis-weather"><b>04</b>{t('weatherTrend')}</a> : null}
         {telemetryEnabled ? <a href="#analysis-telemetry"><b>05</b>{t('telemetryComparison')}</a> : null}
       </nav>
 
@@ -480,7 +505,7 @@ const RaceAnalysis = () => {
           onModeChange={setTelemetrySummaryMode}
           onToggleCollapse={() => toggleSection('telemetrySummary')}
           chart={
-            <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+            <Suspense fallback={<ChartLoadingBeacon label="Rendering race summary" />}>
               <LazyEChartsPanel
                 chartKey={`post-race-telemetry-summary-${season}-${round}`}
                 height={isMobile ? 300 : 420}

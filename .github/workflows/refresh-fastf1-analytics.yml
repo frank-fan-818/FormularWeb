@@ -1,0 +1,185 @@
+name: Refresh post-race FastF1 analytics
+
+on:
+  schedule:
+    - cron: '23 */3 * * *'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: Season to refresh; defaults to the current UTC year
+        required: false
+        type: string
+      round:
+        description: Optional round to repair
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-fastf1-analytics
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '24.13.0'
+  NPM_VERSION: '11.12.0'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  refresh:
+    name: Export, verify, and publish to Supabase
+    runs-on: ubuntu-latest
+    outputs:
+      season: ${{ steps.scope.outputs.season }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          ref: develop
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements-fastf1.txt
+
+      - name: Use pinned npm
+        run: npm install --global npm@$NPM_VERSION
+
+      - name: Install Node.js dependencies
+        run: npm ci --include=dev
+
+      - name: Install pinned FastF1 exporter
+        run: python -m pip install --requirement requirements-fastf1.txt
+
+      - name: Validate publish credentials
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required."
+            exit 1
+          fi
+
+      - name: Resolve refresh scope
+        id: scope
+        shell: bash
+        env:
+          REQUESTED_SEASON: ${{ inputs.season }}
+          REQUESTED_ROUND: ${{ inputs.round }}
+        run: |
+          season="$REQUESTED_SEASON"
+          if [ -z "$season" ]; then season="$(date -u +%Y)"; fi
+          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then
+            echo "::error::Season must be a four-digit year between 1950 and 2100."
+            exit 1
+          fi
+          if [ -n "$REQUESTED_ROUND" ] && { ! [[ "$REQUESTED_ROUND" =~ ^[0-9]+$ ]] || [ "$REQUESTED_ROUND" -lt 1 ]; }; then
+            echo "::error::Round must be a positive integer."
+            exit 1
+          fi
+          echo "season=$season" >> "$GITHUB_OUTPUT"
+          echo "round=$REQUESTED_ROUND" >> "$GITHUB_OUTPUT"
+
+      - name: Test automation policies
+        run: npm run fastf1:automation-test
+
+      - name: Export completed analysis sessions
+        id: export
+        continue-on-error: true
+        shell: bash
+        env:
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON" --analysis-only --completed-only --refresh-incomplete --availability-delay-hours 4)
+          if [ -n "$ROUND" ]; then args+=(--from-round "$ROUND" --to-round "$ROUND"); fi
+          python scripts/export-fastf1-season-data.py "${args[@]}"
+
+      - name: Import every complete snapshot into Supabase
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON" --complete-only --session R --session Q --session S --session SQ --session SS)
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          npm run fastf1:import-sessions -- "${args[@]}"
+
+      - name: Verify all eligible analysis sessions are complete
+        shell: bash
+        env:
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          npm run fastf1:verify-manifest -- "${args[@]}"
+
+      - name: Reject exporter process failures
+        if: steps.export.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::error::FastF1 exporter exited unsuccessfully; refusing to publish stale snapshots."
+          exit 1
+
+      - name: Upload verified snapshots
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: fastf1-analytics-${{ steps.scope.outputs.season }}
+          path: public/fastf1/${{ steps.scope.outputs.season }}/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload failure diagnostics
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: failure()
+        with:
+          name: fastf1-analytics-diagnostics-${{ steps.scope.outputs.season }}
+          path: |
+            public/fastf1/${{ steps.scope.outputs.season }}/manifest.json
+            public/fastf1/${{ steps.scope.outputs.season }}/export-report.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  publish:
+    name: Create or update the static-backup PR
+    needs: refresh
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          ref: develop
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: fastf1-analytics-${{ needs.refresh.outputs.season }}
+          path: public/fastf1/${{ needs.refresh.outputs.season }}/
+
+      - name: Create or update FastF1 snapshot PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: develop
+          branch: automation/fastf1-${{ needs.refresh.outputs.season }}
+          delete-branch: true
+          commit-message: 'chore: refresh post-race FastF1 analytics'
+          title: 'chore: refresh FastF1 analytics (${{ needs.refresh.outputs.season }})'
+          body: |
+            Automated post-session FastF1 snapshots. Complete payloads have already been
+            upserted into Supabase; this PR keeps the static fallback in sync.
+          labels: automated,data

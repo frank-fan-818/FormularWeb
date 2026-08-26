@@ -1,11 +1,13 @@
 import { lazy, Suspense } from 'react';
 import { Button, Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { TEXT } from '@/pages/Race/shared/constants';
 import type { TelemetryMetric } from '@/hooks/race/useRaceAnalysisControls';
 import type { FastF1TelemetryAnalysis, FastF1TelemetryDriver } from '@/types';
 import type { CornerSpeedRow } from '@/utils/race/raceAnalysisViewModel';
+import { AnalysisModuleState } from '@/pages/Race/shared/components/AnalysisModuleState';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -73,18 +75,15 @@ export function RaceTelemetryPanel({
   const driverKey = activeDrivers.map((driver) => driver.driver).join('-');
 
   if (!enabled) return null;
-  if (loading) return <Card className="fastf1-chart-card"><div className="race-weekend-empty">{t('loading')}</div></Card>;
-  if (error) {
-    return (
-      <Card className="fastf1-chart-card">
-        <div className="race-weekend-empty" role="alert">
-          <span>{error.message}</span>
-          <Button onClick={onRetry}>重试遥测数据</Button>
-        </div>
-      </Card>
-    );
+  if (loading) {
+    return <AnalysisModuleState index="05" label="CAR DATA" title={t('telemetryComparison')} description="Loading high-resolution telemetry channels." state="loading" />;
   }
-  if (!telemetry) return <Card className="fastf1-chart-card"><div className="race-weekend-empty">{t('noPreviewData')}</div></Card>;
+  if (error) {
+    return <AnalysisModuleState index="05" label="CAR DATA" title={t('telemetryComparison')} description={error.message} state="error" actionLabel="Retry telemetry" onAction={onRetry} />;
+  }
+  if (!telemetry) {
+    return <AnalysisModuleState index="05" label="CAR DATA" title={t('telemetryComparison')} description="Detailed telemetry is not available for this session." state="empty" actionLabel="Check again" onAction={onRetry} />;
+  }
 
   return (
     <Card
@@ -93,6 +92,7 @@ export function RaceTelemetryPanel({
       title={(
         <div className="fastf1-chart-header">
           <div>
+            <span className="analysis-module-kicker">05 / CAR DATA</span>
             <h3 className="fastf1-chart-title">{t('telemetryComparison')}</h3>
             <p>{t('telemetryDescription')}</p>
           </div>
@@ -126,7 +126,7 @@ export function RaceTelemetryPanel({
           </div>
 
           {speedOption ? (
-            <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+            <Suspense fallback={<ChartLoadingBeacon label="Rendering speed trace" />}>
               <LazyEChartsPanel
                 chartKey={`fastf1-telemetry-speed-${season}-${round}-${driverKey}`}
                 height={isMobile ? 280 : 330}
@@ -139,7 +139,7 @@ export function RaceTelemetryPanel({
           {heatmapOption ? (
             <div className="telemetry-heatmap-panel">
               <div className="telemetry-panel-title">{t('speedHeatmap')}</div>
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering control inputs" />}>
                 <LazyEChartsPanel
                   chartKey={`fastf1-telemetry-heatmap-${season}-${round}-${driverKey}`}
                   height={isMobile ? 300 : 360}
@@ -173,7 +173,7 @@ export function RaceTelemetryPanel({
                   );
                 })}
               </div>
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering corner heatmap" />}>
                 <LazyEChartsPanel
                   chartKey={`fastf1-telemetry-controls-${season}-${round}-${driverKey}-${selectedMetrics.join('-')}`}
                   height={isMobile ? 290 : 340}

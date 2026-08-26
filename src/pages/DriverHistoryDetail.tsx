@@ -8,8 +8,8 @@ import {
   FlagOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
-import dayjs from 'dayjs';
+import DocumentHead from '@/components/DocumentHead';
+import { formatDateOnly } from '@/utils/dateTime';
 import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import type { BestFinishSummary, DriverHistoryProfile } from '@/types';
@@ -92,7 +92,7 @@ const DriverHistoryDetail = () => {
   const accentStyle = { ['--history-accent' as string]: accentColor };
   const subtitleBits = [
     driver?.nationality || '',
-    driver?.dateOfBirth ? dayjs(driver.dateOfBirth).format('YYYY-MM-DD') : '',
+    driver?.dateOfBirth ? formatDateOnly(driver.dateOfBirth) : '',
   ].filter(Boolean);
 
   useEffect(() => {
@@ -126,10 +126,7 @@ const DriverHistoryDetail = () => {
   if (!loading && !driver) {
     return (
       <div className="history-detail-container">
-        <Helmet>
-          <title>&#x8f66;&#x624b;&#x5386;&#x53f2; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8f66;&#x624b;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x751f;&#x6daf;&#x56de;&#x987e;" />
-        </Helmet>
+        <DocumentHead title="车手历史 — F1 Dashboard" description="F1车手历史档案，历年成绩和生涯回顾" />
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
           Back
         </Button>
@@ -142,10 +139,10 @@ const DriverHistoryDetail = () => {
 
   return (
     <div className="history-detail-container" style={accentStyle}>
-      <Helmet>
-        <title>{driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} &#x5386;&#x53f2;&#x6863;&#x6848; &#8212; F1 Dashboard` : '&#x8f66;&#x624b;&#x5386;&#x53f2; &#8212; F1 Dashboard'}</title>
-        <meta name="description" content={`${driver?.givenName || ''} ${driver?.familyName || ''} F1&#x8f66;&#x624b;&#x5386;&#x53f2;&#x6863;&#x6848;, &#x5386;&#x5e74;&#x6210;&#x7ee9;&#x548c;&#x751f;&#x6daf;&#x56de;&#x987e;`} />
-      </Helmet>
+      <DocumentHead
+        title={driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} 历史档案 — F1 Dashboard` : '车手历史 — F1 Dashboard'}
+        description={`${driver?.givenName || ''} ${driver?.familyName || ''} F1车手历史档案，历年成绩和生涯回顾`}
+      />
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="history-back-button">
         Back
       </Button>

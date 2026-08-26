@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { Button, Card, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
@@ -26,6 +26,7 @@ import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
+import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -311,8 +312,7 @@ const RaceSprint = () => {
         <RacePageIntro
           index="04"
           eyebrow="SPRINT WEEKEND / 冲刺周末"
-          title="更短的赛程，更快的决策"
-          description="冲刺周末数据发布后，这里会把冲刺排位与冲刺正赛合并成一条紧凑的速度故事。"
+          title="本场比赛没有冲刺赛"
         />
         <Card className="race-empty-command-card">
           <p>{'\u672C\u573A\u6BD4\u8D5B\u65E0\u51B2\u523A\u8D5B'}</p>
@@ -393,7 +393,7 @@ const RaceSprint = () => {
                 </div>
               }
             >
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint pace" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-qualifying-ranking-${season}-${round}`}
                   height={isMobile ? 340 : 440}
@@ -592,7 +592,7 @@ const RaceSprint = () => {
                   ))}
                 </div>
               ) : null}
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint strategy" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-laps-${season}-${round}`}
                   height={isMobile ? 300 : 430}
@@ -629,7 +629,7 @@ const RaceSprint = () => {
                 </div>
               }
             >
-              <Suspense fallback={<div className="race-weekend-empty">{t('loading')}</div>}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint classification" />}>
                 <LazyEChartsPanel
                   chartKey={`sprint-tyre-strategy-${season}-${round}`}
                   height={isMobile ? 320 : 400}
@@ -649,8 +649,7 @@ const RaceSprint = () => {
       <RacePageIntro
         index="04"
         eyebrow="SPRINT WEEKEND / 冲刺周末"
-        title="短赛程，把每一次失误都放大"
-        description="从冲刺排位到冲刺正赛，连续阅读单圈速度、比赛节奏与有限轮胎选择下的得失。"
+        title="冲刺赛分析"
         aside={fastF1SprintSummary ? (
           <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
             <span>

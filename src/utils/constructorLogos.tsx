@@ -1,19 +1,8 @@
 import { useState } from 'react';
 
+import { getConstructorFallbackLabel, getConstructorMedia } from './f1Media';
+
 const FALLBACK_IDS = new Set<string>();
-
-// Map alternate constructor IDs to the canonical filename ID
-const ALIASES: Record<string, string> = {
-  alphatauri: 'rb',
-  racing_bulls: 'rb',
-  kick_sauber: 'sauber',
-  alfa: 'mercedes', // Alfa Romeo no longer in F1, use generic fallback
-  alfa_romeo: 'mercedes',
-};
-
-function resolveId(constructorId: string): string {
-  return ALIASES[constructorId] || constructorId;
-}
 
 interface ConstructorLogoProps {
   constructorId: string;
@@ -26,8 +15,10 @@ export const ConstructorLogo: React.FC<ConstructorLogoProps> = ({
   size = 32,
   className,
 }) => {
-  const resolvedId = resolveId(constructorId);
-  const [errored, setErrored] = useState(() => FALLBACK_IDS.has(resolvedId));
+  const media = getConstructorMedia(constructorId);
+  const [errored, setErrored] = useState(
+    () => !media.isDeclared || FALLBACK_IDS.has(media.canonicalId),
+  );
 
   if (errored) {
     return (
@@ -41,19 +32,19 @@ export const ConstructorLogo: React.FC<ConstructorLogoProps> = ({
           textTransform: 'uppercase',
         }}
       >
-        {constructorId.charAt(0)}
+        {getConstructorFallbackLabel(constructorId)}
       </span>
     );
   }
 
   return (
     <img
-      src={`/images/constructors/${resolvedId}.png`}
+      src={media.path}
       alt={constructorId}
       className={className}
-      style={{ height: size, width: 'auto', objectFit: 'contain' }}
+      style={{ height: size, width: 'auto', objectFit: 'contain', filter: media.filter }}
       loading="lazy"
-      onError={() => { FALLBACK_IDS.add(resolvedId); setErrored(true); }}
+      onError={() => { FALLBACK_IDS.add(media.canonicalId); setErrored(true); }}
     />
   );
 };

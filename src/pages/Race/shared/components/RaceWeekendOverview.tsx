@@ -1,6 +1,6 @@
 import { Card, Descriptions, Tag } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import type { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import { formatCircuitDirection } from '@/utils/circuitEnhancements';
 import type { getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
@@ -10,12 +10,14 @@ interface RaceWeekendOverviewProps {
   circuitEnhancement: ReturnType<typeof getCircuitEnhancement>;
   scheduleGroups: ReturnType<typeof getRaceWeekendScheduleGroups>;
   isSprintWeekend: boolean;
+  resultSessionKeys: string[];
 }
 
 export function RaceWeekendOverview({
   circuitEnhancement,
   scheduleGroups,
   isSprintWeekend,
+  resultSessionKeys,
 }: RaceWeekendOverviewProps) {
   const { t } = useTranslation();
   return (
@@ -72,11 +74,19 @@ export function RaceWeekendOverview({
                   </div>
                   <div className="weekend-session-list">
                     {group.sessions.map((item) => (
-                      <div key={item.key} className={`weekend-session weekend-session-${item.tone}`}>
+                      <div key={item.key} className={`weekend-session weekend-session-${item.tone} is-${item.state} ${item.isNext ? 'is-next' : ''}`}>
                         <span className="weekend-session-code">{item.code}</span>
                         <span className="weekend-session-main">
                           <strong>{item.label}</strong>
-                          <span>{t('scheduleTimezoneValue')}</span>
+                          <span>
+                            {resultSessionKeys.includes(item.key)
+                              ? '结果已收录'
+                              : item.state === 'live'
+                                ? '进行中'
+                                : item.state === 'completed'
+                                  ? '已结束'
+                                  : item.isNext ? '下一场' : '未开始'}
+                          </span>
                         </span>
                         <time className="weekend-session-time">{item.timeLabel}</time>
                       </div>

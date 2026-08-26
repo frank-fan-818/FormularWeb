@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/i18n';
 import { useRaceData } from './RaceContext';
 import { isFeatureEnabled } from '@/utils/featureFlags';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
-import { getRaceWeekendSchedule, getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
+import { getRaceWeekendScheduleGroups, getRaceWeekendTimeline } from '@/utils/raceSchedule';
 import { TEXT } from '@/pages/Race/shared/constants';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { RaceWeekendOverview } from '@/pages/Race/shared/components/RaceWeekendOverview';
@@ -13,8 +14,11 @@ import { RaceUpgradeSummaryPanel } from '@/pages/Race/shared/components/RaceUpgr
 
 const RaceInfo = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     raceInfo,
+    seasonRaces,
     fastF1Analytics,
     fastF1AnalyticsLoading,
     fastF1AnalyticsError,
@@ -30,21 +34,47 @@ const RaceInfo = () => {
     raceResults,
     qualifyingResults,
     sprintResults,
+    sprintQualifyingResults,
+    fp1Results,
+    fp2Results,
+    fp3Results,
     availableDbSessions,
   } = useRaceData();
-  const weekendSchedule = getRaceWeekendSchedule(raceInfo, TEXT);
+  const weekendSchedule = getRaceWeekendTimeline(raceInfo, TEXT);
   const scheduleGroups = getRaceWeekendScheduleGroups(weekendSchedule);
   const circuitEnhancement = useMemo(
     () => (raceInfo ? getCircuitEnhancement(raceInfo.Circuit.circuitId) : {}),
     [raceInfo],
   );
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || Boolean(raceInfo?.isSprintWeekend)
     || availableDbSessions.includes('SQ')
     || availableDbSessions.includes('SS');
   const hasSprint = sprintResults.length > 0
     || Boolean(raceInfo?.Sprint)
+    || Boolean(raceInfo?.isSprintWeekend)
     || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
+  const orderedRaces = useMemo(
+    () => [...seasonRaces].sort((a, b) => Number(a.round) - Number(b.round)),
+    [seasonRaces],
+  );
+  const currentRaceIndex = orderedRaces.findIndex((race) => race.round === raceInfo?.round);
+  const previousRace = currentRaceIndex > 0 ? orderedRaces[currentRaceIndex - 1] : null;
+  const nextRace = currentRaceIndex >= 0 ? orderedRaces[currentRaceIndex + 1] ?? null : null;
+  const resultSessionKeys = [
+    raceResults.length ? 'race' : null,
+    qualifyingResults.length ? 'qualifying' : null,
+    sprintResults.length ? 'sprint' : null,
+    sprintQualifyingResults.length ? 'sprintQualifying' : null,
+    fp1Results.length ? 'fp1' : null,
+    fp2Results.length ? 'fp2' : null,
+    fp3Results.length ? 'fp3' : null,
+  ].filter((value): value is string => Boolean(value));
+
+  const openRace = (round: string) => {
+    navigate(`/races/${round}/info${location.search}`);
+  };
 
   if (!raceInfo) {
     return <div className="race-weekend-empty">{t('notFound')}</div>;
@@ -52,11 +82,24 @@ const RaceInfo = () => {
 
   return (
     <div className="race-info-page">
+      <nav className="race-info-neighbor-nav" aria-label="分站导航">
+        <button type="button" disabled={!previousRace} onClick={() => previousRace && openRace(previousRace.round)}>
+          <span>← 上一站</span>
+          <strong>{previousRace?.raceName || '--'}</strong>
+        </button>
+        <button type="button" className="is-calendar" onClick={() => navigate('/races')}>
+          <span>{raceInfo.season}</span>
+          <strong>完整赛历</strong>
+        </button>
+        <button type="button" disabled={!nextRace} onClick={() => nextRace && openRace(nextRace.round)}>
+          <span>下一站 →</span>
+          <strong>{nextRace?.raceName || '--'}</strong>
+        </button>
+      </nav>
       <RacePageIntro
         index="05"
-        eyebrow="WEEKEND INTELLIGENCE / 周末情报"
-        title="在赛车驶上赛道之前，先读懂这条赛道"
-        description="把赛程、赛道画像、实际天气、历史中断风险与车队升级放在同一份周末情报中，建立理解比赛所需的上下文。"
+        eyebrow="WEEKEND INFO"
+        title="赛周日程与赛道信息"
         aside={(
           <div className="race-page-pulse">
             <span><strong>{weekendSchedule.length}</strong> 场次</span>
@@ -70,6 +113,7 @@ const RaceInfo = () => {
         circuitEnhancement={circuitEnhancement}
         scheduleGroups={scheduleGroups}
         isSprintWeekend={isSprintWeekend}
+        resultSessionKeys={resultSessionKeys}
       />
       <RaceWeatherOverview
         summary={fastF1Analytics?.weather?.summary || null}

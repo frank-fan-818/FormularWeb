@@ -1,15 +1,17 @@
 import { type ReactNode, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin } from 'antd';
+import { Card } from 'antd';
 import { FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useConstructorStandingsCached, useSupabaseMetadata } from '@/hooks';
 import { useAppStore } from '@/store';
 import { supabaseApi } from '@/api/supabase';
+import { preloadConstructorDetailRoute } from '@/utils/routePreload';
 import { getTeamColor } from '@/utils/teamColors';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Constructors.css';
 
 const TEXT = {
@@ -74,15 +76,11 @@ const Constructors = () => {
 
   return (
     <div className="list-page-container constructors-page">
-      <Helmet>
-        <title>&#x8f66;&#x961f;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x8f66;&#x961f;&#x5217;&#x8868;&#xff0c;&#x67e5;&#x770b;&#x672c;&#x8d5b;&#x5b63;&#x8f66;&#x961f;&#x9635;&#x5bb9;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
-      </Helmet>
+      <DocumentHead title="车队列表 — F1 Dashboard" description="F1车队列表，查看本赛季车队阵容和数据统计" />
       <ProductMasthead
         index="04"
         eyebrow={`${currentSeason} / TEAM LIBRARY`}
         title={<>THE<br />CONSTRUCTORS</>}
-        description="车队颜色代表身份，积分与胜场代表当前竞争力。先理解本赛季格局，再进入每支车队的作战档案。"
         metrics={[
           { label: '\u53c2\u8d5b\u8f66\u961f', value: constructors.length || '--', detail: `${currentSeason} GRID` },
           { label: '\u79ef\u5206\u9886\u8dd1', value: constructors[0]?.name || '--', detail: constructors[0] ? `${constructors[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: constructors[0] ? getTeamColor(constructors[0].constructorId) : undefined },
@@ -91,13 +89,13 @@ const Constructors = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Loading constructor standings" detail={`${currentSeason} teams · points · performance`} />
         </div>
       ) : constructors.length === 0 ? (
         <div className="constructor-library-empty">当前赛季暂无车队数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队作战库" description="稳定的车队色、当前排名和历史数据共同构成每支车队的识别系统。" />
+        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队列表" />
         <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);
@@ -145,6 +143,9 @@ const Constructors = () => {
                 className="constructor-profile-card"
                 hoverable
                 style={{ animationDelay: `${constructor.index * 0.045}s`, borderTopColor: teamColor }}
+                onPointerEnter={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
+                onPointerDown={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
+                onFocus={() => preloadConstructorDetailRoute(constructor.constructorId, currentSeason)}
                 onClick={() => navigate(`/constructors/${constructor.constructorId}`)}
               >
                 <div className="constructor-card-topline">

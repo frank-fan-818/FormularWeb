@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useRacesByStatus, useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Race } from '@/types';
+import { preloadRoute } from '@/utils/routePreload';
 import { formatRaceDateTime } from '@/utils/raceSchedule';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Races.css';
 
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
@@ -28,6 +29,8 @@ const RaceCard = ({ race, index }: { race: Race; index: number }) => {
       onClick={() => navigate(
         `/races/${race.round}/results?season=${encodeURIComponent(race.season)}`,
       )}
+      onPointerEnter={() => preloadRoute(`/races/${race.round}/results`)}
+      onFocus={() => preloadRoute(`/races/${race.round}/results`)}
     >
       <span className="race-calendar-round">R{String(race.round).padStart(2, '0')}</span>
       <div className="race-calendar-copy">
@@ -55,15 +58,11 @@ const Races = () => {
 
   return (
     <div className="list-page-container races-calendar-page">
-      <Helmet>
-        <title>&#x6bd4;&#x8d5b;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x6bd4;&#x8d5b;&#x65e5;&#x7a0b;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x7ad9;&#x6bd4;&#x8d5b;&#x4fe1;&#x606f;" />
-      </Helmet>
+      <DocumentHead title="比赛列表 — F1 Dashboard" description="F1比赛日程列表，查看各站比赛信息" />
       <ProductMasthead
         index="02"
         eyebrow={`${currentSeason} / WORLD CHAMPIONSHIP`}
         title={<>{currentSeason}<br />RACE CALENDAR</>}
-        description="按比赛状态阅读整个赛季：正在发生什么、下一站去哪里，以及每一个已经写入历史的比赛周末。"
         metrics={[
           { label: '\u8d5b\u5386', value: races.length || '--', detail: '\u5168\u5b63\u5206\u7ad9' },
           { label: '\u5df2\u5b8c\u6210', value: `${completedRaces.length}`, detail: `${progress}% \u8d5b\u5b63\u8fdb\u5ea6` },
@@ -73,7 +72,7 @@ const Races = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Synchronising race calendar" detail={`${currentSeason} season · rounds · start times`} />
         </div>
       ) : races.length === 0 ? (
         <div className="race-calendar-empty">当前赛季暂无赛历数据。</div>
@@ -81,7 +80,7 @@ const Races = () => {
         <>
           {(ongoingRace || nextRace) ? (
             <section>
-              <ProductSectionHeader index="01" eyebrow="NOW / NEXT" title="下一信号" description="优先呈现正在进行和即将到来的比赛周末。" />
+              <ProductSectionHeader index="01" eyebrow="NOW / NEXT" title="当前与下一站" />
               <div className="race-calendar-list race-calendar-list--featured">
                 {ongoingRace ? <RaceCard race={ongoingRace} index={0} /> : null}
                 {nextRace ? <RaceCard race={nextRace} index={1} /> : null}
@@ -90,7 +89,7 @@ const Races = () => {
           ) : null}
           {upcomingRaces.length > 0 ? (
             <section>
-              <ProductSectionHeader index="02" eyebrow="UPCOMING" title="前方赛程" description="从下一站开始，沿赛历继续浏览本赛季余下比赛。" />
+              <ProductSectionHeader index="02" eyebrow="UPCOMING" title="未开始比赛" />
               <div className="race-calendar-list">
                 {upcomingRaces.map((race, index) => <RaceCard key={race.round} race={race} index={index} />)}
               </div>
@@ -98,7 +97,7 @@ const Races = () => {
           ) : null}
           {completedRaces.length > 0 ? (
             <section>
-              <ProductSectionHeader index="03" eyebrow="ARCHIVE" title="已完成比赛" description="进入任意分站查看比赛结果、排位赛与完整分析。" />
+              <ProductSectionHeader index="03" eyebrow="ARCHIVE" title="已完成比赛" />
               <div className="race-calendar-list">
                 {[...completedRaces].reverse().map((race, index) => <RaceCard key={race.round} race={race} index={index} />)}
               </div>

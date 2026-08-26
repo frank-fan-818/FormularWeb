@@ -12,7 +12,7 @@ export default defineConfig({
     ? [['line'], ['html', { outputFolder: './artifacts/browser-qa/report', open: 'never' }]]
     : 'line',
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -22,6 +22,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
+        serviceWorkers: 'block',
       },
     },
     {
@@ -30,6 +31,7 @@ export default defineConfig({
         ...devices['iPhone 13'],
         browserName: 'chromium',
         viewport: { width: 375, height: 812 },
+        serviceWorkers: 'block',
       },
     },
     {
@@ -37,6 +39,16 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 768, height: 1024 },
+        serviceWorkers: 'block',
+      },
+    },
+    {
+      name: 'service-worker-chromium',
+      grep: /service worker upgrades every long-lived tab/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        serviceWorkers: 'allow',
       },
     },
   ],

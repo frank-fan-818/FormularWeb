@@ -1,12 +1,19 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useSeasonsCached } from '@/hooks/useSeasonDataCached';
+import { useTranslation } from '@/i18n';
+import { useSeasonRacesCached, useSeasonsCached } from '@/hooks/useSeasonDataCached';
+import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
 import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
 import './Layout.css';
 
+const preloadRoute = (pathname: string) => {
+  void import('@/utils/routePreload').then((module) => module.preloadRoute(pathname));
+};
+
 const GlobalSearchBox = lazy(() => import('@/components/GlobalSearchBox'));
+const RaceWeekendSignal = lazy(() => import('@/components/RaceWeekendSignal')
+  .then((module) => ({ default: module.RaceWeekendSignal })));
 
 interface IconProps {
   className?: string;
@@ -192,7 +199,7 @@ const LayoutComponent = () => {
     searchPlaceholder: t('searchPlaceholder'),
     appName: t('appName'),
     currentSeason: t('currentSeason'),
-    account: t('account'),
+    account: t('loginTitle'),
   };
   const navItems = [
     { key: '/', icon: HomeIcon, label: t('home') },
@@ -209,6 +216,9 @@ const LayoutComponent = () => {
   const displayedSeason = location.pathname.startsWith('/races/')
     ? getRaceSeasonFromSearch(location.search, currentSeason)
     : currentSeason;
+  const { races: shellRaces } = useSeasonRacesCached(displayedSeason);
+  const { ongoingRace: shellOngoingRace, nextRace: shellNextRace } = useRacesByStatus(shellRaces);
+  const shellFocusRace = shellOngoingRace ?? shellNextRace;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -297,7 +307,6 @@ const LayoutComponent = () => {
         value={language}
         onChange={(event) => {
           const nextLanguage = event.target.value === 'en' ? 'en' : 'zh-CN';
-          localStorage.setItem('i18nextLng', nextLanguage);
           void i18n.changeLanguage(nextLanguage);
         }}
         className="season-select-native"
@@ -332,7 +341,9 @@ const LayoutComponent = () => {
   );
 
   const handleAuthAction = () => {
-    navigate('/login');
+    navigate('/login', {
+      state: { from: `${location.pathname}${location.search}` },
+    });
   };
 
   const authButton = (
@@ -393,6 +404,9 @@ const LayoutComponent = () => {
                   type="button"
                   className={`sidebar-nav-button ${isActive ? 'is-active' : ''}`}
                   onClick={() => handleMenuClick(item.key)}
+                  onPointerEnter={() => preloadRoute(item.key)}
+                  onPointerDown={() => preloadRoute(item.key)}
+                  onFocus={() => preloadRoute(item.key)}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="sidebar-nav-icon" />
@@ -446,9 +460,17 @@ const LayoutComponent = () => {
           ) : null}
         </header>
 
+        {location.pathname !== '/' && shellFocusRace ? (
+          <Suspense fallback={null}>
+            <RaceWeekendSignal race={shellFocusRace} ongoing={Boolean(shellOngoingRace)} />
+          </Suspense>
+        ) : null}
+
         <main className="content">
           <div className="content-inner">
-            <Outlet />
+            <div className="motion-route-shell" key={location.pathname}>
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>

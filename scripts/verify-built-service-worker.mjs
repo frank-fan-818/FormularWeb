@@ -47,6 +47,18 @@ requirePattern(
   /caches\.open\(SHELL_CACHE\)\.then\(\(cache\) => cache\.match\(request\)/,
   'shell assets must only read the current shell cache',
 );
+requirePattern(
+  /url\.pathname\.startsWith\('\/f1-api\/'\)[\s\S]*?cache\.match\(request\)[\s\S]*?fetch\(request\)/,
+  'public F1 API requests must use stale-while-revalidate caching',
+);
+requirePattern(
+  /response\.ok[\s\S]*?content-type[\s\S]*?includes\('json'\)[\s\S]*?cache\.put\(request, response\.clone\(\)\)/,
+  'only successful JSON API responses may enter the data cache',
+);
+requirePattern(
+  /trimCache\(cache, 120\)/,
+  'the public API data cache must remain bounded',
+);
 
 forbidPattern(
   /\bcaches\.match\(/,

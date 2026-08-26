@@ -1,16 +1,20 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Spin } from 'antd';
+import { Card } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import { useSeasonRacesCached, useSupabaseMetadata } from '@/hooks';
 import { supabaseApi } from '@/api/supabase';
+import { preloadRoute } from '@/utils/routePreload';
 import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
+import { getCircuitDetailsSync } from '@/utils/circuitData';
+import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import type { Circuit, Race } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './Circuits.css';
 
 interface CircuitAtlasItem extends Circuit {
@@ -42,9 +46,9 @@ const Circuits = () => {
     [],
   );
   const { data: circuitMetadata } = useSupabaseMetadata(
-    'supabase-circuit-list-metadata',
+    'supabase-circuit-list-metadata-v2',
     fetchCircuitMetadata,
-    races.length > 0,
+    true,
   );
 
   const circuits = useMemo<CircuitAtlasItem[]>(() => {
@@ -56,18 +60,23 @@ const Circuits = () => {
       const ergastId = race.Circuit.circuitId;
       const supabaseId = getSupabaseCircuitId(ergastId);
       const dbCircuit = circuitMap.get(supabaseId);
+      const localCircuit = getCircuitDetailsSync(supabaseId) || getCircuitDetailsSync(ergastId);
+      const enhancement = getCircuitEnhancement(ergastId);
+      const localTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
+        ? enhancement.leftTurns + enhancement.rightTurns
+        : null;
 
       return {
         ...race.Circuit,
-        length: dbCircuit?.length || null,
-        turns: dbCircuit?.turns || null,
-        first_race: dbCircuit?.first_race || null,
-        total_races: dbCircuit?.total_races || null,
-        race_laps: dbCircuit?.race_laps || null,
-        total_distance: dbCircuit?.total_distance || null,
-        lap_record: dbCircuit?.lap_record || null,
-        lap_record_driver: dbCircuit?.lap_record_driver || null,
-        lap_record_year: dbCircuit?.lap_record_year || null,
+        length: dbCircuit?.length || localCircuit?.length || null,
+        turns: dbCircuit?.turns || localTurns,
+        first_race: dbCircuit?.first_race || localCircuit?.firstRace || null,
+        total_races: dbCircuit?.total_races || localCircuit?.totalRaces || null,
+        race_laps: dbCircuit?.race_laps || localCircuit?.raceLaps || null,
+        total_distance: dbCircuit?.total_distance || localCircuit?.totalDistance || null,
+        lap_record: dbCircuit?.lap_record || localCircuit?.lapRecord || null,
+        lap_record_driver: dbCircuit?.lap_record_driver || localCircuit?.lapRecordDriver || null,
+        lap_record_year: dbCircuit?.lap_record_year || localCircuit?.lapRecordYear || null,
         _supabaseId: supabaseId,
         index,
       };
@@ -78,15 +87,11 @@ const Circuits = () => {
 
   return (
     <div className="list-page-container circuit-atlas-page">
-      <Helmet>
-        <title>&#x8d5b;&#x9053;&#x5217;&#x8868; &#8212; F1 Dashboard</title>
-        <meta name="description" content="F1&#x8d5b;&#x9053;&#x5217;&#x8868;, &#x67e5;&#x770b;&#x5404;&#x8d5b;&#x9053;&#x4fe1;&#x606f;&#x548c;&#x6570;&#x636e;&#x7edf;&#x8ba1;" />
-      </Helmet>
+      <DocumentHead title="赛道列表 — F1 Dashboard" description="F1赛道列表，查看各赛道信息和数据统计" />
       <ProductMasthead
         index="05"
         eyebrow={`${currentSeason} / CIRCUIT ATLAS`}
         title={<>TRACK<br />ENGINEERING</>}
-        description="从赛道轮廓开始认识每一站：地点、长度、弯道构成和历史纪录共同决定比赛会如何展开。"
         metrics={[
           { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--', detail: `${currentSeason} CALENDAR` },
           { label: '\u5df2\u8865\u5145\u5de5\u7a0b\u6570\u636e', value: circuits.filter((circuit) => circuit.length).length || '--', detail: '\u957f\u5ea6 / \u5f2f\u9053 / \u7eaa\u5f55' },
@@ -95,13 +100,13 @@ const Circuits = () => {
       />
       {loading ? (
         <div className="loading-container">
-          <Spin size="large" />
+          <TimingBeacon label="Mapping championship circuits" detail={`${currentSeason} calendar · layouts · records`} />
         </div>
       ) : circuits.length === 0 ? (
         <div className="circuit-atlas-empty">当前赛季暂无赛道数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道图鉴" description="选择一条赛道进入工程档案，查看完整轮廓、技术参数与本赛季比赛信息。" />
+        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道列表" />
         <div className="circuit-atlas-grid">
           {circuits.map((circuit) => (
             <Card
@@ -109,6 +114,7 @@ const Circuits = () => {
               className="circuit-atlas-card"
               hoverable
               style={{ animationDelay: `${circuit.index * 0.06}s` }}
+              onPointerEnter={() => preloadRoute(`/circuits/${circuit.circuitId}`)}
               onClick={() => navigate(`/circuits/${circuit.circuitId}`, { state: { circuit } })}
             >
               <div className="circuit-atlas-map" aria-hidden="true">

@@ -6,7 +6,6 @@
 
 .back-button {
   margin-bottom: var(--space-5);
-  animation: slideUp 0.4s ease-out;
 }
 
 .page-title {
@@ -14,7 +13,6 @@
   font-weight: var(--font-bold);
   margin-bottom: var(--space-2);
   letter-spacing: 0;
-  animation: slideUp 0.4s ease-out 0.05s backwards;
   font-family: var(--font-family);
 }
 
@@ -26,7 +24,6 @@
   color: var(--text-secondary);
   font-size: var(--text-lg);
   margin-bottom: var(--space-6);
-  animation: slideUp 0.4s ease-out 0.1s backwards;
 }
 
 .loading-container {
@@ -37,7 +34,6 @@
 }
 
 .constructor-info-card {
-  animation: slideUp 0.6s ease-out 0.15s backwards;
   border-radius: var(--radius-panel);
   overflow: hidden;
   border: 1px solid var(--border-secondary);
@@ -192,7 +188,11 @@
   overflow: hidden;
   border: 1px solid var(--border-secondary);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
+  transition:
+    transform var(--motion-duration-standard) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-standard) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .stat-card:hover {

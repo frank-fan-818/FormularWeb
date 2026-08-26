@@ -99,6 +99,8 @@ jobs:
         run: npm install --global npm@$NPM_VERSION
       - run: npm ci --include=dev
       - run: npm run toolchain:verify
+      - name: Verify local F1 driver and constructor media
+        run: npm run media:check
       - run: npm run test:coverage
       - name: Upload coverage report
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

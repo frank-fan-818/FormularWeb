@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import ReactEChartsCore from 'echarts-for-react/esm/core';
 import { BarChart, LineChart, LinesChart, ScatterChart } from 'echarts/charts';
 import {
   GridComponent,
-  AriaComponent,
   LegendComponent,
   MarkAreaComponent,
   MarkLineComponent,
@@ -13,7 +11,8 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import * as echarts from 'echarts/core';
-import type { EChartsCoreOption } from 'echarts/core';
+import type { EChartsCoreOption, EChartsType } from 'echarts/core';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 echarts.use([
   BarChart,
@@ -27,7 +26,6 @@ echarts.use([
   MarkLineComponent,
   MarkPointComponent,
   GridComponent,
-  AriaComponent,
   CanvasRenderer,
 ]);
 
@@ -40,20 +38,12 @@ interface EChartsPanelProps {
 
 const EChartsPanel = ({ chartKey, height, option, ariaLabel }: EChartsPanelProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartElementRef = useRef<HTMLDivElement | null>(null);
+  const chartInstanceRef = useRef<EChartsType | null>(null);
   const [visible, setVisible] = useState(false);
-  const accessibleOption = typeof option === 'object' && option !== null
-    ? {
-        ...option,
-        aria: {
-          enabled: true,
-          decal: { show: true },
-          label: {
-            enabled: true,
-            description: ariaLabel || '赛事数据可视化图表。图表主题与关键结论位于当前模块标题和摘要中。',
-          },
-        },
-      }
-    : option;
+  const reducedMotion = useReducedMotion();
+  const accessibleLabel = ariaLabel
+    || '赛事数据可视化图表。图表主题与关键结论位于当前模块标题和摘要中。';
 
   useEffect(() => {
     const element = containerRef.current;
@@ -72,17 +62,49 @@ const EChartsPanel = ({ chartKey, height, option, ariaLabel }: EChartsPanelProps
     return () => observer.disconnect();
   }, [chartKey]);
 
+  useEffect(() => {
+    const chartElement = chartElementRef.current;
+    if (!visible || !chartElement) return undefined;
+
+    const chart = echarts.init(chartElement);
+    chartInstanceRef.current = chart;
+    const resize = () => chart.resize();
+    const resizeObserver = typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(resize);
+    resizeObserver?.observe(chartElement);
+    if (!resizeObserver) window.addEventListener('resize', resize);
+
+    return () => {
+      resizeObserver?.disconnect();
+      if (!resizeObserver) window.removeEventListener('resize', resize);
+      chart.dispose();
+      chartInstanceRef.current = null;
+    };
+  }, [chartKey, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const motionOption = typeof option === 'object' && option !== null
+      ? {
+          ...option,
+          animation: !reducedMotion,
+          animationDuration: reducedMotion ? 0 : 420,
+          animationDurationUpdate: reducedMotion ? 0 : 240,
+          animationEasing: 'cubicOut',
+          animationEasingUpdate: 'cubicOut',
+        }
+      : option;
+    chartInstanceRef.current?.setOption(motionOption as EChartsCoreOption, {
+      notMerge: true,
+      lazyUpdate: true,
+    });
+  }, [option, reducedMotion, visible]);
+
   return (
-    <div ref={containerRef} style={{ minHeight: height }}>
+    <div ref={containerRef} style={{ minHeight: height }} role="img" aria-label={accessibleLabel}>
       {visible ? (
-        <ReactEChartsCore
-          echarts={echarts}
-          key={chartKey}
-          option={accessibleOption as EChartsCoreOption}
-          style={{ height }}
-          notMerge
-          lazyUpdate
-        />
+        <div ref={chartElementRef} key={chartKey} style={{ height }} aria-hidden="true" />
       ) : (
         <div className="chart-viewport-placeholder" style={{ height }} aria-hidden="true" />
       )}

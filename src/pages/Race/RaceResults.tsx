@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 import { Button, Empty, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { QualifyingResult, RaceClassificationSessionKey, Result } from '@/types';
@@ -287,10 +287,10 @@ const RaceResults = () => {
       <RacePageIntro
         index="01"
         eyebrow="WEEKEND OVERVIEW / 赛事概览"
-        title={raceResults.length ? '看懂方格旗之后的全部故事' : '从周末第一圈开始追踪局势'}
+        title="赛事结果"
         description={raceResults.length
-          ? '先读懂领奖台、位置变化与关键异常，再进入每一个场次的完整分类。'
-          : '已发布的练习、排位与冲刺成绩会在这里持续汇总，正赛结束后自动生成赛后速览。'}
+          ? undefined
+          : '已发布的练习、排位与冲刺成绩会在这里汇总。'}
         aside={(
           <div className="race-page-pulse">
             <span><strong>{tabItems.length}</strong> 场次</span>
@@ -308,7 +308,6 @@ const RaceResults = () => {
             <span>OFFICIAL CLASSIFICATION</span>
             <h2 id="race-classification-title">完整场次成绩</h2>
           </div>
-          <p>切换场次查看官方分类；车手代码可直接进入车手档案。</p>
         </div>
         <Tabs
           className="race-session-tabs"

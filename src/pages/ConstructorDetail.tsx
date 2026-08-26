@@ -2,12 +2,12 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { constructorApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
-import { useSeasonData } from '@/hooks';
+import { useConstructorStandingsCached } from '@/hooks';
 import { useAppStore } from '@/store';
 import type {
   HistoryCareerSummary,
@@ -60,7 +60,9 @@ const TEXT = {
   chartLoading: '\u6b63\u5728\u52a0\u8f7d\u56fe\u8868...',
 };
 
-const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
+const loadEChartsPanel = () => import('@/components/charts/EChartsPanel');
+const LazyEChartsPanel = lazy(loadEChartsPanel);
+void loadEChartsPanel().catch(() => undefined);
 const EMPTY_CAREER_STATS: HistoryCareerSummary = {
   raceCount: 0,
   poleCount: 0,
@@ -89,7 +91,7 @@ const ConstructorDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentSeason } = useAppStore();
-  const { constructorStandings, loading: seasonLoading } = useSeasonData(currentSeason);
+  const { constructorStandings, loading: seasonLoading } = useConstructorStandingsCached(currentSeason);
   const showHistoryOverview = location.pathname.startsWith('/history/constructors/');
 
   const [constructor, setConstructor] = useState<ConstructorProfile | null>(null);
@@ -186,10 +188,38 @@ const ConstructorDetail = () => {
       setConstructor(null);
     }
 
-    const loadPrimaryData = async () => {
-      const constructorInfo = await Promise.allSettled([
-        supabaseApi.constructors.getById(constructorId),
+    const constructorInfoPromise = supabaseApi.constructors.getById(constructorId);
+    const raceResultsPromise = constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason);
+    const sprintResultsPromise = seasonApi.getSeasonSprintResults(currentSeason);
+    void constructorInfoPromise.catch(() => undefined);
+    void raceResultsPromise.catch(() => undefined);
+    void sprintResultsPromise.catch(() => undefined);
+
+    const loadSeasonResults = async () => {
+      const [raceResults, sprintResults] = await Promise.allSettled([
+        raceResultsPromise,
+        sprintResultsPromise,
       ]);
+
+      if (cancelled) return;
+
+      setSeasonRaceResults(
+        raceResults.status === 'fulfilled'
+          ? [...raceResults.value].sort(
+              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
+            )
+          : [],
+      );
+      setSeasonSprintResults(
+        sprintResults.status === 'fulfilled' ? sprintResults.value : [],
+      );
+      setSeasonResultsLoading(false);
+    };
+
+    void loadSeasonResults();
+
+    const loadPrimaryData = async () => {
+      const constructorInfo = await Promise.allSettled([constructorInfoPromise]);
 
       if (cancelled) {
         return;
@@ -214,34 +244,11 @@ const ConstructorDetail = () => {
 
       setConstructor(baseConstructor);
       setLoading(false);
-
-      const [raceResults, sprintResults] = await Promise.allSettled([
-        constructorApi.getConstructorSeasonRaceResults(constructorId, currentSeason),
-        seasonApi.getSeasonSprintResults(currentSeason),
-      ]);
-
-      if (!cancelled) {
-        if (raceResults.status === 'fulfilled') {
-          setSeasonRaceResults(
-            raceResults.value.sort(
-              (left, right) => parseInt(left.round, 10) - parseInt(right.round, 10),
-            ),
-          );
-        } else {
-          setSeasonRaceResults([]);
-        }
-
-        setSeasonSprintResults(
-          sprintResults.status === 'fulfilled' ? sprintResults.value : [],
-        );
-        setSeasonResultsLoading(false);
-      }
     };
 
     void loadPrimaryData().catch(() => {
       if (!cancelled) {
         setLoading(false);
-        setSeasonResultsLoading(false);
       }
     });
 
@@ -491,10 +498,7 @@ const ConstructorDetail = () => {
   if (!constructor && !loading && !seasonLoading) {
     return (
       <div className="constructor-detail-container">
-        <Helmet>
-          <title>&#x8f66;&#x961f;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8f66;&#x961f;&#x8be6;&#x60c5;, &#x8d5b;&#x5b63;&#x6570;&#x636e;&#x3001;&#x5386;&#x53f2;&#x7edf;&#x8ba1;&#x548c;&#x79ef;&#x5206;&#x8d70;&#x52bf;" />
-        </Helmet>
+        <DocumentHead title="车队详情 — F1 Dashboard" description="F1车队详情，赛季数据、历史统计和积分走势" />
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
           {TEXT.back}
         </Button>
@@ -507,10 +511,10 @@ const ConstructorDetail = () => {
 
   return (
     <div className="constructor-detail-container">
-      <Helmet>
-        <title>{constructor?.name ? `${constructor.name} \u2014 F1 Dashboard` : '\u8f66\u961f\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
-        <meta name="description" content={`${constructor?.name || ''} F1\u8f66\u961f\u8be6\u60c5, \u8d5b\u5b63\u6570\u636e\u3001\u5386\u53f2\u7edf\u8ba1\u548c\u79ef\u5206\u8d70\u52bf`} />
-      </Helmet>
+      <DocumentHead
+        title={constructor?.name ? `${constructor.name} — F1 Dashboard` : '车队详情 — F1 Dashboard'}
+        description={`${constructor?.name || ''} F1车队详情，赛季数据、历史统计和积分走势`}
+      />
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
         {TEXT.back}
       </Button>
@@ -567,7 +571,6 @@ const ConstructorDetail = () => {
           index="01"
           eyebrow={`${currentSeason} / TEAM FORM`}
           title={TEXT.pointsTrend}
-          description="用分站积分轨迹判断车队竞争力是在上升、持平还是回落。"
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}

@@ -9,6 +9,7 @@ const filesystemIndex = routes.findIndex((route) => route.handle === 'filesystem
 const missingAssetIndex = routes.findIndex((route) => route.status === 404 && route.src?.includes('\\.'));
 const spaIndex = routes.findIndex((route) => route.dest === '/index.html');
 const apiProxyIndex = routes.findIndex((route) => route.src === '/f1-api/(.*)');
+const apiProxyRoute = routes[apiProxyIndex];
 const assetCacheRoute = routes.find((route) => route.src === '/assets/(.*)' && route.continue === true);
 const serviceWorkerRoute = routes.find((route) => route.src === '/sw.js' && route.continue === true);
 
@@ -18,6 +19,9 @@ if (!securityRoute?.headers?.['Content-Security-Policy']
 }
 if (apiProxyIndex < 0 || apiProxyIndex > filesystemIndex) {
   failures.push('the same-origin F1 API proxy must run before filesystem/SPA fallback');
+}
+if (apiProxyRoute?.headers?.['Cache-Control'] !== 'public, s-maxage=300, stale-while-revalidate=86400') {
+  failures.push('public F1 API responses must use a bounded shared edge cache');
 }
 if (filesystemIndex < 0
   || missingAssetIndex <= filesystemIndex

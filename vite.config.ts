@@ -14,6 +14,43 @@ const f1ApiProxy = {
   },
 }
 
+function createCriticalCssPlugin() {
+  return {
+    name: 'f1-inline-critical-css',
+    apply: 'build' as const,
+    transformIndexHtml: {
+      order: 'post' as const,
+      handler(html: string, context: { bundle?: OutputBundle }) {
+        const bundle = context.bundle
+        if (!bundle) throw new Error('Cannot inline critical CSS without the production bundle')
+
+        let inlinedStylesheets = 0
+        const transformedHtml = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/gi, (tag) => {
+          const href = tag.match(/href="\/(assets\/[^"?]+\.css)"/i)?.[1]
+          if (!href) return tag
+
+          const cssAsset = bundle[href]
+          if (!cssAsset || cssAsset.type !== 'asset') {
+            throw new Error(`Cannot inline missing critical stylesheet: ${href}`)
+          }
+
+          const css = String(cssAsset.source)
+          if (/<\/style/i.test(css)) {
+            throw new Error(`Critical stylesheet contains an unsafe closing style tag: ${href}`)
+          }
+          inlinedStylesheets += 1
+          return `<style data-critical-css="${path.basename(href)}">${css}</style>`
+        })
+
+        if (inlinedStylesheets === 0) {
+          throw new Error('No entry stylesheets were found to inline as critical CSS')
+        }
+        return transformedHtml
+      },
+    },
+  }
+}
+
 function createServiceWorkerPlugin() {
   return {
     name: 'f1-service-worker',
@@ -144,6 +181,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (url.pathname.startsWith('/f1-api/')) {
+    const cachePromise = caches.open(DATA_CACHE);
+    const network = cachePromise.then(async (cache) => {
+      const response = await fetch(request);
+      if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
+        await cache.put(request, response.clone());
+        await trimCache(cache, 120);
+      }
+      return response;
+    });
+    event.waitUntil(network.then(() => undefined, () => undefined));
+    event.respondWith(
+      cachePromise.then(async (cache) => {
+        const cached = await cache.match(request);
+        return cached || network;
+      }),
+    );
+    return;
+  }
+
   if (/\\/fastf1\\/.*\\.json$/.test(url.pathname)) {
     const cachePromise = caches.open(DATA_CACHE);
     const network = cachePromise.then(async (cache) => {
@@ -186,6 +243,7 @@ self.addEventListener('fetch', (event) => {
 export default defineConfig({
   plugins: [
     react(),
+    createCriticalCssPlugin(),
     createServiceWorkerPlugin(),
   ],
   resolve: {

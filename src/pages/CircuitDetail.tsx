@@ -1,7 +1,7 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Button, Card, Spin, Tag } from 'antd';
+import { Button, Card, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
+import DocumentHead from '@/components/DocumentHead';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
@@ -10,6 +10,7 @@ import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import './CircuitDetail.css';
 
 const TEXT = {
@@ -85,13 +86,9 @@ const CircuitDetail = () => {
   if (loading) {
     return (
       <div className="circuit-detail-container">
-        <Helmet>
-          <title>&#x8d5b;&#x9053;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8d5b;&#x9053;&#x8be6;&#x60c5;, &#x8d5b;&#x9053;&#x957f;&#x5ea6;&#x3001;&#x5f2f;&#x9053;&#x6570;&#x91cf;&#x3001;&#x5386;&#x53f2;&#x6570;&#x636e;&#x7b49;" />
-        </Helmet>
+        <DocumentHead title="赛道详情 — F1 Dashboard" description="F1赛道详情，赛道长度、弯道数量、历史数据等" />
         <div className="loading-container">
-          <Spin size="large" />
-          <div style={{ marginTop: 12 }}>{TEXT.loading}</div>
+          <TimingBeacon variant="page" label="Loading circuit profile" detail="Layout · engineering data · race history" />
         </div>
       </div>
     );
@@ -100,10 +97,7 @@ const CircuitDetail = () => {
   if (!circuit) {
     return (
       <div className="circuit-detail-container">
-        <Helmet>
-          <title>&#x8d5b;&#x9053;&#x8be6;&#x60c5; &#8212; F1 Dashboard</title>
-          <meta name="description" content="F1&#x8d5b;&#x9053;&#x8be6;&#x60c5;, &#x8d5b;&#x9053;&#x957f;&#x5ea6;&#x3001;&#x5f2f;&#x9053;&#x6570;&#x91cf;&#x3001;&#x5386;&#x53f2;&#x6570;&#x636e;&#x7b49;" />
-        </Helmet>
+        <DocumentHead title="赛道详情 — F1 Dashboard" description="F1赛道详情，赛道长度、弯道数量、历史数据等" />
         <div className="loading-container">{TEXT.unavailable}</div>
       </div>
     );
@@ -122,10 +116,10 @@ const CircuitDetail = () => {
 
   return (
     <div className="circuit-detail-container circuit-engineering-page">
-      <Helmet>
-        <title>{circuit?.circuitName ? `${circuit.circuitName} \u2014 F1 Dashboard` : '\u8d5b\u9053\u8be6\u60c5 \u2014 F1 Dashboard'}</title>
-        <meta name="description" content={`${circuit?.circuitName || ''} F1\u8d5b\u9053\u8be6\u60c5, \u8d5b\u9053\u957f\u5ea6\u3001\u5f2f\u9053\u6570\u91cf\u3001\u5386\u53f2\u6570\u636e\u7b49`} />
-      </Helmet>
+      <DocumentHead
+        title={circuit?.circuitName ? `${circuit.circuitName} — F1 Dashboard` : '赛道详情 — F1 Dashboard'}
+        description={`${circuit?.circuitName || ''} F1赛道详情，赛道长度、弯道数量、历史数据等`}
+      />
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}
@@ -136,9 +130,8 @@ const CircuitDetail = () => {
 
       <ProductMasthead
         index="05"
-        eyebrow={`${currentSeason} / TRACK DOSSIER`}
+        eyebrow={`${circuit.Location.country} / ${circuit.Location.locality}`}
         title={<>{circuit.circuitName}</>}
-        description={`${circuit.Location.locality}, ${circuit.Location.country}。从赛道几何、方向与落差开始，理解这里为什么会形成独特的排位赛和正赛节奏。`}
         accent="var(--race-control-apex)"
         aside={(
           <div className="circuit-command-map">
@@ -158,10 +151,7 @@ const CircuitDetail = () => {
         ]}
       />
 
-      <h1 className="page-title"><span>{circuit.circuitName}</span></h1>
-      <p className="page-subtitle">{circuit.Location.locality}, {circuit.Location.country}</p>
-
-      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道工程参数" description="几何结构与比赛距离是理解赛道特征的第一层证据。" />
+      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道参数" />
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">

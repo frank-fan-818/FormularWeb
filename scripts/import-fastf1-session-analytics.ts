@@ -2,6 +2,10 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  hasCompleteSplitTelemetry,
+  isCompleteFastF1Payload,
+} from './fastf1-payload-completeness.ts';
 
 type FastF1SessionCode = 'R' | 'Q' | 'SQ' | 'SS' | 'S' | 'FP1' | 'FP2' | 'FP3';
 
@@ -13,6 +17,7 @@ interface ParsedArgs {
   sessions: FastF1SessionCode[];
   inputRoot: string;
   dryRun: boolean;
+  completeOnly: boolean;
   help: boolean;
 }
 
@@ -65,6 +70,7 @@ Usage:
   npm run fastf1:import-sessions -- --from 2021 --to 2025 --session S
   npm run fastf1:import-sessions -- --season 2025 --round 19 --session Q --session SQ
   npm run fastf1:import-sessions -- --input public/fastf1 --dry-run
+  npm run fastf1:import-sessions -- --season 2025 --complete-only
 
 Description:
   Imports FastF1 exported JSON payloads into public.fastf1_session_analytics.
@@ -99,6 +105,7 @@ function parseArgs(args: string[]): ParsedArgs {
     sessions: [],
     inputRoot: 'public/fastf1',
     dryRun: false,
+    completeOnly: false,
     help: false,
   };
 
@@ -151,6 +158,11 @@ function parseArgs(args: string[]): ParsedArgs {
 
     if (arg === '--dry-run') {
       parsed.dryRun = true;
+      continue;
+    }
+
+    if (arg === '--complete-only') {
+      parsed.completeOnly = true;
       continue;
     }
 
@@ -305,6 +317,22 @@ async function loadRows(files: string[], args: ParsedArgs) {
   for (const filePath of files) {
     const raw = await readFile(filePath, 'utf-8');
     const payload = JSON.parse(raw) as FastF1Payload;
+    const relativeParts = path.relative(path.resolve(args.inputRoot), filePath).split(path.sep);
+    const expected = {
+      season: relativeParts.at(-3) || '',
+      round: relativeParts.at(-2) || '',
+      session: path.basename(filePath, '.json').toUpperCase(),
+    };
+    const session = expected.session;
+    const splitTelemetryPath = path.join(path.dirname(filePath), `${session.toUpperCase()}-telemetry.json`);
+    let hasSplitTelemetry = false;
+    if (session.toUpperCase() === 'R' && await pathExists(splitTelemetryPath)) {
+      const splitPayload = JSON.parse(await readFile(splitTelemetryPath, 'utf-8')) as FastF1Payload;
+      hasSplitTelemetry = hasCompleteSplitTelemetry(splitPayload, expected);
+    }
+    if (args.completeOnly && !isCompleteFastF1Payload(payload, expected, hasSplitTelemetry)) {
+      continue;
+    }
     rows.push(normalizePayload(payload, filePath, args));
   }
 
@@ -330,6 +358,10 @@ async function main() {
   }
 
   const rows = await loadRows(files, args);
+  if (!rows.length) {
+    console.log('No complete FastF1 session JSON files found to import.');
+    return;
+  }
   console.log(`Prepared ${rows.length} FastF1 session analytics row(s):`);
   rows.forEach((row) => {
     console.log(`- ${row.season} round ${row.round} ${row.session}: ${consoleText(row.event_name) || 'Unknown event'}`);

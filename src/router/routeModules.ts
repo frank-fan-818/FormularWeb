@@ -1,0 +1,28 @@
+export const routeModules = {
+  home: () => import('@/pages/Home'),
+  seasons: () => import('@/pages/Seasons'),
+  races: () => import('@/pages/Races'),
+  raceLayout: () => import('@/pages/Race/RaceLayout'),
+  raceResults: () => import('@/pages/Race/RaceResults'),
+  raceQualifying: () => import('@/pages/Race/RaceQualifying'),
+  raceAnalysis: () => import('@/pages/Race/RaceAnalysis'),
+  raceSprint: () => import('@/pages/Race/RaceSprint'),
+  raceInfo: () => import('@/pages/Race/RaceInfo'),
+  drivers: () => import('@/pages/Drivers'),
+  driverDetail: () => import('@/pages/DriverDetail'),
+  constructors: () => import('@/pages/Constructors'),
+  constructorDetail: () => import('@/pages/ConstructorDetail'),
+  constructorHistoryDetail: () => import('@/pages/ConstructorHistoryDetail'),
+  circuits: () => import('@/pages/Circuits'),
+  circuitDetail: () => import('@/pages/CircuitDetail'),
+  settings: () => import('@/pages/Settings'),
+  authShell: () => import('@/components/auth/AuthShell'),
+  login: () => import('@/pages/Login'),
+  register: () => import('@/pages/Register'),
+  forgotPassword: () => import('@/pages/ForgotPassword'),
+  resetPassword: () => import('@/pages/ResetPassword'),
+  privacy: () => import('@/pages/Privacy'),
+  notFound: () => import('@/pages/NotFound'),
+} as const;
+
+export type RouteModuleKey = keyof typeof routeModules;

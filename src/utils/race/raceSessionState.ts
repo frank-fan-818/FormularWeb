@@ -35,10 +35,18 @@ export function getAvailableDeferredSessionTabs(
   if (race?.ThirdPractice) available.add('fp3');
   if (race?.SprintQualifying) available.add('sprintQualifying');
   if (race?.Sprint) available.add('sprint');
+  if (race?.isSprintWeekend) {
+    available.add('sprintQualifying');
+    available.add('sprint');
+  }
 
   databaseSessions.forEach((sessionCode) => available.add(SESSION_CODE_TO_TAB[sessionCode]));
 
   return DEFERRED_RACE_SESSION_KEYS.filter((sessionKey) => available.has(sessionKey));
+}
+
+export function getPreferredSprintQualifyingSessionCode(season: string): 'SQ' | 'SS' {
+  return season === '2023' ? 'SS' : 'SQ';
 }
 
 export function getRaceIdentity(season: string, round: string | undefined): string {

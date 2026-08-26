@@ -12,9 +12,9 @@ export interface StaticCircuitDetails {
 
 type StaticCircuitRecord = Omit<StaticCircuitDetails, 'length'>;
 
-export const getCircuitDetails = async (circuitId: string): Promise<StaticCircuitDetails | null> => {
-  // 所有赛道数据已静态集成，直接返回
-  const circuitData: Record<string, StaticCircuitRecord> = {
+// Hoisted once so the circuit atlas can read every current-season fallback without
+// rebuilding this large record for each card.
+const CIRCUIT_DATA: Record<string, StaticCircuitRecord> = {
     // 亚洲 & 中东
     shanghai: {
       firstRace: 2004,
@@ -373,7 +373,9 @@ export const getCircuitDetails = async (circuitId: string): Promise<StaticCircui
       raceLaps: 58,
       totalDistance: '306.124 km'
     }
-  };
+};
+
+export function getCircuitDetailsSync(circuitId: string): StaticCircuitDetails | null {
 
   const normalizedCircuitId = String(circuitId || '')
     .trim()
@@ -399,12 +401,15 @@ export const getCircuitDetails = async (circuitId: string): Promise<StaticCircui
     autodromo_hermanos_rodriguez: 'mexico_city',
   };
   const lookupId = circuitAliases[normalizedCircuitId] || normalizedCircuitId;
-  const circuit = circuitData[lookupId];
+  const circuit = CIRCUIT_DATA[lookupId];
   if (!circuit) return null;
 
   return {
     ...circuit,
-    // 确保格式一致
-    length: '未知'
+    length: (Number.parseFloat(circuit.totalDistance) / circuit.raceLaps).toFixed(3),
   };
 }
+
+export const getCircuitDetails = async (circuitId: string): Promise<StaticCircuitDetails | null> => (
+  getCircuitDetailsSync(circuitId)
+);

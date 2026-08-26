@@ -150,8 +150,10 @@ export const seasonApi = {
 
   // Sprint results for a season.
   getSeasonSprintResults: async (season: string): Promise<Race[]> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/sprint.json?limit=100`);
-    return response.MRData.RaceTable?.Races || [];
+    return getCachedSeasonRaceResults(seasonSprintResultsCache, season, async () => {
+      const response: ErgastResponse<never> = await ergastApi.get(`/${season}/sprint.json?limit=100`);
+      return response.MRData.RaceTable?.Races || [];
+    });
   },
 
   getSeasonRaces: async (season: string): Promise<Race[]> => {
@@ -195,6 +197,7 @@ export const seasonApi = {
             },
             date: row.date,
             time: row.time || undefined,
+            isSprintWeekend: Boolean(row.is_sprint_weekend),
           } as Race;
         });
       }
@@ -299,11 +302,32 @@ const driverCareerStandingsCache = new Map<string, Promise<DriverCareerStandingL
 const constructorCareerStandingsCache = new Map<string, Promise<ConstructorCareerStandingList[]>>();
 const driverCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
 const constructorCareerRaceResultsCache = new Map<string, Promise<Race[]>>();
+const driverSeasonRaceResultsCache = new Map<string, Promise<Race[]>>();
+const constructorSeasonRaceResultsCache = new Map<string, Promise<Race[]>>();
+const seasonSprintResultsCache = new Map<string, Promise<Race[]>>();
 const STANDINGS_BATCH_SIZE = 6;
 const DRIVER_HISTORY_BATCH_SIZE = 2;
 const RESULTS_PAGE_LIMIT = 100;
 const RATE_LIMIT_RETRY_DELAYS_MS = [250, 600, 1200, 2400];
 const BETWEEN_BATCH_DELAY_MS = 180;
+
+function getCachedSeasonRaceResults(
+  cache: Map<string, Promise<Race[]>>,
+  cacheKey: string,
+  loader: () => Promise<Race[]>,
+): Promise<Race[]> {
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const request = loader().catch((error) => {
+    cache.delete(cacheKey);
+    throw error;
+  });
+  cache.set(cacheKey, request);
+  return request;
+}
 
 async function getAllSeasonIds(): Promise<string[]> {
   if (!allSeasonIdsPromise) {
@@ -650,8 +674,11 @@ export const driverApi = {
 
   // Race results for one driver in one season.
   getDriverSeasonRaceResults: async (driverId: string, season: string): Promise<Race[]> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/drivers/${driverId}/results.json?limit=100`);
-    return response.MRData.RaceTable?.Races || [];
+    const cacheKey = `${season}:${driverId}`;
+    return getCachedSeasonRaceResults(driverSeasonRaceResultsCache, cacheKey, async () => {
+      const response: ErgastResponse<never> = await ergastApi.get(`/${season}/drivers/${driverId}/results.json?limit=100`);
+      return response.MRData.RaceTable?.Races || [];
+    });
   },
 
   getDriverCareer: async (
@@ -729,8 +756,11 @@ export const constructorApi = {
 
   // Race results for one constructor in one season.
   getConstructorSeasonRaceResults: async (constructorId: string, season: string): Promise<Race[]> => {
-    const response: ErgastResponse<never> = await ergastApi.get(`/${season}/constructors/${constructorId}/results.json?limit=100`);
-    return response.MRData.RaceTable?.Races || [];
+    const cacheKey = `${season}:${constructorId}`;
+    return getCachedSeasonRaceResults(constructorSeasonRaceResultsCache, cacheKey, async () => {
+      const response: ErgastResponse<never> = await ergastApi.get(`/${season}/constructors/${constructorId}/results.json?limit=100`);
+      return response.MRData.RaceTable?.Races || [];
+    });
   },
 
   // Total race entries for a constructor.

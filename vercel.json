@@ -31,6 +31,9 @@
     },
     {
       "src": "/f1-api/(.*)",
+      "headers": {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400"
+      },
       "dest": "https://api.jolpi.ca/ergast/f1/$1"
     },
     {

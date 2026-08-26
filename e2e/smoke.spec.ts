@@ -8,6 +8,9 @@ const routes = [
   '/constructors/red_bull',
   '/circuits/monaco',
   '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
   '/privacy',
   '/settings',
   '/route-that-does-not-exist',
@@ -16,6 +19,9 @@ const compactViewportRoutes = new Set([
   '/',
   '/races/1',
   '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
   '/privacy',
   '/settings',
   '/route-that-does-not-exist',
@@ -160,7 +166,7 @@ for (const route of routes) {
       expect(horizontalOverflow, `horizontal overflow on ${route}`).toBeLessThanOrEqual(1);
     }
 
-    if (['/', '/login', '/route-that-does-not-exist'].includes(route)) {
+    if (['/', '/login', '/register', '/forgot-password', '/reset-password', '/route-that-does-not-exist'].includes(route)) {
       await page.screenshot({
         path: testInfo.outputPath(`${route === '/' ? 'home' : route.slice(1)}.png`),
         fullPage: true,
@@ -171,6 +177,42 @@ for (const route of routes) {
     expect(browserErrors, `console/page errors on ${route}`).toEqual([]);
   });
 }
+
+test('motion system keeps primary content immediate and honors reduced motion', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Motion preference behavior is viewport-independent.');
+
+  await page.route('**/f1-api/**', async (requestRoute) => {
+    await requestRoute.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        MRData: {
+          total: '0',
+          RaceTable: { Races: [] },
+          SeasonTable: { Seasons: [] },
+          StandingsTable: { StandingsLists: [] },
+        },
+      }),
+    });
+  });
+  await page.route('**/rest/v1/**', async (requestRoute) => {
+    await requestRoute.fulfill({
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: '[]',
+    });
+  });
+
+  await page.goto('/');
+  const routeShell = page.locator('.motion-route-shell');
+  await expect(routeShell).toBeVisible();
+  await expect(routeShell).toHaveCSS('animation-name', 'motion-route-enter');
+  await expect(routeShell).toHaveCSS('opacity', '1');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  await expect(page.locator('.motion-route-shell')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.motion-route-shell')).toHaveCSS('transform', 'none');
+});
 
 test('global search navigates to every supported entity type', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'The interaction is viewport-independent.');
@@ -335,7 +377,7 @@ test('service worker upgrades every long-lived tab before pruning the previous s
   page,
   context,
 }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop-chromium', 'One lifecycle run covers all viewports.');
+  test.skip(testInfo.project.name !== 'service-worker-chromium', 'The dedicated project preserves real service worker behavior.');
 
   const firstBuildId = 'f1-shell-aaaaaaaaaaaa';
   const secondBuildId = 'f1-shell-bbbbbbbbbbbb';

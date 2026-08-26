@@ -16,11 +16,13 @@
   width: 200px;
   height: 100vh;
   z-index: 100;
-  transition: transform var(--transition-base), width var(--transition-base);
+  transition:
+    transform var(--motion-duration-standard) var(--motion-ease-emphasized),
+    width var(--motion-duration-standard) var(--motion-ease-emphasized);
 }
 
 .sidebar.desktop-mounted {
-  animation: slideUp 0.6s ease-out 0.1s backwards;
+  animation: motion-primary-enter var(--motion-duration-route) var(--motion-ease-enter) 80ms backwards;
 }
 
 .sidebar.collapsed {
@@ -66,7 +68,10 @@
   font-size: var(--text-base);
   font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .sidebar-nav-button:hover {
@@ -99,12 +104,21 @@
 
 .sidebar-nav-label {
   overflow: hidden;
+  max-width: 128px;
+  opacity: 1;
   text-overflow: ellipsis;
+  transform: translate3d(0, 0, 0);
+  transition:
+    max-width var(--motion-duration-standard) var(--motion-ease-emphasized),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-standard) var(--motion-ease-emphasized);
   white-space: nowrap;
 }
 
 .sidebar.collapsed .sidebar-nav-label {
-  display: none;
+  max-width: 0;
+  opacity: 0;
+  transform: translate3d(-6px, 0, 0);
 }
 
 .sidebar.collapsed .sidebar-nav-button {
@@ -118,7 +132,7 @@
   background: rgba(15, 23, 42, 0.28);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-base);
+  transition: opacity var(--motion-duration-standard) var(--motion-ease-standard);
   z-index: 90;
 }
 
@@ -129,7 +143,7 @@
 
 .main-layout {
   margin-left: 200px;
-  transition: margin-left var(--transition-base);
+  transition: margin-left var(--motion-duration-standard) var(--motion-ease-emphasized);
 }
 
 .main-layout.sidebar-collapsed {
@@ -188,7 +202,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-instant) var(--motion-ease-standard);
 }
 
 .menu-toggle-btn:hover {
@@ -212,7 +229,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-instant) var(--motion-ease-standard);
 }
 
 .theme-toggle-btn:hover {
