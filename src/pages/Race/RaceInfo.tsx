@@ -47,10 +47,12 @@ const RaceInfo = () => {
     [raceInfo],
   );
   const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || Boolean(raceInfo?.isSprintWeekend)
     || availableDbSessions.includes('SQ')
     || availableDbSessions.includes('SS');
   const hasSprint = sprintResults.length > 0
     || Boolean(raceInfo?.Sprint)
+    || Boolean(raceInfo?.isSprintWeekend)
     || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
   const orderedRaces = useMemo(

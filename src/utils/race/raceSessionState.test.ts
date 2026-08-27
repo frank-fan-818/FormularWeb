@@ -2,9 +2,19 @@ import { describe, expect, it } from 'vitest';
 import type { Race } from '@/types';
 import {
   getAvailableDeferredSessionTabs,
+  getPreferredSprintQualifyingSessionCode,
   getRaceRouteSection,
   isRaceIdentityCurrent,
 } from './raceSessionState';
+
+describe('getPreferredSprintQualifyingSessionCode', () => {
+  it('uses Sprint Shootout only for the 2023 naming format', () => {
+    expect(getPreferredSprintQualifyingSessionCode('2022')).toBe('SQ');
+    expect(getPreferredSprintQualifyingSessionCode('2023')).toBe('SS');
+    expect(getPreferredSprintQualifyingSessionCode('2024')).toBe('SQ');
+    expect(getPreferredSprintQualifyingSessionCode('2025')).toBe('SQ');
+  });
+});
 
 describe('getRaceRouteSection', () => {
   it('derives only route-level sections from a race URL', () => {
@@ -43,6 +53,13 @@ describe('getAvailableDeferredSessionTabs', () => {
     expect(getAvailableDeferredSessionTabs(null, ['FP1', 'SQ'])).toEqual([
       'fp1',
       'sprintQualifying',
+    ]);
+  });
+
+  it('uses the persisted Sprint-weekend flag when detailed schedule fields are absent', () => {
+    expect(getAvailableDeferredSessionTabs({ isSprintWeekend: true } as Race, [])).toEqual([
+      'sprintQualifying',
+      'sprint',
     ]);
   });
 });

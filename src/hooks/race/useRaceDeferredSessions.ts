@@ -59,8 +59,9 @@ export function getDeferredSessionsToLoad(
   availableTabs: string[],
 ): DeferredRaceSessionKey[] {
   if (routeSection === 'sprint') {
-    return (['sprintQualifying', 'sprint'] as DeferredRaceSessionKey[])
-      .filter((sessionKey) => availableTabs.includes(sessionKey));
+    // A direct Sprint route is itself a request to inspect both classifications.
+    // Do not gate the load on optional database discovery or incomplete schedule rows.
+    return ['sprintQualifying', 'sprint'];
   }
   if (routeSection === 'qualifying' && availableTabs.includes('sprintQualifying')) {
     return ['sprintQualifying'];
@@ -69,6 +70,10 @@ export function getDeferredSessionsToLoad(
     return [activeSessionTab as DeferredRaceSessionKey];
   }
   return [];
+}
+
+export function getSprintClassificationResults(sessionData: Race | null): Result[] {
+  return sessionData?.SprintResults || sessionData?.Results || [];
 }
 
 export function useRaceDeferredSessions({
@@ -212,7 +217,7 @@ export function useRaceDeferredSessions({
       if (cancelled) return;
       const resultCount = Math.max(sessionData?.Results?.length || 0, sessionData?.QualifyingResults?.length || 0, sessionData?.SprintResults?.length || 0);
       diagnostics?.log({ operation: `${sessionKey}_state`, outcome: resultCount ? 'succeeded' : 'empty', itemCount: resultCount, session: sessionKey });
-      if (sessionKey === 'sprint') setSprintResults(sessionData?.Results || sessionData?.SprintResults || []);
+      if (sessionKey === 'sprint') setSprintResults(getSprintClassificationResults(sessionData));
       if (sessionKey === 'sprintQualifying') setSprintQualifyingResults(sessionData?.QualifyingResults || []);
       if (sessionKey === 'fp1') setFp1Results(sessionData?.Results || []);
       if (sessionKey === 'fp2') setFp2Results(sessionData?.Results || []);

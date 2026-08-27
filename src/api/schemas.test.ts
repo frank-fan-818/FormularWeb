@@ -25,10 +25,21 @@ describe('API Schemas', () => {
       grid: '1',
       laps: '57',
       status: 'Finished',
+      Time: { millis: '5423123', time: '1:30:23.123' },
+      FastestLap: {
+        rank: '1',
+        lap: '45',
+        Time: { time: '1:31.456' },
+        AverageSpeed: { units: 'kph', speed: '220.1' },
+      },
       Driver: { driverId: 'max_verstappen', givenName: 'Max', familyName: 'Verstappen' },
       Constructor: { constructorId: 'red_bull', name: 'Red Bull' },
     });
     expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.Time?.time).toBe('1:30:23.123');
+      expect(result.data.FastestLap?.Time.time).toBe('1:31.456');
+    }
   });
 
   it('validates a valid race', () => {
@@ -72,5 +83,26 @@ describe('API Schemas', () => {
       },
     });
     expect(result.success).toBe(true);
+  });
+
+  it('preserves race weekend session schedules', () => {
+    const result = RaceSchema.parse({
+      season: '2025',
+      round: '2',
+      raceName: 'Chinese Grand Prix',
+      date: '2025-03-23',
+      Circuit: {
+        circuitId: 'shanghai',
+        circuitName: 'Shanghai International Circuit',
+        Location: { country: 'China', locality: 'Shanghai', lat: '31.3389', long: '121.2200' },
+      },
+      FirstPractice: { date: '2025-03-21', time: '03:30:00Z' },
+      SprintQualifying: { date: '2025-03-21', time: '07:30:00Z' },
+      Sprint: { date: '2025-03-22', time: '03:00:00Z' },
+      Qualifying: { date: '2025-03-22', time: '07:00:00Z' },
+    });
+
+    expect(result.SprintQualifying).toEqual({ date: '2025-03-21', time: '07:30:00Z' });
+    expect(result.Sprint).toEqual({ date: '2025-03-22', time: '03:00:00Z' });
   });
 });

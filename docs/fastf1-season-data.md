@@ -41,6 +41,30 @@ Export one session when a round needs repair:
 npm run fastf1:export-race -- --season 2025 --round 12 --session R --telemetry-driver-count 0
 ```
 
+## Automated Post-Race Chain
+
+The scheduled GitHub workflow `refresh-fastf1-analytics.yml` runs every three hours:
+
+1. Resolve the current UTC season, or use a manually requested season/round.
+2. Read the FastF1 schedule and select only `R`, `Q`, and detected Sprint sessions whose scheduled start was at least four hours ago.
+3. Keep complete files unchanged; overwrite missing or incomplete placeholder snapshots.
+4. Import only snapshots that pass the same completeness policy into `fastf1_session_analytics` using the service-role secret.
+5. Fail the run if any eligible session remains incomplete, and upload `manifest.json` plus `export-report.json` as diagnostics.
+6. Create or update a PR against `develop` so the static JSON fallback is versioned and deployed after merge.
+
+Required GitHub Actions secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Manual repair for one round remains available through `workflow_dispatch`, or locally:
+
+```bash
+python scripts/export-fastf1-season-data.py --season 2026 --from-round 6 --to-round 6 --analysis-only --completed-only --refresh-incomplete
+npm run fastf1:import-sessions -- --season 2026 --round 6 --complete-only
+npm run fastf1:verify-manifest -- --season 2026 --round 6
+```
+
 ## Coverage Check
 
 Use `manifest.json` as the first source of truth. A complete season should show:
@@ -74,3 +98,8 @@ Use a dry run first when validating a new export:
 ```bash
 npm run fastf1:import-sessions -- --season 2025 --dry-run
 ```
+
+## Release 0.17.0
+
+Version 0.17.0 adds resilient Sprint classification loading and the verified post-session FastF1 export/import pipeline.
+The scheduled refresh checks completed Race, Qualifying, Sprint, Sprint Qualifying, and Sprint Shootout sessions before publishing snapshots.

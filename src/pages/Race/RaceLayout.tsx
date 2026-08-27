@@ -43,8 +43,14 @@ const InnerLayout = () => {
     diagnosticFlowId,
   } = useRaceData();
 
-  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying) || availableDbSessions.includes('SQ') || availableDbSessions.includes('SS');
-  const hasSprint = (sprintResults && sprintResults.length > 0) || Boolean(raceInfo?.Sprint) || availableDbSessions.includes('S');
+  const hasSprintQualifying = Boolean(raceInfo?.SprintQualifying)
+    || Boolean(raceInfo?.isSprintWeekend)
+    || availableDbSessions.includes('SQ')
+    || availableDbSessions.includes('SS');
+  const hasSprint = (sprintResults && sprintResults.length > 0)
+    || Boolean(raceInfo?.Sprint)
+    || Boolean(raceInfo?.isSprintWeekend)
+    || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
   const routeTab = getRaceRouteSection(location.pathname);
   const activeSessionErrorKey = routeTab === 'qualifying' && sessionLoadErrors.sprintQualifying

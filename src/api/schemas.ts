@@ -26,6 +26,19 @@ export const ResultSchema = z.object({
   grid: z.string(),
   laps: z.string(),
   status: z.string(),
+  Time: z.object({
+    millis: z.string().optional(),
+    time: z.string(),
+  }).optional(),
+  FastestLap: z.object({
+    rank: z.string(),
+    lap: z.string(),
+    Time: z.object({ time: z.string() }),
+    AverageSpeed: z.object({
+      units: z.string(),
+      speed: z.string(),
+    }).optional(),
+  }).optional(),
   Driver: DriverSchema,
   Constructor: ConstructorSchema,
 });
@@ -52,6 +65,11 @@ export const CircuitSchema = z.object({
   }),
 });
 
+const SessionScheduleSchema = z.object({
+  date: z.string(),
+  time: z.string().optional(),
+});
+
 export const RaceSchema = z.object({
   season: z.string(),
   round: z.string(),
@@ -63,6 +81,13 @@ export const RaceSchema = z.object({
   Results: z.array(ResultSchema).optional(),
   QualifyingResults: z.array(QualifyingResultSchema).optional(),
   SprintResults: z.array(ResultSchema).optional(),
+  FirstPractice: SessionScheduleSchema.optional(),
+  SecondPractice: SessionScheduleSchema.optional(),
+  ThirdPractice: SessionScheduleSchema.optional(),
+  Qualifying: SessionScheduleSchema.optional(),
+  Sprint: SessionScheduleSchema.optional(),
+  SprintQualifying: SessionScheduleSchema.optional(),
+  isSprintWeekend: z.boolean().optional(),
 });
 
 export type ValidatedRace = z.infer<typeof RaceSchema>;

@@ -8,6 +8,9 @@ import type {
   FastF1RaceAnalytics,
   RacePreviewSummary,
 } from '@/types';
+import { RequestTimeoutError, withTimeout } from '@/utils/withRetry';
+
+const RACE_PREVIEW_TIMEOUT_MS = 10_000;
 
 export function useRacePreviewSummary(
   season: string,
@@ -37,7 +40,10 @@ export function useRacePreviewSummary(
     setLoading(true);
     setError(null);
 
-    raceWeekendAnalyticsApi.getRacePreviewSummary(season, round, circuitId)
+    withTimeout(
+      raceWeekendAnalyticsApi.getRacePreviewSummary(season, round, circuitId),
+      RACE_PREVIEW_TIMEOUT_MS,
+    )
       .then((summary) => {
         if (!cancelled) {
           setData(summary);
@@ -48,7 +54,9 @@ export function useRacePreviewSummary(
         if (!cancelled) {
           setData(null);
           setDataIdentity(requestIdentity);
-          setError(requestError instanceof Error ? requestError : new Error(String(requestError)));
+          setError(requestError instanceof RequestTimeoutError
+            ? new Error('历史比赛数据请求超时，请稍后重试')
+            : requestError instanceof Error ? requestError : new Error(String(requestError)));
         }
       })
       .finally(() => {

@@ -39,7 +39,10 @@ import type {
   DriverPostRaceTelemetrySummary,
 } from '@/types';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
-import { getRaceRouteSection } from '@/utils/race/raceSessionState';
+import {
+  getPreferredSprintQualifyingSessionCode,
+  getRaceRouteSection,
+} from '@/utils/race/raceSessionState';
 import { getRaceSeasonFromSearch } from '@/utils/raceRoute';
 
 // ---- Types for context ----
@@ -199,18 +202,26 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
   }, [isPastRace, raceInfo]);
   const activeWeekendMode = defaultWeekendMode;
   const shouldLoadFastF1Qualifying = routeSection === 'qualifying';
-  const shouldLoadFastF1SprintQualifying = deferredSessions.availableTabs.includes('sprintQualifying')
-    && (routeSection === 'qualifying' || routeSection === 'sprint');
-  const shouldLoadFastF1Sprint = deferredSessions.availableTabs.includes('sprint')
-    && routeSection === 'sprint';
+  const sprintQualifyingSessionCode = getPreferredSprintQualifyingSessionCode(season);
+  const shouldLoadFastF1SprintQualifying = routeSection === 'sprint'
+    || (routeSection === 'qualifying' && deferredSessions.availableTabs.includes('sprintQualifying'));
+  const shouldLoadFastF1Sprint = routeSection === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
     season, round, 'Q', shouldLoadFastF1Qualifying, diagnosticFlowId,
   );
   const { data: fastF1SprintQualifyingAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'SQ', shouldLoadFastF1SprintQualifying, diagnosticFlowId,
+    season,
+    round,
+    'SQ',
+    shouldLoadFastF1SprintQualifying && sprintQualifyingSessionCode === 'SQ',
+    diagnosticFlowId,
   );
   const { data: fastF1SprintShootoutAnalytics } = useFastF1SessionAnalytics(
-    season, round, 'SS', shouldLoadFastF1SprintQualifying, diagnosticFlowId,
+    season,
+    round,
+    'SS',
+    shouldLoadFastF1SprintQualifying && sprintQualifyingSessionCode === 'SS',
+    diagnosticFlowId,
   );
   const { data: fastF1SprintAnalytics } = useFastF1SessionAnalytics(
     season, round, 'S', shouldLoadFastF1Sprint, diagnosticFlowId,

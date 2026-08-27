@@ -7,4 +7,5 @@
   - C：**导入 Supabase** — 在 JSON 基础上，将常用查询结果存入 Supabase 表，通过 SQL 查询。优点：更强大的查询能力。缺点：增加数据库存储成本
 - **决策**：选择 B（静态 JSON）+ 可选 C（关键数据导入 Supabase）。
 - **原因**：FastF1 数据是一次性获取的历史数据（比赛结束后不变化），预导出为 JSON 是最合理的选择。Python 脚本可通过 npm scripts 执行（`npm run fastf1:export-*`）。JSON 文件放在 `f1_cache/` 目录中，已有 `.gitignore` 排除（文件较大）。关键分析结果（如 lap times、compound strategy）可选择性地导入 Supabase 以支持列表页的快速查询。
-- **代价**：数据更新需要人工运行 Python 脚本（每个赛季一次，可接受）。JSON 文件较大（每场比赛可能数十 MB），不过已通过 `.gitignore` 排除，不会影响 Git 仓库大小。如果未来需要实时数据（如比赛进行中的遥测），需要引入 B 方案或实时数据源。
+- **自动更新补充**：`.github/workflows/refresh-fastf1-analytics.yml` 每 3 小时检查一次已经结束并度过 4 小时可用性窗口的场次。它只刷新缺失或不完整的 `R/Q/S/SQ/SS` 快照，完整性校验通过后写入 Supabase，并创建或更新静态 JSON 备份 PR。工作流失败会保留 manifest/export-report 诊断制品，由 GitHub Actions 失败状态负责告警。
+- **代价**：赛后分析不是实时数据；正常情况下在场次开始后约 4–7 小时进入 Supabase（4 小时等待 FastF1 上游稳定，加上最多 3 小时调度间隔）。静态备份仍需合并自动 PR 才会进入下一次前端部署，但前端可直接从 Supabase 读取已入库快照，不受 PR 合并时间影响。
