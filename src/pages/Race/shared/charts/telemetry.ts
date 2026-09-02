@@ -547,10 +547,15 @@ function buildTelemetryHeatmapOption(
     return null;
   }
 
-  const driverTracks = activeDrivers.map((driver) => ({
-    driver,
-    points: buildTelemetryTrackPoints(driver),
-  }));
+  const driverTracks = activeDrivers
+    .map((driver) => ({
+      driver,
+      points: buildTelemetryTrackPoints(driver),
+    }))
+    .filter(({ points }) => points.length >= 2);
+  if (!driverTracks.length) {
+    return null;
+  }
   const allSpeeds = driverTracks.flatMap(({ points }) => points.map((point) => point.speedKph));
   const minSpeed = allSpeeds.length ? Math.min(...allSpeeds) : 0;
   const maxSpeed = allSpeeds.length ? Math.max(...allSpeeds) : 1;

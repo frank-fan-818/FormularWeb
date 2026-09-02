@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { findIncompleteEligibleSessions } from './fastf1-manifest-policy.mjs';
+import {
+  findIncompleteEligibleSessions,
+  shouldFailIncompleteSessions,
+} from './fastf1-manifest-policy.mjs';
 
 const manifest = {
   rounds: [
@@ -30,4 +33,9 @@ test('reports incomplete sessions only after they become eligible', () => {
 });
 test('supports manual verification scoped to one round', () => {
   assert.deepEqual(findIncompleteEligibleSessions(manifest, 2), []);
+});
+test('keeps manual repairs strict while allowing scheduled partial publication', () => {
+  const failures = findIncompleteEligibleSessions(manifest);
+  assert.equal(shouldFailIncompleteSessions(failures, false), true);
+  assert.equal(shouldFailIncompleteSessions(failures, true), false);
 });
