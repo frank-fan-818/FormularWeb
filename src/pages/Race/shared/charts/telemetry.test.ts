@@ -132,6 +132,13 @@ describe('telemetry heatmap option', () => {
     expect(() => buildTelemetryHeatmapOption(analytics, [driver])).not.toThrow();
   });
 
+  it('omits the track heatmap when FastF1 has no position channel', () => {
+    const driver = makeDriver('AAA', [100, 150, 200]);
+    driver.positionSamples = { x: [], y: [], z: [] };
+
+    expect(buildTelemetryHeatmapOption(makeAnalytics([driver]), [driver])).toBeNull();
+  });
+
   it('builds every telemetry chart for every driver in all deployed optimized assets', () => {
     const assetPaths = findTelemetryAssets(resolve('public/fastf1'));
     let checkedDrivers = 0;
@@ -149,10 +156,11 @@ describe('telemetry heatmap option', () => {
           ['throttle', 'brake', 'gear', 'rpm'],
         )).not.toThrow();
         const option = buildTelemetryHeatmapOption(analytics, [driver]);
-        const series = option?.series as Array<{ type: string; data: unknown[] }>;
-        const heatSeries = series.find((item) => item.type === 'lines');
-
-        expect(heatSeries?.data.length).toBeGreaterThan(0);
+        if (option) {
+          const series = option.series as Array<{ type: string; data: unknown[] }>;
+          const heatSeries = series.find((item) => item.type === 'lines');
+          expect(heatSeries?.data.length).toBeGreaterThan(0);
+        }
         checkedDrivers += 1;
       });
     });

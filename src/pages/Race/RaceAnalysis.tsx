@@ -54,6 +54,10 @@ import {
 import type {
   DriverPostRaceTelemetrySummary,
 } from '@/types';
+import {
+  getSessionDataPhase,
+  getSessionUnavailableCopy,
+} from '@/utils/race/sessionDataAvailability';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -72,6 +76,7 @@ const RaceAnalysis = () => {
     fastF1AnalyticsError,
     retryFastF1Analytics,
     raceResults,
+    raceInfo,
     fastF1QualifyingAnalytics,
     postRaceTelemetrySummary,
     fastF1Telemetry,
@@ -379,23 +384,29 @@ const RaceAnalysis = () => {
   }
 
   if (!fastF1Analytics) {
+    const unavailableCopy = getSessionUnavailableCopy({
+      label: '正赛',
+      phase: getSessionDataPhase(raceInfo ? { date: raceInfo.date, time: raceInfo.time } : null),
+      hasClassification: raceResults.length > 0,
+      errorMessage: fastF1AnalyticsError?.message,
+    });
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
           index="03"
           eyebrow="RACE DEBRIEF / DATA STATUS"
-          title="Race analysis is not available yet"
-          description="The classification can still be viewed. FastF1 modules will unlock when a complete timing snapshot is published."
+          title={unavailableCopy.title}
+          description={unavailableCopy.description}
         />
         {officialRaceClassification}
         <AnalysisModuleState
           index="DATA"
           label="FASTF1 SOURCE"
-          title="Timing snapshot unavailable"
-          description={fastF1AnalyticsError?.message || t('noFastF1Analysis')}
+          title={unavailableCopy.title}
+          description={unavailableCopy.description}
           state={fastF1AnalyticsError ? 'error' : 'empty'}
-          actionLabel="Retry analysis data"
-          onAction={retryFastF1Analytics}
+          actionLabel={unavailableCopy.canRetry ? '重试分析数据' : undefined}
+          onAction={unavailableCopy.canRetry ? retryFastF1Analytics : undefined}
         />
       </div>
     );

@@ -27,6 +27,10 @@ import type {
   QualifyingResult,
 } from '@/types';
 import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
+import {
+  getSessionDataPhase,
+  getSessionUnavailableCopy,
+} from '@/utils/race/sessionDataAvailability';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -466,16 +470,20 @@ const RaceQualifying = () => {
   // ---- Early return (no data) ----
 
   if (!primaryLoading && !qualifyingResults.length && !fastF1QualifyingAnalytics?.qualifyingAnalysis) {
+    const unavailableCopy = getSessionUnavailableCopy({
+      label: '排位赛',
+      phase: getSessionDataPhase(raceInfo?.Qualifying),
+    });
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
           index="02"
           eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
-          title="排位赛数据尚不可用"
-          description="数据发布后显示晋级路径、赛段成绩、单圈速度和队友差距。"
+          title={unavailableCopy.title}
+          description={unavailableCopy.description}
         />
         <Card className="race-empty-command-card">
-          <p>{t('noFastF1Analysis')}</p>
+          <p>{unavailableCopy.description}</p>
         </Card>
       </div>
     );

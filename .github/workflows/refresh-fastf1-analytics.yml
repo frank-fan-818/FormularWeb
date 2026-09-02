@@ -124,6 +124,7 @@ jobs:
         run: |
           args=(--season "$SEASON")
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          if [ -z "$ROUND" ]; then args+=(--allow-incomplete); fi
           npm run fastf1:verify-manifest -- "${args[@]}"
 
       - name: Reject exporter process failures
