@@ -37,6 +37,10 @@ const InnerLayout = () => {
     raceResults,
     qualifyingResults,
     fastF1Analytics,
+    fastF1QualifyingAnalytics,
+    fastF1SprintQualifyingAnalytics,
+    fastF1SprintShootoutAnalytics,
+    fastF1SprintAnalytics,
     activeWeekendMode,
     sessionLoadErrors,
     retryActiveSession,
@@ -53,6 +57,15 @@ const InnerLayout = () => {
     || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
   const routeTab = getRaceRouteSection(location.pathname);
+  const hasActiveFastF1Analytics = routeTab === 'qualifying'
+    ? Boolean(fastF1QualifyingAnalytics)
+    : routeTab === 'sprint'
+      ? Boolean(
+        fastF1SprintAnalytics
+        || fastF1SprintQualifyingAnalytics
+        || fastF1SprintShootoutAnalytics,
+      )
+      : Boolean(fastF1Analytics);
   const activeSessionErrorKey = routeTab === 'qualifying' && sessionLoadErrors.sprintQualifying
     ? 'sprintQualifying'
     : routeTab;
@@ -187,7 +200,7 @@ const InnerLayout = () => {
         <div className="race-command-footer">
           <span><i className="signal-dot" /> RACE DATA LINK</span>
           <span>{raceResults.length || qualifyingResults.length ? 'CLASSIFICATION AVAILABLE' : 'AWAITING SESSION DATA'}</span>
-          <span>{fastF1Analytics ? 'FASTF1 ANALYTICS ONLINE' : 'FASTF1 ANALYTICS STANDBY'}</span>
+          <span>{hasActiveFastF1Analytics ? 'FASTF1 ANALYTICS ONLINE' : 'FASTF1 ANALYTICS STANDBY'}</span>
         </div>
       </section>
 

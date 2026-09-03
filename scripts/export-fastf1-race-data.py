@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,11 @@ from typing import Any
 import fastf1
 import pandas as pd
 from fastf1.mvapi import get_circuit_info as get_mv_circuit_info
+
+from fastf1_snapshot_validation import (
+    INCOMPLETE_SNAPSHOT_EXIT_CODE,
+    incomplete_snapshot_fields,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,6 +76,11 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
         help="Split telemetry into a separate file (default: True). Use --no-split to keep telemetry inline.",
+    )
+    parser.add_argument(
+        "--require-complete",
+        action="store_true",
+        help="Fail without writing when the analysis snapshot is incomplete.",
     )
     return parser.parse_args()
 
@@ -1544,6 +1555,16 @@ def main() -> None:
                 # Original behavior: everything in one file
                 payload["telemetry"] = telemetry
                 payload["telemetrySummary"] = telemetry.get("summary", [])
+
+    if args.require_complete:
+        missing_fields = incomplete_snapshot_fields(payload, str(args.session), telemetry_payload)
+        if missing_fields:
+            print(
+                "FastF1 returned an incomplete snapshot; refusing to publish: "
+                + ", ".join(missing_fields),
+                file=sys.stderr,
+            )
+            raise SystemExit(INCOMPLETE_SNAPSHOT_EXIT_CODE)
 
     output_path = output_root / str(args.season) / str(args.round) / f"{args.session}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)

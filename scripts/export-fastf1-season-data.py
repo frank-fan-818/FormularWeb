@@ -26,6 +26,7 @@ import fastf1
 import pandas as pd
 
 from fastf1_automation import session_is_ready
+from fastf1_snapshot_validation import INCOMPLETE_SNAPSHOT_EXIT_CODE
 
 
 DEFAULT_SESSIONS = ["R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"]
@@ -189,6 +190,7 @@ def build_export_command(args: argparse.Namespace, round_number: int, session: s
         args.output,
         "--telemetry-samples",
         str(max(0, args.telemetry_samples)),
+        "--require-complete",
     ]
 
     if session == "R":
@@ -223,7 +225,23 @@ def run_export(args: argparse.Namespace, round_number: int, session: str) -> Exp
     )
 
     if completed.returncode == 0:
-        return ExportResult(args.season, round_number, session, "exported", str(path), completed.stdout.strip())
+        exported = build_manifest_session(
+            Path(args.output), args.season, round_number, session, eligible=True,
+        )
+        if exported.complete:
+            return ExportResult(args.season, round_number, session, "exported", str(path), completed.stdout.strip())
+        return ExportResult(
+            args.season,
+            round_number,
+            session,
+            "failed",
+            str(path),
+            "Exporter exited successfully but the written snapshot failed completeness checks.",
+        )
+
+    if completed.returncode == INCOMPLETE_SNAPSHOT_EXIT_CODE:
+        message = completed.stderr.strip() or "FastF1 has not published a complete snapshot yet."
+        return ExportResult(args.season, round_number, session, "pending", str(path), message)
 
     message = completed.stderr.strip() or completed.stdout.strip() or f"exit code {completed.returncode}"
     return ExportResult(args.season, round_number, session, "failed", str(path), message)
@@ -238,6 +256,7 @@ def write_report(results: list[ExportResult], output_root: Path, season: int) ->
         "summary": {
             "planned": sum(1 for result in results if result.status == "planned"),
             "exported": sum(1 for result in results if result.status == "exported"),
+            "pending": sum(1 for result in results if result.status == "pending"),
             "skipped": sum(1 for result in results if result.status == "skipped"),
             "failed": sum(1 for result in results if result.status == "failed"),
         },
@@ -443,6 +462,7 @@ def main() -> None:
     print(
         f"Summary: exported={sum(1 for result in results if result.status == 'exported')}, "
         f"skipped={sum(1 for result in results if result.status == 'skipped')}, "
+        f"pending={sum(1 for result in results if result.status == 'pending')}, "
         f"planned={sum(1 for result in results if result.status == 'planned')}, "
         f"failed={len(failed)}"
     )

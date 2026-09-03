@@ -27,6 +27,10 @@ import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
+import {
+  getSessionDataPhase,
+  getSessionUnavailableCopy,
+} from '@/utils/race/sessionDataAvailability';
 
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
@@ -46,6 +50,7 @@ const RaceSprint = () => {
     loadedSessionTabs,
     sessionLoadErrors,
     retrySession,
+    raceInfo,
   } = useRaceData();
 
   // Local UI state for sprint-specific filtering
@@ -302,11 +307,14 @@ const RaceSprint = () => {
     || sprintRaceTableData.length > 0
     || Boolean(activeSprintQualifyingAnalytics)
     || Boolean(fastF1SprintAnalytics);
+  const isScheduledSprintWeekend = Boolean(
+    raceInfo?.SprintQualifying || raceInfo?.Sprint || raceInfo?.isSprintWeekend,
+  );
   const hasDeferredSprintError = Boolean(
     sessionLoadErrors.sprintQualifying || sessionLoadErrors.sprint,
   );
 
-  if (!primaryLoading && !loadingSessionTabs.length && !hasDeferredSprintError && !hasSprintData) {
+  if (!primaryLoading && !loadingSessionTabs.length && !hasDeferredSprintError && !hasSprintData && !isScheduledSprintWeekend) {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
@@ -341,7 +349,20 @@ const RaceSprint = () => {
       return <Card loading className="race-empty-command-card" />;
     }
     if (loadedSessionTabs.includes(sessionKey)) {
-      return <Card className="race-empty-command-card"><div className="race-weekend-empty">{t('noPreviewData')}</div></Card>;
+      const isSprintQualifying = sessionKey === 'sprintQualifying';
+      const copy = getSessionUnavailableCopy({
+        label: isSprintQualifying ? '冲刺排位' : '冲刺赛',
+        phase: getSessionDataPhase(isSprintQualifying ? raceInfo?.SprintQualifying : raceInfo?.Sprint),
+      });
+      return (
+        <Card className="race-empty-command-card">
+          <div className="race-weekend-empty">
+            <strong>{copy.title}</strong>
+            <span>{copy.description}</span>
+            {copy.canRetry ? <Button onClick={() => retrySession(sessionKey)}>重试此场次</Button> : null}
+          </div>
+        </Card>
+      );
     }
     return null;
   };

@@ -12,3 +12,7 @@ export function findIncompleteEligibleSessions(manifest, round) {
       }));
   });
 }
+
+export function shouldFailIncompleteSessions(failures, allowIncomplete) {
+  return failures.length > 0 && !allowIncomplete;
+}
