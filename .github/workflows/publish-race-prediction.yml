@@ -1,0 +1,91 @@
+name: Publish race winner prediction
+
+on:
+  schedule:
+    # Saturday/Sunday UTC, offset from the top of the hour to reduce queue delays.
+    - cron: '7,22,37,52 * * * 0,6'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: Season to publish; defaults to the current UTC year
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-race-winner-prediction
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24.13.0'
+  NPM_VERSION: '11.12.0'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve season
+        id: season
+        shell: bash
+        env:
+          REQUESTED_SEASON: ${{ inputs.season }}
+        run: |
+          season="$REQUESTED_SEASON"
+          if [ -z "$season" ]; then season="$(date -u +%Y)"; fi
+          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then
+            echo "::error::Season must be a four-digit year between 1950 and 2100."
+            exit 1
+          fi
+          echo "value=$season" >> "$GITHUB_OUTPUT"
+
+      - name: Check race-window eligibility
+        id: window
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SEASON: ${{ steps.season.outputs.value }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          race_at="$(curl --fail --silent --show-error "https://api.jolpi.ca/ergast/f1/${SEASON}/next.json" | jq -r '.MRData.RaceTable.Races[0] | select(.date != null) | (.date + "T" + (.time // "00:00:00Z"))')"
+          if [ -z "$race_at" ]; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          seconds_until_race="$(( $(date -u -d "$race_at" +%s) - $(date -u +%s) ))"
+          if [ "$seconds_until_race" -ge 0 ] && [ "$seconds_until_race" -le 259200 ]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        if: steps.window.outputs.eligible == 'true'
+        with:
+          persist-credentials: false
+          ref: develop
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: steps.window.outputs.eligible == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Use pinned npm
+        if: steps.window.outputs.eligible == 'true'
+        run: npm install --global npm@$NPM_VERSION
+
+      - name: Install toolchain
+        if: steps.window.outputs.eligible == 'true'
+        run: npm ci --include=dev
+
+      - name: Publish latest eligible prediction
+        if: steps.window.outputs.eligible == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run prediction:publish -- --season "${{ steps.season.outputs.value }}"

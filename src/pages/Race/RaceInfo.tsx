@@ -9,6 +9,7 @@ import { TEXT } from '@/pages/Race/shared/constants';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { RaceWeekendOverview } from '@/pages/Race/shared/components/RaceWeekendOverview';
 import { RaceWeatherOverview } from '@/pages/Race/shared/components/RaceWeatherOverview';
+import { RaceWinnerPredictionPanel } from '@/pages/Race/shared/components/RaceWinnerPredictionPanel';
 import { RaceHistoricalContextPanel } from '@/pages/Race/shared/components/RaceHistoricalContextPanel';
 import { RaceUpgradeSummaryPanel } from '@/pages/Race/shared/components/RaceUpgradeSummaryPanel';
 
@@ -121,6 +122,9 @@ const RaceInfo = () => {
         error={fastF1AnalyticsError}
         onRetry={retryFastF1Analytics}
       />
+      {isFeatureEnabled('race-predictions') ? (
+        <RaceWinnerPredictionPanel season={raceInfo.season} round={raceInfo.round} />
+      ) : null}
       <RaceHistoricalContextPanel
         summary={racePreviewSummary}
         loading={racePreviewLoading}
