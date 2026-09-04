@@ -98,7 +98,7 @@ async function installPredictionFixtures(page: Page) {
     await requestRoute.fulfill({
       contentType: 'application/json',
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: pathname.endsWith('/race_prediction_current') ? JSON.stringify(prediction) : '[]',
+      body: pathname.endsWith('/race_prediction_current') ? JSON.stringify([prediction]) : '[]',
     });
   });
   await page.route('**/fastf1/**', async (requestRoute) => {
