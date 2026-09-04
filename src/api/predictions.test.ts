@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { mapRacePredictionRow } from './predictions';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { mapRacePredictionRow, predictionsApi } from './predictions';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 
 describe('prediction API mapping', () => {
   it('maps the public Supabase view into the frontend contract', () => {
@@ -31,5 +36,18 @@ describe('prediction API mapping', () => {
       generated_at: '2026-09-03T10:00:00.000Z', data_cutoff_at: '2026-09-03T09:58:00.000Z',
       candidates: [{ driver_id: 'driver', constructor_id: 'team', rank: 1, probability: 1.2, factors: [] }],
     })).toThrow();
+  });
+
+  it('remains interceptable when browser configuration is absent', async () => {
+    vi.stubEnv('VITE_SUPABASE_URL', '');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+    const fetchMock = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(predictionsApi.getRacePrediction(2026, 13)).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.objectContaining({ href: expect.stringContaining('https://example.supabase.co/rest/v1/') }),
+      expect.any(Object),
+    );
   });
 });

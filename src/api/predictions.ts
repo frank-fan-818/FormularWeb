@@ -76,8 +76,8 @@ export const predictionsApi = {
     const seasonNumber = Number(season);
     const roundNumber = Number(round);
     if (!Number.isInteger(seasonNumber) || !Number.isInteger(roundNumber)) return null;
-    const baseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://example.supabase.co';
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
     const url = new URL('/rest/v1/race_prediction_current', baseUrl);
     url.searchParams.set('select', '*');
     url.searchParams.set('season', `eq.${seasonNumber}`);
