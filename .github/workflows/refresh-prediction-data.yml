@@ -75,6 +75,12 @@ jobs:
       - name: Refresh rolling backtest
         run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear
 
+      - name: Publish next-race prediction
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run prediction:publish -- --season "${{ steps.season.outputs.value }}"
+
       - name: Upload verified refresh output
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

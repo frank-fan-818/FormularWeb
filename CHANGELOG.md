@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-09-04
+
+### Added
+
+- Add typed Supabase persistence for versioned race-winner prediction runs and ranked candidates.
+- Publish fresh next-race predictions automatically during race weekends with idempotency and incomplete-field safeguards.
+- Show prediction freshness, phase, favourite, probability, and Top 3 candidates on Home and Race Info.
+
 ## [0.13.4] - 2026-08-19
 
 ### Fixed

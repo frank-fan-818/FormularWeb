@@ -208,6 +208,12 @@
   .race-info-section { padding-top: var(--space-4); }
   .race-info-section-heading small { text-align: left; }
 
+  .race-prediction-ranking { grid-template-columns: 1fr; }
+  .race-prediction-ranking > li { padding: var(--space-4); border-right: 0; border-bottom: 1px solid var(--border-secondary); }
+  .race-prediction-ranking > li:last-child { border-bottom: 0; }
+  .race-prediction-meta { align-items: flex-start; flex-wrap: wrap; }
+  .race-prediction-meta small { width: 100%; margin-left: 0; }
+
   .race-analysis-brief { grid-template-columns: 1fr; }
   .race-analysis-brief article {
     min-height: 108px;
