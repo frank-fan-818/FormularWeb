@@ -63,7 +63,7 @@ if (!homeRouteEntry && !manifest['index.html']?.isEntry) {
   throw new Error('Home is neither a route chunk nor part of the verified application entry.');
 }
 if (homeCriticalGzipBytes > 92 * 1024) {
-  throw new Error('Home critical JS path exceeds 92 KiB gzip');
+  throw new Error(`Home critical JS path exceeds 92 KiB gzip: ${homeCriticalGzipBytes} bytes`);
 }
 
 const raceInfoGzipBytes = await routeStaticGzipBytes('src/pages/Race/RaceInfo.tsx');

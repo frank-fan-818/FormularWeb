@@ -687,6 +687,7 @@ export interface FastF1RaceAnalytics {
 
 export * from './raceDetail';
 export * from './supabaseRows';
+export * from './racePrediction';
 export * from './diagnostics';
 
 export interface FastF1TelemetryPayload {

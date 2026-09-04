@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { CSSProperties } from 'react';
 import DocumentHead from '@/components/DocumentHead';
+import RacePredictionSummary from '@/components/RacePredictionSummary';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
@@ -179,6 +180,14 @@ const Home = () => {
             </button>
           </div>
         </div>
+
+        {focusRace ? (
+          <RacePredictionSummary
+            season={focusRace.season}
+            round={focusRace.round}
+            onOpen={() => navigate(focusRacePath)}
+          />
+        ) : null}
 
         <dl className="home-core-facts">
           <div>
