@@ -23,6 +23,12 @@ export function isTransientAuditFailure(output) {
   return TRANSIENT_AUDIT_PATTERNS.some((pattern) => pattern.test(output));
 }
 
+export function getAuditFailureDisposition({ attempt, output, signal, timedOut }, maxAttempts = MAX_ATTEMPTS) {
+  const transient = timedOut || (!signal && isTransientAuditFailure(output));
+  if (!transient) return 'fail';
+  return attempt < maxAttempts ? 'retry' : 'warn';
+}
+
 function runAudit() {
   const npmCli = process.env.npm_execpath;
   const command = npmCli ? process.execPath : process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -66,9 +72,15 @@ async function main() {
     const result = await runAudit();
     if (result.code === 0) return;
 
-    const canRetry = attempt < MAX_ATTEMPTS
-      && (result.timedOut || (!result.signal && isTransientAuditFailure(result.output)));
-    if (!canRetry) {
+    const disposition = getAuditFailureDisposition({ attempt, ...result });
+    if (disposition === 'warn') {
+      process.stderr.write(
+        '::warning title=npm audit unavailable::The npm advisory service remained unavailable after '
+        + `${MAX_ATTEMPTS} attempts. Other security checks continue to enforce this build.\n`,
+      );
+      return;
+    }
+    if (disposition === 'fail') {
       process.exitCode = result.code;
       return;
     }
