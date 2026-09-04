@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { predictionsApi } from '@/api/predictions';
 import { useCachedData } from '@/hooks/useCachedData';
 import { isRacePredictionFresh } from '@/utils/racePredictionPresentation';
 
@@ -12,7 +11,10 @@ export function useRacePrediction(
 ) {
   const valid = Number.isInteger(Number(season)) && Number.isInteger(Number(round));
   const fetchPrediction = useCallback(
-    () => predictionsApi.getRacePrediction(Number(season), Number(round)),
+    async () => {
+      const { predictionsApi } = await import('@/api/predictions');
+      return predictionsApi.getRacePrediction(Number(season), Number(round));
+    },
     [round, season],
   );
   const result = useCachedData(fetchPrediction, {

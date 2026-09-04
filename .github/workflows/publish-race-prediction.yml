@@ -67,7 +67,6 @@ jobs:
         if: steps.window.outputs.eligible == 'true'
         with:
           persist-credentials: false
-          ref: develop
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         if: steps.window.outputs.eligible == 'true'

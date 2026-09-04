@@ -1,51 +1,73 @@
-import { z } from 'zod';
-import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
-import type { RaceWinnerPrediction } from '@/types/racePrediction';
+import type { RacePredictionCandidate, RacePredictionPhase, RaceWinnerPrediction } from '@/types/racePrediction';
 
-const factorSchema = z.object({
-  feature: z.string().min(1),
-  contribution: z.coerce.number().finite(),
-});
+type UnknownRecord = Record<string, unknown>;
 
-const candidateSchema = z.object({
-  driver_id: z.string().min(1),
-  constructor_id: z.string().min(1),
-  rank: z.coerce.number().int().positive(),
-  probability: z.coerce.number().min(0).max(1),
-  factors: z.array(factorSchema).default([]),
-});
+const isRecord = (value: unknown): value is UnknownRecord => (
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+);
 
-const predictionRowSchema = z.object({
-  run_id: z.string().uuid(),
-  season: z.coerce.number().int().min(1950),
-  round: z.coerce.number().int().positive(),
-  race_name: z.string().min(1),
-  phase: z.enum(['pre_weekend', 'post_quali']),
-  model_version: z.string().min(1),
-  generated_at: z.string().datetime({ offset: true }),
-  data_cutoff_at: z.string().datetime({ offset: true }),
-  candidates: z.array(candidateSchema),
-});
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim() === '') throw new Error(`Invalid ${field}`);
+  return value;
+}
+
+function finiteNumber(value: unknown, field: string): number {
+  const number = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(number)) throw new Error(`Invalid ${field}`);
+  return number;
+}
+
+function positiveInteger(value: unknown, field: string, minimum = 1): number {
+  const number = finiteNumber(value, field);
+  if (!Number.isInteger(number) || number < minimum) throw new Error(`Invalid ${field}`);
+  return number;
+}
+
+function timestamp(value: unknown, field: string): string {
+  const text = requiredString(value, field);
+  if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(text) || !Number.isFinite(Date.parse(text))) {
+    throw new Error(`Invalid ${field}`);
+  }
+  return text;
+}
+
+function mapCandidate(value: unknown): RacePredictionCandidate {
+  if (!isRecord(value)) throw new Error('Invalid candidate');
+  const probability = finiteNumber(value.probability, 'candidate probability');
+  if (probability < 0 || probability > 1) throw new Error('Invalid candidate probability');
+  const factors = value.factors === undefined ? [] : value.factors;
+  if (!Array.isArray(factors)) throw new Error('Invalid candidate factors');
+  return {
+    driverId: requiredString(value.driver_id, 'driver id'),
+    constructorId: requiredString(value.constructor_id, 'constructor id'),
+    rank: positiveInteger(value.rank, 'candidate rank'),
+    probability,
+    factors: factors.map((factor) => {
+      if (!isRecord(factor)) throw new Error('Invalid prediction factor');
+      return {
+        feature: requiredString(factor.feature, 'factor feature'),
+        contribution: finiteNumber(factor.contribution, 'factor contribution'),
+      };
+    }),
+  };
+}
 
 export function mapRacePredictionRow(row: unknown): RaceWinnerPrediction {
-  const parsed = predictionRowSchema.parse(row);
+  if (!isRecord(row)) throw new Error('Invalid prediction row');
+  const phase = row.phase;
+  if (phase !== 'pre_weekend' && phase !== 'post_quali') throw new Error('Invalid prediction phase');
+  if (!Array.isArray(row.candidates)) throw new Error('Invalid prediction candidates');
   return {
-    runId: parsed.run_id,
-    season: parsed.season,
-    round: parsed.round,
-    raceName: parsed.race_name,
-    phase: parsed.phase,
-    modelVersion: parsed.model_version,
-    generatedAt: parsed.generated_at,
-    dataCutoffAt: parsed.data_cutoff_at,
-    candidates: parsed.candidates.map((candidate) => ({
-      driverId: candidate.driver_id,
-      constructorId: candidate.constructor_id,
-      rank: candidate.rank,
-      probability: candidate.probability,
-      factors: candidate.factors,
-    })),
+    runId: requiredString(row.run_id, 'run id'),
+    season: positiveInteger(row.season, 'season', 1950),
+    round: positiveInteger(row.round, 'round'),
+    raceName: requiredString(row.race_name, 'race name'),
+    phase: phase as RacePredictionPhase,
+    modelVersion: requiredString(row.model_version, 'model version'),
+    generatedAt: timestamp(row.generated_at, 'generated timestamp'),
+    dataCutoffAt: timestamp(row.data_cutoff_at, 'data cutoff timestamp'),
+    candidates: row.candidates.map(mapCandidate),
   };
 }
 
@@ -54,15 +76,22 @@ export const predictionsApi = {
     const seasonNumber = Number(season);
     const roundNumber = Number(round);
     if (!Number.isInteger(seasonNumber) || !Number.isInteger(roundNumber)) return null;
-
-    const query = supabase
-      .from('race_prediction_current')
-      .select('*')
-      .eq('season', seasonNumber)
-      .eq('round', roundNumber)
-      .maybeSingle();
-    const { data, error } = await measureRequest('supabase', 'race_prediction_current.getRace', async () => query);
-    if (error) throw error;
-    return data ? mapRacePredictionRow(data) : null;
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    const url = new URL('/rest/v1/race_prediction_current', baseUrl);
+    url.searchParams.set('select', '*');
+    url.searchParams.set('season', `eq.${seasonNumber}`);
+    url.searchParams.set('round', `eq.${roundNumber}`);
+    url.searchParams.set('limit', '1');
+    const response = await measureRequest('supabase', 'race_prediction_current.getRace', () => fetch(url, {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+      },
+    }));
+    if (!response.ok) throw new Error(`Prediction request failed with status ${response.status}`);
+    const rows: unknown = await response.json();
+    if (!Array.isArray(rows)) throw new Error('Invalid prediction response');
+    return rows.length > 0 ? mapRacePredictionRow(rows[0]) : null;
   },
 };
