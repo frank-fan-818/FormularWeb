@@ -29,7 +29,7 @@
     "service-worker:verify": "node ./scripts/verify-built-service-worker.mjs",
     "security:check": "node ./scripts/security-check.mjs",
     "sast:check": "node ./scripts/run-semgrep.mjs",
-    "security:audit": "npm audit --audit-level=high",
+    "security:audit": "node --test ./scripts/run-npm-audit.test.mjs && node ./scripts/run-npm-audit.mjs",
     "security:audit:production": "npm audit --omit=dev --audit-level=high",
     "workflows:verify": "node --test ./scripts/workflow-policy.test.mjs && node ./scripts/verify-github-workflows.mjs",
     "quality:check": "npm run workflows:verify && npm run deployment:verify && npm run encoding:check && npm run media:check && npm run security:check && npm run sast:check && npm run security:audit && npm run lint:strict && npm run type-check && npm run test:coverage && npm run build && npm run service-worker:verify && npm run budget:performance && npm run lighthouse:config:verify && npm run lighthouse && npm run test:e2e:built",
