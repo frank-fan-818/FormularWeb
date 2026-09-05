@@ -190,6 +190,42 @@ test('Sprint classifications load without Supabase session discovery', async ({ 
   });
 });
 
+test('Results tabs recover practice and sprint qualifying from FastF1', async ({ page }) => {
+  const errors: string[] = [];
+  const failedRequests: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('requestfailed', (request) => {
+    if (!request.failure()?.errorText.includes('ERR_ABORTED')) failedRequests.push(request.url());
+  });
+  await page.route('**/rest/v1/**', (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.route('**/f1-api/**', (route) => {
+    expect(route.request().url()).not.toContain('/practice/');
+    const isSchedule = new URL(route.request().url()).pathname.endsWith('/f1-api/2025.json');
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
+      total: isSchedule ? '2' : '1', RaceTable: { season: '2025', round: '2', Races: [...(isSchedule ? [previousRace] : []), { ...race,
+        FirstPractice: { date: '2025-03-21' }, SprintQualifying: { date: '2025-03-21' },
+      }] }, StandingsTable: { StandingsLists: [] },
+    } }) });
+  });
+  await page.route('**/fastf1/2025/2/*.json', (route) => {
+    const isPractice = route.request().url().endsWith('/FP1.json');
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      ...fastF1Payload('SQ'),
+      ...(isPractice ? { session: 'FP1', sessionName: 'Practice 1', qualifyingAnalysis: undefined } : {}),
+    }) });
+  });
+  await page.goto('/races/2/results?season=2025');
+  // Focusing a tab also scrolls Ant Design's mobile tab strip into view.
+  await page.getByRole('tab', { name: /FP1/ }).focus();
+  await page.getByRole('tab', { name: /FP1/ }).click();
+  await expect(page.getByRole('cell', { name: '1:32.123', exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: /SQ/ }).focus();
+  await page.getByRole('tab', { name: /SQ/ }).click();
+  await expect(page.getByRole('cell', { name: '1:30.789', exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+  expect(failedRequests).toEqual([]);
+});
+
 test('Race intelligence leaves skeleton state when optional APIs stall', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'One viewport is enough for timeout behavior.');
 

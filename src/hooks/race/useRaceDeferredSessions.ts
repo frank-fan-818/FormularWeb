@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { seasonApi } from '@/api/ergast';
 import { raceSessionResultsApi } from '@/api/raceSessionResults';
+import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
 import type {
   QualifyingResult,
   Race,
+  RaceSessionClassification,
   RaceClassificationSessionKey,
   DeferredRaceSessionKey,
   RaceRouteSection,
@@ -11,7 +13,11 @@ import type {
   Result,
 } from '@/types';
 import { DEFERRED_RACE_SESSION_KEYS } from '@/types';
-import { mergeUniqueSessionTabs, removeSessionTabs } from '@/pages/Race/shared/sessionData';
+import {
+  mergeUniqueSessionTabs, removeSessionTabs, buildDriverLookup, buildConstructorLookup,
+  buildFallbackDriver, buildFallbackConstructor, buildPracticeRanking,
+  buildFastF1QualifyingRows, buildSessionResultByDriver,
+} from '@/pages/Race/shared/sessionData';
 import {
   getAvailableDeferredSessionTabs,
   getRaceIdentity,
@@ -25,6 +31,38 @@ const EMPTY_ERRORS: Record<string, string> = {};
 const EMPTY_RESULTS: Result[] = [];
 const EMPTY_QUALIFYING_RESULTS: QualifyingResult[] = [];
 
+export async function loadFastF1Classification(
+  season: string, round: string, session: RaceSessionCode, race: Race | null,
+): Promise<RaceSessionClassification | null> {
+  const analytics = await fastF1AnalyticsApi.getRaceAnalytics(season, round, session);
+  if (!analytics) return null;
+  const participants = [...(race?.Results || []), ...(race?.QualifyingResults || [])];
+  const drivers = buildDriverLookup(participants);
+  const constructors = buildConstructorLookup(participants);
+  if (session === 'SQ' || session === 'SS') {
+    // Some exports synthesize phase positions from driver order even when
+    // official classification and all phase times are absent.
+    const hasClassification = analytics.sessionResults?.some((result) => (result.position || 0) > 0);
+    const rows = buildFastF1QualifyingRows(analytics, drivers, constructors);
+    if (!hasClassification && !rows.some((row) => row.Q1 || row.Q2 || row.Q3)) return null;
+    return rows.length ? { season, round, QualifyingResults: rows } : null;
+  }
+  const byDriver = buildSessionResultByDriver(analytics);
+  const rows = buildPracticeRanking(analytics).map((item, index): Result => {
+    const classification = byDriver.get(item.driver);
+    const team = item.team || analytics.lapTimeSeries.find((series) => series.driver === item.driver)?.team || '';
+    return {
+      number: classification?.driverNumber || '',
+      position: String(index + 1), positionText: String(index + 1), points: '0', grid: '-',
+      laps: classification?.laps == null ? '' : String(classification.laps),
+      status: '', Time: { millis: '', time: item.bestTime },
+      Driver: buildFallbackDriver(item.driver, drivers, classification),
+      Constructor: buildFallbackConstructor(team, constructors),
+    };
+  });
+  return rows.length ? { season, round, Results: rows } : null;
+}
+
 interface UseRaceDeferredSessionsOptions {
   season: string;
   round: string | undefined;
@@ -35,11 +73,12 @@ interface UseRaceDeferredSessionsOptions {
 }
 
 export async function loadRaceSessionWithFallback(
-  primary: () => Promise<Race | null>,
-  fallback: () => Promise<Race | null>,
+  primary: () => Promise<RaceSessionClassification | null>,
+  fallback: () => Promise<RaceSessionClassification | null>,
   diagnostics?: DiagnosticLoggerScope | null,
   operation = 'deferred_session',
-): Promise<Race | null> {
+  fallbackSource: 'jolpica' | 'fastf1_static' = 'jolpica',
+): Promise<RaceSessionClassification | null> {
   try {
     const primaryData = await primary();
     if (primaryData) return primaryData;
@@ -49,7 +88,7 @@ export async function loadRaceSessionWithFallback(
     // The official source remains usable when optional database data is unavailable.
   }
   const fallbackData = await fallback();
-  diagnostics?.log({ operation, outcome: fallbackData ? 'succeeded' : 'empty', source: 'jolpica' });
+  diagnostics?.log({ operation, outcome: fallbackData ? 'succeeded' : 'empty', source: fallbackSource });
   return fallbackData;
 }
 
@@ -72,7 +111,7 @@ export function getDeferredSessionsToLoad(
   return [];
 }
 
-export function getSprintClassificationResults(sessionData: Race | null): Result[] {
+export function getSprintClassificationResults(sessionData: RaceSessionClassification | null): Result[] {
   return sessionData?.SprintResults || sessionData?.Results || [];
 }
 
@@ -182,7 +221,7 @@ export function useRaceDeferredSessions({
     setLoadingTabs((current) => mergeUniqueSessionTabs(current, pendingSessions));
 
     const load = async (sessionKey: DeferredRaceSessionKey) => {
-      let sessionData: Race | null = null;
+      let sessionData: RaceSessionClassification | null = null;
       if (sessionKey === 'sprint') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getSprintResult(season, round),
@@ -191,27 +230,37 @@ export function useRaceDeferredSessions({
           'sprint_results',
         );
       } else if (sessionKey === 'sprintQualifying') {
-        sessionData = await raceSessionResultsApi.getSprintQualifyingResult(season, round);
+        sessionData = await loadRaceSessionWithFallback(
+          () => raceSessionResultsApi.getSprintQualifyingResult(season, round),
+          async () => {
+            const preferred = season === '2023' ? 'SS' : 'SQ';
+            return await loadFastF1Classification(season, round, preferred, raceInfo)
+              || await loadFastF1Classification(season, round, preferred === 'SS' ? 'SQ' : 'SS', raceInfo);
+          }, diagnostics, 'sprint_qualifying_results', 'fastf1_static',
+        );
       } else if (sessionKey === 'fp1') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 1),
-          () => seasonApi.getPracticeResults(season, round, 1),
+          () => loadFastF1Classification(season, round, 'FP1', raceInfo),
           diagnostics,
           'fp1_results',
+          'fastf1_static',
         );
       } else if (sessionKey === 'fp2') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 2),
-          () => seasonApi.getPracticeResults(season, round, 2),
+          () => loadFastF1Classification(season, round, 'FP2', raceInfo),
           diagnostics,
           'fp2_results',
+          'fastf1_static',
         );
       } else if (sessionKey === 'fp3') {
         sessionData = await loadRaceSessionWithFallback(
           () => raceSessionResultsApi.getPracticeResult(season, round, 3),
-          () => seasonApi.getPracticeResults(season, round, 3),
+          () => loadFastF1Classification(season, round, 'FP3', raceInfo),
           diagnostics,
           'fp3_results',
+          'fastf1_static',
         );
       }
       if (cancelled) return;
@@ -253,7 +302,7 @@ export function useRaceDeferredSessions({
       loadingTabsRef.current = removeSessionTabs(loadingTabsRef.current, pendingSessions) as DeferredRaceSessionKey[];
       setLoadingTabs((current) => removeSessionTabs(current, pendingSessions));
     };
-  }, [diagnostics, raceIdentity, reloadKey, round, season, sessionsToLoad]);
+  }, [diagnostics, raceIdentity, raceInfo, reloadKey, round, season, sessionsToLoad]);
 
   const retrySession = useCallback((sessionKey: DeferredRaceSessionKey) => {
     loadedTabsRef.current = removeSessionTabs(loadedTabsRef.current, [sessionKey]) as DeferredRaceSessionKey[];

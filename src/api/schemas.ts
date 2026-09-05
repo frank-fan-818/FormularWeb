@@ -92,6 +92,11 @@ export const RaceSchema = z.object({
 
 export type ValidatedRace = z.infer<typeof RaceSchema>;
 
+// Imported classifications do not contain complete schedule/circuit metadata.
+export const RaceSessionClassificationSchema = RaceSchema.pick({
+  season: true, round: true, Results: true, QualifyingResults: true, SprintResults: true,
+});
+
 export const RaceTableSchema = z.object({
   season: z.string().optional(),
   round: z.string().optional(),

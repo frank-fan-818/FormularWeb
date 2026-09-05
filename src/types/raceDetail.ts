@@ -1,3 +1,7 @@
+import type { Race } from './index';
+
+export type RaceSessionClassification = Pick<Race, 'season' | 'round' | 'Results' | 'QualifyingResults' | 'SprintResults'>;
+
 export const RACE_ROUTE_SECTIONS = ['results', 'qualifying', 'race', 'sprint', 'info'] as const;
 
 export type RaceRouteSection = typeof RACE_ROUTE_SECTIONS[number];
