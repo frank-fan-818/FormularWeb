@@ -1,13 +1,16 @@
 {
-  "generatedAt": "2026-05-28T06:35:09.453350+00:00",
+  "generatedAt": "2026-09-05T13:21:58.681132+00:00",
   "season": 2025,
   "summary": {
     "rounds": 24,
     "sessions": 120,
-    "completeRounds": 24,
-    "completeSessions": 120,
-    "missingSessions": 0,
-    "bytes": 87017354
+    "completeRounds": 0,
+    "completeSessions": 66,
+    "missingSessions": 54,
+    "eligibleSessions": 66,
+    "completeEligibleSessions": 66,
+    "incompleteEligibleSessions": 0,
+    "bytes": 8084226
   },
   "rounds": [
     {
@@ -16,40 +19,10 @@
       "country": "Australia",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\1\\R.json",
-          "exists": true,
-          "bytes": 2739940,
-          "eventName": "Australian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 17,
-          "tyreStrategies": 20,
-          "weatherPoints": 103,
-          "telemetryDrivers": 17,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\1\\Q.json",
-          "exists": true,
-          "bytes": 124516,
-          "eventName": "Australian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 19,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\1\\FP1.json",
           "exists": true,
-          "bytes": 110442,
+          "bytes": 114615,
           "eventName": "Australian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -58,13 +31,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\1\\FP2.json",
           "exists": true,
-          "bytes": 141852,
+          "bytes": 143200,
           "eventName": "Australian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -73,13 +47,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\1\\FP3.json",
           "exists": true,
-          "bytes": 98134,
+          "bytes": 100380,
           "eventName": "Australian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -88,10 +63,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\1\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\1\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 2,
@@ -99,70 +107,10 @@
       "country": "China",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\2\\R.json",
-          "exists": true,
-          "bytes": 3545748,
-          "eventName": "Chinese Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 92,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\2\\Q.json",
-          "exists": true,
-          "bytes": 127685,
-          "eventName": "Chinese Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\2\\S.json",
-          "exists": true,
-          "bytes": 101128,
-          "eventName": "Chinese Grand Prix",
-          "sessionName": "Sprint",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "SQ",
-          "path": "public\\fastf1\\2025\\2\\SQ.json",
-          "exists": true,
-          "bytes": 103986,
-          "eventName": "Chinese Grand Prix",
-          "sessionName": "Sprint Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\2\\FP1.json",
           "exists": true,
-          "bytes": 108829,
+          "bytes": 110609,
           "eventName": "Chinese Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -171,10 +119,75 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\2\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\2\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\2\\SQ.json",
+          "exists": true,
+          "bytes": 127832,
+          "eventName": "Chinese Grand Prix",
+          "sessionName": "Sprint Qualifying",
+          "sessionResults": 20,
+          "lapTimeSeries": 20,
+          "tyreStrategies": 20,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 20,
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\2\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 3,
@@ -182,40 +195,10 @@
       "country": "Japan",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\3\\R.json",
-          "exists": true,
-          "bytes": 3384056,
-          "eventName": "Japanese Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 84,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\3\\Q.json",
-          "exists": true,
-          "bytes": 120113,
-          "eventName": "Japanese Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\3\\FP1.json",
           "exists": true,
-          "bytes": 123018,
+          "bytes": 123636,
           "eventName": "Japanese Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -224,13 +207,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\3\\FP2.json",
           "exists": true,
-          "bytes": 52019,
+          "bytes": 55860,
           "eventName": "Japanese Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -239,13 +223,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\3\\FP3.json",
           "exists": true,
-          "bytes": 84799,
+          "bytes": 86320,
           "eventName": "Japanese Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -254,10 +239,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\3\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\3\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 4,
@@ -265,40 +283,10 @@
       "country": "Bahrain",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\4\\R.json",
-          "exists": true,
-          "bytes": 3583332,
-          "eventName": "Bahrain Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 97,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\4\\Q.json",
-          "exists": true,
-          "bytes": 117944,
-          "eventName": "Bahrain Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\4\\FP1.json",
           "exists": true,
-          "bytes": 99993,
+          "bytes": 101080,
           "eventName": "Bahrain Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -307,13 +295,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\4\\FP2.json",
           "exists": true,
-          "bytes": 128792,
+          "bytes": 130384,
           "eventName": "Bahrain Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -322,13 +311,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\4\\FP3.json",
           "exists": true,
-          "bytes": 78961,
+          "bytes": 81985,
           "eventName": "Bahrain Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -337,10 +327,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\4\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\4\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 5,
@@ -348,40 +371,10 @@
       "country": "Saudi Arabia",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\5\\R.json",
-          "exists": true,
-          "bytes": 3120783,
-          "eventName": "Saudi Arabian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 83,
-          "telemetryDrivers": 18,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\5\\Q.json",
-          "exists": true,
-          "bytes": 121990,
-          "eventName": "Saudi Arabian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\5\\FP1.json",
           "exists": true,
-          "bytes": 106960,
+          "bytes": 108068,
           "eventName": "Saudi Arabian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -390,13 +383,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\5\\FP2.json",
           "exists": true,
-          "bytes": 92024,
+          "bytes": 94758,
           "eventName": "Saudi Arabian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -405,13 +399,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\5\\FP3.json",
           "exists": true,
-          "bytes": 91176,
+          "bytes": 92265,
           "eventName": "Saudi Arabian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -420,10 +415,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\5\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\5\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 6,
@@ -431,70 +459,10 @@
       "country": "United States",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\6\\R.json",
-          "exists": true,
-          "bytes": 3199253,
-          "eventName": "Miami Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 91,
-          "telemetryDrivers": 19,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\6\\Q.json",
-          "exists": true,
-          "bytes": 125678,
-          "eventName": "Miami Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\6\\S.json",
-          "exists": true,
-          "bytes": 88413,
-          "eventName": "Miami Grand Prix",
-          "sessionName": "Sprint",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 19,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "SQ",
-          "path": "public\\fastf1\\2025\\6\\SQ.json",
-          "exists": true,
-          "bytes": 100661,
-          "eventName": "Miami Grand Prix",
-          "sessionName": "Sprint Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\6\\FP1.json",
           "exists": true,
-          "bytes": 106385,
+          "bytes": 108192,
           "eventName": "Miami Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -503,10 +471,75 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\6\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\6\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\6\\SQ.json",
+          "exists": true,
+          "bytes": 105009,
+          "eventName": "Miami Grand Prix",
+          "sessionName": "Sprint Qualifying",
+          "sessionResults": 20,
+          "lapTimeSeries": 20,
+          "tyreStrategies": 20,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 20,
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\6\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 7,
@@ -514,40 +547,10 @@
       "country": "Italy",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\7\\R.json",
-          "exists": true,
-          "bytes": 3053560,
-          "eventName": "Emilia Romagna Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 92,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\7\\Q.json",
-          "exists": true,
-          "bytes": 116659,
-          "eventName": "Emilia Romagna Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 19,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\7\\FP1.json",
           "exists": true,
-          "bytes": 109320,
+          "bytes": 111609,
           "eventName": "Emilia Romagna Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -556,13 +559,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\7\\FP2.json",
           "exists": true,
-          "bytes": 129857,
+          "bytes": 135909,
           "eventName": "Emilia Romagna Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -571,13 +575,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\7\\FP3.json",
           "exists": true,
-          "bytes": 98685,
+          "bytes": 101700,
           "eventName": "Emilia Romagna Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -586,10 +591,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\7\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\7\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 8,
@@ -597,40 +635,10 @@
       "country": "Monaco",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\8\\R.json",
-          "exists": true,
-          "bytes": 2955601,
-          "eventName": "Monaco Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 102,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\8\\Q.json",
-          "exists": true,
-          "bytes": 158278,
-          "eventName": "Monaco Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\8\\FP1.json",
           "exists": true,
-          "bytes": 156911,
+          "bytes": 166754,
           "eventName": "Monaco Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -639,13 +647,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\8\\FP2.json",
           "exists": true,
-          "bytes": 158815,
+          "bytes": 164874,
           "eventName": "Monaco Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -654,13 +663,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\8\\FP3.json",
           "exists": true,
-          "bytes": 133969,
+          "bytes": 137935,
           "eventName": "Monaco Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -669,10 +679,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\8\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\8\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 9,
@@ -680,40 +723,10 @@
       "country": "Spain",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\9\\R.json",
-          "exists": true,
-          "bytes": 2846136,
-          "eventName": "Spanish Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 19,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 19,
-          "weatherPoints": 94,
-          "telemetryDrivers": 19,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\9\\Q.json",
-          "exists": true,
-          "bytes": 110130,
-          "eventName": "Spanish Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\9\\FP1.json",
           "exists": true,
-          "bytes": 135873,
+          "bytes": 138878,
           "eventName": "Spanish Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -722,13 +735,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\9\\FP2.json",
           "exists": true,
-          "bytes": 153029,
+          "bytes": 155774,
           "eventName": "Spanish Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -737,13 +751,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\9\\FP3.json",
           "exists": true,
-          "bytes": 84455,
+          "bytes": 87203,
           "eventName": "Spanish Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -752,10 +767,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\9\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\9\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 10,
@@ -763,40 +811,10 @@
       "country": "Canada",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\10\\R.json",
-          "exists": true,
-          "bytes": 2911418,
-          "eventName": "Canadian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 92,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\10\\Q.json",
-          "exists": true,
-          "bytes": 145970,
-          "eventName": "Canadian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\10\\FP1.json",
           "exists": true,
-          "bytes": 143372,
+          "bytes": 148284,
           "eventName": "Canadian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -805,13 +823,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\10\\FP2.json",
           "exists": true,
-          "bytes": 155138,
+          "bytes": 158134,
           "eventName": "Canadian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -820,13 +839,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\10\\FP3.json",
           "exists": true,
-          "bytes": 122210,
+          "bytes": 125184,
           "eventName": "Canadian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -835,10 +855,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\10\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\10\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 11,
@@ -846,40 +899,10 @@
       "country": "Austria",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\11\\R.json",
-          "exists": true,
-          "bytes": 2329584,
-          "eventName": "Austrian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 17,
-          "tyreStrategies": 20,
-          "weatherPoints": 85,
-          "telemetryDrivers": 17,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\11\\Q.json",
-          "exists": true,
-          "bytes": 125747,
-          "eventName": "Austrian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\11\\FP1.json",
           "exists": true,
-          "bytes": 169098,
+          "bytes": 171384,
           "eventName": "Austrian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -888,13 +911,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\11\\FP2.json",
           "exists": true,
-          "bytes": 175527,
+          "bytes": 176858,
           "eventName": "Austrian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -903,13 +927,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\11\\FP3.json",
           "exists": true,
-          "bytes": 115819,
+          "bytes": 120535,
           "eventName": "Austrian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -918,10 +943,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\11\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\11\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 12,
@@ -929,40 +987,10 @@
       "country": "United Kingdom",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\12\\R.json",
-          "exists": true,
-          "bytes": 3120273,
-          "eventName": "British Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 18,
-          "tyreStrategies": 20,
-          "weatherPoints": 99,
-          "telemetryDrivers": 18,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\12\\Q.json",
-          "exists": true,
-          "bytes": 118966,
-          "eventName": "British Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\12\\FP1.json",
           "exists": true,
-          "bytes": 124102,
+          "bytes": 126869,
           "eventName": "British Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -971,13 +999,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\12\\FP2.json",
           "exists": true,
-          "bytes": 131913,
+          "bytes": 133486,
           "eventName": "British Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -986,13 +1015,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\12\\FP3.json",
           "exists": true,
-          "bytes": 74561,
+          "bytes": 88280,
           "eventName": "British Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1001,10 +1031,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\12\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\12\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 13,
@@ -1012,70 +1075,10 @@
       "country": "Belgium",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\13\\R.json",
-          "exists": true,
-          "bytes": 3833485,
-          "eventName": "Belgian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 87,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\13\\Q.json",
-          "exists": true,
-          "bytes": 120159,
-          "eventName": "Belgian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\13\\S.json",
-          "exists": true,
-          "bytes": 81783,
-          "eventName": "Belgian Grand Prix",
-          "sessionName": "Sprint",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "SQ",
-          "path": "public\\fastf1\\2025\\13\\SQ.json",
-          "exists": true,
-          "bytes": 94855,
-          "eventName": "Belgian Grand Prix",
-          "sessionName": "Sprint Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\13\\FP1.json",
           "exists": true,
-          "bytes": 92962,
+          "bytes": 96278,
           "eventName": "Belgian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1084,10 +1087,75 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\13\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\13\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\13\\SQ.json",
+          "exists": true,
+          "bytes": 112740,
+          "eventName": "Belgian Grand Prix",
+          "sessionName": "Sprint Qualifying",
+          "sessionResults": 20,
+          "lapTimeSeries": 20,
+          "tyreStrategies": 20,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 20,
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\13\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 14,
@@ -1095,40 +1163,10 @@
       "country": "Hungary",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\14\\R.json",
-          "exists": true,
-          "bytes": 3102874,
-          "eventName": "Hungarian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 97,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\14\\Q.json",
-          "exists": true,
-          "bytes": 115395,
-          "eventName": "Hungarian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\14\\FP1.json",
           "exists": true,
-          "bytes": 137838,
+          "bytes": 142779,
           "eventName": "Hungarian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1137,13 +1175,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\14\\FP2.json",
           "exists": true,
-          "bytes": 151751,
+          "bytes": 156713,
           "eventName": "Hungarian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1152,13 +1191,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\14\\FP3.json",
           "exists": true,
-          "bytes": 103586,
+          "bytes": 105661,
           "eventName": "Hungarian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1167,10 +1207,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\14\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\14\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 15,
@@ -1178,40 +1251,10 @@
       "country": "Netherlands",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\15\\R.json",
-          "exists": true,
-          "bytes": 2817419,
-          "eventName": "Dutch Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 99,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\15\\Q.json",
-          "exists": true,
-          "bytes": 121191,
-          "eventName": "Dutch Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\15\\FP1.json",
           "exists": true,
-          "bytes": 144397,
+          "bytes": 156919,
           "eventName": "Dutch Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1220,13 +1263,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\15\\FP2.json",
           "exists": true,
-          "bytes": 116714,
+          "bytes": 129842,
           "eventName": "Dutch Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1235,13 +1279,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\15\\FP3.json",
           "exists": true,
-          "bytes": 114323,
+          "bytes": 118612,
           "eventName": "Dutch Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1250,10 +1295,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\15\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\15\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 16,
@@ -1261,40 +1339,10 @@
       "country": "Italy",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\16\\R.json",
-          "exists": true,
-          "bytes": 2887542,
-          "eventName": "Italian Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 75,
-          "telemetryDrivers": 19,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\16\\Q.json",
-          "exists": true,
-          "bytes": 127522,
-          "eventName": "Italian Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\16\\FP1.json",
           "exists": true,
-          "bytes": 119028,
+          "bytes": 126026,
           "eventName": "Italian Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1303,13 +1351,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\16\\FP2.json",
           "exists": true,
-          "bytes": 136927,
+          "bytes": 143256,
           "eventName": "Italian Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1318,13 +1367,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\16\\FP3.json",
           "exists": true,
-          "bytes": 107765,
+          "bytes": 109587,
           "eventName": "Italian Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1333,10 +1383,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\16\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\16\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 17,
@@ -1344,40 +1427,10 @@
       "country": "Azerbaijan",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\17\\R.json",
-          "exists": true,
-          "bytes": 3627830,
-          "eventName": "Azerbaijan Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 95,
-          "telemetryDrivers": 19,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\17\\Q.json",
-          "exists": true,
-          "bytes": 121150,
-          "eventName": "Azerbaijan Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\17\\FP1.json",
           "exists": true,
-          "bytes": 72124,
+          "bytes": 96569,
           "eventName": "Azerbaijan Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1386,13 +1439,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\17\\FP2.json",
           "exists": true,
-          "bytes": 96683,
+          "bytes": 104158,
           "eventName": "Azerbaijan Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1401,13 +1455,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\17\\FP3.json",
           "exists": true,
-          "bytes": 86573,
+          "bytes": 99319,
           "eventName": "Azerbaijan Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1416,10 +1471,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\17\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\17\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 18,
@@ -1427,40 +1515,10 @@
       "country": "Singapore",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\18\\R.json",
-          "exists": true,
-          "bytes": 3590900,
-          "eventName": "Singapore Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 102,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\18\\Q.json",
-          "exists": true,
-          "bytes": 121594,
-          "eventName": "Singapore Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\18\\FP1.json",
           "exists": true,
-          "bytes": 111812,
+          "bytes": 113160,
           "eventName": "Singapore Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1469,13 +1527,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\18\\FP2.json",
           "exists": true,
-          "bytes": 82223,
+          "bytes": 92891,
           "eventName": "Singapore Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1484,13 +1543,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\18\\FP3.json",
           "exists": true,
-          "bytes": 106263,
+          "bytes": 117264,
           "eventName": "Singapore Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1499,10 +1559,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\18\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\18\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 19,
@@ -1510,70 +1603,10 @@
       "country": "United States",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\19\\R.json",
-          "exists": true,
-          "bytes": 3640110,
-          "eventName": "United States Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 95,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\19\\Q.json",
-          "exists": true,
-          "bytes": 118537,
-          "eventName": "United States Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 19,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\19\\S.json",
-          "exists": true,
-          "bytes": 79307,
-          "eventName": "United States Grand Prix",
-          "sessionName": "Sprint",
-          "sessionResults": 20,
-          "lapTimeSeries": 17,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "SQ",
-          "path": "public\\fastf1\\2025\\19\\SQ.json",
-          "exists": true,
-          "bytes": 100151,
-          "eventName": "United States Grand Prix",
-          "sessionName": "Sprint Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\19\\FP1.json",
           "exists": true,
-          "bytes": 105000,
+          "bytes": 107276,
           "eventName": "United States Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1582,10 +1615,75 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\19\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\19\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\19\\SQ.json",
+          "exists": true,
+          "bytes": 103907,
+          "eventName": "United States Grand Prix",
+          "sessionName": "Sprint Qualifying",
+          "sessionResults": 20,
+          "lapTimeSeries": 20,
+          "tyreStrategies": 20,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 20,
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\19\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 20,
@@ -1593,40 +1691,10 @@
       "country": "Mexico",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\20\\R.json",
-          "exists": true,
-          "bytes": 3093345,
-          "eventName": "Mexico City Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 100,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\20\\Q.json",
-          "exists": true,
-          "bytes": 124206,
-          "eventName": "Mexico City Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\20\\FP1.json",
           "exists": true,
-          "bytes": 154711,
+          "bytes": 154848,
           "eventName": "Mexico City Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1635,13 +1703,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\20\\FP2.json",
           "exists": true,
-          "bytes": 164998,
+          "bytes": 166106,
           "eventName": "Mexico City Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1650,13 +1719,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\20\\FP3.json",
           "exists": true,
-          "bytes": 126986,
+          "bytes": 127604,
           "eventName": "Mexico City Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1665,10 +1735,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\20\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\20\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 21,
@@ -1676,70 +1779,10 @@
       "country": "Brazil",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\21\\R.json",
-          "exists": true,
-          "bytes": 2765278,
-          "eventName": "São Paulo Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 94,
-          "telemetryDrivers": 19,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\21\\Q.json",
-          "exists": true,
-          "bytes": 126645,
-          "eventName": "São Paulo Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 19,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 19,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\21\\S.json",
-          "exists": true,
-          "bytes": 115463,
-          "eventName": "São Paulo Grand Prix",
-          "sessionName": "Sprint",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "SQ",
-          "path": "public\\fastf1\\2025\\21\\SQ.json",
-          "exists": true,
-          "bytes": 111191,
-          "eventName": "São Paulo Grand Prix",
-          "sessionName": "Sprint Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\21\\FP1.json",
           "exists": true,
-          "bytes": 163053,
+          "bytes": 165089,
           "eventName": "São Paulo Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1748,10 +1791,75 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\21\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\21\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\21\\SQ.json",
+          "exists": true,
+          "bytes": 114798,
+          "eventName": "São Paulo Grand Prix",
+          "sessionName": "Sprint Qualifying",
+          "sessionResults": 20,
+          "lapTimeSeries": 20,
+          "tyreStrategies": 20,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 20,
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\21\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 22,
@@ -1759,40 +1867,10 @@
       "country": "United States",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\22\\R.json",
-          "exists": true,
-          "bytes": 3149898,
-          "eventName": "Las Vegas Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 19,
-          "tyreStrategies": 20,
-          "weatherPoints": 83,
-          "telemetryDrivers": 18,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\22\\Q.json",
-          "exists": true,
-          "bytes": 144690,
-          "eventName": "Las Vegas Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\22\\FP1.json",
           "exists": true,
-          "bytes": 136506,
+          "bytes": 143624,
           "eventName": "Las Vegas Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1801,13 +1879,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\22\\FP2.json",
           "exists": true,
-          "bytes": 81585,
+          "bytes": 89039,
           "eventName": "Las Vegas Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1816,13 +1895,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\22\\FP3.json",
           "exists": true,
-          "bytes": 103970,
+          "bytes": 119669,
           "eventName": "Las Vegas Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1831,10 +1911,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\22\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\22\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 23,
@@ -1842,55 +1955,58 @@
       "country": "Qatar",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\23\\R.json",
+          "session": "FP1",
+          "path": "public\\fastf1\\2025\\23\\FP1.json",
           "exists": true,
-          "bytes": 3115195,
+          "bytes": 143106,
           "eventName": "Qatar Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 86,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\23\\Q.json",
-          "exists": true,
-          "bytes": 138822,
-          "eventName": "Qatar Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
-          "session": "S",
-          "path": "public\\fastf1\\2025\\23\\S.json",
-          "exists": true,
-          "bytes": 100677,
-          "eventName": "Qatar Grand Prix",
-          "sessionName": "Sprint",
+          "sessionName": "Practice 1",
           "sessionResults": 20,
           "lapTimeSeries": 20,
           "tyreStrategies": 20,
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "FP2",
+          "path": "public\\fastf1\\2025\\23\\FP2.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "FP3",
+          "path": "public\\fastf1\\2025\\23\\FP3.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         },
         {
           "session": "SQ",
           "path": "public\\fastf1\\2025\\23\\SQ.json",
           "exists": true,
-          "bytes": 120776,
+          "bytes": 124767,
           "eventName": "Qatar Grand Prix",
           "sessionName": "Sprint Qualifying",
           "sessionResults": 20,
@@ -1899,25 +2015,27 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 20,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
-          "session": "FP1",
-          "path": "public\\fastf1\\2025\\23\\FP1.json",
-          "exists": true,
-          "bytes": 140808,
-          "eventName": "Qatar Grand Prix",
-          "sessionName": "Practice 1",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\23\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     },
     {
       "round": 24,
@@ -1925,40 +2043,10 @@
       "country": "United Arab Emirates",
       "sessions": [
         {
-          "session": "R",
-          "path": "public\\fastf1\\2025\\24\\R.json",
-          "exists": true,
-          "bytes": 3276008,
-          "eventName": "Abu Dhabi Grand Prix",
-          "sessionName": "Race",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 87,
-          "telemetryDrivers": 20,
-          "qualifyingBestLaps": 0,
-          "complete": true
-        },
-        {
-          "session": "Q",
-          "path": "public\\fastf1\\2025\\24\\Q.json",
-          "exists": true,
-          "bytes": 121217,
-          "eventName": "Abu Dhabi Grand Prix",
-          "sessionName": "Qualifying",
-          "sessionResults": 20,
-          "lapTimeSeries": 20,
-          "tyreStrategies": 20,
-          "weatherPoints": 0,
-          "telemetryDrivers": 0,
-          "qualifyingBestLaps": 20,
-          "complete": true
-        },
-        {
           "session": "FP1",
           "path": "public\\fastf1\\2025\\24\\FP1.json",
           "exists": true,
-          "bytes": 133741,
+          "bytes": 135556,
           "eventName": "Abu Dhabi Grand Prix",
           "sessionName": "Practice 1",
           "sessionResults": 20,
@@ -1967,13 +2055,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP2",
           "path": "public\\fastf1\\2025\\24\\FP2.json",
           "exists": true,
-          "bytes": 141768,
+          "bytes": 142382,
           "eventName": "Abu Dhabi Grand Prix",
           "sessionName": "Practice 2",
           "sessionResults": 20,
@@ -1982,13 +2071,14 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
         },
         {
           "session": "FP3",
           "path": "public\\fastf1\\2025\\24\\FP3.json",
           "exists": true,
-          "bytes": 84458,
+          "bytes": 90838,
           "eventName": "Abu Dhabi Grand Prix",
           "sessionName": "Practice 3",
           "sessionResults": 20,
@@ -1997,10 +2087,43 @@
           "weatherPoints": 0,
           "telemetryDrivers": 0,
           "qualifyingBestLaps": 0,
-          "complete": true
+          "complete": true,
+          "eligible": true
+        },
+        {
+          "session": "SQ",
+          "path": "public\\fastf1\\2025\\24\\SQ.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
+        },
+        {
+          "session": "SS",
+          "path": "public\\fastf1\\2025\\24\\SS.json",
+          "exists": false,
+          "bytes": 0,
+          "eventName": "",
+          "sessionName": "",
+          "sessionResults": 0,
+          "lapTimeSeries": 0,
+          "tyreStrategies": 0,
+          "weatherPoints": 0,
+          "telemetryDrivers": 0,
+          "qualifyingBestLaps": 0,
+          "complete": false,
+          "eligible": false
         }
       ],
-      "complete": true
+      "complete": false
     }
   ]
 }

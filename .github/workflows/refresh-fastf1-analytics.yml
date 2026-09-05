@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: develop
+          ref: main
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -90,7 +90,9 @@ jobs:
           echo "round=$REQUESTED_ROUND" >> "$GITHUB_OUTPUT"
 
       - name: Test automation policies
-        run: npm run fastf1:automation-test
+        run: |
+          npm run fastf1:automation-test
+          python -m unittest scripts.fastf1_classification_test
 
       - name: Export completed analysis sessions
         id: export
@@ -100,7 +102,7 @@ jobs:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
         run: |
-          args=(--season "$SEASON" --analysis-only --completed-only --refresh-incomplete --availability-delay-hours 4)
+          args=(--season "$SEASON" --completed-only --refresh-incomplete --availability-delay-hours 4)
           if [ -n "$ROUND" ]; then args+=(--from-round "$ROUND" --to-round "$ROUND"); fi
           python scripts/export-fastf1-season-data.py "${args[@]}"
 
@@ -112,7 +114,7 @@ jobs:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
         run: |
-          args=(--season "$SEASON" --complete-only --session R --session Q --session S --session SQ --session SS)
+          args=(--season "$SEASON" --complete-only --session R --session Q --session S --session SQ --session SS --session FP1 --session FP2 --session FP3)
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
           npm run fastf1:import-sessions -- "${args[@]}"
 
@@ -164,7 +166,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: develop
+          ref: main
 
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -175,7 +177,7 @@ jobs:
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          base: develop
+          base: main
           branch: automation/fastf1-${{ needs.refresh.outputs.season }}
           delete-branch: true
           commit-message: 'chore: refresh post-race FastF1 analytics'

@@ -226,6 +226,46 @@ test('Results tabs recover practice and sprint qualifying from FastF1', async ({
   expect(failedRequests).toEqual([]);
 });
 
+test('Recollected FastF1 files display real practice and sprint qualifying times', async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  const failed: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('requestfailed', (request) => {
+    if (!request.failure()?.errorText.includes('ERR_ABORTED')) failed.push(request.url());
+  });
+  const australia = { ...previousRace, season: '2026', date: '2026-03-08',
+    FirstPractice: { date: '2026-03-06' }, SecondPractice: { date: '2026-03-06' }, ThirdPractice: { date: '2026-03-07' } };
+  const china = { ...race, season: '2026', date: '2026-03-15',
+    FirstPractice: { date: '2026-03-13' }, SprintQualifying: { date: '2026-03-13' } };
+  await page.route('**/rest/v1/**', (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.route('**/f1-api/**', (route) => {
+    const url = new URL(route.request().url());
+    const schedule = url.pathname.endsWith('/2026.json');
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
+      total: schedule ? '2' : '1', RaceTable: { Races: schedule ? [australia, china] : [url.pathname.includes('/2026/2/') ? china : australia] },
+      StandingsTable: { StandingsLists: [] },
+    } }) });
+  });
+  // No FastF1 interception: these are the real files produced by the exporter.
+  await page.goto('/races/1/results?season=2026');
+  for (const [code, time] of [['FP1', '1:20.267'], ['FP2', '1:19.729'], ['FP3', '1:19.053']]) {
+    await page.getByRole('tab', { name: new RegExp(code) }).focus();
+    await page.getByRole('tab', { name: new RegExp(code) }).click();
+    await expect(page.getByRole('cell', { name: time, exact: true })).toBeVisible();
+    await expect(page.locator('.ant-tabs-tabpane-active .ant-table-tbody tr[data-row-key]')).toHaveCount(22);
+  }
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/real-practice-${testInfo.project.name}.png`, fullPage: true });
+  await page.goto('/races/2/results?season=2026');
+  await page.getByRole('tab', { name: /SQ/ }).focus();
+  await page.getByRole('tab', { name: /SQ/ }).click();
+  for (const time of ['1:33.030', '1:32.241', '1:31.520']) {
+    await expect(page.getByRole('cell', { name: time, exact: true })).toBeVisible();
+  }
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/real-sprint-qualifying-${testInfo.project.name}.png`, fullPage: true });
+  expect(errors).toEqual([]);
+  expect(failed).toEqual([]);
+});
+
 test('Race intelligence leaves skeleton state when optional APIs stall', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'One viewport is enough for timeout behavior.');
 

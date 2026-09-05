@@ -15,6 +15,7 @@ from typing import Any
 
 import fastf1
 import pandas as pd
+from fastf1_classification import practice_results, session_load_options
 from fastf1.mvapi import get_circuit_info as get_mv_circuit_info
 
 from fastf1_snapshot_validation import (
@@ -64,7 +65,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--results-only",
         action="store_true",
-        help="Only export classification/session results; skips laps, telemetry, weather and messages.",
+        help="Skip telemetry/weather; timed sessions still load laps and race-control messages for classification.",
     )
     parser.add_argument(
         "--laps-only",
@@ -386,7 +387,7 @@ def format_result_time(value: Any, position: int | None) -> str:
     return f"{minutes}:{remaining:06.3f}"
 
 
-def build_session_results(results: pd.DataFrame) -> list[dict[str, Any]]:
+def build_session_results(results: pd.DataFrame, session_code: str = 'R') -> list[dict[str, Any]]:
     if results.empty or "Abbreviation" not in results.columns:
         return []
 
@@ -410,7 +411,8 @@ def build_session_results(results: pd.DataFrame) -> list[dict[str, Any]]:
             "position": position,
             "classifiedPosition": clean_text(result.get("ClassifiedPosition")),
             "gridPosition": to_number(result.get("GridPosition")),
-            "time": format_result_time(result.get("Time"), position),
+            "time": (format_session_time(result.get("Time")) if session_code.upper().startswith('FP')
+                     else format_result_time(result.get("Time"), position)),
             "timeSeconds": to_seconds(result.get("Time")),
             "status": clean_text(result.get("Status")),
             "points": to_float(result.get("Points")),
@@ -1475,12 +1477,7 @@ def main() -> None:
     fastf1.Cache.enable_cache(str(cache_dir))
 
     session = fastf1.get_session(int(args.season), int(args.round), args.session)
-    session.load(
-        laps=not args.results_only,
-        telemetry=not args.results_only and not args.laps_only,
-        weather=not args.results_only and not args.laps_only,
-        messages=not args.results_only and not args.laps_only,
-    )
+    session.load(**session_load_options(args.session, args.results_only, args.laps_only))
 
     current_session_type = session_type(str(args.session))
     try:
@@ -1489,6 +1486,8 @@ def main() -> None:
         laps = pd.DataFrame()
 
     results = safe_session_frame(session, "results")
+    if args.session.upper() in {'FP1', 'FP2', 'FP3'}:
+        results = practice_results(results, laps)
     track_status = safe_session_frame(session, "track_status")
     race_control_messages = safe_session_frame(session, "race_control_messages")
     weather_data = safe_session_frame(session, "weather_data")
@@ -1497,6 +1496,7 @@ def main() -> None:
     payload = {
         "source": "fastf1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "classificationVersion": 1,
         "season": str(args.season),
         "round": str(args.round),
         "session": str(args.session),
@@ -1504,7 +1504,7 @@ def main() -> None:
         "sessionName": clean_text(getattr(session, "name", args.session)),
         "totalLaps": int(laps["LapNumber"].dropna().max()) if "LapNumber" in laps.columns and not laps.empty else 0,
         "fastestLap": build_fastest_lap(laps),
-        "sessionResults": build_session_results(results),
+        "sessionResults": build_session_results(results, args.session),
         "trackStatusPeriods": build_track_status_periods(track_status, laps),
         "raceControlMessages": build_race_control_messages(race_control_messages),
         "lapTimeSeries": build_lap_time_series(laps, driver_order),

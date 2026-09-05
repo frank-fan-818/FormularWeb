@@ -12,6 +12,20 @@ import type { FastF1RaceAnalytics } from '@/types';
 const race = { season: '2026', round: '1', raceName: 'Test GP' } as Race;
 
 describe('FastF1 classification fallback', () => {
+  it('uses exported practice classification instead of deleted or incomplete lap samples', async () => {
+    vi.spyOn(fastF1AnalyticsApi, 'getRaceAnalytics').mockResolvedValue({
+      season: '2026', round: '1', session: 'FP1', lapTimeSeries: [],
+      sessionResults: [
+        { driver: 'LEC', team: 'Ferrari', position: 1, time: '1:20.267', laps: 33 },
+        { driver: 'ALO', team: 'Aston Martin', position: null, time: '', laps: 0 },
+      ],
+    } as unknown as FastF1RaceAnalytics);
+    const rows = (await loadFastF1Classification('2026', '1', 'FP1', race))?.Results;
+    expect(rows).toHaveLength(2);
+    expect(rows?.[0]).toMatchObject({ position: '1', Time: { time: '1:20.267' }, laps: '33' });
+    expect(rows?.[1].position).toBe('-');
+    vi.restoreAllMocks();
+  });
   it('does not present a roster-derived qualifying order as an official classification', async () => {
     vi.spyOn(fastF1AnalyticsApi, 'getRaceAnalytics').mockResolvedValue({
       season: '2026', round: '1', session: 'SQ', sessionResults: [], lapTimeSeries: [],

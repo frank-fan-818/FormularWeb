@@ -1,156 +1,285 @@
 {
-  "generatedAt": "2026-09-02T14:11:35.297020+00:00",
+  "generatedAt": "2026-09-05T13:19:41.277069+00:00",
   "season": 2026,
   "summary": {
     "planned": 0,
-    "exported": 18,
-    "skipped": 0,
+    "exported": 29,
+    "pending": 0,
+    "skipped": 5,
     "failed": 0
   },
   "results": [
     {
       "season": 2026,
-      "round": 6,
-      "session": "R",
+      "round": 1,
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\6\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\6\\R.json\nWrote public\\fastf1\\2026\\6\\R-telemetry.json"
+      "output": "public\\fastf1\\2026\\1\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\1\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 1,
+      "session": "FP2",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\1\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\1\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 1,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\1\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\1\\FP3.json"
+    },
+    {
+      "season": 2026,
+      "round": 2,
+      "session": "FP1",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\2\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\2\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 2,
+      "session": "SQ",
+      "status": "skipped",
+      "output": "public\\fastf1\\2026\\2\\SQ.json",
+      "message": "already complete"
+    },
+    {
+      "season": 2026,
+      "round": 3,
+      "session": "FP1",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\3\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\3\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 3,
+      "session": "FP2",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\3\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\3\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 3,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\3\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\3\\FP3.json"
+    },
+    {
+      "season": 2026,
+      "round": 4,
+      "session": "FP1",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\4\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\4\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 4,
+      "session": "SQ",
+      "status": "skipped",
+      "output": "public\\fastf1\\2026\\4\\SQ.json",
+      "message": "already complete"
+    },
+    {
+      "season": 2026,
+      "round": 5,
+      "session": "FP1",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\5\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\5\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 5,
+      "session": "SQ",
+      "status": "skipped",
+      "output": "public\\fastf1\\2026\\5\\SQ.json",
+      "message": "already complete"
     },
     {
       "season": 2026,
       "round": 6,
-      "session": "Q",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\6\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\6\\Q.json"
+      "output": "public\\fastf1\\2026\\6\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\6\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 6,
+      "session": "FP2",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\6\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\6\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 6,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\6\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\6\\FP3.json"
     },
     {
       "season": 2026,
       "round": 7,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\7\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\7\\R.json\nWrote public\\fastf1\\2026\\7\\R-telemetry.json"
+      "output": "public\\fastf1\\2026\\7\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\7\\FP1.json"
     },
     {
       "season": 2026,
       "round": 7,
-      "session": "Q",
+      "session": "FP2",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\7\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\7\\Q.json"
+      "output": "public\\fastf1\\2026\\7\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\7\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 7,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\7\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\7\\FP3.json"
     },
     {
       "season": 2026,
       "round": 8,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\8\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\8\\R.json\nWrote public\\fastf1\\2026\\8\\R-telemetry.json"
+      "output": "public\\fastf1\\2026\\8\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\8\\FP1.json"
     },
     {
       "season": 2026,
       "round": 8,
-      "session": "Q",
+      "session": "FP2",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\8\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\8\\Q.json"
+      "output": "public\\fastf1\\2026\\8\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\8\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 8,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\8\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\8\\FP3.json"
     },
     {
       "season": 2026,
       "round": 9,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\9\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\9\\R.json\nWrote public\\fastf1\\2026\\9\\R-telemetry.json"
-    },
-    {
-      "season": 2026,
-      "round": 9,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2026\\9\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\9\\Q.json"
-    },
-    {
-      "season": 2026,
-      "round": 9,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2026\\9\\S.json",
-      "message": "Wrote public\\fastf1\\2026\\9\\S.json"
+      "output": "public\\fastf1\\2026\\9\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\9\\FP1.json"
     },
     {
       "season": 2026,
       "round": 9,
       "session": "SQ",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2026\\9\\SQ.json",
-      "message": "Wrote public\\fastf1\\2026\\9\\SQ.json"
+      "message": "already complete"
     },
     {
       "season": 2026,
       "round": 10,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\10\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\10\\R.json\nWrote public\\fastf1\\2026\\10\\R-telemetry.json"
+      "output": "public\\fastf1\\2026\\10\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\10\\FP1.json"
     },
     {
       "season": 2026,
       "round": 10,
-      "session": "Q",
+      "session": "FP2",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\10\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\10\\Q.json"
+      "output": "public\\fastf1\\2026\\10\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\10\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 10,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\10\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\10\\FP3.json"
     },
     {
       "season": 2026,
       "round": 11,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\11\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\11\\R.json\nWrote public\\fastf1\\2026\\11\\R-telemetry.json"
+      "output": "public\\fastf1\\2026\\11\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\11\\FP1.json"
     },
     {
       "season": 2026,
       "round": 11,
-      "session": "Q",
+      "session": "FP2",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\11\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\11\\Q.json"
+      "output": "public\\fastf1\\2026\\11\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\11\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 11,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\11\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\11\\FP3.json"
     },
     {
       "season": 2026,
       "round": 12,
-      "session": "R",
+      "session": "FP1",
       "status": "exported",
-      "output": "public\\fastf1\\2026\\12\\R.json",
-      "message": "Wrote public\\fastf1\\2026\\12\\R.json\nWrote public\\fastf1\\2026\\12\\R-telemetry.json"
-    },
-    {
-      "season": 2026,
-      "round": 12,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2026\\12\\Q.json",
-      "message": "Wrote public\\fastf1\\2026\\12\\Q.json"
-    },
-    {
-      "season": 2026,
-      "round": 12,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2026\\12\\S.json",
-      "message": "Wrote public\\fastf1\\2026\\12\\S.json"
+      "output": "public\\fastf1\\2026\\12\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\12\\FP1.json"
     },
     {
       "season": 2026,
       "round": 12,
       "session": "SQ",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2026\\12\\SQ.json",
-      "message": "Wrote public\\fastf1\\2026\\12\\SQ.json"
+      "message": "already complete"
+    },
+    {
+      "season": 2026,
+      "round": 13,
+      "session": "FP1",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\13\\FP1.json",
+      "message": "Wrote public\\fastf1\\2026\\13\\FP1.json"
+    },
+    {
+      "season": 2026,
+      "round": 13,
+      "session": "FP2",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\13\\FP2.json",
+      "message": "Wrote public\\fastf1\\2026\\13\\FP2.json"
+    },
+    {
+      "season": 2026,
+      "round": 13,
+      "session": "FP3",
+      "status": "exported",
+      "output": "public\\fastf1\\2026\\13\\FP3.json",
+      "message": "Wrote public\\fastf1\\2026\\13\\FP3.json"
     }
   ]
 }

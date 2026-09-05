@@ -1,29 +1,14 @@
 {
-  "generatedAt": "2026-05-28T06:34:16.284402+00:00",
+  "generatedAt": "2026-09-05T13:24:47.886883+00:00",
   "season": 2023,
   "summary": {
     "planned": 0,
-    "exported": 110,
-    "skipped": 0,
+    "exported": 32,
+    "pending": 0,
+    "skipped": 28,
     "failed": 0
   },
   "results": [
-    {
-      "season": 2023,
-      "round": 1,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\1\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\1\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 1,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\1\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\1\\Q.json"
-    },
     {
       "season": 2023,
       "round": 1,
@@ -47,22 +32,6 @@
       "status": "exported",
       "output": "public\\fastf1\\2023\\1\\FP3.json",
       "message": "Wrote public\\fastf1\\2023\\1\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 2,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\2\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\2\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 2,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\2\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\2\\Q.json"
     },
     {
       "season": 2023,
@@ -91,22 +60,6 @@
     {
       "season": 2023,
       "round": 3,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\3\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\3\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 3,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\3\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\3\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 3,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\3\\FP1.json",
@@ -131,38 +84,6 @@
     {
       "season": 2023,
       "round": 4,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\4\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\4\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 4,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\4\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\4\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 4,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\4\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\4\\S.json"
-    },
-    {
-      "season": 2023,
-      "round": 4,
-      "session": "SS",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\4\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\4\\SS.json"
-    },
-    {
-      "season": 2023,
-      "round": 4,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\4\\FP1.json",
@@ -170,19 +91,11 @@
     },
     {
       "season": 2023,
-      "round": 5,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\5\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\5\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 5,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\5\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\5\\Q.json"
+      "round": 4,
+      "session": "SS",
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\4\\SS.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
@@ -211,22 +124,6 @@
     {
       "season": 2023,
       "round": 6,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\6\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\6\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 6,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\6\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\6\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 6,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\6\\FP1.json",
@@ -247,22 +144,6 @@
       "status": "exported",
       "output": "public\\fastf1\\2023\\6\\FP3.json",
       "message": "Wrote public\\fastf1\\2023\\6\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 7,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\7\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\7\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 7,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\7\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\7\\Q.json"
     },
     {
       "season": 2023,
@@ -291,22 +172,6 @@
     {
       "season": 2023,
       "round": 8,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\8\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\8\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 8,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\8\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\8\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 8,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\8\\FP1.json",
@@ -331,38 +196,6 @@
     {
       "season": 2023,
       "round": 9,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\9\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\9\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 9,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\9\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\9\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 9,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\9\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\9\\S.json"
-    },
-    {
-      "season": 2023,
-      "round": 9,
-      "session": "SS",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\9\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\9\\SS.json"
-    },
-    {
-      "season": 2023,
-      "round": 9,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\9\\FP1.json",
@@ -370,19 +203,11 @@
     },
     {
       "season": 2023,
-      "round": 10,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\10\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\10\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 10,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\10\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\10\\Q.json"
+      "round": 9,
+      "session": "SS",
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\9\\SS.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
@@ -411,22 +236,6 @@
     {
       "season": 2023,
       "round": 11,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\11\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\11\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 11,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\11\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\11\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 11,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\11\\FP1.json",
@@ -451,38 +260,6 @@
     {
       "season": 2023,
       "round": 12,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\12\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\12\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 12,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\12\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\12\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 12,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\12\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\12\\S.json"
-    },
-    {
-      "season": 2023,
-      "round": 12,
-      "session": "SS",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\12\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\12\\SS.json"
-    },
-    {
-      "season": 2023,
-      "round": 12,
       "session": "FP1",
       "status": "exported",
       "output": "public\\fastf1\\2023\\12\\FP1.json",
@@ -490,19 +267,11 @@
     },
     {
       "season": 2023,
-      "round": 13,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\13\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\13\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 13,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\13\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\13\\Q.json"
+      "round": 12,
+      "session": "SS",
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\12\\SS.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
@@ -516,169 +285,89 @@
       "season": 2023,
       "round": 13,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\13\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\13\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 13,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\13\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\13\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 14,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\14\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\14\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 14,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\14\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\14\\Q.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 14,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\14\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\14\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 14,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\14\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\14\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 14,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\14\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\14\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 15,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\15\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\15\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 15,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\15\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\15\\Q.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 15,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\15\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\15\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 15,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\15\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\15\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 15,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\15\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\15\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 16,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\16\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\16\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 16,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\16\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\16\\Q.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 16,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\16\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\16\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 16,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\16\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\16\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 16,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\16\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\16\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 17,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\17\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\17\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 17,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\17\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\17\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 17,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\17\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\17\\S.json"
-    },
-    {
-      "season": 2023,
-      "round": 17,
-      "session": "SS",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\17\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\17\\SS.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
@@ -690,203 +379,115 @@
     },
     {
       "season": 2023,
-      "round": 18,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\18\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\18\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 18,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\18\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\18\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 18,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\18\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\18\\S.json"
-    },
-    {
-      "season": 2023,
-      "round": 18,
+      "round": 17,
       "session": "SS",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\18\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\18\\SS.json"
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\17\\SS.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 18,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\18\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\18\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
-      "round": 19,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\19\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\19\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 19,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\19\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\19\\Q.json"
+      "round": 18,
+      "session": "SS",
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\18\\SS.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 19,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\19\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\19\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 19,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\19\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\19\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 19,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\19\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\19\\FP3.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 20,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\20\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\20\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 20,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\20\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\20\\Q.json"
-    },
-    {
-      "season": 2023,
-      "round": 20,
-      "session": "S",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\20\\S.json",
-      "message": "Wrote public\\fastf1\\2023\\20\\S.json"
+      "session": "FP1",
+      "status": "skipped",
+      "output": "public\\fastf1\\2023\\20\\FP1.json",
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 20,
       "session": "SS",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\20\\SS.json",
-      "message": "Wrote public\\fastf1\\2023\\20\\SS.json"
-    },
-    {
-      "season": 2023,
-      "round": 20,
-      "session": "FP1",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\20\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\20\\FP1.json"
-    },
-    {
-      "season": 2023,
-      "round": 21,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\21\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\21\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 21,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\21\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\21\\Q.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 21,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\21\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\21\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 21,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\21\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\21\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 21,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\21\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\21\\FP3.json"
-    },
-    {
-      "season": 2023,
-      "round": 22,
-      "session": "R",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\22\\R.json",
-      "message": "Wrote public\\fastf1\\2023\\22\\R.json"
-    },
-    {
-      "season": 2023,
-      "round": 22,
-      "session": "Q",
-      "status": "exported",
-      "output": "public\\fastf1\\2023\\22\\Q.json",
-      "message": "Wrote public\\fastf1\\2023\\22\\Q.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 22,
       "session": "FP1",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\22\\FP1.json",
-      "message": "Wrote public\\fastf1\\2023\\22\\FP1.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 22,
       "session": "FP2",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\22\\FP2.json",
-      "message": "Wrote public\\fastf1\\2023\\22\\FP2.json"
+      "message": "already complete"
     },
     {
       "season": 2023,
       "round": 22,
       "session": "FP3",
-      "status": "exported",
+      "status": "skipped",
       "output": "public\\fastf1\\2023\\22\\FP3.json",
-      "message": "Wrote public\\fastf1\\2023\\22\\FP3.json"
+      "message": "already complete"
     }
   ]
 }

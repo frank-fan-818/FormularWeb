@@ -8,6 +8,7 @@ export interface FastF1CompletenessPayload {
   weather?: unknown;
   telemetry?: unknown;
   qualifyingAnalysis?: unknown;
+  classificationVersion?: number;
 }
 
 export function hasCompleteSplitTelemetry(
@@ -22,6 +23,10 @@ export function hasCompleteSplitTelemetry(
 
 function listCount(value: unknown): number {
   return Array.isArray(value) ? value.length : 0;
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : {};
 }
 
 function nestedListCount(value: unknown, key: string): number {
@@ -47,5 +52,10 @@ export function isCompleteFastF1Payload(
       && (nestedListCount(payload.telemetry, 'drivers') > 0 || hasSplitTelemetry));
   const qualifyingComplete = !['Q', 'SQ', 'SS'].includes(session)
     || nestedListCount(payload.qualifyingAnalysis, 'bestLaps') > 0;
-  return commonComplete && raceComplete && qualifyingComplete;
+  const practiceTiming = !/^FP[123]$/.test(session) || (payload.classificationVersion === 1
+    && (payload.sessionResults || []).some((row) => Number(record(row).position) > 0 && Boolean(record(row).time)));
+  const phases = record(payload.qualifyingAnalysis).phaseResults;
+  const sprintQualifyingTiming = !['SQ', 'SS'].includes(session) || (Array.isArray(phases) && phases
+    .some((row) => Object.values(record(record(row).phases)).some((phase) => Boolean(record(phase).time))));
+  return commonComplete && raceComplete && qualifyingComplete && practiceTiming && sprintQualifyingTiming;
 }

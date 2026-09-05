@@ -48,6 +48,17 @@ export async function loadFastF1Classification(
     return rows.length ? { season, round, QualifyingResults: rows } : null;
   }
   const byDriver = buildSessionResultByDriver(analytics);
+  if (analytics.sessionResults?.some((result) => result.position && result.time)) {
+    const rows = analytics.sessionResults.map((result): Result => ({
+      number: result.driverNumber || '', position: String(result.position || '-'),
+      positionText: String(result.position || '-'), points: '0', grid: '-', status: '',
+      laps: result.laps == null ? '' : String(result.laps),
+      Time: { millis: '', time: result.time || '-' },
+      Driver: buildFallbackDriver(result.driver, drivers, result),
+      Constructor: buildFallbackConstructor(result.team, constructors),
+    }));
+    return { season, round, Results: rows };
+  }
   const rows = buildPracticeRanking(analytics).map((item, index): Result => {
     const classification = byDriver.get(item.driver);
     const team = item.team || analytics.lapTimeSeries.find((series) => series.driver === item.driver)?.team || '';
@@ -77,14 +88,15 @@ export async function loadRaceSessionWithFallback(
   fallback: () => Promise<RaceSessionClassification | null>,
   diagnostics?: DiagnosticLoggerScope | null,
   operation = 'deferred_session',
-  fallbackSource: 'jolpica' | 'fastf1_static' = 'jolpica',
+  fallbackSource: 'jolpica' | 'fastf1_static' | 'supabase' = 'jolpica',
+  primarySource: 'supabase' | 'fastf1_static' = 'supabase',
 ): Promise<RaceSessionClassification | null> {
   try {
     const primaryData = await primary();
     if (primaryData) return primaryData;
-    diagnostics?.log({ operation, outcome: 'degraded', source: 'supabase', reasonCode: 'source_empty' });
+    diagnostics?.log({ operation, outcome: 'degraded', source: primarySource, reasonCode: 'source_empty' });
   } catch (error) {
-    diagnostics?.log({ operation, outcome: 'degraded', source: 'supabase', error });
+    diagnostics?.log({ operation, outcome: 'degraded', source: primarySource, error });
     // The official source remains usable when optional database data is unavailable.
   }
   const fallbackData = await fallback();
@@ -231,36 +243,37 @@ export function useRaceDeferredSessions({
         );
       } else if (sessionKey === 'sprintQualifying') {
         sessionData = await loadRaceSessionWithFallback(
-          () => raceSessionResultsApi.getSprintQualifyingResult(season, round),
           async () => {
             const preferred = season === '2023' ? 'SS' : 'SQ';
             return await loadFastF1Classification(season, round, preferred, raceInfo)
               || await loadFastF1Classification(season, round, preferred === 'SS' ? 'SQ' : 'SS', raceInfo);
-          }, diagnostics, 'sprint_qualifying_results', 'fastf1_static',
+          },
+          () => raceSessionResultsApi.getSprintQualifyingResult(season, round),
+          diagnostics, 'sprint_qualifying_results', 'supabase', 'fastf1_static',
         );
       } else if (sessionKey === 'fp1') {
         sessionData = await loadRaceSessionWithFallback(
-          () => raceSessionResultsApi.getPracticeResult(season, round, 1),
           () => loadFastF1Classification(season, round, 'FP1', raceInfo),
+          () => raceSessionResultsApi.getPracticeResult(season, round, 1),
           diagnostics,
           'fp1_results',
-          'fastf1_static',
+          'supabase', 'fastf1_static',
         );
       } else if (sessionKey === 'fp2') {
         sessionData = await loadRaceSessionWithFallback(
-          () => raceSessionResultsApi.getPracticeResult(season, round, 2),
           () => loadFastF1Classification(season, round, 'FP2', raceInfo),
+          () => raceSessionResultsApi.getPracticeResult(season, round, 2),
           diagnostics,
           'fp2_results',
-          'fastf1_static',
+          'supabase', 'fastf1_static',
         );
       } else if (sessionKey === 'fp3') {
         sessionData = await loadRaceSessionWithFallback(
-          () => raceSessionResultsApi.getPracticeResult(season, round, 3),
           () => loadFastF1Classification(season, round, 'FP3', raceInfo),
+          () => raceSessionResultsApi.getPracticeResult(season, round, 3),
           diagnostics,
           'fp3_results',
-          'fastf1_static',
+          'supabase', 'fastf1_static',
         );
       }
       if (cancelled) return;
