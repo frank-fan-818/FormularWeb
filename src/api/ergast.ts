@@ -289,10 +289,6 @@ export const seasonApi = {
     return getCompleteRaceEndpoint(season, round, 'sprint', 'SprintResults');
   },
 
-  getPracticeResults: async (season: string, round: string, practiceNumber: 1 | 2 | 3): Promise<Race | null> => {
-    return getCompleteRaceEndpoint(season, round, `practice/${practiceNumber}`, 'Results');
-  },
-
 };
 
 let allSeasonIdsPromise: Promise<string[]> | null = null;

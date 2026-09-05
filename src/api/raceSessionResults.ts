@@ -1,15 +1,15 @@
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
-import type { Race, RaceSessionCode } from '@/types';
+import type { RaceSessionClassification, RaceSessionCode } from '@/types';
 import { withRetry } from '@/utils/withRetry';
-import { RaceSchema } from '@/api/schemas';
+import { RaceSessionClassificationSchema } from '@/api/schemas';
 
 interface RaceSessionResultRow {
   season: number;
   round: number;
   session: RaceSessionCode;
   source: 'jolpica' | 'fastf1';
-  payload: Race;
+  payload: RaceSessionClassification;
 }
 
 const missingTableSessions = new Map<string, number>();
@@ -70,7 +70,7 @@ async function getSessionResult(
   season: string,
   round: string,
   session: RaceSessionCode,
-): Promise<Race | null> {
+): Promise<RaceSessionClassification | null> {
   const seasonNumber = Number(season);
   const roundNumber = Number(round);
 
@@ -110,19 +110,22 @@ async function getSessionResult(
   const candidates = (data || [])
     .map((candidate) => {
       const row = candidate as RaceSessionResultRow;
-      const parsed = RaceSchema.safeParse(row.payload);
+      const parsed = RaceSessionClassificationSchema.safeParse(row.payload);
       if (!parsed.success || parsed.data.season !== season || parsed.data.round !== round || row.session !== session) {
         return null;
       }
-      const payload = parsed.data as Race;
-      const participantCount = Math.max(
-        payload.Results?.length || 0,
-        payload.QualifyingResults?.length || 0,
-        payload.SprintResults?.length || 0,
-      );
+      const payload = parsed.data;
+      const results = session === 'SQ' || session === 'SS'
+        ? payload.QualifyingResults
+        : session === 'S' ? payload.SprintResults || payload.Results : payload.Results;
+      const participantCount = results?.length || 0;
+      if (!participantCount) return null;
+      if (!results?.some((result) => Number(result.position) > 0
+        || ('Time' in result && Boolean(result.Time?.time))
+        || ('Q1' in result && Boolean(result.Q1 || result.Q2 || result.Q3)))) return null;
       return { payload, participantCount, sourcePriority: row.source === 'jolpica' ? 1 : 0 };
     })
-    .filter((candidate): candidate is { payload: Race; participantCount: number; sourcePriority: number } => Boolean(candidate))
+    .filter((candidate): candidate is { payload: RaceSessionClassification; participantCount: number; sourcePriority: number } => Boolean(candidate))
     .sort((a, b) => b.participantCount - a.participantCount || b.sourcePriority - a.sourcePriority);
   return candidates[0]?.payload || null;
 }
