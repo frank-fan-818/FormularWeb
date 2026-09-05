@@ -37,6 +37,13 @@ function createSnapshot(overrides: Partial<FastF1RaceAnalytics> = {}): FastF1Rac
 }
 
 describe('FastF1 analytics source selection', () => {
+  it('does not let an old practice roster mask database classification times', async () => {
+    const old = createSnapshot({ session: 'FP1', sessionResults: [{ driver: 'LEC', position: null }] as FastF1RaceAnalytics['sessionResults'] });
+    const fresh = createSnapshot({ session: 'FP1', sessionResults: [{ driver: 'LEC', position: 1, time: '1:20.267' }] as FastF1RaceAnalytics['sessionResults'] });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(old), { status: 200 })));
+    supabaseMock.query.maybeSingle.mockResolvedValue({ data: { payload: fresh }, error: null });
+    expect(await fastF1AnalyticsApi.getRaceAnalytics('2026', '14', 'FP1')).toEqual(fresh);
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co');

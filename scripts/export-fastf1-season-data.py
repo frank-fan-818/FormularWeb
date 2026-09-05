@@ -26,7 +26,7 @@ import fastf1
 import pandas as pd
 
 from fastf1_automation import session_is_ready
-from fastf1_snapshot_validation import INCOMPLETE_SNAPSHOT_EXIT_CODE
+from fastf1_snapshot_validation import INCOMPLETE_SNAPSHOT_EXIT_CODE, incomplete_snapshot_fields
 
 
 DEFAULT_SESSIONS = ["R", "Q", "SQ", "SS", "S", "FP1", "FP2", "FP3"]
@@ -335,7 +335,8 @@ def build_manifest_session(
         weatherPoints=weather_points,
         telemetryDrivers=telemetry_drivers,
         qualifyingBestLaps=qualifying_best_laps,
-        complete=bool(path.exists() and common_complete and race_complete and qualifying_complete),
+        complete=bool(path.exists() and common_complete and race_complete and qualifying_complete
+                      and not incomplete_snapshot_fields(payload, session, telemetry_payload)),
         eligible=eligible,
     )
 

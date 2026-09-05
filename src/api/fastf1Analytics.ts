@@ -4,6 +4,7 @@ import { logger } from '@/utils/logger';
 import { supabase } from '@/utils/supabase';
 import { FastF1AnalyticsEnvelopeSchema, FastF1TelemetryEnvelopeSchema } from '@/api/schemas';
 import { withRetry } from '@/utils/withRetry';
+import { hasTimedSessionClassification } from '@/utils/fastf1Classification';
 import type { DiagnosticLoggerScope } from '@/utils/logger';
 
 const PUBLIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -184,7 +185,7 @@ export const fastF1AnalyticsApi = {
       if (response.ok) {
         staticAnalytics = FastF1AnalyticsEnvelopeSchema.parse(await response.json()) as FastF1RaceAnalytics;
         assertSnapshotIdentity(staticAnalytics, season, round, sessionCode);
-        if (hasMeaningfulFastF1Analytics(staticAnalytics)) {
+        if (hasMeaningfulFastF1Analytics(staticAnalytics) && hasTimedSessionClassification(staticAnalytics)) {
           diagnostics?.log({ operation: 'fastf1_static', outcome: 'succeeded', source: 'fastf1_static', session: sessionCode, itemCount: staticAnalytics.lapTimeSeries.length });
           return staticAnalytics;
         }
@@ -228,6 +229,7 @@ export const fastF1AnalyticsApi = {
     // A placeholder is useful to the export audit, but not to the UI. Returning
     // null keeps the page in an explicit "awaiting data" state instead of
     // rendering an apparently broken collection of empty charts.
+    if (hasMeaningfulFastF1Analytics(staticAnalytics)) return staticAnalytics;
     if (staticAnalytics) return null;
     if (staticError) throw staticError;
     return null;

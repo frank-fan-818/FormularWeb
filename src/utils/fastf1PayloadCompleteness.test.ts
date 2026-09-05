@@ -16,6 +16,11 @@ const common = {
 const raceIdentity = { season: '2026', round: '5', session: 'R' };
 
 describe('isCompleteFastF1Payload', () => {
+  it('requires practice times and sprint qualifying phase times, not just a roster', () => {
+    expect(isCompleteFastF1Payload({ ...common, session: 'FP1' }, { ...raceIdentity, session: 'FP1' })).toBe(false);
+    expect(isCompleteFastF1Payload({ ...common, session: 'FP1', classificationVersion: 1, sessionResults: [{ position: 1, time: '1:20.267' }] }, { ...raceIdentity, session: 'FP1' })).toBe(true);
+    expect(isCompleteFastF1Payload({ ...common, session: 'SQ', qualifyingAnalysis: { bestLaps: [{}] } }, { ...raceIdentity, session: 'SQ' })).toBe(false);
+  });
   it('requires race weather and telemetry', () => {
     expect(isCompleteFastF1Payload(common, raceIdentity)).toBe(false);
     expect(isCompleteFastF1Payload({
@@ -39,7 +44,7 @@ describe('isCompleteFastF1Payload', () => {
     })).toBe(false);
     expect(isCompleteFastF1Payload({
       ...sprintQualifying,
-      qualifyingAnalysis: { bestLaps: [{}] },
+      qualifyingAnalysis: { bestLaps: [{}], phaseResults: [{ phases: { q1: { time: '1:20.267' } } }] },
     }, { ...raceIdentity, session: 'SQ' })).toBe(true);
   });
 

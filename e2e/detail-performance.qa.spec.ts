@@ -30,7 +30,10 @@ const australianGrandPrix = {
   },
 };
 
-async function mockFastDetailData(page: Page) {
+async function mockFastDetailData(
+  page: Page,
+  waitForMetadata: () => Promise<void> = () => new Promise((resolve) => setTimeout(resolve, 800)),
+) {
   await page.route('**/f1-api/**', async (requestRoute) => {
     const pathname = new URL(requestRoute.request().url()).pathname;
     const isDriverResults = pathname.endsWith('/drivers/max_verstappen/results.json');
@@ -60,7 +63,7 @@ async function mockFastDetailData(page: Page) {
   });
 
   await page.route('**/rest/v1/**', async (requestRoute) => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await waitForMetadata();
     await requestRoute.fulfill({
       contentType: 'application/json',
       headers: { 'Access-Control-Allow-Origin': '*' },
@@ -85,18 +88,25 @@ test('driver points chart paints before slower profile metadata', async ({ page 
 });
 
 test('circuit atlas renders local engineering specs before remote metadata', async ({ page }, testInfo) => {
-  await mockFastDetailData(page);
-  const startedAt = Date.now();
+  let releaseMetadata!: () => void;
+  const metadataGate = new Promise<void>((resolve) => { releaseMetadata = resolve; });
+  await mockFastDetailData(page, () => metadataGate);
 
-  await page.goto('/circuits', { waitUntil: 'domcontentloaded' });
-  const firstCard = page.locator('.circuit-atlas-card').first();
-  await expect(firstCard).toContainText('5.278 km', { timeout: 1_000 });
-  await expect(firstCard).toContainText('14');
-  await expect(firstCard).toContainText('1996');
-  expect(Date.now() - startedAt).toBeLessThan(800);
+  try {
+    await page.goto('/circuits', { waitUntil: 'domcontentloaded' });
+    const firstCard = page.locator('.circuit-atlas-card').first();
+    // The response is held until these assertions pass: test dependency order,
+    // not navigation and assertion overhead on a shared CI runner.
+    await expect(firstCard).toContainText('5.278 km');
+    await expect(firstCard).toContainText('14');
+    await expect(firstCard).toContainText('1996');
 
-  await page.screenshot({
-    path: testInfo.outputPath('circuit-atlas-first-screen.png'),
-    fullPage: true,
-  });
+    await page.screenshot({
+      path: testInfo.outputPath('circuit-atlas-first-screen.png'),
+      fullPage: true,
+    });
+  } finally {
+    releaseMetadata();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
 });

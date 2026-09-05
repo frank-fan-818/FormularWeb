@@ -29,6 +29,13 @@ def incomplete_snapshot_fields(
         if not _items(payload.get(field)):
             missing.append(field)
 
+    if session_code in {'FP1', 'FP2', 'FP3'} and not any(
+        row.get('position') and row.get('time') for row in _items(payload.get('sessionResults'))
+    ):
+        missing.append('sessionResults.timing')
+    if session_code in {'FP1', 'FP2', 'FP3'} and payload.get('classificationVersion') != 1:
+        missing.append('classificationVersion')
+
     if session_code == "R":
         weather = payload.get("weather")
         if not isinstance(weather, dict) or not _items(weather.get("points")):
@@ -44,5 +51,14 @@ def incomplete_snapshot_fields(
         qualifying = payload.get("qualifyingAnalysis")
         if not isinstance(qualifying, dict) or not _items(qualifying.get("bestLaps")):
             missing.append("qualifyingAnalysis.bestLaps")
+
+    if session_code in {'SQ', 'SS'}:
+        qualifying = payload.get('qualifyingAnalysis') or {}
+        if not any(
+            phase.get('time')
+            for row in _items(qualifying.get('phaseResults'))
+            for phase in (row.get('phases') or {}).values()
+        ):
+            missing.append('qualifyingAnalysis.phaseResults')
 
     return missing
