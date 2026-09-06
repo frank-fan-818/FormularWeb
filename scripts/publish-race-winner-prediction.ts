@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fetchPaginatedRaceTable } from '../src/api/jolpicaRacePagination.ts';
 import { createClient } from '@supabase/supabase-js';
 import type { PredictionSeasonRaceData } from '../src/types/predictionData.ts';
 import {
@@ -68,14 +69,13 @@ function normalizeId(value: unknown): string {
 }
 
 async function fetchRaces(endpoint: string): Promise<JsonRecord[]> {
-  const response = await fetch(`${JOLPICA_BASE_URL}${endpoint}`, {
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  return fetchPaginatedRaceTable(endpoint, async (pageEndpoint) => {
+    const response = await fetch(`${JOLPICA_BASE_URL}${pageEndpoint}`, {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`Jolpica ${pageEndpoint} returned HTTP ${response.status}`);
+    return response.json();
   });
-  if (!response.ok) throw new Error(`Jolpica ${endpoint} returned HTTP ${response.status}`);
-  const payload = asRecord(await response.json());
-  const mrData = asRecord(payload.MRData);
-  const raceTable = asRecord(mrData.RaceTable);
-  return asArray(raceTable.Races);
 }
 
 function keyOf(race: JsonRecord): string {
