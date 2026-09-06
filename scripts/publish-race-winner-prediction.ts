@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { withRetry } from '../src/utils/withRetry.ts';
 import { fetchPaginatedRaceTable } from '../src/api/jolpicaRacePagination.ts';
 import { createClient } from '@supabase/supabase-js';
 import type { PredictionSeasonRaceData } from '../src/types/predictionData.ts';
@@ -33,6 +35,9 @@ type JsonRecord = Record<string, unknown>;
 
 function log(event: string, details: Record<string, unknown> = {}) {
   console.info(JSON.stringify({ scope: 'race-winner-publisher', event, ...details }));
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n### Prediction: ${event}\n\n\`\`\`json\n${JSON.stringify(details, null, 2)}\n\`\`\`\n`);
+  }
 }
 
 function getArg(name: string): string | null {
@@ -69,13 +74,13 @@ function normalizeId(value: unknown): string {
 }
 
 async function fetchRaces(endpoint: string): Promise<JsonRecord[]> {
-  return fetchPaginatedRaceTable(endpoint, async (pageEndpoint) => {
+  return fetchPaginatedRaceTable(endpoint, (pageEndpoint) => withRetry(async (signal) => {
     const response = await fetch(`${JOLPICA_BASE_URL}${pageEndpoint}`, {
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`Jolpica ${pageEndpoint} returned HTTP ${response.status}`);
+      signal,
+    }).catch((cause: unknown) => { throw Object.assign(new Error('Network request failed while loading Jolpica'), { cause }); });
+    if (!response.ok) throw Object.assign(new Error(`Jolpica ${pageEndpoint} returned HTTP ${response.status}`), { status: response.status });
     return response.json();
-  });
+  }, { timeoutMs: REQUEST_TIMEOUT_MS, maxRetries: 2 }));
 }
 
 function keyOf(race: JsonRecord): string {
@@ -113,7 +118,7 @@ function indexSessions(races: JsonRecord[], field: string): Map<string, JsonReco
   return new Map(races.map((race) => [keyOf(race), asArray(race[field])]));
 }
 
-async function loadSeason(season: number): Promise<ScheduledPredictionRace[]> {
+export async function loadSeason(season: number): Promise<ScheduledPredictionRace[]> {
   const [schedule, results, qualifying, sprint, sprintQualifying] = await Promise.all([
     fetchRaces(`/${season}.json?limit=100`),
     fetchRaces(`/${season}/results.json?limit=2000`),
@@ -148,7 +153,7 @@ async function loadSeason(season: number): Promise<ScheduledPredictionRace[]> {
   }).filter((race) => race.round > 0 && race.raceName && Number.isFinite(Date.parse(race.raceStartAt)));
 }
 
-async function publishToSupabase(
+export async function publishToSupabase(
   artifact: ModelArtifact,
   modelVersion: string,
   target: ScheduledPredictionRace,
@@ -174,7 +179,26 @@ async function publishToSupabase(
     .eq('input_hash', inputHash)
     .maybeSingle();
   if (existingRunError) throw existingRunError;
-  if (existingRun) return { published: false, runId: existingRun.id };
+  if (existingRun) {
+    const { data: saved, error } = await supabase.from('prediction_candidates')
+      .select('driver_id').eq('run_id', existingRun.id);
+    if (error) throw error;
+    const expected = new Set(prediction.map((candidate) => candidate.driverId));
+    if (saved?.length === expected.size && saved.every((row) => expected.has(row.driver_id))) {
+      return { published: false, runId: existingRun.id };
+    }
+    log('repairing-incomplete-publication', { runId: existingRun.id });
+  }
+
+  // A temporarily missing qualifying response must not replace a final forecast.
+  if (phase === 'pre_weekend') {
+    const { data: current, error } = await supabase.from('race_prediction_current')
+      .select('run_id,phase,candidates').eq('season', target.season).eq('round', target.round).maybeSingle();
+    if (error) throw error;
+    if (current?.phase === 'post_quali' && hasCompletePredictionField(current.candidates?.length || 0)) {
+      return { published: false, runId: current.run_id };
+    }
+  }
 
   const { error: deactivateError } = await supabase.from('prediction_models').update({ is_active: false }).eq('is_active', true);
   if (deactivateError) throw deactivateError;
@@ -230,13 +254,7 @@ async function main() {
   const completedRaces: PredictionSeasonRaceData[] = races.filter((race) => race.results.some((result) => result.position === 1));
   const featureInputs = buildCurrentRaceFeatureInputs(target, completedRaces);
   if (!hasCompletePredictionField(featureInputs.length)) {
-    log('skipped', {
-      season,
-      round: target.round,
-      reason: 'incomplete-entry-field',
-      candidateCount: featureInputs.length,
-    });
-    return;
+    throw new Error(`Incomplete entry field for ${season}/${target.round}: ${featureInputs.length} candidates. Publication must be retried.`);
   }
 
   const artifact = JSON.parse(readFileSync(MODEL_PATH, 'utf8')) as ModelArtifact;
@@ -264,6 +282,7 @@ async function main() {
     season,
     round: target.round,
     phase: output.phase,
+    candidateCount: prediction.length,
     favourite: prediction[0]?.driverId,
     probability: prediction[0]?.probability,
     inputHash,
@@ -271,11 +290,9 @@ async function main() {
   });
 }
 
-main().catch((error: unknown) => {
-  console.error(JSON.stringify({
-    scope: 'race-winner-publisher',
-    event: 'failed',
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch((error: unknown) => {
+  log('failed', {
     reason: error instanceof Error ? error.message : String(error),
-  }));
+  });
   process.exitCode = 1;
 });
