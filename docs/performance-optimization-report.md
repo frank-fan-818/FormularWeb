@@ -63,7 +63,7 @@
 ### 3.3 减少重复网络与离线等待
 
 - `/f1-api/` 在边缘设置 5 分钟共享缓存与 24 小时 stale-while-revalidate。
-- Service Worker 对成功 JSON 使用有界 stale-while-revalidate；错误页、非 JSON、失败响应不入缓存；上限 120 项。
+- Service Worker 对 `/f1-api/` 优先返回网络结果，仅在网络或 HTTP 失败时回退缓存，避免赛前空成绩遮住新成绩；错误页、非 JSON、失败响应不入缓存；上限 120 项。FastF1 静态分析仍使用 stale-while-revalidate。
 - 相关部署头、缓存模式、内容类型限制和容量上限均有策略测试。
 
 ### 3.4 降低首屏以下布局成本

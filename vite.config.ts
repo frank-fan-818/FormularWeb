@@ -182,20 +182,27 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname.startsWith('/f1-api/')) {
-    const cachePromise = caches.open(DATA_CACHE);
-    const network = cachePromise.then(async (cache) => {
-      const response = await fetch(request);
+    const cachePromise = caches.open(DATA_CACHE).catch(() => null);
+    // A cached pre-race empty response must never mask a published classification.
+    const network = fetch(request);
+    event.waitUntil(network.then(async (response) => {
       if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
-        await cache.put(request, response.clone());
+        const snapshot = response.clone();
+        const cache = await cachePromise;
+        if (!cache) return;
+        await cache.put(request, snapshot);
         await trimCache(cache, 120);
       }
-      return response;
-    });
-    event.waitUntil(network.then(() => undefined, () => undefined));
+    }).catch(() => undefined));
     event.respondWith(
-      cachePromise.then(async (cache) => {
-        const cached = await cache.match(request);
-        return cached || network;
+      network.then(async (response) => {
+        if (response.ok) return response;
+        const cached = await cachePromise.then((cache) => cache.match(request)).catch(() => undefined);
+        return cached || response;
+      }).catch(async (error) => {
+        const cached = await cachePromise.then((cache) => cache.match(request)).catch(() => undefined);
+        if (cached) return cached;
+        throw error;
       }),
     );
     return;
