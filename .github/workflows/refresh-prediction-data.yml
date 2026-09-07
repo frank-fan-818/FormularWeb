@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: refresh-prediction-data
+  group: publish-race-winner-prediction
   cancel-in-progress: false
 
 env:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: develop
+          ref: main
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -113,7 +113,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: develop
+          ref: main
 
       - name: Download verified refresh output
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
@@ -125,7 +125,7 @@ jobs:
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          base: develop
+          base: main
           branch: automation/prediction-data-${{ needs.refresh.outputs.season }}
           delete-branch: true
           commit-message: 'chore: refresh F1 prediction data'

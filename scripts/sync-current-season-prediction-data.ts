@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fetchPaginatedRaceTable } from '../src/api/jolpicaRacePagination.ts';
 import { buildPredictionSeasonSnapshot, type PredictionSeasonApiData } from '../src/utils/currentSeasonPredictionData.ts';
 
 const JOLPICA_BASE_URL = 'https://api.jolpi.ca/ergast/f1';
@@ -7,7 +8,6 @@ const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_ATTEMPTS = 3;
 
 interface ParsedArgs { season: number; output: string; check: boolean; }
-interface JolpicaResponse { MRData?: { RaceTable?: { Races?: unknown[] } } }
 
 function parseArgs(args: string[]): ParsedArgs {
   let season = new Date().getUTCFullYear();
@@ -38,14 +38,13 @@ function log(event: string, details: Record<string, unknown> = {}) {
 }
 
 async function fetchRaceTable(endpoint: string, optional = false): Promise<unknown[]> {
-  const url = `${JOLPICA_BASE_URL}${endpoint}`;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-      if (optional && response.status === 404) return [];
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json() as JolpicaResponse;
-      return payload.MRData?.RaceTable?.Races || [];
+      return await fetchPaginatedRaceTable(endpoint, async (pageEndpoint) => {
+        const response = await fetch(`${JOLPICA_BASE_URL}${pageEndpoint}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      });
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         if (optional) {

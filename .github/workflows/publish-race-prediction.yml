@@ -2,8 +2,9 @@ name: Publish race winner prediction
 
 on:
   schedule:
-    # Saturday/Sunday UTC, offset from the top of the hour to reduce queue delays.
-    - cron: '7,22,37,52 * * * 0,6'
+    # Every day covers Thursday/Friday qualifying and Saturday races too.
+    # Heavy work remains limited to the 72-hour pre-race window below.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
       season:
@@ -16,7 +17,7 @@ permissions:
 
 concurrency:
   group: publish-race-winner-prediction
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   NODE_VERSION: '24.13.0'
@@ -25,6 +26,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Resolve season
         id: season
@@ -51,7 +53,7 @@ jobs:
             echo "eligible=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          race_at="$(curl --fail --silent --show-error "https://api.jolpi.ca/ergast/f1/${SEASON}/next.json" | jq -r '.MRData.RaceTable.Races[0] | select(.date != null) | (.date + "T" + (.time // "00:00:00Z"))')"
+          race_at="$(curl --fail --silent --show-error --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 "https://api.jolpi.ca/ergast/f1/${SEASON}/next.json" | jq -r '.MRData.RaceTable.Races[0] | select(.date != null) | (.date + "T" + (.time // "00:00:00Z"))')"
           if [ -z "$race_at" ]; then
             echo "eligible=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -87,4 +89,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run prediction:publish -- --season "${{ steps.season.outputs.value }}"
+        run: |
+          for attempt in 1 2 3; do
+            if npm run prediction:publish -- --season "${{ steps.season.outputs.value }}"; then exit 0; fi
+            if [ "$attempt" -lt 3 ]; then sleep 10; fi
+          done
+          exit 1
