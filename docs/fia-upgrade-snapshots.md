@@ -61,7 +61,7 @@ An optional final argument supplies downloaded PDFs named `<round>.pdf`.
 - Version: 0.19.0. Final checks: 352 unit tests passed; production build, strict
   lint, UTF-8 and six-workflow policy checks passed. Browser regression: 43 passed,
   8 skipped by the existing compact-viewport smoke policy, including all 12 upgrade
-  scenarios. Build URL: `http://127.0.0.1:4173`; branch: `codex/race-results-freshness`.
+  scenarios. Build URL: `http://127.0.0.1:4173`; branch: `codex/fia-upgrade-automation`.
 - Verified real FIA document discovery and parsing for Italian GP 2026 (26 records,
   10 teams), plus all nine downloaded race documents against the strict validator.
 - Verified the upcoming Spanish GP (round 14) returns `awaiting_publication` when
@@ -69,6 +69,8 @@ An optional final argument supplies downloaded PDFs named `<round>.pdf`.
 - Browser scenarios cover database, bundled fallback, empty and automatic appearance
   without page reload at 1440×900, 768×1024 and 375×812.
 - Local screenshots are in `artifacts/browser-qa/test-results/` (ignored).
-- The migration and live database publication have not been executed. The local
-  environment has no service-role credential, and GitHub CLI authentication is invalid;
-  default-branch workflow activation and deployment remain outstanding.
+- Activation update (2026-09-12): the database migration and rounds 5–13 backfill
+  are complete. A real round 14 sync published 10 records for 6 teams, public reads
+  succeeded, and a repeated sync returned `unchanged`. GitHub Actions secrets are
+  configured. PR #58 publishes the default-branch workflow and frontend; verify its
+  merged deployment and the first cloud workflow run before treating scheduling as active.
