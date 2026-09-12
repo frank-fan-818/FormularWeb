@@ -4,6 +4,7 @@ import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import { RequestTimeoutError, withTimeout } from '@/utils/withRetry';
 
 const FIA_UPGRADES_TIMEOUT_MS = 8_000;
+const FIA_UPGRADES_REFRESH_MS = 60_000;
 
 export function useFiaRaceUpgrades(season: string, round: string | undefined, enabled = true) {
   const [data, setData] = useState<FiaRaceUpgradeSummary | null>(null);
@@ -24,36 +25,52 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
     }
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    let pending = false;
+    let loaded = false;
 
-    withTimeout(
-      fiaCarUpgradesApi.getRaceUpgrades(season, round),
-      FIA_UPGRADES_TIMEOUT_MS,
-    )
-      .then((summary) => {
-        if (!cancelled) {
-          setData(summary);
-          setDataIdentity(requestIdentity);
-        }
-      })
-      .catch((requestError: unknown) => {
-        if (!cancelled) {
-          setData(null);
-          setDataIdentity(requestIdentity);
-          setError(requestError instanceof RequestTimeoutError
-            ? new Error('赛车升级数据请求超时，请稍后重试')
-            : requestError instanceof Error ? requestError : new Error(String(requestError)));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
+    const refresh = () => {
+      if (pending) return;
+      pending = true;
+      if (!loaded) setLoading(true);
+      setError(null);
+      withTimeout(
+        fiaCarUpgradesApi.getRaceUpgrades(season, round),
+        FIA_UPGRADES_TIMEOUT_MS,
+      )
+        .then((summary) => {
+          if (!cancelled) {
+            setData(summary);
+            setDataIdentity(requestIdentity);
+            loaded = true;
+          }
+        })
+        .catch((requestError: unknown) => {
+          if (!cancelled) {
+            if (!loaded) setData(null);
+            setDataIdentity(requestIdentity);
+            setError(requestError instanceof RequestTimeoutError
+              ? new Error('赛车升级数据请求超时，请稍后重试')
+              : requestError instanceof Error ? requestError : new Error(String(requestError)));
+          }
+        })
+        .finally(() => {
+          pending = false;
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    refresh();
+    const interval = window.setInterval(refreshWhenVisible, FIA_UPGRADES_REFRESH_MS);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
 
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
   }, [enabled, reloadKey, requestIdentity, round, season]);
 

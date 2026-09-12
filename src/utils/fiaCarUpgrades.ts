@@ -53,6 +53,8 @@ export interface ParsedFiaCarUpgradeDocument {
 }
 
 const TEAM_NAMES = [
+  'Audi',
+  'Cadillac',
   'Red Bull Racing',
   'Racing Bulls',
   'Visa Cash App RB',
@@ -95,6 +97,7 @@ const COMPONENT_WEIGHTS: Array<[RegExp, number, string]> = [
 export function normalizeFiaWhitespace(value: string): string {
   return value
     .replace(/\r/g, '\n')
+    .replace(/\t(?=\d{1,2}[ \t]+[A-Za-z])/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
@@ -209,19 +212,25 @@ function parseDelimitedRows(text: string, metadata: FiaCarUpgradeDocumentMetadat
     });
 }
 
-function parseTeamBlocks(text: string, metadata: FiaCarUpgradeDocumentMetadata): FiaCarUpgradeRecord[] {
+export function getFiaPresentationTeamBlocks(text: string): Array<{ team: string; rawText: string }> {
+  text = normalizeFiaWhitespace(text);
   const teamPattern = new RegExp(`\\b(${TEAM_NAMES.map(escapeRegExp).join('|')})\\b`, 'gi');
   const matches = Array.from(text.matchAll(teamPattern));
-  if (!matches.length) {
-    return [];
-  }
-
   return matches.flatMap((match, index) => {
     const start = match.index ?? 0;
     const end = matches[index + 1]?.index ?? text.length;
     const rawText = text.slice(start, end).trim();
     const team = findTeamName(match[0]);
+    return team ? [{ team, rawText }] : [];
+  });
+}
+
+function parseTeamBlocks(text: string, metadata: FiaCarUpgradeDocumentMetadata): FiaCarUpgradeRecord[] {
+  return getFiaPresentationTeamBlocks(text).flatMap(({ team, rawText }) => {
     if (!team || rawText.length < team.length + 8) {
+      return [];
+    }
+    if (/\bno\s+(?:updates?|upgrades?)\b/i.test(rawText)) {
       return [];
     }
 
@@ -255,10 +264,12 @@ function parseNumberedComponentRows(
   team: string,
   metadata: FiaCarUpgradeDocumentMetadata,
 ): FiaCarUpgradeRecord[] {
-  const rowMatches = Array.from(blockText.matchAll(/(?:^|\n)\s*(\d{1,2})\s+([^\n]+(?:\n(?!\s*\d{1,2}\s+)[^\n]+)*)/g));
+  // Empty numbered template rows are not updates. Merged reason cells can leave
+  // genuine component rows without a repeated reason; retain them as Unknown.
+  const tableText = blockText.replace(/^[ \t]*\d{1,2}[ \t]*$/gm, '');
+  const rowMatches = Array.from(tableText.matchAll(/(?:^|\n)[ \t]*(\d{1,2})[ \t]+([^\n]+(?:\n(?![ \t]*\d{1,2}[ \t]+)[^\n]+)*)/g));
   const rows = rowMatches
-    .map((match) => match[0].trim())
-    .filter((row) => /\b(?:Performance|Circuit\s+specific|Reliability|Cooling|Other)\b/i.test(row));
+    .map((match) => match[0].trim());
 
   return rows.map((row) => {
     const primaryReason = normalizeUpgradeReason(row);
@@ -278,7 +289,7 @@ function parseNumberedComponentRows(
 
 function inferNumberedRowArea(row: string): string | undefined {
   const withoutIndex = row.replace(/^\d{1,2}\s+/, '').trim();
-  const reasonIndex = withoutIndex.search(/\b(?:Performance|Circuit\s+specific|Reliability|Other)\b/i);
+  const reasonIndex = withoutIndex.search(/\b(?:Performance|Circuit\s+specific|Reliability|Other|Flow\s+Conditioning|Balance\s+Range|Drag\s+Range|Local\s+Load)\b/i);
   const beforeReason = reasonIndex >= 0 ? withoutIndex.slice(0, reasonIndex).trim() : withoutIndex;
   const cleaned = beforeReason.replace(/\s+/g, ' ').trim();
   return cleaned || findArea(row);

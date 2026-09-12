@@ -6,6 +6,43 @@ import {
 } from './fiaCarUpgrades';
 
 describe('FIA car upgrade parsing', () => {
+  it('splits a component index emitted after a tab in PDF text', () => {
+    const result = parseFiaCarPresentationText('Aston Martin\nUpdated component\n1 Front Wing Performance - Local Load Revised wing.\t2 Front Wing Endplate Performance - Local Load Revised foot.',
+      { season: 2026, round: 12 });
+    expect(result.records).toHaveLength(2);
+  });
+  it('keeps components in merged reason cells and ignores empty numbered table rows', () => {
+    const result = parseFiaCarPresentationText('Ferrari\nUpdated component\n1 Floor Body Performance - Local Load Revised floor\n2 Floor Board\n3 Floor Edge\n4\n5\n',
+      { season: 2026, round: 12 });
+    expect(result.records).toHaveLength(3);
+    expect(result.records[1].area).toBe('Floor Board');
+    expect(result.records[1].primaryReason).toBe('Unknown');
+  });
+  it('keeps numbered balance-range declarations even without a broad reason category', () => {
+    const result = parseFiaCarPresentationText('Red Bull Racing\nUpdated component\n1 Front Wing Balance Range Revised wing flap\n2 Floor Performance - Local Load Revised floor',
+      { season: 2026, round: 5 });
+    expect(result.records).toHaveLength(2);
+    expect(result.records[0].area).toBe('Front Wing');
+  });
+  it('recognizes 2026 teams, omits no-update declarations and retains unclassified numbered updates', () => {
+    const parsed = parseFiaCarPresentationText(`
+Audi Revolut F1 Team
+No updates submitted for this event.
+Williams
+No Updates
+Cadillac
+Updated component
+1 Diffuser Vane Performance - Local Load
+Addition of a vane.
+Red Bull Racing
+Updated component
+1 Front Wing Flow Conditioning Revised endplate vane
+Improves downstream flow.
+`, { season: 2026, round: 13 });
+    expect(parsed.records.map(({ team }) => team)).toEqual(['Cadillac', 'Red Bull Racing']);
+    expect(parsed.records[1].primaryReason).toBe('Unknown');
+  });
+
   it('parses team blocks from extracted FIA text', () => {
     const parsed = parseFiaCarPresentationText(
       `

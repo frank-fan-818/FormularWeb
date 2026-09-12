@@ -6,6 +6,9 @@ import type {
 import { summarizeFiaCarUpgrades } from '@/utils/fiaCarUpgrades';
 import { supabase } from '@/utils/supabase';
 import { measureRequest } from '@/utils/performance';
+import { withTimeout } from '@/utils/withRetry';
+import { logger } from '@/utils/logger';
+import type { FiaPublishedRaceArtifact } from '@/types/fiaUpgradeAutomation';
 
 interface FiaCarUpgradeArtifact {
   generatedAt: string;
@@ -73,6 +76,11 @@ export interface FiaRaceUpgradeSummary {
 }
 
 const FIA_UPGRADE_SOURCE = 'FIA Car Presentation Submissions';
+const publishedSnapshots = import.meta.glob<FiaCarUpgradeArtifact>(
+  '../../data/fia-upgrades/*/*.json', { import: 'default' },
+);
+// Leave time for the published snapshot before the hook's eight-second deadline.
+const DATABASE_TIMEOUT_MS = 5_000;
 const FIA_UPGRADE_COLUMNS = [
   'season',
   'round',
@@ -321,17 +329,60 @@ export const fiaCarUpgradesApi = {
       return null;
     }
 
-    const [recordRows, summaryRows] = await Promise.all([
-      getRaceUpgradeRows(seasonNumber, roundNumber),
-      getRaceUpgradeSummaryRows(seasonNumber, roundNumber),
-    ]);
+    let databaseError: unknown;
+    try {
+      const [published, legacy] = await Promise.allSettled([
+        withTimeout(getPublishedRaceUpgrades(seasonNumber, roundNumber), DATABASE_TIMEOUT_MS),
+        withTimeout(Promise.all([
+          getRaceUpgradeRows(seasonNumber, roundNumber),
+          getRaceUpgradeSummaryRows(seasonNumber, roundNumber),
+        ]), DATABASE_TIMEOUT_MS),
+      ]);
+      if (published.status === 'fulfilled' && published.value) return published.value;
+      if (legacy.status === 'rejected') throw legacy.reason;
+      const [recordRows, summaryRows] = legacy.value;
+      const summary = buildFiaRaceUpgradeSummaryFromRows(
+        recordRows.map(mapUpgradeRow), summaryRows.map(mapSummaryRow),
+        seasonNumber, roundNumber, getLatestImportedAt(recordRows),
+      );
+      if (summary?.teams.length) return summary;
+      if (published.status === 'rejected') throw published.reason;
+    } catch (error) {
+      databaseError = error;
+    }
 
-    return buildFiaRaceUpgradeSummaryFromRows(
-      recordRows.map(mapUpgradeRow),
-      summaryRows.map(mapSummaryRow),
-      seasonNumber,
-      roundNumber,
-      getLatestImportedAt(recordRows),
-    );
+    const loadSnapshot = publishedSnapshots[`../../data/fia-upgrades/${seasonNumber}/${roundNumber}.json`];
+    if (loadSnapshot) {
+      const summary = buildFiaRaceUpgradeSummary(await loadSnapshot(), seasonNumber, roundNumber);
+      if (summary?.teams.length) {
+        logger.info({ event: 'exit', module: 'fiaCarUpgrades', function: 'getRaceUpgrades',
+          step: 'published_snapshot', season: String(seasonNumber), round: String(roundNumber), status: 'success' });
+        return summary;
+      }
+    }
+    if (databaseError) throw databaseError;
+    return null;
   },
 };
+
+async function getPublishedRaceUpgrades(season: number, round: number): Promise<FiaRaceUpgradeSummary | null> {
+  const { data, error } = await supabase.from('fia_race_upgrade_snapshots')
+    .select('artifact').eq('season', season).eq('round', round).maybeSingle();
+  if (error) {
+    // Retain compatibility while the one-time migration is rolling out.
+    if (error.code === 'PGRST205' || error.code === '42P01') return null;
+    throw error;
+  }
+  if (!data) return null;
+  const artifact = data.artifact as FiaPublishedRaceArtifact;
+  if (!artifact || artifact.season !== season || artifact.round !== round
+    || !Array.isArray(artifact.records) || !Array.isArray(artifact.summaries)) {
+    throw new Error('Invalid published FIA upgrade snapshot');
+  }
+  return buildFiaRaceUpgradeSummary(artifact, season, round) || {
+    season, round, grandPrix: artifact.grandPrix, source: artifact.source,
+    generatedAt: artifact.generatedAt, teams: [], totalDeclaredUpgradeCount: 0,
+    totalDeclaredUpgradeIntensity: 0,
+    sourceDocuments: [{ title: `${season} ${artifact.grandPrix} - Car Presentation Submissions`, url: artifact.documentUrl }],
+  };
+}

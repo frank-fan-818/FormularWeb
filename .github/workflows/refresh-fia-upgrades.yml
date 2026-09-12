@@ -1,0 +1,104 @@
+name: Refresh pre-race FIA upgrades
+
+on:
+  schedule:
+    - cron: '11,41 * * * *'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: Season to refresh; defaults to the current UTC year
+        required: false
+        type: string
+      round:
+        description: Optional round to backfill outside the race-week window
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-fia-upgrades
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '24.13.0'
+  NPM_VERSION: '11.12.0'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check race-window eligibility before installing dependencies
+        id: window
+        env:
+          REQUESTED_SEASON: ${{ inputs.season }}
+          REQUESTED_ROUND: ${{ inputs.round }}
+        shell: bash
+        run: |
+          season="${REQUESTED_SEASON:-$(date -u +%Y)}"
+          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then exit 1; fi
+          echo "season=$season" >> "$GITHUB_OUTPUT"
+          if [ -n "$REQUESTED_ROUND" ]; then
+            if ! [[ "$REQUESTED_ROUND" =~ ^[0-9]+$ ]] || [ "$REQUESTED_ROUND" -lt 1 ] || [ "$REQUESTED_ROUND" -gt 40 ]; then exit 1; fi
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          calendar="$(curl --fail --silent --show-error --retry 2 --retry-all-errors --connect-timeout 10 --max-time 30 "https://api.jolpi.ca/ergast/f1/${season}.json?limit=100")"
+          jq -e '.MRData.RaceTable.Races | type == "array"' <<< "$calendar" > /dev/null
+          dates="$(jq -r '.MRData.RaceTable.Races[] | .date + "T" + (.time // "23:59:59Z")' <<< "$calendar")"
+          eligible=false
+          now="$(date -u +%s)"
+          while IFS= read -r race_at; do
+            if [ -z "$race_at" ]; then continue; fi
+            delta="$(( $(date -u -d "$race_at" +%s) - now ))"
+            if [ "$delta" -ge -172800 ] && [ "$delta" -le 432000 ]; then eligible=true; fi
+          done <<< "$dates"
+          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        if: steps.window.outputs.eligible == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: steps.window.outputs.eligible == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Use pinned npm
+        if: steps.window.outputs.eligible == 'true'
+        run: npm install --global npm@$NPM_VERSION
+
+      - name: Install toolchain
+        if: steps.window.outputs.eligible == 'true'
+        run: npm ci --include=dev
+
+      - name: Verify parsing and publication policies
+        if: steps.window.outputs.eligible == 'true'
+        run: npx vitest run src/utils/fiaCarUpgrades.test.ts src/utils/fiaUpgradeAutomation.test.ts src/api/fiaUpgradePublisher.test.ts
+
+      - name: Discover, validate and publish FIA declarations
+        if: steps.window.outputs.eligible == 'true'
+        env:
+          REQUESTED_SEASON: ${{ steps.window.outputs.season }}
+          REQUESTED_ROUND: ${{ inputs.round }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        shell: bash
+        run: |
+          args=()
+          if [ -n "$REQUESTED_SEASON" ]; then args+=(--season "$REQUESTED_SEASON"); fi
+          if [ -n "$REQUESTED_ROUND" ]; then args+=(--round "$REQUESTED_ROUND"); fi
+          npm run fia:refresh -- "${args[@]}"
+
+      - name: Retain parsed publication evidence
+        if: always() && steps.window.outputs.eligible == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: fia-upgrade-publications
+          path: artifacts/fia-refresh/
+          if-no-files-found: ignore
+          retention-days: 7
