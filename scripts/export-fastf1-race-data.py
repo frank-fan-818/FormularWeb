@@ -22,6 +22,7 @@ from fastf1_snapshot_validation import (
     INCOMPLETE_SNAPSHOT_EXIT_CODE,
     incomplete_snapshot_fields,
 )
+from fastf1_reliability import DIAGNOSTIC_PREFIX, REQUEST_PREFIX, RequestDiagnostics, classify_failure
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,7 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         default="public/fastf1",
-        help="Output root served by Vite, defaults to public/fastf1",
+        help="Private export root, defaults to public/fastf1",
     )
     parser.add_argument(
         "--telemetry-drivers",
@@ -1468,8 +1469,7 @@ def build_race_control_messages(messages: pd.DataFrame) -> list[dict[str, Any]]:
     return records
 
 
-def main() -> None:
-    args = parse_args()
+def export_session(args, diagnostics) -> None:
     cache_dir = Path(args.cache)
     output_root = Path(args.output)
 
@@ -1543,7 +1543,7 @@ def main() -> None:
                 payload["telemetrySummary"] = telemetry.get("summary", [])
                 telemetry_payload = {
                     "source": "fastf1",
-                    "generatedAt": datetime.now(timezone.utc).isoformat(),
+                    "generatedAt": payload['generatedAt'],
                     "season": str(args.season),
                     "round": str(args.round),
                     "session": str(args.session),
@@ -1559,6 +1559,8 @@ def main() -> None:
     if args.require_complete:
         missing_fields = incomplete_snapshot_fields(payload, str(args.session), telemetry_payload)
         if missing_fields:
+            diagnostics.missing_fields = missing_fields
+            diagnostics.category = classify_failure(missing_fields, diagnostics.requests)
             print(
                 "FastF1 returned an incomplete snapshot; refusing to publish: "
                 + ", ".join(missing_fields),
@@ -1581,6 +1583,24 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {telemetry_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    diagnostics = RequestDiagnostics(emit=lambda record: print(REQUEST_PREFIX + json.dumps(record), file=sys.stderr, flush=True))
+    try:
+        with diagnostics.installed():
+            export_session(args, diagnostics)
+    except SystemExit:
+        raise
+    except Exception as error:
+        diagnostics.category = 'fetch_error' if any(
+            item.get('exception') or (item.get('status') or 0) >= 400 for item in diagnostics.requests
+        ) else 'exporter_error'
+        print(f"Exporter failed: {type(error).__name__}", file=sys.stderr)
+        raise SystemExit(1) from None
+    finally:
+        print(DIAGNOSTIC_PREFIX + json.dumps(diagnostics.as_dict()), file=sys.stderr)
 
 
 if __name__ == "__main__":

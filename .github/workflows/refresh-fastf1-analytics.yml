@@ -29,14 +29,16 @@ env:
 jobs:
   refresh:
     name: Export, verify, and publish to Supabase
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.FASTF1_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 90
     outputs:
       season: ${{ steps.scope.outputs.season }}
+      backup: ${{ steps.backup.outcome == 'success' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: main
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -88,11 +90,25 @@ jobs:
           fi
           echo "season=$season" >> "$GITHUB_OUTPUT"
           echo "round=$REQUESTED_ROUND" >> "$GITHUB_OUTPUT"
+          echo "FASTF1_ROOT=$RUNNER_TEMP/fastf1-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
 
       - name: Test automation policies
         run: |
           npm run fastf1:automation-test
           python -m unittest scripts.fastf1_classification_test
+
+      - name: Restore complete private snapshots
+        id: restore
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          node scripts/restore-private-fastf1.mjs "${args[@]}"
 
       - name: Export completed analysis sessions
         id: export
@@ -102,11 +118,13 @@ jobs:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
         run: |
-          args=(--season "$SEASON" --completed-only --refresh-incomplete --availability-delay-hours 4)
+          args=(--season "$SEASON" --output "$FASTF1_ROOT" --cache "$FASTF1_ROOT/cache" --completed-only --refresh-incomplete --availability-delay-hours 4 --session-timeout-seconds 900 --max-runtime-seconds 2400)
           if [ -n "$ROUND" ]; then args+=(--from-round "$ROUND" --to-round "$ROUND"); fi
           python scripts/export-fastf1-season-data.py "${args[@]}"
 
       - name: Import every complete snapshot into Supabase
+        id: database
+        continue-on-error: true
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -114,49 +132,92 @@ jobs:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
         run: |
-          args=(--season "$SEASON" --complete-only --session R --session Q --session S --session SQ --session SS --session FP1 --session FP2 --session FP3)
+          args=(--season "$SEASON" --input "$FASTF1_ROOT" --complete-only --session R --session Q --session S --session SQ --session SS --session FP1 --session FP2 --session FP3)
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
           npm run fastf1:import-sessions -- "${args[@]}"
 
+      - name: Publish each complete session to private Storage
+        id: storage
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          node scripts/upload-private-fastf1.mjs "${args[@]}"
+
+      - name: Report persistent session health
+        id: health
+        if: ${{ !cancelled() && steps.export.outcome != 'skipped' && steps.scope.outputs.season != '' }}
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+          FASTF1_PIPELINE_FAILED: ${{ steps.restore.outcome == 'failure' || steps.export.outcome == 'failure' || steps.database.outcome == 'failure' || steps.storage.outcome == 'failure' }}
+        run: |
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          node scripts/report-fastf1-health.mjs "${args[@]}"
+
       - name: Verify all eligible analysis sessions are complete
-        shell: bash
+        id: verify
+        continue-on-error: true
         env:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
         run: |
-          args=(--season "$SEASON")
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
           npm run fastf1:verify-manifest -- "${args[@]}"
 
-      - name: Reject exporter process failures
-        if: steps.export.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::error::FastF1 exporter exited unsuccessfully; refusing to publish stale snapshots."
-          exit 1
+      - name: Upload sanitized diagnostics
+        if: ${{ !cancelled() && steps.scope.outputs.season != '' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: fastf1-diagnostics-${{ steps.scope.outputs.season }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/export-report.json
+            ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/manifest.json
+            ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/publication-report.json
+            ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/health.json
+          if-no-files-found: warn
+          retention-days: 14
 
-      - name: Upload verified snapshots
+      - name: Prepare complete static fallback snapshots
+        id: prepare_backup
+        continue-on-error: true
+        env:
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+        run: |
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          node scripts/prepare-fastf1-static-backup.mjs "${args[@]}"
+
+      - name: Upload complete static fallback snapshots
+        id: backup
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: fastf1-analytics-${{ steps.scope.outputs.season }}
-          path: public/fastf1/${{ steps.scope.outputs.season }}/
+          path: ${{ env.FASTF1_ROOT }}/static-backup/${{ steps.scope.outputs.season }}/
           if-no-files-found: error
           retention-days: 1
 
-      - name: Upload failure diagnostics
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-        if: failure()
-        with:
-          name: fastf1-analytics-diagnostics-${{ steps.scope.outputs.season }}
-          path: |
-            public/fastf1/${{ steps.scope.outputs.season }}/manifest.json
-            public/fastf1/${{ steps.scope.outputs.season }}/export-report.json
-          if-no-files-found: ignore
-          retention-days: 7
+      - name: Reject unresolved pipeline failures
+        if: ${{ !cancelled() && (steps.restore.outcome == 'failure' || steps.export.outcome == 'failure' || steps.database.outcome == 'failure' || steps.storage.outcome == 'failure' || steps.health.outcome == 'failure' || steps.verify.outcome == 'failure' || steps.prepare_backup.outcome == 'failure') }}
+        run: |
+          echo "::error::FastF1 has unresolved fetch, publication or completeness failures. See the health summary and diagnostic artifact."
+          exit 1
 
   publish:
     name: Create or update the static-backup PR
     needs: refresh
+    if: ${{ !cancelled() && needs.refresh.outputs.backup == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -166,12 +227,10 @@ jobs:
         with:
           persist-credentials: false
           ref: main
-
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: fastf1-analytics-${{ needs.refresh.outputs.season }}
           path: public/fastf1/${{ needs.refresh.outputs.season }}/
-
       - name: Create or update FastF1 snapshot PR
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
@@ -182,6 +241,7 @@ jobs:
           commit-message: 'chore: refresh post-race FastF1 analytics'
           title: 'chore: refresh FastF1 analytics (${{ needs.refresh.outputs.season }})'
           body: |
-            Automated post-session FastF1 snapshots. Complete payloads have already been
-            upserted into Supabase; this PR keeps the static fallback in sync.
+            Complete, independently verified FastF1 snapshots. Database and private
+            Storage publication are checked separately in the refresh run summary.
+            Failed or incomplete snapshots are excluded from this static fallback.
           labels: automated,data

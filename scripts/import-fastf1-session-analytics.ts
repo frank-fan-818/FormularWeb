@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { importIndependently } from './fastf1-session-import.ts';
 import {
   hasCompleteSplitTelemetry,
   isCompleteFastF1Payload,
@@ -373,15 +374,16 @@ async function main() {
   }
 
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase
-    .from('fastf1_session_analytics')
-    .upsert(rows, { onConflict: 'season,round,session' });
-
-  if (error) {
-    throw error;
+  const result = await importIndependently(rows, async (row) => {
+    const { error } = await supabase.from('fastf1_session_analytics')
+      .upsert(row, { onConflict: 'season,round,session' });
+    if (error) throw error;
+  });
+  console.log(`Imported ${result.imported} FastF1 session analytics row(s).`);
+  if (result.failed.length) {
+    console.error(JSON.stringify({ failedSessions: result.failed }));
+    process.exitCode = 1;
   }
-
-  console.log(`Imported ${rows.length} FastF1 session analytics row(s).`);
 }
 
 main().catch((error: unknown) => {
