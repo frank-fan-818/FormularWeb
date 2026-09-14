@@ -22,7 +22,7 @@ if (roundValue && (!Number.isInteger(round) || round <= 0)) {
   throw new Error('--round must be a positive integer.');
 }
 
-const manifestPath = path.resolve('public', 'fastf1', String(season), 'manifest.json');
+const manifestPath = path.resolve(valueAfter('--input') || 'public/fastf1', String(season), 'manifest.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const failures = findIncompleteEligibleSessions(manifest, round);
 
