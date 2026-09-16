@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mockAuth, enterAsMember } from './auth-fixtures';
+import { mockAuth, enterAsMember, authStorageKey, testSession } from './auth-fixtures';
 
 async function mockData(page: Page) {
   await page.route('**/f1-api/**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
@@ -14,6 +14,35 @@ async function mockData(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => { await mockData(page); await mockAuth(page); });
+
+test('an anonymous auth session never grants member access or erases guest consent', async ({ page }) => {
+  await page.addInitScript(({ key, session }) => {
+    localStorage.setItem(key, JSON.stringify(session));
+    sessionStorage.setItem('f1-guest-access', '1');
+  }, { key: authStorageKey, session: { ...testSession, user: { ...testSession.user, is_anonymous: true } } });
+  await page.goto('/races/1/race?season=2026');
+  await expect(page.getByRole('heading', { name: '登录后查看圈速、遥测与策略分析' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
+});
+
+test('first-visit cleanup leaves IndexedDB initialization to the cache adapter', async ({ page }) => {
+  await page.goto('/login');
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
+  const valid = await page.evaluate(async () => {
+    const databases = await indexedDB.databases();
+    if (!databases.some((database) => database.name === 'f1-data-cache')) return true;
+    return new Promise<boolean>((resolve, reject) => {
+      const request = indexedDB.open('f1-data-cache', 1);
+      request.onsuccess = () => {
+        const hasStore = request.result.objectStoreNames.contains('snapshots');
+        request.result.close();
+        resolve(hasStore);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  });
+  expect(valid).toBe(true);
+});
 
 test('first visit shows a standalone login; guest choice survives refresh', async ({ page }, info) => {
   const errors: string[] = [];
@@ -35,7 +64,7 @@ test('first visit shows a standalone login; guest choice survives refresh', asyn
 test('guest deep links remain locked and do not request analytics or predictions', async ({ page }, info) => {
   const protectedRequests: string[] = [];
   page.on('request', (request) => {
-    if (/\/fastf1\/|fastf1_session_analytics|race_prediction_current/.test(request.url())) protectedRequests.push(request.url());
+    if (/\/fastf1\/|\/fastf1-private\/|fastf1_session_analytics|race_prediction_current/.test(request.url())) protectedRequests.push(request.url());
   });
   await page.goto('/races/1/race?season=2026');
   await expect(page).toHaveURL(/\/login$/);

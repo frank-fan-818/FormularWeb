@@ -31,6 +31,19 @@ describe('authenticated data transport', () => {
     await expect(memberFetch('https://other.example/file')).rejects.toThrow();
     expect(fetch).not.toHaveBeenCalled();
   });
+  it('rejects a response when the account changes while its body is downloading', async () => {
+    const stream = new ReadableStream({
+      start(controller) {
+        setTimeout(() => {
+          auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+          controller.enqueue(new TextEncoder().encode('{}'));
+          controller.close();
+        }, 10);
+      },
+    });
+    vi.mocked(fetch).mockResolvedValue(new Response(stream));
+    await expect(memberFetch('https://project.supabase.co/rest/v1/prediction_runs')).rejects.toThrow('需要登录');
+  });
   it('uses authenticated storage paths and rejects path injection', () => {
     expect(privateAnalyticsUrl('2026', '1', 'R-telemetry')).toContain('/storage/v1/object/authenticated/fastf1-private/2026/1/R-telemetry.json');
     expect(() => privateAnalyticsUrl('../2026', '1', 'R')).toThrow();

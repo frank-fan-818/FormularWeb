@@ -2,7 +2,7 @@ import { clearPrivateData } from '@/utils/privateDataCleanup';
 import { useEffect, useState } from 'react';
 import type { AuthState } from '@/types/auth';
 import type { Session } from '@supabase/supabase-js';
-import { GUEST_ACCESS_KEY } from '@/utils/accessPolicy';
+import { getMemberSession, GUEST_ACCESS_KEY } from '@/utils/accessPolicy';
 import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 
 export function useAuthState(): AuthState {
@@ -40,17 +40,19 @@ export function useAuthState(): AuthState {
       eventReceived = true;
       window.clearTimeout(timeout);
       if (!nextSession || event === 'SIGNED_IN' || event === 'SIGNED_OUT') clearPrivateData();
-      setSession(nextSession?.user.is_anonymous ? null : nextSession);
+      const memberSession = getMemberSession(nextSession);
+      setSession(memberSession);
       setPasswordRecovery(event === 'PASSWORD_RECOVERY');
       setLoading(false);
       setError(null);
-      if (nextSession || event === 'SIGNED_OUT') updateGuest(false);
+      if (memberSession || event === 'SIGNED_OUT') updateGuest(false);
     });
     void supabase.auth.getSession().then(({ data: current, error: sessionError }) => {
       if (!active || eventReceived) return;
       if (sessionError) throw sessionError;
-      setSession(current.session);
-      if (current.session) updateGuest(false);
+      const memberSession = getMemberSession(current.session);
+      setSession(memberSession);
+      if (memberSession) updateGuest(false);
     }).catch(() => {
       if (active && !eventReceived) setError('无法确认登录状态，请重试或选择游客浏览。');
     }).finally(() => {

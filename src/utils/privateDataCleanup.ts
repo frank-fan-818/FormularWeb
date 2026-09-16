@@ -12,6 +12,8 @@ export function clearPrivateData(): void {
   } catch { /* Storage can be unavailable in privacy mode. */ }
   try {
     const request = indexedDB.open('f1-data-cache', 1);
+    // Cleanup must not create a database without the adapter's snapshots store.
+    request.onupgradeneeded = () => request.transaction?.abort();
     request.onsuccess = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains('snapshots')) { db.close(); return; }
