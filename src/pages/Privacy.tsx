@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Card, Typography } from 'antd';
 import DocumentHead from '@/components/DocumentHead';
 import './Privacy.css';
@@ -9,15 +10,16 @@ const Privacy = () => (
     <DocumentHead title="隐私说明 — F1 数据中心" description="F1 数据中心的账号、诊断数据与本地偏好处理说明" />
     <article className="privacy-page">
       <header>
+        <Link to="/login">返回账号入口</Link>
         <Text className="privacy-kicker">PRIVACY / ACCOUNT</Text>
         <Title level={1}>隐私说明</Title>
-        <Paragraph type="secondary">最后更新：2026 年 7 月 28 日</Paragraph>
+        <Paragraph type="secondary">最后更新：2026 年 9 月 12 日</Paragraph>
       </header>
 
       <Card>
         <Title level={2}>我们处理哪些数据</Title>
         <Paragraph>
-          公开赛事数据无需登录。创建账号时，身份服务会处理你的邮箱、密码凭据和登录会话；
+          游客可浏览赛历、比赛结果和积分榜；深度分析功能需要登录。创建账号时，身份服务会处理你的邮箱、密码凭据和登录会话；
           密码本身由 Supabase 身份服务处理，本应用不会读取或记录明文密码。
         </Paragraph>
 
@@ -35,7 +37,7 @@ const Privacy = () => (
 
         <Title level={2}>控制与联系</Title>
         <Paragraph>
-          你可以随时退出登录并清除站点数据。如需查询或删除账号数据，请通过
+          游客选择仅保存在当前标签页会话中。你可以随时退出登录并清除站点数据。如需查询或删除账号数据，请通过
           {' '}
           <a
             href="https://github.com/frank-fan-818/FormularWeb/issues"

@@ -1,3 +1,5 @@
+import { MemberAccess } from '@/components/auth/AccessGate';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button, Card, Table, Tabs } from 'antd';
@@ -35,6 +37,7 @@ import {
 const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
 const RaceSprint = () => {
+  const { session } = useAuthSession();
   const { t } = useTranslation();
   const {
     season,
@@ -692,6 +695,7 @@ const RaceSprint = () => {
         ) : null}
       />
 
+      {!session ? <MemberAccess feature="圈速与策略分析">{null}</MemberAccess> : null}
       <Tabs
         className="race-analysis-tabs race-sprint-tabs"
         defaultActiveKey="sprintQualifying"

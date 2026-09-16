@@ -21,7 +21,7 @@ TELEMETRY_SAMPLE_KEYS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Optimize R-telemetry.json files")
-    parser.add_argument("--base", default="public/fastf1", help="Root directory")
+    parser.add_argument("--base", default="data/private-fastf1", help="Root directory")
     parser.add_argument("--dry-run", action="store_true", help="Print stats only")
     parser.add_argument("--season", default="", help="Single season to process")
     return parser.parse_args()

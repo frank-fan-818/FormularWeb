@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { importIndependently } from './fastf1-session-import.ts';
 import {
   hasCompleteSplitTelemetry,
   isCompleteFastF1Payload,
@@ -69,7 +70,7 @@ Usage:
   npm run fastf1:import-sessions -- --season 2025 --round 19
   npm run fastf1:import-sessions -- --from 2021 --to 2025 --session S
   npm run fastf1:import-sessions -- --season 2025 --round 19 --session Q --session SQ
-  npm run fastf1:import-sessions -- --input public/fastf1 --dry-run
+  npm run fastf1:import-sessions -- --input data/private-fastf1 --dry-run
   npm run fastf1:import-sessions -- --season 2025 --complete-only
 
 Description:
@@ -103,7 +104,7 @@ function parseNumberFlag(flag: string, value: string | undefined) {
 function parseArgs(args: string[]): ParsedArgs {
   const parsed: ParsedArgs = {
     sessions: [],
-    inputRoot: 'public/fastf1',
+    inputRoot: 'data/private-fastf1',
     dryRun: false,
     completeOnly: false,
     help: false,
@@ -373,15 +374,16 @@ async function main() {
   }
 
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase
-    .from('fastf1_session_analytics')
-    .upsert(rows, { onConflict: 'season,round,session' });
-
-  if (error) {
-    throw error;
+  const result = await importIndependently(rows, async (row) => {
+    const { error } = await supabase.from('fastf1_session_analytics')
+      .upsert(row, { onConflict: 'season,round,session' });
+    if (error) throw error;
+  });
+  console.log(`Imported ${result.imported} FastF1 session analytics row(s).`);
+  if (result.failed.length) {
+    console.error(JSON.stringify({ failedSessions: result.failed }));
+    process.exitCode = 1;
   }
-
-  console.log(`Imported ${rows.length} FastF1 session analytics row(s).`);
 }
 
 main().catch((error: unknown) => {

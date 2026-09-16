@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 const driver = {
   driverId: 'norris',
@@ -149,7 +152,7 @@ test('Sprint classifications load without Supabase session discovery', async ({ 
       }),
     });
   });
-  await page.route('**/fastf1/2025/2/*.json', async (requestRoute) => {
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', async (requestRoute) => {
     const url = requestRoute.request().url();
     requestedFastF1Sessions.push(url);
     if (url.endsWith('/S.json')) {
@@ -207,7 +210,7 @@ test('Results tabs recover practice and sprint qualifying from FastF1', async ({
       }] }, StandingsTable: { StandingsLists: [] },
     } }) });
   });
-  await page.route('**/fastf1/2025/2/*.json', (route) => {
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', (route) => {
     const isPractice = route.request().url().endsWith('/FP1.json');
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
       ...fastF1Payload('SQ'),
@@ -302,7 +305,7 @@ test('Race intelligence leaves skeleton state when optional APIs stall', async (
       }),
     });
   });
-  await page.route('**/fastf1/2025/2/*.json', async (requestRoute) => {
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', async (requestRoute) => {
     await requestRoute.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
   });
 

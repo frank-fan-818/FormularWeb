@@ -144,7 +144,7 @@ function parseArgs(args: string[]): ParsedArgs {
     seasonTo: currentYear,
     sessions: [],
     source: 'all',
-    inputRoot: 'public/fastf1',
+    inputRoot: 'data/private-fastf1',
     dryRun: false,
     flushEachSeason: false,
     help: false,

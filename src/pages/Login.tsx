@@ -17,7 +17,7 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { session, loading: sessionLoading } = useAuthSession();
+  const { session, loading: sessionLoading, enterGuest, leaveGuest, error: sessionError, retry } = useAuthSession();
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const returnPath = getAuthReturnPath(location.state);
@@ -45,6 +45,7 @@ const Login = () => {
     setErrorMessage(null);
     try {
       await authApi.signOut();
+      leaveGuest();
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error));
     } finally {
@@ -56,7 +57,7 @@ const Login = () => {
     <AuthCard
       eyebrow="ACCOUNT ACCESS"
       title={session ? '账号已连接' : '欢迎回来'}
-      intro={session ? '当前账号已登录。' : '使用邮箱登录。赛事数据无需账号也可浏览。'}
+      intro={session ? '已解锁圈速、遥测、策略分析与预测。' : '登录，进入你的 F1 数据中心。'}
       footer={!session ? <span>还没有账号？<Link state={location.state} to="/register">创建账号</Link></span> : undefined}
     >
       {!isSupabaseConfigured ? (
@@ -68,6 +69,7 @@ const Login = () => {
           description="公开赛事数据仍可浏览；配置 Supabase 环境变量后即可启用登录。"
         />
       ) : null}
+      {sessionError ? <Alert className="auth-card__alert" type="warning" message={sessionError} action={<Button onClick={retry}>重试</Button>} /> : null}
       {successMessage ? <Alert className="auth-card__alert" type="success" showIcon message={successMessage} /> : null}
       {errorMessage ? <Alert className="auth-card__alert" type="error" showIcon message={errorMessage} /> : null}
 
@@ -114,6 +116,18 @@ const Login = () => {
           </Form.Item>
         </Form>
       )}
+      {!session ? (
+        <div className="auth-card__access-options">
+          <div className="auth-card__access-comparison">
+            <div><strong>游客浏览</strong><span>赛历 · 比赛结果 · 积分榜</span></div>
+            <div><strong>免费注册用户</strong><span>全部基础数据 + 圈速 · 遥测 · 策略 · 预测</span></div>
+          </div>
+          <Button block disabled={sessionLoading} onClick={() => {
+            enterGuest();
+            navigate(returnPath, { replace: true });
+          }}>以游客身份浏览</Button>
+        </div>
+      ) : null}
     </AuthCard>
   );
 };

@@ -1,0 +1,89 @@
+import { expect, test, type Page } from '@playwright/test';
+import { mockAuth, enterAsMember } from './auth-fixtures';
+
+async function mockData(page: Page) {
+  await page.route('**/f1-api/**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+    MRData: { total: '1', SeasonTable: { Seasons: [{ season: '2026' }] },
+      RaceTable: { Races: [{ season: '2026', round: '1', raceName: 'Australian Grand Prix', date: '2026-03-08',
+        Circuit: { circuitId: 'albert_park', circuitName: 'Albert Park', Location: { locality: 'Melbourne', country: 'Australia' } },
+      }] }, StandingsTable: { StandingsLists: [] },
+    },
+  }) }));
+  await page.route('**/rest/v1/**', (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/**', (route) => route.fulfill({ status: 404, contentType: 'application/json', body: '{}' }));
+}
+
+test.beforeEach(async ({ page }) => { await mockData(page); await mockAuth(page); });
+
+test('first visit shows a standalone login; guest choice survives refresh', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
+  await expect(page.locator('.auth-trigger-btn')).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('login-entry.png'), fullPage: true, animations: 'disabled' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  await page.getByRole('button', { name: '以游客身份浏览' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('guest deep links remain locked and do not request analytics or predictions', async ({ page }, info) => {
+  const protectedRequests: string[] = [];
+  page.on('request', (request) => {
+    if (/\/fastf1\/|fastf1_session_analytics|race_prediction_current/.test(request.url())) protectedRequests.push(request.url());
+  });
+  await page.goto('/races/1/race?season=2026');
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByRole('button', { name: '以游客身份浏览' }).click();
+  await expect(page).toHaveURL(/\/races\/1\/race\?season=2026$/);
+  await expect(page.getByRole('heading', { name: '登录后查看圈速、遥测与策略分析' })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('guest-locked.png'), fullPage: true, animations: 'disabled' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  await page.goto('/races/1/info?season=2026');
+  await expect(page.getByRole('heading', { name: '登录后查看赛事预测' })).toBeVisible();
+  expect(protectedRequests).toEqual([]);
+});
+
+test('sign in returns to the requested analysis; sign out revokes access', async ({ page }) => {
+  await page.goto('/races/1/race?season=2026');
+  await page.getByLabel('邮箱', { exact: true }).fill('driver@example.com');
+  await page.getByLabel('密码', { exact: true }).fill('test-only-password-123');
+  await page.getByRole('button', { name: /^登\s*录$/ }).click();
+  await expect(page).toHaveURL(/\/races\/1\/race\?season=2026$/);
+  await expect(page.getByRole('button', { name: '我的账号' })).toBeVisible();
+  await expect(page.locator('.member-access')).toHaveCount(0);
+  await page.getByRole('button', { name: '我的账号' }).click();
+  await expect(page.getByText('driver@example.com', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '安全退出' }).click();
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
+  await page.goto('/races/1/race?season=2026');
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test('an existing session enters directly and privacy stays public', async ({ page }) => {
+  await enterAsMember(page);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: '我的账号' })).toBeVisible();
+  await page.goto('/privacy');
+  await expect(page).toHaveURL(/\/privacy$/);
+});
+
+test('failed login keeps access locked and privacy is public without a session', async ({ page }) => {
+  await page.route('**/auth/v1/token**', (route) => route.fulfill({
+    status: 400, contentType: 'application/json',
+    body: JSON.stringify({ error: 'invalid_grant', error_description: 'Invalid login credentials' }),
+  }));
+  await page.goto('/privacy');
+  await expect(page.getByRole('heading', { name: '隐私说明', exact: true })).toBeVisible();
+  await page.goto('/races/1/race?season=2026');
+  await page.getByLabel('邮箱', { exact: true }).fill('driver@example.com');
+  await page.getByLabel('密码', { exact: true }).fill('wrong-password');
+  await page.getByRole('button', { name: /^登\s*录$/ }).click();
+  await expect(page.getByText('邮箱或密码不正确。', { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+});

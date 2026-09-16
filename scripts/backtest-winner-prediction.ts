@@ -660,7 +660,7 @@ function blendWeather(primary: RaceWeatherSummary, fallback: RaceWeatherSummary)
 }
 
 function readFastF1Weather(season: number, round: number): RaceWeatherSummary {
-  const filePath = path.join(process.cwd(), 'public', 'fastf1', String(season), String(round), 'R.json');
+  const filePath = path.join(process.cwd(), 'data', 'private-fastf1', String(season), String(round), 'R.json');
 
   if (!existsSyncSafe(filePath)) {
     return summarizeWeather(null);
@@ -674,7 +674,7 @@ function readFastF1Weather(season: number, round: number): RaceWeatherSummary {
 }
 
 function readFastF1RacePayload(season: number, round: number): FastF1RacePayload | null {
-  const filePath = path.join(process.cwd(), 'public', 'fastf1', String(season), String(round), 'R.json');
+  const filePath = path.join(process.cwd(), 'data', 'private-fastf1', String(season), String(round), 'R.json');
 
   if (!existsSyncSafe(filePath)) {
     return null;

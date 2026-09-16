@@ -89,18 +89,12 @@ export function preloadConstructorDetailRoute(constructorId: string, season: str
 
 export function preloadRaceSectionRoute(
   section: string,
-  season?: string,
-  round?: string,
+  _season?: string,
+  _round?: string,
 ): void {
   const moduleKey = raceSectionModules[section];
   if (!moduleKey || !canPrefetch()) return;
   const requests: Promise<unknown>[] = [routeModules[moduleKey]()];
-  if (section === 'race' && season && round) {
-    requests.push(
-      import('@/api/fastf1Analytics')
-        .then(({ fastF1AnalyticsApi }) => fastF1AnalyticsApi.getRaceAnalytics(season, round, 'R')),
-    );
-  }
   void Promise.all(requests).catch(() => {
     // Navigation remains the source of truth when speculative loading fails.
   });

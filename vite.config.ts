@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import type { OutputBundle, OutputChunk } from 'rollup'
 import react from '@vitejs/plugin-react'
 import path from 'path'
@@ -12,6 +12,24 @@ const f1ApiProxy = {
     secure: true,
     rewrite: (requestPath: string) => requestPath.replace(/^\/f1-api/, '/ergast/f1'),
   },
+}
+
+function privateDataGuard(): Plugin {
+  const rejectPublicData = (server: { middlewares: { use: (handler: (req: { url?: string }, res: { writeHead: (status: number) => void; end: () => void }, next: () => void) => void) => void } }) => {
+    server.middlewares.use((req, res, next) => {
+      const pathname = decodeURIComponent((req.url || '').split('?')[0]);
+      if (pathname === '/fastf1' || pathname.startsWith('/fastf1/')) { res.writeHead(404); res.end(); return; }
+      next();
+    });
+  };
+  return {
+    name: 'private-analysis-boundary',
+    buildStart() {
+      if (existsSync(path.resolve('public/fastf1'))) throw new Error('FastF1 exports must stay in data/private-fastf1, outside public');
+    },
+    configureServer: rejectPublicData,
+    configurePreviewServer: rejectPublicData,
+  };
 }
 
 function createCriticalCssPlugin() {
@@ -151,6 +169,10 @@ function isExpectedResponse(request, response) {
   return true;
 }
 
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.delete(DATA_CACHE));
+});
+
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)));
 });
@@ -208,23 +230,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (/\\/fastf1\\/.*\\.json$/.test(url.pathname)) {
-    const cachePromise = caches.open(DATA_CACHE);
-    const network = cachePromise.then(async (cache) => {
-      const response = await fetch(request);
-      if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
-        await cache.put(request, response.clone());
-        await trimCache(cache, 80);
-      }
-      return response;
-    });
-    event.waitUntil(network.then(() => undefined, () => undefined));
-    event.respondWith(
-      cachePromise.then(async (cache) => {
-        const cached = await cache.match(request);
-        return cached || network;
-      }),
-    );
+  if (url.pathname.startsWith('/fastf1/')) {
+    event.respondWith(Promise.resolve(new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } })));
     return;
   }
 
@@ -250,6 +257,7 @@ self.addEventListener('fetch', (event) => {
 export default defineConfig({
   plugins: [
     react(),
+    privateDataGuard(),
     createCriticalCssPlugin(),
     createServiceWorkerPlugin(),
   ],

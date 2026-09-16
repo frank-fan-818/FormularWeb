@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 const drivers = [
   ['albon', 'Alexander', 'Albon', 'ALB', '23', 'williams', 'Williams'],

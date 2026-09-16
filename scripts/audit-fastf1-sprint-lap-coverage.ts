@@ -30,7 +30,7 @@ async function readJson(filePath: string): Promise<FastF1Payload | null> {
 async function main() {
   const outputRoot = process.argv.includes('--input')
     ? process.argv[process.argv.indexOf('--input') + 1]
-    : 'public/fastf1';
+    : 'data/private-fastf1';
 
   const rows = [];
   for (const [season, round] of sprintWeekends) {

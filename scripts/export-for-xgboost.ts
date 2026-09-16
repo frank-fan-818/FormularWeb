@@ -29,7 +29,7 @@ function nrate(r: number, neu: number): number { return r >= neu ? Math.min(1, (
 function clamp(v: number): number { return Math.max(-1, Math.min(1, v)); }
 
 const DATA_ROOT = path.join(process.cwd(), 'f1db-main', 'src', 'data', 'seasons');
-const FASTF1_ROOT = path.join(process.cwd(), 'public', 'fastf1');
+const FASTF1_ROOT = path.join(process.cwd(), 'data', 'private-fastf1');
 
 // Types
 interface ResultYaml { position?: number | string | null; driverId: string; constructorId: string; points?: number | string | null; gridPosition?: number | string | null; laps?: number | string | null; reasonRetired?: string | null; }

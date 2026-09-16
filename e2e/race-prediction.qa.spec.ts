@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 const race = {
   season: '2026',
@@ -101,7 +104,7 @@ async function installPredictionFixtures(page: Page) {
       body: pathname.endsWith('/race_prediction_current') ? JSON.stringify([prediction]) : '[]',
     });
   });
-  await page.route('**/fastf1/**', async (requestRoute) => {
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/**', async (requestRoute) => {
     await requestRoute.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
   });
 }

@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 test('race analysis route remains responsive across available data states', async ({ page }, testInfo) => {
   const startedAt = Date.now();
@@ -89,7 +92,7 @@ test('race analysis route remains responsive across available data states', asyn
       body: '[]',
     });
   });
-  await page.route('**/fastf1/**', async (requestRoute) => {
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/**', async (requestRoute) => {
     await requestRoute.fulfill({
       status: 404,
       contentType: 'application/json',

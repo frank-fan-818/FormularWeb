@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 const routes = [
   '/',
@@ -338,6 +341,8 @@ test('historical race navigation preserves and updates the season identity', asy
   try {
     await mockHistoricalRaceApi(freshPage);
     await freshPage.goto(copiedUrl);
+    await expect(freshPage).toHaveURL(/\/login$/);
+    await freshPage.getByRole('button', { name: '以游客身份浏览' }).click();
     await expect(freshPage.locator('.season-switcher .season-select-native').first()).toHaveValue('2025');
     await expect(freshPage.getByRole('heading', { name: /2025 Miami Grand Prix/ })).toBeVisible();
 

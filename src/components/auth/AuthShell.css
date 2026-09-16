@@ -260,3 +260,9 @@
   from { transform: rotate(-12deg) translate3d(0, 0, 0); }
   to { transform: rotate(-9deg) translate3d(-10px, -7px, 0); }
 }
+
+.auth-card__access-options { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-primary); }
+.auth-card__access-comparison { display: grid; gap: 12px; margin-bottom: 20px; }
+.auth-card__access-comparison > div { display: grid; gap: 4px; }
+.auth-card__access-comparison strong { color: var(--text-primary); font-size: 13px; }
+.auth-card__access-comparison span { color: var(--text-secondary); font-size: 12px; line-height: 1.6; }

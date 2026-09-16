@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n';
 import { useSeasonRacesCached, useSeasonsCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
 import './Layout.css';
 
@@ -184,6 +185,8 @@ const resolveActiveNavKey = (pathname: string) => {
 };
 
 const LayoutComponent = () => {
+  const { session } = useAuthSession();
+  const accountLabel = session ? '我的账号' : '游客 · 登录';
   const navigate = useNavigate();
   const location = useLocation();
   const { i18n, t } = useTranslation();
@@ -351,10 +354,10 @@ const LayoutComponent = () => {
       type="button"
       className="auth-trigger-btn"
       onClick={handleAuthAction}
-      aria-label={text.account}
-      title={text.account}
+      aria-label={accountLabel}
+      title={session?.user.email || accountLabel}
     >
-      {text.account}
+      {accountLabel}
     </button>
   );
 

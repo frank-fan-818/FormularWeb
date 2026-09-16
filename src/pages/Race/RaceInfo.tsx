@@ -1,3 +1,4 @@
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
@@ -9,11 +10,13 @@ import { TEXT } from '@/pages/Race/shared/constants';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { RaceWeekendOverview } from '@/pages/Race/shared/components/RaceWeekendOverview';
 import { RaceWeatherOverview } from '@/pages/Race/shared/components/RaceWeatherOverview';
+import { MemberAccess } from '@/components/auth/AccessGate';
 import { RaceWinnerPredictionPanel } from '@/pages/Race/shared/components/RaceWinnerPredictionPanel';
 import { RaceHistoricalContextPanel } from '@/pages/Race/shared/components/RaceHistoricalContextPanel';
 import { RaceUpgradeSummaryPanel } from '@/pages/Race/shared/components/RaceUpgradeSummaryPanel';
 
 const RaceInfo = () => {
+  const { session } = useAuthSession();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -104,7 +107,7 @@ const RaceInfo = () => {
         aside={(
           <div className="race-page-pulse">
             <span><strong>{weekendSchedule.length}</strong> 场次</span>
-            <span><strong>{racePreviewSummary?.sampleSize || 0}</strong> 历史样本</span>
+            {session ? <span><strong>{racePreviewSummary?.sampleSize || 0}</strong> 历史样本</span> : null}
             <span><strong>{raceUpgradeSummary?.teams.length || 0}</strong> 升级车队</span>
             {isSprintWeekend ? <span className="is-accent"><strong>SPRINT</strong> 周末</span> : null}
           </div>
@@ -116,15 +119,16 @@ const RaceInfo = () => {
         isSprintWeekend={isSprintWeekend}
         resultSessionKeys={resultSessionKeys}
       />
-      <RaceWeatherOverview
+      {session ? <RaceWeatherOverview
         summary={fastF1Analytics?.weather?.summary || null}
         loading={fastF1AnalyticsLoading}
         error={fastF1AnalyticsError}
         onRetry={retryFastF1Analytics}
-      />
+      /> : null}
       {isFeatureEnabled('race-predictions') ? (
-        <RaceWinnerPredictionPanel season={raceInfo.season} round={raceInfo.round} />
+        <MemberAccess feature="赛事预测"><RaceWinnerPredictionPanel season={raceInfo.season} round={raceInfo.round} /></MemberAccess>
       ) : null}
+      <MemberAccess feature="历史表现与策略分析">
       <RaceHistoricalContextPanel
         summary={racePreviewSummary}
         loading={racePreviewLoading}
@@ -135,6 +139,7 @@ const RaceInfo = () => {
         qualifyingResults={qualifyingResults}
         sprintResults={sprintResults}
       />
+      </MemberAccess>
       <RaceUpgradeSummaryPanel
         summary={raceUpgradeSummary}
         loading={raceUpgradeLoading}

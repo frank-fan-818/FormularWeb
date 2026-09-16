@@ -1,7 +1,7 @@
 """Export FastF1 analytics for every available race in a season.
 
 This is a thin batch wrapper around scripts/export-fastf1-race-data.py. It uses
-the same export path that produced public/fastf1/2025/19/*.json, then repeats it
+the same export path that produced data/private-fastf1/2025/19/*.json, then repeats it
 for every race/session FastF1 exposes for the selected season.
 
 Examples:
@@ -17,7 +17,9 @@ import argparse
 import json
 import subprocess
 import sys
-from dataclasses import asdict, dataclass
+import tempfile
+import time
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,7 +27,8 @@ from typing import Any
 import fastf1
 import pandas as pd
 
-from fastf1_automation import session_is_ready
+from fastf1_automation import session_is_ready, session_scheduled_start
+from fastf1_reliability import RequestDiagnostics, parse_diagnostic, diagnostic_summary
 from fastf1_snapshot_validation import INCOMPLETE_SNAPSHOT_EXIT_CODE, incomplete_snapshot_fields
 
 
@@ -41,6 +44,7 @@ class ExportResult:
     status: str
     output: str
     message: str
+    diagnostic: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -59,6 +63,8 @@ class ManifestSession:
     qualifyingBestLaps: int
     complete: bool
     eligible: bool
+    generatedAt: str
+    scheduledStart: str = ''
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,7 +81,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--from-round", type=int, default=1, help="First round to export")
     parser.add_argument("--to-round", type=int, default=0, help="Last round to export; defaults to the season schedule")
     parser.add_argument("--cache", default="f1_cache", help="FastF1 cache directory")
-    parser.add_argument("--output", default="public/fastf1", help="Output root served by Vite")
+    parser.add_argument("--output", default="data/private-fastf1", help="Private export root")
     parser.add_argument(
         "--telemetry-driver-count",
         type=int,
@@ -111,6 +117,10 @@ def parse_args() -> argparse.Namespace:
         help="Hours after the scheduled session start before automated export is attempted (default: 4).",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print planned exports without writing files")
+    parser.add_argument('--session-timeout-seconds', type=int, default=900,
+                        help='Maximum wall time for one session, including HTTP retries (default: 900).')
+    parser.add_argument('--max-runtime-seconds', type=int, default=2400,
+                        help='Batch export budget; leaves time for publication and diagnostics (default: 2400).')
     return parser.parse_args()
 
 
@@ -215,36 +225,40 @@ def run_export(args: argparse.Namespace, round_number: int, session: str) -> Exp
     if args.dry_run:
         return ExportResult(args.season, round_number, session, "planned", str(path), " ".join(command))
 
-    completed = subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
+    remaining = getattr(args, 'deadline', float('inf')) - time.monotonic()
+    if remaining <= 0:
+        return ExportResult(args.season, round_number, session, 'failed', str(path),
+                            'runtime_budget: deferred to a later run', {'category': 'runtime_budget', 'requests': [], 'missingFields': []})
 
-    if completed.returncode == 0:
-        exported = build_manifest_session(
-            Path(args.output), args.season, round_number, session, eligible=True,
-        )
-        if exported.complete:
-            return ExportResult(args.season, round_number, session, "exported", str(path), completed.stdout.strip())
-        return ExportResult(
-            args.season,
-            round_number,
-            session,
-            "failed",
-            str(path),
-            "Exporter exited successfully but the written snapshot failed completeness checks.",
-        )
-
-    if completed.returncode == INCOMPLETE_SNAPSHOT_EXIT_CODE:
-        message = completed.stderr.strip() or "FastF1 has not published a complete snapshot yet."
-        return ExportResult(args.season, round_number, session, "pending", str(path), message)
-
-    message = completed.stderr.strip() or completed.stdout.strip() or f"exit code {completed.returncode}"
-    return ExportResult(args.season, round_number, session, "failed", str(path), message)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Stage on the same filesystem. A failed refresh never replaces a good snapshot.
+    with tempfile.TemporaryDirectory(prefix='.fastf1-stage-', dir=Path(args.output)) as staging:
+        command[command.index('--output') + 1] = staging
+        try:
+            completed = subprocess.run(command, check=False, capture_output=True, text=True,
+                                       encoding='utf-8', errors='replace',
+                                       timeout=min(remaining, max(1, args.session_timeout_seconds)))
+        except subprocess.TimeoutExpired as error:
+            diagnostic = parse_diagnostic(error.stderr)
+            diagnostic['category'] = 'session_timeout'
+            return ExportResult(args.season, round_number, session, 'failed', str(path),
+                                diagnostic_summary(diagnostic), diagnostic)
+        diagnostic = parse_diagnostic(completed.stderr)
+        if completed.returncode == 0:
+            exported = build_manifest_session(Path(staging), args.season, round_number, session, eligible=True)
+            if exported.complete:
+                staged_path = output_path(Path(staging), args.season, round_number, session)
+                telemetry = staged_path.with_name(f'{session}-telemetry.json')
+                if telemetry.exists():
+                    telemetry.replace(path.with_name(telemetry.name))
+                staged_path.replace(path)
+                return ExportResult(args.season, round_number, session, 'exported', str(path),
+                                    'Complete snapshot verified and installed', diagnostic)
+            diagnostic['category'] = 'incomplete_snapshot'
+        if completed.returncode == INCOMPLETE_SNAPSHOT_EXIT_CODE and diagnostic['category'] == 'exporter_error':
+            diagnostic['category'] = 'incomplete_snapshot'
+        return ExportResult(args.season, round_number, session, 'failed', str(path),
+                            diagnostic_summary(diagnostic, completed.stderr), diagnostic)
 
 
 def write_report(results: list[ExportResult], output_root: Path, season: int) -> Path:
@@ -338,6 +352,7 @@ def build_manifest_session(
         complete=bool(path.exists() and common_complete and race_complete and qualifying_complete
                       and not incomplete_snapshot_fields(payload, session, telemetry_payload)),
         eligible=eligible,
+        generatedAt=clean_text(payload.get('generatedAt')),
     )
 
 
@@ -373,6 +388,8 @@ def write_manifest(
             sessions.append(build_manifest_session(
                 output_root, season, round_number, session, eligible,
             ))
+            start = session_scheduled_start(event, session)
+            sessions[-1].scheduledStart = start.isoformat() if start else ''
         rounds.append({
             "round": round_number,
             "eventName": clean_text(event.get("EventName")),
@@ -412,15 +429,35 @@ def write_manifest(
 
 def main() -> None:
     args = parse_args()
+    args.deadline = time.monotonic() + max(1, args.max_runtime_seconds)
     Path(args.cache).mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(args.cache)
 
     requested_sessions = list(dict.fromkeys(args.session or [])) or None
-    schedule = load_schedule(args.season)
+    schedule_diagnostic = RequestDiagnostics()
+    try:
+        with schedule_diagnostic.installed():
+            schedule = load_schedule(args.season)
+    except Exception as error:
+        schedule_diagnostic.category = 'schedule_error'
+        result = ExportResult(args.season, 0, 'schedule', 'failed', '',
+                              f'Schedule unavailable: {type(error).__name__}', schedule_diagnostic.as_dict())
+        write_report([result], Path(args.output), args.season)
+        print(diagnostic_summary(result.diagnostic), file=sys.stderr)
+        raise SystemExit(1) from None
     max_round = args.to_round or int(schedule["RoundNumber"].max())
     output_root = Path(args.output)
     results: list[ExportResult] = []
     now = datetime.now(timezone.utc)
+
+    def checkpoint():
+        report_path = write_report(results, output_root, args.season)
+        manifest_path = write_manifest(schedule, output_root, args.season, requested_sessions,
+                                       args.analysis_only, args.completed_only, args.availability_delay_hours,
+                                       now, args.from_round, max_round)
+        return report_path, manifest_path
+
+    checkpoint()
 
     for _, event in schedule.sort_values("RoundNumber").iterrows():
         round_number = int(event["RoundNumber"])
@@ -441,22 +478,10 @@ def main() -> None:
         for session in sessions:
             result = run_export(args, round_number, session)
             results.append(result)
-            first_line = result.message.splitlines()[0] if result.message else "-"
-            print(f"  {session}: {result.status} ({console_text(first_line)})")
+            checkpoint()
+            print(f"  {session}: {result.status} ({console_text(result.message)})", flush=True)
 
-    report_path = write_report(results, output_root, args.season)
-    manifest_path = write_manifest(
-        schedule,
-        output_root,
-        args.season,
-        requested_sessions,
-        args.analysis_only,
-        args.completed_only,
-        args.availability_delay_hours,
-        now,
-        args.from_round,
-        max_round,
-    )
+    report_path, manifest_path = checkpoint()
     failed = [result for result in results if result.status == "failed"]
     print(f"Wrote report {report_path}")
     print(f"Wrote manifest {manifest_path}")

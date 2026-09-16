@@ -1,3 +1,4 @@
+import { MemberAccess } from '@/components/auth/AccessGate';
 import { useRacePrediction } from '@/hooks/useRacePrediction';
 import {
   formatPredictionDriverId,
@@ -11,7 +12,7 @@ interface RacePredictionSummaryProps {
   onOpen: () => void;
 }
 
-export default function RacePredictionSummary({ season, round, onOpen }: RacePredictionSummaryProps) {
+function PredictionContent({ season, round, onOpen }: RacePredictionSummaryProps) {
   const { prediction, loading, error, predictionIsStale } = useRacePrediction(season, round);
   const favourite = prediction?.candidates[0];
 
@@ -40,4 +41,8 @@ export default function RacePredictionSummary({ season, round, onOpen }: RacePre
       </span>
     </button>
   );
+}
+
+export default function RacePredictionSummary(props: RacePredictionSummaryProps) {
+  return <MemberAccess feature="赛事预测"><PredictionContent {...props} /></MemberAccess>;
 }

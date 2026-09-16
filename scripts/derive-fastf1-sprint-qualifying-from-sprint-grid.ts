@@ -109,7 +109,7 @@ async function deriveOne(outputRoot: string, season: number, round: number) {
 async function main() {
   const outputRoot = process.argv.includes('--output')
     ? process.argv[process.argv.indexOf('--output') + 1]
-    : 'public/fastf1';
+    : 'data/private-fastf1';
 
   const written: string[] = [];
   for (const [season, round] of sprintWeekends) {

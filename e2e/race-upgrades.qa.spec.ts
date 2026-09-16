@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 import italianArtifact from '../data/fia-upgrades/2026/13.json' with { type: 'json' };
 
 for (const scenario of ['database', 'snapshot', 'empty', 'automatic'] as const) {
@@ -41,7 +44,7 @@ for (const scenario of ['database', 'snapshot', 'empty', 'automatic'] as const) 
         ? JSON.stringify([{ season: 2026, round: 4, team: 'Ferrari', component: 'Floor',
           component_importance: 5, primary_reason: 'Performance' }]) : '[]',
     }));
-    await page.route('**/fastf1/**', (route) => route.fulfill({ status: 404, body: '{}' }));
+    await page.route('**/storage/v1/object/authenticated/fastf1-private/**', (route) => route.fulfill({ status: 404, body: '{}' }));
     if (scenario === 'automatic') await page.clock.install();
     await page.goto(`/races/${round}/info?season=2026`);
     const panel = page.getByRole('region', { name: '分站升级情况' });

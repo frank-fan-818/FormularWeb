@@ -24,6 +24,7 @@ import { useRaceDeferredSessions } from '@/hooks/race/useRaceDeferredSessions';
 import { useRacePrimaryResults } from '@/hooks/race/useRacePrimaryResults';
 import { getRaceAggregateState, useRaceDiagnostics } from '@/hooks/race/useRaceDiagnostics';
 import { useAppStore } from '@/store';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import type {
   FastF1RaceAnalytics,
@@ -134,6 +135,8 @@ interface RaceDataProviderProps {
 }
 
 export function RaceDataProvider({ children }: RaceDataProviderProps) {
+  const { session } = useAuthSession();
+  const member = Boolean(session);
   const { round } = useParams<{ round: string }>();
   const location = useLocation();
   const { currentSeason } = useAppStore();
@@ -166,11 +169,12 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     raceInfo,
     routeSection,
     activeSessionTab,
+    allowAnalytics: member,
     flowId: diagnosticFlowId,
   });
   const isPastRace = Boolean(raceInfo && isAfterLocalDateEnd(raceInfo.date));
   // Race analytics also powers the weather summary on the information tab.
-  const shouldLoadRaceFastF1 = routeSection === 'race' || routeSection === 'info';
+  const shouldLoadRaceFastF1 = member && (routeSection === 'race' || routeSection === 'info');
   const {
     data: fastF1Analytics,
     loading: fastF1AnalyticsLoading,
@@ -186,7 +190,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     loading: racePreviewLoading,
     error: racePreviewError,
     retry: retryRacePreview,
-  } = useRacePreviewSummary(season, round, previewCircuitId, routeSection === 'info');
+  } = useRacePreviewSummary(season, round, previewCircuitId, member && routeSection === 'info');
   const {
     data: raceUpgradeSummary,
     loading: raceUpgradeLoading,
@@ -201,11 +205,11 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     return isPastRace ? 'post' : 'pre';
   }, [isPastRace, raceInfo]);
   const activeWeekendMode = defaultWeekendMode;
-  const shouldLoadFastF1Qualifying = routeSection === 'qualifying';
+  const shouldLoadFastF1Qualifying = member && routeSection === 'qualifying';
   const sprintQualifyingSessionCode = getPreferredSprintQualifyingSessionCode(season);
-  const shouldLoadFastF1SprintQualifying = routeSection === 'sprint'
-    || (routeSection === 'qualifying' && deferredSessions.availableTabs.includes('sprintQualifying'));
-  const shouldLoadFastF1Sprint = routeSection === 'sprint';
+  const shouldLoadFastF1SprintQualifying = member && (routeSection === 'sprint'
+    || (routeSection === 'qualifying' && deferredSessions.availableTabs.includes('sprintQualifying')));
+  const shouldLoadFastF1Sprint = member && routeSection === 'sprint';
   const { data: fastF1QualifyingAnalytics } = useFastF1SessionAnalytics(
     season, round, 'Q', shouldLoadFastF1Qualifying, diagnosticFlowId,
   );
@@ -231,7 +235,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     loading: fastF1TelemetryLoading,
     error: fastF1TelemetryError,
     load: loadFastF1Telemetry,
-  } = useFastF1RaceTelemetry(season, round, 'R', diagnosticFlowId);
+  } = useFastF1RaceTelemetry(season, member ? round : undefined, 'R', diagnosticFlowId);
 
   // ---- Effects ----
 

@@ -1,6 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { SiteAccess, MemberAccess } from '@/components/auth/AccessGate';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { routeModules } from './routeModules';
 
@@ -53,6 +55,7 @@ function RaceIndexRedirect() {
 }
 
 const AppRoutes = () => (
+  <AuthProvider>
   <Routes>
     <Route element={withSuspense(<AuthShell />)}>
       <Route path="login" element={withSuspense(<Login />)} />
@@ -60,6 +63,8 @@ const AppRoutes = () => (
       <Route path="forgot-password" element={withSuspense(<ForgotPassword />)} />
       <Route path="reset-password" element={withSuspense(<ResetPassword />)} />
     </Route>
+    <Route path="privacy" element={withSuspense(<main><Privacy /></main>)} />
+    <Route element={<SiteAccess />}>
     <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
       <Route index element={withSuspense(<Home />)} />
       <Route path="seasons" element={withSuspense(<Seasons />)} />
@@ -72,7 +77,7 @@ const AppRoutes = () => (
           path="race"
           element={withSuspense(
             <ErrorBoundary>
-              <RaceAnalysis />
+              <MemberAccess feature="圈速、遥测与策略分析"><RaceAnalysis /></MemberAccess>
             </ErrorBoundary>,
           )}
         />
@@ -88,10 +93,11 @@ const AppRoutes = () => (
       <Route path="circuits" element={withSuspense(<Circuits />)} />
       <Route path="circuits/:circuitId" element={withSuspense(<CircuitDetail />)} />
       <Route path="settings" element={withSuspense(<Settings />)} />
-      <Route path="privacy" element={withSuspense(<Privacy />)} />
       <Route path="*" element={withSuspense(<NotFound />)} />
     </Route>
+    </Route>
   </Routes>
+  </AuthProvider>
 );
 
 export default AppRoutes;

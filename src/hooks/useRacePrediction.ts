@@ -1,32 +1,31 @@
-import { useCallback } from 'react';
-import { useCachedData } from '@/hooks/useCachedData';
+import { useEffect, useState, useCallback } from 'react';
+import type { RaceWinnerPrediction } from '@/types/racePrediction';
+import { predictionsApi } from '@/api/predictions';
+import { useAuthSession } from './useAuthSession';
 import { isRacePredictionFresh } from '@/utils/racePredictionPresentation';
 
-const CACHE_DURATION_MS = 5 * 60 * 1000;
-const STALE_DURATION_MS = 24 * 60 * 60 * 1000;
-
-export function useRacePrediction(
-  season: string | number | undefined,
-  round: string | number | undefined,
-) {
-  const valid = Number.isInteger(Number(season)) && Number.isInteger(Number(round));
-  const fetchPrediction = useCallback(
-    async () => {
-      const { predictionsApi } = await import('@/api/predictions');
-      return predictionsApi.getRacePrediction(Number(season), Number(round));
-    },
-    [round, season],
-  );
-  const result = useCachedData(fetchPrediction, {
-    cacheKey: `race-prediction:${season || 'none'}:${round || 'none'}`,
-    cacheDuration: CACHE_DURATION_MS,
-    staleDuration: STALE_DURATION_MS,
-    enabled: valid,
-  });
-
-  return {
-    ...result,
-    prediction: result.data,
-    predictionIsStale: result.data ? !isRacePredictionFresh(result.data) : false,
+// Member predictions stay in component memory, never IndexedDB/localStorage.
+export function useRacePrediction(season: string | number | undefined, round: string | number | undefined) {
+  const { session } = useAuthSession();
+  const userId = session?.user.id;
+  const [state, setState] = useState<{ key: string; data: RaceWinnerPrediction | null; loading: boolean; error: Error | null }>({ key: '', data: null, loading: false, error: null });
+  const [attempt, setAttempt] = useState(0);
+  const key = `${userId || ''}:${season}:${round}`;
+  const valid = Boolean(userId) && Number.isInteger(Number(season)) && Number.isInteger(Number(round));
+  useEffect(() => {
+    if (!valid) { setState({ key, data: null, loading: false, error: null }); return; }
+    let active = true;
+    setState({ key, data: null, loading: true, error: null });
+    void predictionsApi.getRacePrediction(Number(season), Number(round)).then((data) => {
+      if (active) setState({ key, data, loading: false, error: null });
+    }).catch((error: unknown) => {
+      if (active) setState({ key, data: null, loading: false, error: error instanceof Error ? error : new Error('预测数据暂时不可用') });
+    });
+    return () => { active = false; };
+  }, [key, valid, season, round, attempt]);
+  const prediction = valid && state.key === key ? state.data : null;
+  return { prediction, loading: valid && (state.key !== key || state.loading), error: valid && state.key === key ? state.error : null,
+    predictionIsStale: prediction ? !isRacePredictionFresh(prediction) : false,
+    refetch: useCallback(() => setAttempt((value) => value + 1), []),
   };
 }

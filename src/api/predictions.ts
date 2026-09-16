@@ -1,3 +1,4 @@
+import { memberFetch } from './memberAccess';
 import { measureRequest } from '@/utils/performance';
 import type { RacePredictionCandidate, RacePredictionPhase, RaceWinnerPrediction } from '@/types/racePrediction';
 
@@ -77,18 +78,12 @@ export const predictionsApi = {
     const roundNumber = Number(round);
     if (!Number.isInteger(seasonNumber) || !Number.isInteger(roundNumber)) return null;
     const baseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://example.supabase.co';
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
     const url = new URL('/rest/v1/race_prediction_current', baseUrl);
     url.searchParams.set('select', '*');
     url.searchParams.set('season', `eq.${seasonNumber}`);
     url.searchParams.set('round', `eq.${roundNumber}`);
     url.searchParams.set('limit', '1');
-    const response = await measureRequest('supabase', 'race_prediction_current.getRace', () => fetch(url, {
-      headers: {
-        apikey: anonKey,
-        Authorization: `Bearer ${anonKey}`,
-      },
-    }));
+    const response = await measureRequest('supabase', 'race_prediction_current.getRace', () => memberFetch(url));
     if (!response.ok) throw new Error(`Prediction request failed with status ${response.status}`);
     const rows: unknown = await response.json();
     if (!Array.isArray(rows)) throw new Error('Invalid prediction response');

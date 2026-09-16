@@ -12,11 +12,12 @@ const supabaseMock = vi.hoisted(() => {
   query.eq = vi.fn(() => query);
   query.abortSignal = vi.fn(() => query);
   query.maybeSingle = vi.fn();
-  return { from: vi.fn(() => query), query };
+  return { from: vi.fn(() => query), query, getSession: vi.fn() };
 });
 
 vi.mock('@/utils/supabase', () => ({
-  supabase: { from: supabaseMock.from },
+  isSupabaseConfigured: true,
+  supabase: { from: supabaseMock.from, auth: { getSession: supabaseMock.getSession } },
 }));
 
 function createSnapshot(overrides: Partial<FastF1RaceAnalytics> = {}): FastF1RaceAnalytics {
@@ -46,6 +47,7 @@ describe('FastF1 analytics source selection', () => {
   });
   beforeEach(() => {
     vi.restoreAllMocks();
+    supabaseMock.getSession.mockResolvedValue({ data: { session: { access_token: 'test-user-token', user: { id: 'user-1' } } }, error: null });
     vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co');
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key-with-enough-characters');
     supabaseMock.from.mockClear();
@@ -114,6 +116,7 @@ describe('FastF1 analytics source selection', () => {
 
     const firstRequest = fastF1AnalyticsApi.getRaceAnalytics('2026', '14', 'R');
     const secondRequest = fastF1AnalyticsApi.getRaceAnalytics('2026', '14', 'R');
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     resolveFetch?.(new Response(JSON.stringify(snapshot), {
       status: 200,
       headers: { 'content-type': 'application/json' },
@@ -157,4 +160,12 @@ describe('FastF1 analytics source selection', () => {
     expect(await secondOutcome).toEqual(snapshot);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+  it('does not return a cached snapshot after logout', async () => {
+    const snapshot = createSnapshot({ fastestLap: { driver: 'VER' } } as Partial<FastF1RaceAnalytics>);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(snapshot))));
+    await fastF1AnalyticsApi.getRaceAnalytics('2026', '14');
+    supabaseMock.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    await expect(fastF1AnalyticsApi.getRaceAnalytics('2026', '14')).rejects.toThrow('需要登录');
+  });
+
 });

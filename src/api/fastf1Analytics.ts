@@ -1,3 +1,4 @@
+import { memberFetch, privateAnalyticsUrl, requireMemberSession, MemberAccessError } from './memberAccess';
 import type { FastF1RaceAnalytics, FastF1TelemetryPayload } from '@/types';
 import { measureRequest } from '@/utils/performance';
 import { logger } from '@/utils/logger';
@@ -7,7 +8,6 @@ import { withRetry } from '@/utils/withRetry';
 import { hasTimedSessionClassification } from '@/utils/fastf1Classification';
 import type { DiagnosticLoggerScope } from '@/utils/logger';
 
-const PUBLIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 const FASTF1_SESSION_ANALYTICS_TABLE = 'fastf1_session_analytics';
 let databaseAnalyticsUnavailableUntil = 0;
 const DATABASE_SCHEMA_FUSE_TTL_MS = 60_000;
@@ -19,6 +19,7 @@ interface AnalyticsCacheEntry {
   data: FastF1RaceAnalytics | null;
 }
 
+let cacheGeneration = 0;
 const analyticsCache = new Map<string, AnalyticsCacheEntry>();
 const analyticsRequests = new Map<string, Promise<FastF1RaceAnalytics | null>>();
 
@@ -65,13 +66,14 @@ export function hasMeaningfulFastF1Analytics(payload: FastF1RaceAnalytics | null
     || Boolean(payload.weather);
 }
 
-export function clearFastF1AnalyticsCacheForTests(): void {
+export function clearFastF1AnalyticsCache(): void {
+  cacheGeneration += 1;
   analyticsCache.clear();
   analyticsRequests.clear();
 }
 
 function buildAnalyticsUrl(season: string, round: string, session: string) {
-  return `${PUBLIC_BASE}/fastf1/${season}/${round}/${session}.json`;
+  return privateAnalyticsUrl(season, round, session);
 }
 
 function hasSupabaseConfig() {
@@ -151,7 +153,9 @@ export const fastF1AnalyticsApi = {
     diagnostics?: DiagnosticLoggerScope | null,
   ): Promise<FastF1RaceAnalytics | null> {
     const sessionCode = session.toUpperCase();
-    const cacheKey = `${season}:${round}:${sessionCode}`;
+    const identity = await requireMemberSession();
+    const generation = cacheGeneration;
+    const cacheKey = `${identity.user.id}:${season}:${round}:${sessionCode}`;
     const cached = analyticsCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       return waitForSharedRequest(Promise.resolve(cached.data), signal);
@@ -168,9 +172,9 @@ export const fastF1AnalyticsApi = {
     try {
       const response = await withRetry(
         (attemptSignal) => measureRequest('fetch', `fastf1/${season}/${round}/${sessionCode}.json`, async () => {
-          const result = await fetch(buildAnalyticsUrl(season, round, sessionCode), {
+          const result = await memberFetch(buildAnalyticsUrl(season, round, sessionCode), {
             signal: attemptSignal,
-            cache: import.meta.env.DEV ? 'no-cache' : 'default',
+            cache: 'no-store',
           });
           if (!result.ok && result.status !== 404) {
             const error = new Error(`FastF1 analytics request failed with ${result.status}`) as Error & { status: number };
@@ -194,6 +198,7 @@ export const fastF1AnalyticsApi = {
         diagnostics?.log({ operation: 'fastf1_static', outcome: 'empty', source: 'fastf1_static', reasonCode: 'not_found', session: sessionCode });
       }
     } catch (error) {
+      if (error instanceof MemberAccessError) throw error;
       staticError = error;
       diagnostics?.log({ operation: 'fastf1_static', outcome: 'degraded', source: 'fastf1_static', error, session: sessionCode });
     }
@@ -214,6 +219,7 @@ export const fastF1AnalyticsApi = {
         diagnostics?.log({ operation: 'fastf1_source', outcome: 'degraded', source: 'supabase', reasonCode: 'source_empty', session: sessionCode });
       }
     } catch (error) {
+      if (error instanceof MemberAccessError) throw error;
       if (import.meta.env.DEV && !isMissingAnalyticsTableError(error)) {
         logger.warn({
           event: 'exit',
@@ -235,14 +241,16 @@ export const fastF1AnalyticsApi = {
     return null;
     })();
 
-    const sharedRequest = request.then((analytics) => {
+    const sharedRequest = request.then(async (analytics) => {
+      const current = await requireMemberSession();
+      if (generation !== cacheGeneration || current.user.id !== identity.user.id) throw new MemberAccessError();
       analyticsCache.set(cacheKey, {
         data: analytics,
         expiresAt: Date.now() + (analytics ? ANALYTICS_CACHE_TTL_MS : EMPTY_ANALYTICS_CACHE_TTL_MS),
       });
       return analytics;
     }).finally(() => {
-      analyticsRequests.delete(cacheKey);
+      if (analyticsRequests.get(cacheKey) === sharedRequest) analyticsRequests.delete(cacheKey);
     });
     analyticsRequests.set(cacheKey, sharedRequest);
     return waitForSharedRequest(sharedRequest, signal);
@@ -257,13 +265,12 @@ export const fastF1AnalyticsApi = {
   ): Promise<FastF1TelemetryPayload | null> {
     const sessionCode = session.toUpperCase();
 
-    // Try Supabase first (telemetry might be stored in the payload column too)
-    // For now, just fetch the static file
+    // Private Storage authorizes every telemetry download.
     const response = await withRetry(
       (attemptSignal) => measureRequest('fetch', `fastf1-telemetry/${season}/${round}/${sessionCode}`, async () => {
-        const result = await fetch(buildAnalyticsUrl(season, round, `${sessionCode}-telemetry`), {
+        const result = await memberFetch(buildAnalyticsUrl(season, round, `${sessionCode}-telemetry`), {
           signal: attemptSignal,
-          cache: import.meta.env.DEV ? 'no-cache' : 'default',
+          cache: 'no-store',
         });
         if (!result.ok && result.status !== 404) {
           const error = new Error(`FastF1 telemetry request failed with ${result.status}`) as Error & { status: number };
@@ -290,3 +297,5 @@ export const fastF1AnalyticsApi = {
     return payload;
   },
 };
+
+export const clearFastF1AnalyticsCacheForTests = clearFastF1AnalyticsCache;
