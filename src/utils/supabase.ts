@@ -1,21 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { logger } from '@/utils/logger';
 
-// Read browser-side Supabase config from environment variables.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-function isValidBrowserSupabaseUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' || (import.meta.env.DEV && url.hostname === 'localhost');
-  } catch {
-    return false;
-  }
-}
-
-export const isSupabaseConfigured = isValidBrowserSupabaseUrl(supabaseUrl)
-  && supabaseAnonKey.length >= 20;
+import { isSupabaseConfigured, supabaseUrl, supabaseAnonKey } from './supabaseConfig';
+export { isSupabaseConfigured } from './supabaseConfig';
 
 if (!isSupabaseConfigured) {
   logger.warn({

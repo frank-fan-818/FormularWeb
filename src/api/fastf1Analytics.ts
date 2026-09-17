@@ -7,21 +7,14 @@ import { FastF1AnalyticsEnvelopeSchema, FastF1TelemetryEnvelopeSchema } from '@/
 import { withRetry } from '@/utils/withRetry';
 import { hasTimedSessionClassification } from '@/utils/fastf1Classification';
 import type { DiagnosticLoggerScope } from '@/utils/logger';
+import { analyticsCache, analyticsRequests, cacheGeneration, clearFastF1AnalyticsCache } from './fastf1AnalyticsCache';
+export { clearFastF1AnalyticsCache } from './fastf1AnalyticsCache';
 
 const FASTF1_SESSION_ANALYTICS_TABLE = 'fastf1_session_analytics';
 let databaseAnalyticsUnavailableUntil = 0;
 const DATABASE_SCHEMA_FUSE_TTL_MS = 60_000;
 const ANALYTICS_CACHE_TTL_MS = 15 * 60_000;
 const EMPTY_ANALYTICS_CACHE_TTL_MS = 30_000;
-
-interface AnalyticsCacheEntry {
-  expiresAt: number;
-  data: FastF1RaceAnalytics | null;
-}
-
-let cacheGeneration = 0;
-const analyticsCache = new Map<string, AnalyticsCacheEntry>();
-const analyticsRequests = new Map<string, Promise<FastF1RaceAnalytics | null>>();
 
 function callerAbortError(): DOMException {
   return new DOMException('Request aborted', 'AbortError');
@@ -64,12 +57,6 @@ export function hasMeaningfulFastF1Analytics(payload: FastF1RaceAnalytics | null
     .some((key) => Array.isArray(payload[key]) && payload[key].length > 0)
     || Boolean(payload.fastestLap)
     || Boolean(payload.weather);
-}
-
-export function clearFastF1AnalyticsCache(): void {
-  cacheGeneration += 1;
-  analyticsCache.clear();
-  analyticsRequests.clear();
 }
 
 function buildAnalyticsUrl(season: string, round: string, session: string) {

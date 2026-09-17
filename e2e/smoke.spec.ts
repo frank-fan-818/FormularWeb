@@ -303,11 +303,12 @@ test('global search navigates to every supported entity type', async ({ page }, 
     await page.goto('/');
     const searchLabel = '搜索车手、车队、赛道或赛事';
     const trigger = page.getByRole('button', { name: searchLabel });
+    const input = page.getByRole('combobox', { name: searchLabel });
+    await expect(trigger.or(input)).toBeVisible();
     if (await trigger.isVisible().catch(() => false)) {
       await trigger.click();
     }
 
-    const input = page.getByRole('combobox', { name: searchLabel });
     await input.fill(searchCase.query);
     await page.getByRole('option', { name: searchCase.name }).click();
     await expect(page).toHaveURL(new RegExp(`${searchCase.path.replace(/[?]/g, '\\?')}$`));

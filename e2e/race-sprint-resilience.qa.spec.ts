@@ -229,7 +229,7 @@ test('Results tabs recover practice and sprint qualifying from FastF1', async ({
   expect(failedRequests).toEqual([]);
 });
 
-test('Recollected FastF1 files display real practice and sprint qualifying times', async ({ page }, testInfo) => {
+test('Private FastF1 snapshots display practice and sprint qualifying times', async ({ page }, testInfo) => {
   const errors: string[] = [];
   const failed: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -249,7 +249,35 @@ test('Recollected FastF1 files display real practice and sprint qualifying times
       StandingsTable: { StandingsLists: [] },
     } }) });
   });
-  // No FastF1 interception: these are the real files produced by the exporter.
+  // CI must not depend on private exports present only on a developer machine.
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2026/*/*.json', (route) => {
+    expect(route.request().headers().authorization).toBe('Bearer test-only-access-token');
+    const [round, file] = new URL(route.request().url()).pathname.split('/').slice(-2);
+    const session = file.replace('.json', '');
+    const seconds = ({ FP1: 80.267, FP2: 79.729, FP3: 79.053 } as Record<string, number>)[session];
+    if (!seconds && session !== 'SQ') return route.fulfill({ status: 404, body: '{}' });
+    const base = fastF1Payload('SQ');
+    const payload = {
+      ...base, season: '2026', round, session,
+      sessionResults: Array.from({ length: 22 }, (_, index) => ({
+        ...base.sessionResults[0], driver: index === 0 ? 'NOR' : `T${index}`,
+        driverNumber: String(index + 4), position: index + 1,
+      })),
+      lapTimeSeries: Array.from({ length: 22 }, (_, index) => ({
+        ...base.lapTimeSeries[0], driver: index === 0 ? 'NOR' : `T${index}`,
+        laps: [{ lapNumber: 1, lapTimeSeconds: (seconds || 91.520) + index }],
+      })),
+      qualifyingAnalysis: session === 'SQ' ? {
+        ...base.qualifyingAnalysis,
+        phaseResults: [{ ...base.qualifyingAnalysis!.phaseResults[0], phases: {
+          q1: { time: '1:33.030', seconds: 93.030 },
+          q2: { time: '1:32.241', seconds: 92.241 },
+          q3: { time: '1:31.520', seconds: 91.520 },
+        } }],
+      } : undefined,
+    };
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify(payload) });
+  });
   await page.goto('/races/1/results?season=2026');
   for (const [code, time] of [['FP1', '1:20.267'], ['FP2', '1:19.729'], ['FP3', '1:19.053']]) {
     await page.getByRole('tab', { name: new RegExp(code) }).focus();
@@ -318,8 +346,16 @@ test('Race intelligence leaves skeleton state when optional APIs stall', async (
   await expect(page.getByRole('button', { name: '重试升级数据' })).toBeVisible();
 });
 
-test('Race analysis uses an available static FastF1 snapshot', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop-chromium', 'Static snapshot resolution is viewport-independent.');
+test('Race analysis uses an available private FastF1 snapshot', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Private snapshot resolution is viewport-independent.');
+
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', (route) => {
+    expect(route.request().headers().authorization).toBe('Bearer test-only-access-token');
+    if (!route.request().url().endsWith('/R.json')) return route.fulfill({ status: 404, body: '{}' });
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      ...fastF1Payload('S'), session: 'R', sessionName: 'Race',
+    }) });
+  });
 
   await page.route('**/rest/v1/**', async (requestRoute) => {
     await requestRoute.fulfill({

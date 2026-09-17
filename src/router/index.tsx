@@ -1,12 +1,12 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import Layout from '@/components/Layout';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { SiteAccess, MemberAccess } from '@/components/auth/AccessGate';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { routeModules } from './routeModules';
 
 const Home = lazy(routeModules.home);
+const Layout = lazy(() => import('@/components/Layout'));
 const Seasons = lazy(routeModules.seasons);
 const Races = lazy(routeModules.races);
 const RaceLayout = lazy(routeModules.raceLayout);
@@ -65,7 +65,7 @@ const AppRoutes = () => (
     </Route>
     <Route path="privacy" element={withSuspense(<main><Privacy /></main>)} />
     <Route element={<SiteAccess />}>
-    <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
+    <Route path="/" element={withSuspense(<ErrorBoundary><Layout /></ErrorBoundary>)}>
       <Route index element={withSuspense(<Home />)} />
       <Route path="seasons" element={withSuspense(<Seasons />)} />
       <Route path="races" element={withSuspense(<Races />)} />

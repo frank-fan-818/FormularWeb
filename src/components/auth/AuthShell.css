@@ -158,6 +158,14 @@
 .auth-card__header p { margin: 0; font-size: 14px; line-height: 1.7; }
 .auth-card__eyebrow { color: var(--f1-red-text); }
 .auth-card .ant-form-item { margin-bottom: 20px; }
+.auth-login-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.auth-login-form label { display: block; margin-bottom: 7px; color: var(--text-primary); font-size: 13px; font-weight: var(--font-semibold); }
+.auth-login-form input { box-sizing: border-box; display: block; width: 100%; min-height: 50px; padding: 10px 12px; margin-bottom: 20px; border: 1px solid var(--border-primary); border-radius: var(--radius-md); color: var(--text-primary); background: var(--bg-tertiary); font: inherit; }
+.auth-login-form input:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 2px; }
+.auth-login-form input:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-login-form__password { position: relative; }
+.auth-login-form__password input { padding-right: 64px; }
+.auth-login-form__password button { position: absolute; top: 4px; right: 4px; min-height: 42px; padding: 0 10px; border: 0; border-radius: var(--radius-md); color: var(--text-secondary); background: transparent; cursor: pointer; }
 .auth-card .ant-form-item-label { padding-bottom: 7px; }
 .auth-card .ant-form-item-label > label { color: var(--text-primary); font-size: 13px; font-weight: var(--font-semibold); }
 .auth-card .ant-input-affix-wrapper {

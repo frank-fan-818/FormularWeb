@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { RaceWinnerPrediction } from '@/types/racePrediction';
-import { predictionsApi } from '@/api/predictions';
 import { useAuthSession } from './useAuthSession';
 import { isRacePredictionFresh } from '@/utils/racePredictionPresentation';
 
@@ -16,7 +15,10 @@ export function useRacePrediction(season: string | number | undefined, round: st
     if (!valid) { setState({ key, data: null, loading: false, error: null }); return; }
     let active = true;
     setState({ key, data: null, loading: true, error: null });
-    void predictionsApi.getRacePrediction(Number(season), Number(round)).then((data) => {
+    void import('@/api/predictions').then(({ predictionsApi }) => {
+      if (!active) return null;
+      return predictionsApi.getRacePrediction(Number(season), Number(round));
+    }).then((data) => {
       if (active) setState({ key, data, loading: false, error: null });
     }).catch((error: unknown) => {
       if (active) setState({ key, data: null, loading: false, error: error instanceof Error ? error : new Error('预测数据暂时不可用') });

@@ -1,4 +1,4 @@
-import { clearFastF1AnalyticsCache } from '@/api/fastf1Analytics';
+import { clearFastF1AnalyticsCache } from '@/api/fastf1AnalyticsCache';
 
 export function clearPrivateData(): void {
   clearFastF1AnalyticsCache();

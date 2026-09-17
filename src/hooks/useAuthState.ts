@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { AuthState } from '@/types/auth';
 import type { Session } from '@supabase/supabase-js';
 import { getMemberSession, GUEST_ACCESS_KEY } from '@/utils/accessPolicy';
-import { isSupabaseConfigured, supabase } from '@/utils/supabase';
+import { isSupabaseConfigured } from '@/utils/supabaseConfig';
 
 export function useAuthState(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
@@ -27,6 +27,7 @@ export function useAuthState(): AuthState {
     if (!isSupabaseConfigured) return undefined;
     let active = true;
     let eventReceived = false;
+    let unsubscribe: (() => void) | undefined;
     setLoading(true);
     setError(null);
     const timeout = window.setTimeout(() => {
@@ -35,19 +36,22 @@ export function useAuthState(): AuthState {
         setLoading(false);
       }
     }, 10000);
-    const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    void import('@/utils/supabase').then(async ({ supabase }) => {
       if (!active) return;
-      eventReceived = true;
-      window.clearTimeout(timeout);
-      if (!nextSession || event === 'SIGNED_IN' || event === 'SIGNED_OUT') clearPrivateData();
-      const memberSession = getMemberSession(nextSession);
-      setSession(memberSession);
-      setPasswordRecovery(event === 'PASSWORD_RECOVERY');
-      setLoading(false);
-      setError(null);
-      if (memberSession || event === 'SIGNED_OUT') updateGuest(false);
-    });
-    void supabase.auth.getSession().then(({ data: current, error: sessionError }) => {
+      const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+        if (!active) return;
+        eventReceived = true;
+        window.clearTimeout(timeout);
+        if (!nextSession || event === 'SIGNED_IN' || event === 'SIGNED_OUT') clearPrivateData();
+        const memberSession = getMemberSession(nextSession);
+        setSession(memberSession);
+        setPasswordRecovery(event === 'PASSWORD_RECOVERY');
+        setLoading(false);
+        setError(null);
+        if (memberSession || event === 'SIGNED_OUT') updateGuest(false);
+      });
+      unsubscribe = () => data.subscription.unsubscribe();
+      const { data: current, error: sessionError } = await supabase.auth.getSession();
       if (!active || eventReceived) return;
       if (sessionError) throw sessionError;
       const memberSession = getMemberSession(current.session);
@@ -64,7 +68,7 @@ export function useAuthState(): AuthState {
     return () => {
       active = false;
       window.clearTimeout(timeout);
-      data.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, [attempt]);
 

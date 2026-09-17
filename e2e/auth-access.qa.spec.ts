@@ -15,6 +15,26 @@ async function mockData(page: Page) {
 
 test.beforeEach(async ({ page }) => { await mockData(page); await mockAuth(page); });
 
+test('login validates required fields and preserves password visibility controls', async ({ page }) => {
+  let signInRequests = 0;
+  page.on('request', (request) => { if (request.url().includes('/auth/v1/token')) signInRequests += 1; });
+  await page.goto('/login');
+  const email = page.getByLabel('邮箱', { exact: true });
+  const password = page.getByLabel('密码', { exact: true });
+  await expect(email).toBeEnabled();
+  await page.getByRole('button', { name: /^登\s*录$/ }).click();
+  expect(await email.evaluate((element: HTMLInputElement) => element.validity.valueMissing)).toBe(true);
+  await email.fill('not-an-email');
+  await password.fill('test-password');
+  await page.getByRole('button', { name: /^登\s*录$/ }).click();
+  expect(await email.evaluate((element: HTMLInputElement) => element.validity.typeMismatch)).toBe(true);
+  expect(signInRequests).toBe(0);
+  await page.getByRole('button', { name: '显示密码', exact: true }).click();
+  await expect(password).toHaveAttribute('type', 'text');
+  await page.getByRole('button', { name: '隐藏密码', exact: true }).click();
+  await expect(password).toHaveAttribute('type', 'password');
+});
+
 test('an anonymous auth session never grants member access or erases guest consent', async ({ page }) => {
   await page.addInitScript(({ key, session }) => {
     localStorage.setItem(key, JSON.stringify(session));
