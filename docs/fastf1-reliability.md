@@ -51,5 +51,5 @@ npm run build
 - Reliability/automation tests: 20 Python tests and 8 Node tests pass, including fault injection for timeout, 403, 429, 503, staging preservation, batch budgets, independent imports/uploads and health recovery.
 - Workflow validation passes for all six repository workflows; production build passes.
 - The six recovered 2026 round 13/14 snapshots pass database import and private Storage dry runs. The updated batch exporter also exported both round 13/14 qualifying sessions with pinned FastF1 3.8.3 and passed scoped manifest/health checks.
-- Release branch full frontend unit suite: 352 passed. This branch is based on production main and deliberately excludes the separate uncommitted account/private-data migration. Existing public snapshot paths and the static-backup PR workflow remain compatible; only validated complete snapshots enter that backup, never health reports.
-- The initial local implementation performed no production writes. Deployment acceptance requires the release PR checks followed by a real refresh run and verification of its health report.
+- Full frontend unit suite: 361 passed, 1 failed. The existing `src/pages/Race/shared/charts/telemetry.test.ts` still scans `public/fastf1`, which is absent after the pre-existing private-data migration. This task does not change that test or restore private files to the public directory.
+- No production imports, Storage writes, runner changes, commits or pushes were performed. A real CI run after deployment remains necessary for hosted-runner acceptance.

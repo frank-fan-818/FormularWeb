@@ -43,8 +43,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="public/fastf1",
-        help="Private export root, defaults to public/fastf1",
+        default="data/private-fastf1",
+        help="Private export root, defaults to data/private-fastf1",
     )
     parser.add_argument(
         "--telemetry-drivers",

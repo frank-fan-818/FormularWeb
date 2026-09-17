@@ -42,6 +42,11 @@ if (!existsSync(resolve(distRoot, 'index.html'))) {
 
 const server = createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url || '/', `http://${host}`).pathname);
+  if (pathname === '/fastf1' || pathname.startsWith('/fastf1/')) {
+    response.writeHead(404, { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain' });
+    response.end('Not found');
+    return;
+  }
   const qaVersion = request.headers.cookie
     ?.match(/(?:^|;\s*)qa-sw-version=([0-9a-f]{12})(?:;|$)/)?.[1];
 

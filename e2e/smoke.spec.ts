@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 const routes = [
   '/',
@@ -300,11 +303,12 @@ test('global search navigates to every supported entity type', async ({ page }, 
     await page.goto('/');
     const searchLabel = '搜索车手、车队、赛道或赛事';
     const trigger = page.getByRole('button', { name: searchLabel });
+    const input = page.getByRole('combobox', { name: searchLabel });
+    await expect(trigger.or(input)).toBeVisible();
     if (await trigger.isVisible().catch(() => false)) {
       await trigger.click();
     }
 
-    const input = page.getByRole('combobox', { name: searchLabel });
     await input.fill(searchCase.query);
     await page.getByRole('option', { name: searchCase.name }).click();
     await expect(page).toHaveURL(new RegExp(`${searchCase.path.replace(/[?]/g, '\\?')}$`));
@@ -338,6 +342,8 @@ test('historical race navigation preserves and updates the season identity', asy
   try {
     await mockHistoricalRaceApi(freshPage);
     await freshPage.goto(copiedUrl);
+    await expect(freshPage).toHaveURL(/\/login$/);
+    await freshPage.getByRole('button', { name: '以游客身份浏览' }).click();
     await expect(freshPage.locator('.season-switcher .season-select-native').first()).toHaveValue('2025');
     await expect(freshPage.getByRole('heading', { name: /2025 Miami Grand Prix/ })).toBeVisible();
 

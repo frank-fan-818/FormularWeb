@@ -38,16 +38,12 @@ describe('prediction API mapping', () => {
     })).toThrow();
   });
 
-  it('remains interceptable when browser configuration is absent', async () => {
+  it('fails closed when browser configuration is absent', async () => {
     vi.stubEnv('VITE_SUPABASE_URL', '');
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
-    const fetchMock = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }));
+    const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-
-    await expect(predictionsApi.getRacePrediction(2026, 13)).resolves.toBeNull();
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.objectContaining({ href: expect.stringContaining('https://example.supabase.co/rest/v1/') }),
-      expect.any(Object),
-    );
+    await expect(predictionsApi.getRacePrediction(2026, 13)).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

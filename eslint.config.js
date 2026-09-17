@@ -19,6 +19,7 @@ export default [
       'scripts/**',
       '.claude/**',
       '.cache/**',
+      '.tmp/**',
       '.trae/**',
       'import-*.ts',
       'test-*.ts',

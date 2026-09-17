@@ -81,6 +81,7 @@ interface UseRaceDeferredSessionsOptions {
   routeSection: RaceRouteSection;
   activeSessionTab: RaceClassificationSessionKey;
   flowId?: string;
+  allowAnalytics?: boolean;
 }
 
 export async function loadRaceSessionWithFallback(
@@ -134,6 +135,7 @@ export function useRaceDeferredSessions({
   routeSection,
   activeSessionTab,
   flowId,
+  allowAnalytics = true,
 }: UseRaceDeferredSessionsOptions) {
   const [sprintResults, setSprintResults] = useState<Result[]>([]);
   const [sprintQualifyingResults, setSprintQualifyingResults] = useState<QualifyingResult[]>([]);
@@ -244,6 +246,7 @@ export function useRaceDeferredSessions({
       } else if (sessionKey === 'sprintQualifying') {
         sessionData = await loadRaceSessionWithFallback(
           async () => {
+            if (!allowAnalytics) return null;
             const preferred = season === '2023' ? 'SS' : 'SQ';
             return await loadFastF1Classification(season, round, preferred, raceInfo)
               || await loadFastF1Classification(season, round, preferred === 'SS' ? 'SQ' : 'SS', raceInfo);
@@ -253,7 +256,7 @@ export function useRaceDeferredSessions({
         );
       } else if (sessionKey === 'fp1') {
         sessionData = await loadRaceSessionWithFallback(
-          () => loadFastF1Classification(season, round, 'FP1', raceInfo),
+          () => allowAnalytics ? loadFastF1Classification(season, round, 'FP1', raceInfo) : Promise.resolve(null),
           () => raceSessionResultsApi.getPracticeResult(season, round, 1),
           diagnostics,
           'fp1_results',
@@ -261,7 +264,7 @@ export function useRaceDeferredSessions({
         );
       } else if (sessionKey === 'fp2') {
         sessionData = await loadRaceSessionWithFallback(
-          () => loadFastF1Classification(season, round, 'FP2', raceInfo),
+          () => allowAnalytics ? loadFastF1Classification(season, round, 'FP2', raceInfo) : Promise.resolve(null),
           () => raceSessionResultsApi.getPracticeResult(season, round, 2),
           diagnostics,
           'fp2_results',
@@ -269,7 +272,7 @@ export function useRaceDeferredSessions({
         );
       } else if (sessionKey === 'fp3') {
         sessionData = await loadRaceSessionWithFallback(
-          () => loadFastF1Classification(season, round, 'FP3', raceInfo),
+          () => allowAnalytics ? loadFastF1Classification(season, round, 'FP3', raceInfo) : Promise.resolve(null),
           () => raceSessionResultsApi.getPracticeResult(season, round, 3),
           diagnostics,
           'fp3_results',
@@ -315,7 +318,7 @@ export function useRaceDeferredSessions({
       loadingTabsRef.current = removeSessionTabs(loadingTabsRef.current, pendingSessions) as DeferredRaceSessionKey[];
       setLoadingTabs((current) => removeSessionTabs(current, pendingSessions));
     };
-  }, [diagnostics, raceIdentity, raceInfo, reloadKey, round, season, sessionsToLoad]);
+  }, [allowAnalytics, diagnostics, raceIdentity, raceInfo, reloadKey, round, season, sessionsToLoad]);
 
   const retrySession = useCallback((sessionKey: DeferredRaceSessionKey) => {
     loadedTabsRef.current = removeSessionTabs(loadedTabsRef.current, [sessionKey]) as DeferredRaceSessionKey[];

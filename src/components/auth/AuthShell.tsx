@@ -37,9 +37,9 @@ const AuthShell = () => (
       </div>
       <main className="auth-center__panel"><Outlet /></main>
       <footer className="auth-center__footer">
-        <span>公开赛事数据无需登录即可浏览</span>
+        <span>游客浏览基础数据 · 登录解锁深度分析</span>
         <Link to="/privacy">隐私说明</Link>
-        <Link to="/">返回数据中心</Link>
+        <Link to="/">选择访问方式</Link>
       </footer>
     </section>
   </div>

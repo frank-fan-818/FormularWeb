@@ -25,7 +25,7 @@ import { buildRaceWinnerSequenceEmbedding } from '../src/utils/raceWinnerSequenc
 // ============================================================================
 
 const DATA_ROOT = path.join(process.cwd(), 'f1db-main', 'src', 'data', 'seasons');
-const FASTF1_ROOT = path.join(process.cwd(), 'public', 'fastf1');
+const FASTF1_ROOT = path.join(process.cwd(), 'data', 'private-fastf1');
 
 // Domain-driven engineered features (beyond base 172)
 const ENGINEERED_FEATURES = [

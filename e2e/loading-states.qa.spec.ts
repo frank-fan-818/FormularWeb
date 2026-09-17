@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { enterAsMember } from './auth-fixtures';
+
+test.beforeEach(async ({ page }) => { await enterAsMember(page); });
 
 test('race calendar loading state is responsive and motion-safe', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

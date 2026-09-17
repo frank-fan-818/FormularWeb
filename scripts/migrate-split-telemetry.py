@@ -21,8 +21,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--base",
-        default="public/fastf1",
-        help="Root directory containing season/round folders (default: public/fastf1)",
+        default="data/private-fastf1",
+        help="Root directory containing season/round folders (default: data/private-fastf1)",
     )
     parser.add_argument(
         "--dry-run",

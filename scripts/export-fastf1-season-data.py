@@ -1,7 +1,7 @@
 """Export FastF1 analytics for every available race in a season.
 
 This is a thin batch wrapper around scripts/export-fastf1-race-data.py. It uses
-the same export path that produced public/fastf1/2025/19/*.json, then repeats it
+the same export path that produced data/private-fastf1/2025/19/*.json, then repeats it
 for every race/session FastF1 exposes for the selected season.
 
 Examples:
@@ -81,7 +81,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--from-round", type=int, default=1, help="First round to export")
     parser.add_argument("--to-round", type=int, default=0, help="Last round to export; defaults to the season schedule")
     parser.add_argument("--cache", default="f1_cache", help="FastF1 cache directory")
-    parser.add_argument("--output", default="public/fastf1", help="Private export root")
+    parser.add_argument("--output", default="data/private-fastf1", help="Private export root")
     parser.add_argument(
         "--telemetry-driver-count",
         type=int,

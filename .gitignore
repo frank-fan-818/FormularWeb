@@ -62,3 +62,14 @@ supabase/.temp/
 
 # External assistant skill bundles are reference-only; extract project rules into .trae/skills instead.
 .claude/
+
+# Analysis exports must never ship in the public site or repository.
+data/private-fastf1/
+public/fastf1/
+.vercel
+
+# Local FastF1 diagnosis contains private snapshots and disposable dependency/cache files.
+.tmp/diagnostics-34756273218/
+.tmp/fastf1-reliability-smoke/
+.tmp/fastf1-runner/
+.tmp/fastf1-release/

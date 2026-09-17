@@ -1,3 +1,5 @@
+import { MemberAccess } from '@/components/auth/AccessGate';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { lazy, Suspense, useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import { Card, Table, Tabs } from 'antd';
@@ -278,6 +280,7 @@ function getTeamMateColumns(t: (key: string) => string): ColumnsType<TeamMateRow
 // ---- Main Component ----
 
 const RaceQualifying = () => {
+  const { session } = useAuthSession();
   const { t } = useTranslation();
   const {
     season,
@@ -506,6 +509,7 @@ const RaceQualifying = () => {
         )}
       />
 
+      {!session ? <MemberAccess feature="圈速与策略分析">{null}</MemberAccess> : null}
       <Tabs
         className="race-analysis-tabs"
         items={[

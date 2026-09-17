@@ -70,7 +70,7 @@ Usage:
   npm run fastf1:import-sessions -- --season 2025 --round 19
   npm run fastf1:import-sessions -- --from 2021 --to 2025 --session S
   npm run fastf1:import-sessions -- --season 2025 --round 19 --session Q --session SQ
-  npm run fastf1:import-sessions -- --input public/fastf1 --dry-run
+  npm run fastf1:import-sessions -- --input data/private-fastf1 --dry-run
   npm run fastf1:import-sessions -- --season 2025 --complete-only
 
 Description:
@@ -104,7 +104,7 @@ function parseNumberFlag(flag: string, value: string | undefined) {
 function parseArgs(args: string[]): ParsedArgs {
   const parsed: ParsedArgs = {
     sessions: [],
-    inputRoot: 'public/fastf1',
+    inputRoot: 'data/private-fastf1',
     dryRun: false,
     completeOnly: false,
     help: false,
