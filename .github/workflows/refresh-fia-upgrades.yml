@@ -30,43 +30,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Check race-window eligibility before installing dependencies
-        id: window
-        env:
-          REQUESTED_SEASON: ${{ inputs.season }}
-          REQUESTED_ROUND: ${{ inputs.round }}
-        shell: bash
-        run: |
-          season="${REQUESTED_SEASON:-$(date -u +%Y)}"
-          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then exit 1; fi
-          echo "season=$season" >> "$GITHUB_OUTPUT"
-          if [ -n "$REQUESTED_ROUND" ]; then
-            if ! [[ "$REQUESTED_ROUND" =~ ^[0-9]+$ ]] || [ "$REQUESTED_ROUND" -lt 1 ] || [ "$REQUESTED_ROUND" -gt 40 ]; then exit 1; fi
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          calendar="$(curl --fail --silent --show-error --retry 2 --retry-all-errors --connect-timeout 10 --max-time 30 "https://api.jolpi.ca/ergast/f1/${season}.json?limit=100")"
-          jq -e '.MRData.RaceTable.Races | type == "array"' <<< "$calendar" > /dev/null
-          dates="$(jq -r '.MRData.RaceTable.Races[] | .date + "T" + (.time // "23:59:59Z")' <<< "$calendar")"
-          eligible=false
-          now="$(date -u +%s)"
-          while IFS= read -r race_at; do
-            if [ -z "$race_at" ]; then continue; fi
-            delta="$(( $(date -u -d "$race_at" +%s) - now ))"
-            if [ "$delta" -ge -172800 ] && [ "$delta" -le 432000 ]; then eligible=true; fi
-          done <<< "$dates"
-          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
-
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        if: steps.window.outputs.eligible == 'true'
         with:
           persist-credentials: false
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        if: steps.window.outputs.eligible == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Restore recent calendar
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/race-calendar
+          key: calendar-v1-fia-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: calendar-v1-fia-
+
+      - name: Check race-window eligibility
+        id: window
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_SEASON: ${{ inputs.season }}
+          REQUESTED_ROUND: ${{ inputs.round }}
+        run: node scripts/race-window.mjs fia
+
+      - name: Save validated live calendar
+        if: steps.window.outputs.source == 'live'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/race-calendar
+          key: calendar-v1-fia-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Use pinned npm
         if: steps.window.outputs.eligible == 'true'

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
 import path from 'node:path';
+import { retryTransient } from './automation-retry.mjs';
 
 export function options(args = process.argv.slice(2)) {
   function value(flag) {
@@ -26,7 +27,21 @@ export function privateStore() {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: (url, init) => fetch(url, { ...init, signal: AbortSignal.timeout(60000) }) },
   });
-  return client.storage.from('fastf1-private');
+  return resilientStore(client.storage.from('fastf1-private'));
+}
+
+export function resilientStore(store, retryOptions) {
+  const wrap = operation => retryTransient(async () => {
+    const result = await operation();
+    if (result.error) throw result.error;
+    return result;
+  }, retryOptions).catch(error => ({ data: null, error }));
+  return {
+    list: (...args) => wrap(() => store.list(...args)),
+    download: (...args) => wrap(() => store.download(...args)),
+    upload: (...args) => args[2]?.upsert === true
+      ? wrap(() => store.upload(...args)) : store.upload(...args),
+  };
 }
 
 export function storageError(operation, error) {

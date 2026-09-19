@@ -28,53 +28,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Resolve season
-        id: season
-        shell: bash
-        env:
-          REQUESTED_SEASON: ${{ inputs.season }}
-        run: |
-          season="$REQUESTED_SEASON"
-          if [ -z "$season" ]; then season="$(date -u +%Y)"; fi
-          if ! [[ "$season" =~ ^[0-9]{4}$ ]] || [ "$season" -lt 1950 ] || [ "$season" -gt 2100 ]; then
-            echo "::error::Season must be a four-digit year between 1950 and 2100."
-            exit 1
-          fi
-          echo "value=$season" >> "$GITHUB_OUTPUT"
-
-      - name: Check race-window eligibility
-        id: window
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          SEASON: ${{ steps.season.outputs.value }}
-        run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          race_at="$(curl --fail --silent --show-error --retry 3 --retry-all-errors --connect-timeout 10 --max-time 30 "https://api.jolpi.ca/ergast/f1/${SEASON}/next.json" | jq -r '.MRData.RaceTable.Races[0] | select(.date != null) | (.date + "T" + (.time // "00:00:00Z"))')"
-          if [ -z "$race_at" ]; then
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          seconds_until_race="$(( $(date -u -d "$race_at" +%s) - $(date -u +%s) ))"
-          if [ "$seconds_until_race" -ge 0 ] && [ "$seconds_until_race" -le 259200 ]; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        if: steps.window.outputs.eligible == 'true'
         with:
           persist-credentials: false
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        if: steps.window.outputs.eligible == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Restore recent calendar
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/race-calendar
+          key: calendar-v1-prediction-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: calendar-v1-prediction-
+
+      - name: Check race-window eligibility
+        id: window
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_SEASON: ${{ inputs.season }}
+          REQUESTED_ROUND: ${{ inputs.round }}
+        run: node scripts/race-window.mjs prediction
+
+      - name: Save validated live calendar
+        if: steps.window.outputs.source == 'live'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/race-calendar
+          key: calendar-v1-prediction-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Use pinned npm
         if: steps.window.outputs.eligible == 'true'
@@ -91,7 +74,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           for attempt in 1 2 3; do
-            if npm run prediction:publish -- --season "${{ steps.season.outputs.value }}"; then exit 0; fi
+            if npm run prediction:publish -- --season "${{ steps.window.outputs.season }}"; then exit 0; fi
             if [ "$attempt" -lt 3 ]; then sleep 10; fi
           done
           exit 1
