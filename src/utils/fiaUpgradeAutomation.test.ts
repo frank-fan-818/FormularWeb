@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { discoverFiaDocuments, findFiaEventPage, selectFiaUpgradeRaces, validateFiaPublication } from './fiaUpgradeAutomation';
+import { canAwaitFiaPublication, discoverFiaDocuments, findFiaEventPage, findFiaSeasonPath, hasFiaEventDirectory, selectFiaUpgradeRaces, validateFiaPublication } from './fiaUpgradeAutomation';
 
 const race = { season: '2026', round: '13', raceName: 'Italian Grand Prix', date: '2026-09-06', time: '13:00:00Z' };
 const metadata = { season: 2026, round: 13, grandPrix: race.raceName,
@@ -9,6 +9,26 @@ const teams = ['McLaren', 'Mercedes', 'Red Bull Racing', 'Ferrari', 'Williams', 
 const text = `2026 Italian Grand Prix\nCar Presentation Submissions\n${teams.map(team => `${team}\nNo updates submitted for this event.`).join('\n')}`;
 
 describe('FIA upgrade automation', () => {
+  it('only waits before the race, and never for explicit repair requests', () => {
+    const at = Date.parse(`${race.date}T${race.time}`);
+    expect(canAwaitFiaPublication(race, at - 1)).toBe(true);
+    expect(canAwaitFiaPublication(race, at)).toBe(false);
+    expect(canAwaitFiaPublication(race, at - 1, true)).toBe(false);
+  });
+  it('distinguishes a valid directory awaiting an event from a broken page', () => {
+    const html = '<option value="/documents/official-regulations/event/Italian%20Grand%20Prix">Italian Grand Prix</option>';
+    expect(hasFiaEventDirectory(html)).toBe(true);
+    expect(findFiaEventPage(html, '/documents/official-regulations/season/season-2026-2072', 'Azerbaijan Grand Prix')).toBeNull();
+    expect(hasFiaEventDirectory('<html>Maintenance</html>')).toBe(false);
+    expect(findFiaSeasonPath('<option value="/documents/official-regulations/season/season-2026-2072">2026</option>', 2026)).toContain('2072');
+    expect(() => findFiaSeasonPath('<option value="https://evil.test/season/season-2026-2072">2026</option>', 2026)).toThrow();
+  });
+  it('decodes event labels and rejects foreign hosts and another season', () => {
+    const season = '/documents/official-regulations/season/season-2026-2072';
+    expect(findFiaEventPage('<option value="/documents/official-regulations/event/Azerbaijan">Azerbaijan&#160;Grand Prix</option>', season, 'Azerbaijan Grand Prix')).toContain('/event/Azerbaijan');
+    expect(findFiaEventPage('<option value="https://evil.test/event/Azerbaijan">Azerbaijan Grand Prix</option>', season, 'Azerbaijan Grand Prix')).toBeNull();
+    expect(findFiaEventPage('<option value="/season/season-2025-1/event/Azerbaijan">Azerbaijan Grand Prix</option>', season, 'Azerbaijan Grand Prix')).toBeNull();
+  });
   it('checks the five-day pre-race window plus two days for late revisions', () => {
     expect(selectFiaUpgradeRaces([race], Date.parse('2026-09-02T00:00:00Z'))).toEqual([race]);
     expect(selectFiaUpgradeRaces([race], Date.parse('2026-08-30T00:00:00Z'))).toEqual([]);

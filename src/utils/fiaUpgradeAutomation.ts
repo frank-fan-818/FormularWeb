@@ -13,7 +13,11 @@ export function selectFiaUpgradeRaces(races: FiaScheduledRace[], now: number): F
 }
 
 function decodeHtml(value: string): string {
-  return value.replace(/&amp;/g, '&').replace(/&#0*39;|&apos;/g, "'").replace(/&quot;/g, '"');
+  return value.replace(/&amp;/g, '&').replace(/&#0*39;|&apos;/g, "'").replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ').replace(/&#(x[0-9a-f]+|\d+);/gi, (_, code: string) => {
+      const number = code[0].toLowerCase() === 'x' ? parseInt(code.slice(1), 16) : Number(code);
+      return number <= 0x10ffff ? String.fromCodePoint(number) : '';
+    });
 }
 
 function eventName(value: string): string {
@@ -24,12 +28,35 @@ function eventName(value: string): string {
 
 export function findFiaEventPage(html: string, seasonPath: string, raceName: string): string | null {
   for (const option of html.matchAll(/<option\b[^>]*value=["']([^"']+)["'][^>]*>([\s\S]*?)<\/option>/gi)) {
-    if (eventName(decodeHtml(option[2])) !== eventName(raceName)) continue;
+    if (eventName(decodeHtml(option[2].replace(/<[^>]*>/g, ''))) !== eventName(raceName)) continue;
     const path = decodeHtml(option[1]);
+    const url = new URL(path, FIA_ORIGIN);
+    if (url.origin !== FIA_ORIGIN) continue;
+    const optionSeason = url.pathname.match(/\/season\/([^/]+)/)?.[1];
+    if (optionSeason && !seasonPath.includes(`/season/${optionSeason}`)) continue;
     const event = path.match(/\/event\/([^/?#]+)/)?.[1];
     if (event) return new URL(`${seasonPath}/event/${event}`, FIA_ORIGIN).href;
   }
   return null;
+}
+
+export function findFiaSeasonPath(html: string, season: number): string {
+  for (const match of html.matchAll(/<option\b[^>]*value=["']([^"']+)["']/gi)) {
+    const url = new URL(decodeHtml(match[1]), FIA_ORIGIN);
+    if (url.origin === FIA_ORIGIN && new RegExp(`/season/season-${season}-\\d+$`).test(url.pathname)) return url.pathname;
+  }
+  throw new Error('FIA season selector unavailable or changed');
+}
+
+/** Missing future event options are normal; an unrecognizable page is not. */
+export function hasFiaEventDirectory(html: string): boolean {
+  return /<option\b[^>]*value=["'][^"']*\/event\/[^"']+["']/i.test(html);
+}
+
+export function canAwaitFiaPublication(race: FiaScheduledRace, now: number, explicitRound = false): boolean {
+  const raceAt = Date.parse(`${race.date}T${race.time || '23:59:59Z'}`);
+  if (!Number.isFinite(raceAt)) throw new Error('Invalid race date');
+  return !explicitRound && now < raceAt;
 }
 
 export function discoverFiaDocuments(html: string, season: number): string[] {
