@@ -71,7 +71,7 @@ jobs:
 
       - name: Verify parsing and publication policies
         if: steps.window.outputs.eligible == 'true'
-        run: npx vitest run src/utils/fiaCarUpgrades.test.ts src/utils/fiaUpgradeAutomation.test.ts src/api/fiaUpgradePublisher.test.ts
+        run: npx vitest run src/utils/fiaCarUpgrades.test.ts src/utils/fiaUpgradeAutomation.test.ts src/api/fiaUpgradePublisher.test.ts src/api/fiaDocumentSource.test.ts
 
       - name: Discover, validate and publish FIA declarations
         if: steps.window.outputs.eligible == 'true'
@@ -93,5 +93,5 @@ jobs:
         with:
           name: fia-upgrade-publications
           path: artifacts/fia-refresh/
-          if-no-files-found: ignore
+          if-no-files-found: warn
           retention-days: 7

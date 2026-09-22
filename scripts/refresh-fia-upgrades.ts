@@ -5,9 +5,13 @@ import { createClient } from '@supabase/supabase-js';
 import { PDFParse } from 'pdf-parse';
 import { fetchPaginatedRaceTable } from '../src/api/jolpicaRacePagination.ts';
 import { publishFiaUpgradeSnapshot } from '../src/api/fiaUpgradePublisher.ts';
-import { discoverFiaDocuments, findFiaEventPage, selectFiaUpgradeRaces, validateFiaPublication } from '../src/utils/fiaUpgradeAutomation.ts';
+import { FiaSourceUnavailableError, requestFiaDocument, requestFiaHtml } from '../src/api/fiaDocumentSource.ts';
+import { canAwaitFiaPublication, discoverFiaDocuments, findFiaEventPage, findFiaSeasonPath, hasFiaEventDirectory, selectFiaUpgradeRaces, validateFiaPublication } from '../src/utils/fiaUpgradeAutomation.ts';
 import type { FiaScheduledRace } from '../src/types/fiaUpgradeAutomation.ts';
 import { withRetry } from '../src/utils/withRetry.ts';
+import { logger } from '../src/utils/logger.ts';
+
+const outcomes: Record<string, unknown>[] = [];
 
 function argument(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -18,7 +22,8 @@ function argument(flag: string): string | undefined {
 }
 function log(event: string, details: Record<string, unknown> = {}) {
   const message = JSON.stringify({ scope: 'fia-upgrades', event, ...details });
-  console.info(message);
+  logger.info({ event: 'step', module: 'fia-upgrades', function: event, input: JSON.stringify(details) });
+  outcomes.push({ event, ...details });
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n${message}\n`);
 }
 async function request<T>(url: string, consume: (response: Response) => Promise<T>): Promise<T> {
@@ -49,10 +54,19 @@ async function main() {
   if (requestedRound && !targets.length) throw new Error('Requested round is not in the calendar');
   if (!targets.length) { log('outside_race_window'); return; }
   const root = 'https://www.fia.com/documents/official-regulations';
-  const html = await request(root, response => response.text());
-  const seasonPath = html.match(new RegExp(`value=["']([^"']*/season/season-${season}-\\d+)["']`))?.[1];
-  if (!seasonPath) throw new Error('FIA season selector unavailable');
-  const seasonHtml = await request(new URL(seasonPath, root).href, response => response.text());
+  let seasonPath: string;
+  let seasonHtml: string;
+  try {
+    const html = await requestFiaHtml(root);
+    seasonPath = findFiaSeasonPath(html, season);
+    seasonHtml = await requestFiaHtml(new URL(seasonPath, root).href);
+    if (!hasFiaEventDirectory(seasonHtml)) throw new Error('FIA event directory unavailable or changed');
+  } catch (error) {
+    if (!(error instanceof FiaSourceUnavailableError)
+      || !targets.every(race => canAwaitFiaPublication(race, Date.now(), Boolean(requestedRound)))) throw error;
+    for (const race of targets) log('source_deferred', { season, round: Number(race.round), reason: error.reason, retry: 'next scheduled run', deadline: `${race.date}T${race.time || '23:59:59Z'}` });
+    return;
+  }
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!dryRun && (!url || !key)) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
@@ -62,11 +76,18 @@ async function main() {
     const round = Number(race.round);
     try {
       const eventUrl = findFiaEventPage(seasonHtml, seasonPath, race.raceName);
-      if (!eventUrl) throw new Error(`FIA event not matched: ${race.raceName}`);
-      const eventHtml = await request(eventUrl, response => response.text());
+      if (!eventUrl) {
+        if (!canAwaitFiaPublication(race, Date.now(), Boolean(requestedRound))) throw new Error(`FIA event missing after publication deadline: ${race.raceName}`);
+        log('awaiting_event', { season, round, raceName: race.raceName, retry: 'next scheduled run' });
+        continue;
+      }
+      const eventHtml = await requestFiaHtml(eventUrl);
       const documentUrl = discoverFiaDocuments(eventHtml, season)[0];
-      if (!documentUrl) { log('awaiting_publication', { season, round }); continue; }
-      const bytes = await request(documentUrl, async response => new Uint8Array(await response.arrayBuffer()));
+      if (!documentUrl) {
+        if (!canAwaitFiaPublication(race, Date.now(), Boolean(requestedRound))) throw new Error('FIA document missing after publication deadline');
+        log('awaiting_publication', { season, round, retry: 'next scheduled run' }); continue;
+      }
+      const bytes = await requestFiaDocument(documentUrl, async response => new Uint8Array(await response.arrayBuffer()));
       const parser = new PDFParse({ data: bytes });
       try {
         const { text } = await parser.getText();
@@ -78,6 +99,10 @@ async function main() {
         log(result, { season, round, records: artifact.records.length, teams: artifact.summaries.length, documentUrl });
       } finally { await parser.destroy(); }
     } catch (error) {
+      if (error instanceof FiaSourceUnavailableError && canAwaitFiaPublication(race, Date.now(), Boolean(requestedRound))) {
+        log('source_deferred', { season, round, reason: error.reason, retry: 'next scheduled run' });
+        continue;
+      }
       failures.push(round);
       log('failed', { season, round, error: error instanceof Error ? error.message : String(error) });
     }
@@ -85,4 +110,8 @@ async function main() {
   if (failures.length) throw new Error(`FIA refresh failed for rounds ${failures.join(', ')}`);
 }
 
-main().catch(error => { log('run_failed', { error: error instanceof Error ? error.message : String(error) }); process.exitCode = 1; });
+main().catch(error => { log('run_failed', { error: error instanceof Error ? error.message : String(error) }); process.exitCode = 1; })
+  .finally(() => {
+    mkdirSync('artifacts/fia-refresh', { recursive: true });
+    writeFileSync('artifacts/fia-refresh/run-report.json', JSON.stringify({ generatedAt: new Date().toISOString(), outcomes }, null, 2));
+  });

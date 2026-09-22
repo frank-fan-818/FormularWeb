@@ -27,3 +27,25 @@ unnecessary upstream refetching after a temporary snapshot-store outage; it cann
 remove an upstream 403 or recover data that has never been successfully cached.
 
 Run `npm run workflows:verify` for outage, cache, boundary, CLI and storage tests.
+
+## FIA publication lifecycle (0.20.4)
+
+The five-day pre-race polling window can begin before the FIA adds the event to
+its document selector. A missing event in a recognizable directory is now
+`awaiting_event`; an event without a PDF is `awaiting_publication`. Public FIA
+403/404 responses, maintenance pages and exhausted transient requests are
+`source_deferred` before the race starts. These are polling outcomes, not
+successful data publications. Existing snapshots remain untouched and the next
+scheduled run retries. Each run writes `artifacts/fia-refresh/run-report.json`
+and a GitHub summary, including runs with no published document.
+
+The race start is the deadline: missing/unavailable documents at or after that
+time fail. Explicit round repairs also fail immediately when unavailable, even
+before the race. Unrecognized page structure, invalid PDFs and database failures
+always remain errors. The policy applies only to public FIA sources; database
+403/authentication errors are never treated as public-source deferrals.
+
+Offline CLI tests reproduce the missing Azerbaijan option and public-source 403,
+and verify deferred outcomes do not write to the database. They also verify the
+deadline, malformed-page and explicit-repair failure paths. This fixes recurring
+pre-publication failures without disabling the workflow or its notifications.
