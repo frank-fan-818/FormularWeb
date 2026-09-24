@@ -10,6 +10,8 @@ function normalizeId(value: string): string {
   return value
     .trim()
     .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
 }
@@ -51,8 +53,13 @@ function resolveMedia(
   };
 }
 
-export function getDriverMedia(driverId: string): ResolvedF1Media {
-  return resolveMedia(driverId, f1MediaManifest.drivers, DRIVER_INDEX, 'drivers');
+export function getDriverMedia(driverId: string, givenName?: string, familyName?: string): ResolvedF1Media {
+  const media = resolveMedia(driverId, f1MediaManifest.drivers, DRIVER_INDEX, 'drivers');
+  if (media.isDeclared || !givenName?.trim() || !familyName?.trim()) return media;
+  // Practice exports may use a timing code instead of a canonical driver ID.
+  // Match an explicit full-name alias; codes and surnames can be shared across eras.
+  const byName = resolveMedia(`${givenName} ${familyName}`, f1MediaManifest.drivers, DRIVER_INDEX, 'drivers');
+  return byName.isDeclared ? byName : media;
 }
 
 export function getConstructorMedia(constructorId: string): ResolvedF1Media {
