@@ -18,7 +18,7 @@ test('a rejected database row does not stop other session imports', async () => 
   });
   assert.deepEqual(seen, ['R', 'Q']);
   assert.equal(result.imported, 1);
-  assert.deepEqual(result.failed, [{ key: '2026/13/R', code: '23514' }]);
+  assert.deepEqual(result.failed, [{ key: '2026/13/R', code: '23514', status: null, transient: false, attempts: 1 }]);
 });
 
 test('publication selects complete sessions in scope and rejects an incomplete race pair', async () => {
@@ -72,6 +72,11 @@ test('workflow publishes healthy sessions before strict verification and never m
   assert.ok(index('restore') < index('export'));
   assert.ok(index('database') < index('verify'));
   assert.ok(index('storage') < index('verify'));
+  assert.ok(index('verify') < index('health'));
+  for (const id of ['restore', 'export', 'database', 'storage', 'verify']) {
+    assert.equal(steps[index('health')].env[`FASTF1_${id.toUpperCase()}_OUTCOME`], '${{ steps.' + id + '.outcome }}');
+  }
+  assert.ok(steps.find(s => s.name === 'Upload sanitized diagnostics').with.path.includes('/database-report.json'));
   const final = steps.at(-1);
   for (const id of ['restore', 'export', 'database', 'storage', 'health', 'verify']) {
     assert.ok(final.if.includes(`steps.${id}.outcome == 'failure'`));

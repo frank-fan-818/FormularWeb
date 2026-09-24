@@ -148,21 +148,6 @@ jobs:
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
           node scripts/upload-private-fastf1.mjs "${args[@]}"
 
-      - name: Report persistent session health
-        id: health
-        if: ${{ !cancelled() && steps.export.outcome != 'skipped' && steps.scope.outputs.season != '' }}
-        continue-on-error: true
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SEASON: ${{ steps.scope.outputs.season }}
-          ROUND: ${{ steps.scope.outputs.round }}
-          FASTF1_PIPELINE_FAILED: ${{ steps.restore.outcome == 'failure' || steps.export.outcome == 'failure' || steps.database.outcome == 'failure' || steps.storage.outcome == 'failure' }}
-        run: |
-          args=(--season "$SEASON" --input "$FASTF1_ROOT")
-          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
-          node scripts/report-fastf1-health.mjs "${args[@]}"
-
       - name: Verify all eligible analysis sessions are complete
         id: verify
         continue-on-error: true
@@ -174,6 +159,26 @@ jobs:
           if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
           npm run fastf1:verify-manifest -- "${args[@]}"
 
+      - name: Report persistent session health
+        id: health
+        if: ${{ !cancelled() && steps.export.outcome != 'skipped' && steps.scope.outputs.season != '' }}
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEASON: ${{ steps.scope.outputs.season }}
+          ROUND: ${{ steps.scope.outputs.round }}
+          FASTF1_PIPELINE_FAILED: ${{ steps.restore.outcome == 'failure' || steps.export.outcome == 'failure' || steps.database.outcome == 'failure' || steps.storage.outcome == 'failure' || steps.verify.outcome == 'failure' }}
+          FASTF1_RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+          FASTF1_EXPORT_OUTCOME: ${{ steps.export.outcome }}
+          FASTF1_DATABASE_OUTCOME: ${{ steps.database.outcome }}
+          FASTF1_STORAGE_OUTCOME: ${{ steps.storage.outcome }}
+          FASTF1_VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          args=(--season "$SEASON" --input "$FASTF1_ROOT")
+          if [ -n "$ROUND" ]; then args+=(--round "$ROUND"); fi
+          node scripts/report-fastf1-health.mjs "${args[@]}"
+
       - name: Upload sanitized diagnostics
         if: ${{ !cancelled() && steps.scope.outputs.season != '' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -183,6 +188,7 @@ jobs:
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/export-report.json
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/manifest.json
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/publication-report.json
+            ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/database-report.json
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/health.json
           if-no-files-found: warn
           retention-days: 14

@@ -28,6 +28,35 @@ remove an upstream 403 or recover data that has never been successfully cached.
 
 Run `npm run workflows:verify` for outage, cache, boundary, CLI and storage tests.
 
+## FastF1 database recovery (0.20.5)
+
+Run 35820302554 exported/verified all 70 eligible sessions and published them to
+Storage, but imported only 69 database rows: `2026/1/FP2` failed once with the
+generic `database_error`. The old importer discarded the HTTP status and had no
+retry. The same revision's next three scheduled runs succeeded; the old diagnostic
+does not establish which transport/server error caused that individual failure.
+
+Database upserts now retry the identical row on transport failures (including the
+Supabase SDK's status 0), HTTP 408/429/5xx, and transient PostgreSQL errors. There
+are at most four attempts, separated by 5/15/30 seconds, with a fresh 60-second
+timeout per attempt and a ten-minute total import budget. Requests use the smaller
+remaining timeout; unattempted rows are reported as `runtime_budget` instead of
+exhausting the whole job before diagnostics. Conflict keys remain `season,round,session`, so an ambiguous
+response followed by a retry cannot create duplicate rows. Permission, schema and
+constraint errors still fail, and other complete sessions continue importing.
+
+Each season import writes `database-report.json`, including empty imports and
+fatal input failures. Reports contain counts, session keys, safe codes, HTTP
+statuses, attempts and recovered sessions, without raw upstream errors. The
+health summary shows database failures separately from snapshot completeness and
+includes restore/export/database/storage/verify step outcomes. Verification runs
+before health reporting; missing import reports and unresolved failures still
+fail the job. Diagnostics include the database report for future investigations.
+
+Offline tests use the real Supabase SDK and importer CLI with controlled network,
+503 and 403 responses, and verify both recovery and failure summaries. They run
+in pull-request workflow checks and in the scheduled FastF1 automation checks.
+
 ## FIA publication lifecycle (0.20.4)
 
 The five-day pre-race polling window can begin before the FIA adds the event to
