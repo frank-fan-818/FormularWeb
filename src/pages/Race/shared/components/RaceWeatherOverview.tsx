@@ -1,4 +1,4 @@
-import { Button, Card, Descriptions } from 'antd';
+import { Button } from 'antd';
 import { useTranslation } from '@/i18n';
 import type { FastF1WeatherSummary } from '@/types';
 import {
@@ -18,46 +18,36 @@ interface RaceWeatherOverviewProps {
 export function RaceWeatherOverview({ summary, loading, error, onRetry }: RaceWeatherOverviewProps) {
   const { t } = useTranslation();
   return (
-    <section className="race-info-section" aria-labelledby="race-weather-heading">
+    <section className="race-info-section weather-brief" aria-labelledby="race-weather-heading">
       <div className="race-info-section-heading">
         <span id="race-weather-heading">{RACE_INFO_TEXT.weatherOverview}</span>
         <small>FastF1 session data</small>
       </div>
       {summary ? (
-        <Card className="race-weekend-card race-info-weather-card">
-          <Descriptions column={3} size="small" colon={false} bordered>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.trackTempRange}</span>}>
-              {formatTemperature(summary.trackTempC.min)}
-              {' ~ '}
-              {formatTemperature(summary.trackTempC.max)}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.airTempRange}</span>}>
-              {formatTemperature(summary.airTempC.min)}
-              {' ~ '}
-              {formatTemperature(summary.airTempC.max)}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{t('humidity')}</span>}>
-              {formatPercent(summary.humidityPct.average)}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.rainfall}</span>}>
-              {summary.rainPointCount > 0 ? `有 (${summary.rainLapRanges.length} 段降雨区间)` : '无'}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.windSpeed}</span>}>
-              {formatWindSpeed(summary.maxWindSpeedMps)}
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
+        <dl className="weather-brief-metrics">
+          <div className="weather-brief-temperature">
+            <dt>{RACE_INFO_TEXT.trackTempRange}</dt>
+            <dd>{formatTemperature(summary.trackTempC.min)}<span className="weather-range-separator">–</span>{formatTemperature(summary.trackTempC.max)}</dd>
+          </div>
+          <div className="weather-brief-temperature">
+            <dt>{RACE_INFO_TEXT.airTempRange}</dt>
+            <dd>{formatTemperature(summary.airTempC.min)}<span className="weather-range-separator">–</span>{formatTemperature(summary.airTempC.max)}</dd>
+          </div>
+          <div><dt>{t('humidity')}</dt><dd>{formatPercent(summary.humidityPct.average)}</dd></div>
+          <div><dt>{RACE_INFO_TEXT.rainfall}</dt><dd>{summary.rainPointCount > 0 ? '有' : '无'}</dd>{summary.rainPointCount > 0 ? <span className="weather-brief-note">{summary.rainLapRanges.length} 段降雨区间</span> : null}</div>
+          <div><dt>{RACE_INFO_TEXT.windSpeed}</dt><dd>{formatWindSpeed(summary.maxWindSpeedMps)}</dd></div>
+        </dl>
       ) : error ? (
-        <Card className="race-weekend-card">
+        <div className="weather-brief-state">
           <div className="race-weekend-empty" role="alert">
             <span>{error.message}</span>
             <Button onClick={onRetry}>重试天气数据</Button>
           </div>
-        </Card>
+        </div>
       ) : !loading ? (
-        <Card className="race-weekend-card">
+        <div className="weather-brief-state">
           <div className="race-weekend-empty">{RACE_INFO_TEXT.noWeatherData}</div>
-        </Card>
+        </div>
       ) : (
         <div className="race-info-inline-state" role="status">
           {t('loading')} {RACE_INFO_TEXT.weatherOverview}…
