@@ -134,3 +134,24 @@ test('weekend schedule uses one surface with readable circuit facts', async ({ p
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/weekend-brief-${testInfo.project.name}.png` });
 });
+
+test('weather metrics remain readable in the shared weekend style', async ({ page }, testInfo) => {
+  await installHistoryFixtures(page);
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2026/13/R.json', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+    source: 'fastf1', season: '2026', round: '13', lapTimeSeries: [], tyreStrategies: [], session: 'R', eventName: 'Italian Grand Prix', sessionName: 'Race', generatedAt: '2026-09-06T16:00:00Z', drivers: [], laps: [], stints: [], raceControlMessages: [], trackStatusPeriods: [],
+    weather: { points: [], summary: { trackTempC: { min: 51.8, max: 57.1, average: 54 }, airTempC: { min: 31.7, max: 32.9, average: 32 }, humidityPct: { min: 35, max: 39, average: 37 }, rainPointCount: 2, rainLapRanges: [{ startLap: 1, endLap: 2 }], maxWindSpeedMps: 3.8 } },
+  }) }));
+  await page.goto('/races/13/info?season=2026');
+  const panel = page.locator('.weather-brief');
+  await expect(panel.locator('dt')).toHaveCount(5);
+  await expect(panel).toContainText('51.8');
+  await expect(panel).toContainText('57.1');
+  await expect(panel).toContainText('37%');
+  await expect(panel).toContainText('3.8 m/s');
+  await expect(panel).toContainText('1 段降雨区间');
+  for (const metric of await panel.locator('dd').all()) {
+    expect(await metric.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/weather-brief-${testInfo.project.name}.png` });
+});
