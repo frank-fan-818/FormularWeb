@@ -7,8 +7,6 @@ import type {
   RacePreviewSummary,
   RecentGrandPrixResult,
   Result,
-  TrackInterruptionProbability,
-  TrackInterruptionSample,
 } from '@/types';
 import { DEFAULT_TAG_COLOR, LIGHT_TAG_COLORS } from '@/pages/Race/shared/constants';
 import ViewportTable from '@/pages/Race/shared/components/ViewportTable';
@@ -83,50 +81,40 @@ export function RaceHistoricalContextPanel({
     return map;
   }, [qualifyingResults, raceResults, sprintResults, summary]);
 
-  const metrics = useMemo(() => {
-    const interruptions = summary?.interruptionProbabilities || [];
-    const averageRisk = interruptions.length
-      ? interruptions.reduce((total, item) => total + (item.probabilityPct || 0), 0) / interruptions.length
-      : null;
-    return [
-      { label: t('historicalRaces'), value: String(summary?.sampleSize || 0), detail: t('sampleSize') },
-      { label: t('poleConversion'), value: formatProbability(summary?.poleWinConversionPct), detail: t('pole') },
-      { label: t('interruptionRisk'), value: formatProbability(averageRisk), detail: interruptions.map((item) => item.type).join(' / ') || '-' },
-    ];
-  }, [summary, t]);
-
   const recentColumns = useMemo<ColumnsType<RecentGrandPrixResult>>(() => [
     {
-      title: t('time'), key: 'season', width: 116,
+      title: t('time'), key: 'season', width: 105, className: 'history-cell-year',
       render: (_: unknown, record) => (
         <div className="race-history-time-cell"><strong>{record.season}</strong><span>{formatShortDate(record.date)}</span></div>
       ),
     },
     {
-      title: t('winner'), key: 'winner', width: 200,
+      title: t('winner'), key: 'winner', width: 180,
+      onCell: () => ({ className: 'history-cell-winner', 'data-label': t('winner') }),
       render: (_: unknown, record) => {
         const info = record.winnerDriverId ? driverInfo.get(record.winnerDriverId) : null;
         const color = getTeamColor(record.winnerConstructorId || info?.constructorId || '') || DEFAULT_TAG_COLOR;
         const code = info?.code || (record.winnerDriverId ? driverIdToCode(record.winnerDriverId) : '');
-        return <span style={driverTagStyle(color)}>{code || record.winnerName || '-'}</span>;
+        return <div className="history-winner"><span title={record.winnerName || undefined} style={driverTagStyle(color)}>{code || record.winnerName || '-'}</span><span className="history-winner-name">{record.winnerName}</span></div>;
       },
     },
     {
-      title: t('pole'), key: 'pole', width: 160,
+      title: t('pole'), key: 'pole', width: 88,
+      onCell: () => ({ className: 'history-cell-pole', 'data-label': t('pole') }),
       render: (_: unknown, record) => {
         const info = record.poleDriverId ? driverInfo.get(record.poleDriverId) : null;
         if (!info) return <strong>{record.poleName || '-'}</strong>;
         const color = info.constructorId ? getTeamColor(info.constructorId) : DEFAULT_TAG_COLOR;
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ ...driverTagStyle(color), minWidth: 36 }}>{info.code}</span>
-            <span style={{ fontSize: 12, color: '#94a3b8' }}>P1</span>
+            <span title={record.poleName || undefined} style={{ ...driverTagStyle(color), minWidth: 36 }}>{info.code}</span>
           </div>
         );
       },
     },
     {
       title: t('podium'), key: 'podium',
+      onCell: () => ({ className: 'history-cell-podium', 'data-label': t('podium') }),
       render: (_: unknown, record) => record.podium.length ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {record.podium.map((item) => {
@@ -134,8 +122,8 @@ export function RaceHistoricalContextPanel({
             const color = getTeamColor(item.constructorId || info?.constructorId || '') || DEFAULT_TAG_COLOR;
             return (
               <span key={item.position} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>P{item.position}</span>
-                <span style={driverTagStyle(color, true)}>{info?.code || driverIdToCode(item.driverId)}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>P{item.position}</span>
+                <span title={item.driverName} style={driverTagStyle(color, true)}>{info?.code || driverIdToCode(item.driverId)}</span>
               </span>
             );
           })}
@@ -144,79 +132,69 @@ export function RaceHistoricalContextPanel({
     },
   ], [driverInfo, t]);
 
-  const interruptionColumns = useMemo<ColumnsType<TrackInterruptionProbability>>(() => [
-    { title: t('raceStatus'), dataIndex: 'label', key: 'label', width: 160 },
-    { title: t('probability'), key: 'probability', width: 120, render: (_: unknown, record) => <strong>{formatProbability(record.probabilityPct)}</strong> },
-    {
-      title: t('sampleSize'), key: 'sampleSize', width: 140,
-      render: (_: unknown, record) => (
-        <span>{record.triggeredCount}/{record.sampleSize}{record.status === 'insufficient-data' ? ` ${t('insufficientData')}` : ''}</span>
-      ),
-    },
-  ], [t]);
-  const sampleColumns = useMemo<ColumnsType<TrackInterruptionSample>>(() => [
-    { title: t('season'), key: 'season', width: 92, render: (_: unknown, record) => <strong>{record.season}</strong> },
-    { title: t('race'), key: 'race', render: (_: unknown, record) => <span>{record.raceName} R{record.round}</span> },
-    {
-      title: t('raceStatus'), key: 'statusTypes', width: 240,
-      render: (_: unknown, record) => (
-        <div className="race-weekend-status-tags">
-          {record.statusLabels.length
-            ? record.statusLabels.map((label, index) => <Tag key={`${record.season}-${record.statusTypes[index]}`}>{label}</Tag>)
-            : <Tag>{t('noInterruption')}</Tag>}
-        </div>
-      ),
-    },
-  ], [t]);
-
   return (
-    <section className="race-info-section" aria-labelledby="race-context-heading">
+    <section className="race-info-section race-history-brief" aria-labelledby="race-context-heading">
       <div className="race-info-section-heading">
-        <span id="race-context-heading">{t('recentWinners')}</span><small>{t('preRaceDescription')}</small>
+        <span id="race-context-heading">{t('recentWinners')}</span><small>{t('historyBriefDescription')}</small>
       </div>
-      <div className="race-weekend-grid race-info-secondary-grid">
-        <Card className="race-weekend-card" loading={loading}>
-          {error ? (
-            <div className="race-weekend-empty" role="alert">
-              <span>{error.message}</span>
-              <Button onClick={onRetry}>重试历史样本</Button>
-            </div>
-          ) : (
-            <>
-              <div className="race-weekend-metric-grid">
-                {metrics.map((item) => (
-                  <span key={item.label} className="race-weekend-metric">
-                    <small>{item.label}</small><strong>{item.value}</strong><em>{item.detail}</em>
-                  </span>
-                ))}
+      <div className="race-info-secondary-grid">
+        {loading ? <Card loading className="history-loading" /> : error ? (
+          <div className="race-weekend-empty" role="alert">
+            <span>{error.message}</span><Button onClick={onRetry}>{t('retryHistory')}</Button>
+          </div>
+        ) : (
+          <div className="history-brief-surface">
+            <div className={`history-brief-grid${predictionsEnabled ? '' : ' history-brief-grid--results-only'}`}>
+              <div className="history-results">
+                <div className="history-stats">
+                  <div><span>{t('historicalRaces')}</span><strong>{summary?.sampleSize || 0}</strong></div>
+                  <div><span>{t('poleConversion')}</span><strong>{formatProbability(summary?.poleWinConversionPct)}</strong></div>
+                </div>
+                {summary?.recentResults.length ? (
+                  <ViewportTable
+                    className="history-results-table" columns={recentColumns} dataSource={summary.recentResults}
+                    rowKey={(record) => record.raceId} pagination={false} size="small" scroll={{ x: 520 }}
+                  />
+                ) : <div className="race-weekend-empty">{t('noPreviewData')}</div>}
               </div>
-              {summary?.recentResults.length ? (
-                <ViewportTable
-                  className="race-history-table" columns={recentColumns} dataSource={summary.recentResults}
-                  rowKey={(record) => record.raceId} pagination={false} size="small" scroll={{ x: 'max-content' }}
-                />
-              ) : <div className="race-weekend-empty">{t('noPreviewData')}</div>}
-            </>
-          )}
-        </Card>
-
-        {predictionsEnabled && !error ? (
-          <Card className="race-weekend-card" loading={loading} title={<div className="data-view-title"><span>{t('interruptionRisk')}</span></div>}>
-            <div className="race-weekend-risk-grid">
-              {(summary?.interruptionProbabilities || []).map((item) => (
-                <span key={item.type} className={`race-weekend-risk-item risk-${item.type.toLowerCase()}`}>
-                  <small>{item.label}</small><strong>{formatProbability(item.probabilityPct)}</strong>
-                  <em>{item.triggeredCount}/{item.sampleSize}{item.status === 'insufficient-data' ? ` ${t('insufficientData')}` : ''}</em>
-                </span>
-              ))}
+              {predictionsEnabled ? (
+                <aside className="history-risk" aria-labelledby="history-risk-heading">
+                  <h3 id="history-risk-heading">{t('historicalTrackStatus')}</h3>
+                  <p>{t('historyRiskDescription')}</p>
+                  <div className="history-risk-list">
+                    {(summary?.interruptionProbabilities || []).map((item) => (
+                      <div key={item.type} className={`history-risk-row risk-${item.type.toLowerCase()}`}>
+                        <div className="history-risk-label"><span>{item.label}</span><strong>{formatProbability(item.probabilityPct)}</strong></div>
+                        <div className="history-risk-track" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(100, item.probabilityPct ?? 0))}%` }} /></div>
+                        <small>{t('historyOccurrence', { count: item.triggeredCount, total: item.sampleSize })}{item.status === 'insufficient-data' ? ` · ${t('insufficientData')}` : ''}</small>
+                      </div>
+                    ))}
+                    {!summary?.interruptionProbabilities.length ? <div className="race-weekend-empty">{t('noPreviewData')}</div> : null}
+                  </div>
+                </aside>
+              ) : null}
             </div>
-            <ViewportTable columns={interruptionColumns} dataSource={summary?.interruptionProbabilities || []} rowKey={(record) => record.type} pagination={false} size="small" />
-            <div className="race-weekend-subtable" style={{ marginTop: 12 }}>
-              <h4 style={{ marginBottom: 8 }}>{t('sampleYears')}</h4>
-              <ViewportTable columns={sampleColumns} dataSource={summary?.interruptionSamples || []} rowKey={(record) => `${record.season}-${record.round}`} pagination={false} size="small" scroll={{ x: 'max-content' }} />
-            </div>
-          </Card>
-        ) : null}
+            {predictionsEnabled ? (
+              <details className="history-samples">
+                <summary><span>{t('sampleYears')}<small>{summary?.interruptionSamples.length || 0}</small></span><span className="history-samples-toggle" aria-hidden="true">+</span></summary>
+                <div className="history-samples-list">
+                  {(summary?.interruptionSamples || []).map((sample) => (
+                    <div className="history-sample" key={`${sample.season}-${sample.round}`}>
+                      <strong>{sample.season}<small>R{sample.round}</small></strong>
+                      <span className="history-sample-name">{sample.raceName}</span>
+                      <div className="history-sample-tags">
+                        {sample.statusLabels.length ? sample.statusLabels.map((label, index) => (
+                          <Tag key={label} className={`risk-${sample.statusTypes[index]?.toLowerCase()}`}>{label}</Tag>
+                        )) : <span>{t('noInterruption')}</span>}
+                      </div>
+                    </div>
+                  ))}
+                  {!summary?.interruptionSamples.length ? <div className="race-weekend-empty">{t('noPreviewData')}</div> : null}
+                </div>
+              </details>
+            ) : null}
+          </div>
+        )}
       </div>
     </section>
   );
