@@ -119,3 +119,18 @@ test('history brief explains missing results and unknown status frequencies', as
   await panel.locator('summary').click();
   await expect(panel.locator('.history-samples .race-weekend-empty')).toBeVisible();
 });
+
+test('weekend schedule uses one surface with readable circuit facts', async ({ page }, testInfo) => {
+  await installHistoryFixtures(page);
+  await page.goto('/races/13/info?season=2026');
+  const panel = page.locator('.weekend-brief');
+  await expect(panel.locator('.weekend-session')).toHaveCount(5);
+  await expect(panel.getByRole('heading', { name: '周末时间表' })).toHaveCount(1);
+  await expect(panel.locator('.weekend-circuit-strip')).toContainText('4L / 7R');
+  await expect(panel.locator('.ant-card')).toHaveCount(0);
+  for (const item of await panel.locator('.weekend-session').all()) {
+    expect(await item.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/weekend-brief-${testInfo.project.name}.png` });
+});

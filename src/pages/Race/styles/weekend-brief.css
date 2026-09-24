@@ -1,0 +1,43 @@
+/* One surface for schedule and circuit facts, scoped to weekend intelligence. */
+.race-info-page > .race-page-intro { padding-block: var(--space-5); min-height: 0; gap: var(--space-5); }
+.race-info-page > .race-page-intro::after { display: none; }
+.race-info-page .race-page-intro-index { font-size: 64px; }
+.race-info-page .race-page-intro h2 { font-size: clamp(24px, 2.5vw, 36px); }
+.race-info-page .race-page-pulse { gap: var(--space-4); }
+.race-info-page .race-page-pulse > span { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 0; min-height: 0; }
+.race-info-page .race-page-pulse strong { font-size: var(--text-xl); }
+.weekend-brief { min-width: 0; border: 1px solid var(--border-primary); border-radius: var(--radius-panel); background: var(--bg-card); overflow: hidden; }
+.weekend-brief .weekend-schedule { padding: var(--space-5); gap: var(--space-5); border: 0; border-radius: 0; margin: 0; width: 100%; box-shadow: none; }
+.weekend-brief .weekend-schedule-topbar { border: 0; padding: 0; flex-wrap: wrap; }
+.weekend-brief .weekend-schedule-eyebrow { margin: 0; font-size: var(--text-lg); line-height: 1.5; }
+.weekend-brief .weekend-schedule-source { white-space: normal; }
+.weekend-brief .weekend-time-toggle { background: transparent; color: var(--text-secondary); border: 0; border-radius: 0; padding: 0; font-weight: 400; }
+.weekend-brief .weekend-schedule-days { gap: var(--space-5); }
+.weekend-brief .weekend-schedule-day { border: 0; border-radius: 0; background: transparent; }
+.weekend-brief .weekend-day-header { padding: var(--space-3) 0; background: transparent; border-top: 2px solid var(--race-control-track); }
+.weekend-brief .weekend-session { padding: var(--space-4) 0; border-left: 0; grid-template-columns: 42px minmax(0, 1fr) auto; }
+.weekend-brief .weekend-session:hover { transform: none; }
+.weekend-brief .weekend-session.is-completed { opacity: 1; }
+.weekend-brief .weekend-session-main strong { white-space: normal; line-height: 1.4; }
+.weekend-brief .weekend-session-main span { color: var(--text-secondary); white-space: normal; line-height: 1.4; }
+.weekend-brief .weekend-session-time { font-size: var(--text-lg); }
+.weekend-brief .weekend-session.is-next { box-shadow: none; background: var(--f1-red-glow); }
+.weekend-circuit-strip { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4) var(--space-5); padding: var(--space-4) var(--space-5); background: var(--bg-secondary); border-top: 1px solid var(--border-secondary); font-size: var(--text-sm); }
+.weekend-circuit-label { font-weight: 600; }
+.weekend-circuit-strip dl { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); margin: 0; }
+.weekend-circuit-strip dl > div { display: flex; gap: var(--space-2); }
+.weekend-circuit-strip dt { color: var(--text-secondary); }
+.weekend-circuit-strip dd { margin: 0; font-weight: 500; }
+.weekend-circuit-strip .ant-tag { margin: 0; }
+@media (max-width: 1100px) {
+  .weekend-brief .weekend-schedule-days { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+  .weekend-brief .weekend-session { padding: var(--space-3) 0; }
+}
+@media (max-width: 600px) {
+  .race-info-page > .race-page-intro { gap: var(--space-3); padding-block: var(--space-4); }
+  .race-info-page .race-page-intro-index { font-size: 44px; }
+  .race-info-page .race-page-pulse { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  .weekend-brief .weekend-schedule { padding: var(--space-4); gap: var(--space-4); }
+  .weekend-circuit-strip { padding: var(--space-4); gap: var(--space-3); }
+  .weekend-circuit-strip dl { width: 100%; }
+}
