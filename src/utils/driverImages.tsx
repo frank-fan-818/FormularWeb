@@ -2,9 +2,6 @@ import { useState } from 'react';
 
 import { getDriverFallbackInitials, getDriverMedia } from './f1Media';
 
-// Local cache fallback — if image fails, show initials
-const FALLBACK_IDS = new Set<string>();
-
 function getDriverColor(driverId: string): string {
   const palette = [
     '#dc0000', '#1e5bc6', '#ff8700', '#00d2be', '#e80020',
@@ -32,12 +29,10 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
   familyName,
   className,
 }) => {
-  const media = getDriverMedia(driverId);
-  const [errored, setErrored] = useState(
-    () => !media.isDeclared || FALLBACK_IDS.has(media.canonicalId),
-  );
+  const media = getDriverMedia(driverId, givenName, familyName);
+  const [failedPath, setFailedPath] = useState<string | null>(null);
 
-  if (errored) {
+  if (!media.isDeclared || failedPath === media.path) {
     const initials = getDriverFallbackInitials(driverId, givenName, familyName);
     const bgColor = getDriverColor(driverId);
     return (
@@ -65,7 +60,7 @@ export const DriverAvatar: React.FC<DriverAvatarProps> = ({
         objectFit: 'cover', flexShrink: 0,
       }}
       loading="lazy"
-      onError={() => { FALLBACK_IDS.add(media.canonicalId); setErrored(true); }}
+      onError={() => setFailedPath(media.path)}
     />
   );
 };
