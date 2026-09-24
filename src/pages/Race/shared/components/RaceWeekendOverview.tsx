@@ -1,4 +1,4 @@
-import { Card, Descriptions, Tag } from 'antd';
+import { Tag } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from '@/i18n';
 import type { getCircuitEnhancement } from '@/utils/circuitEnhancements';
@@ -21,39 +21,12 @@ export function RaceWeekendOverview({
 }: RaceWeekendOverviewProps) {
   const { t } = useTranslation();
   return (
-    <div className="race-info-overview">
-      <Card
-        className="race-weekend-card race-info-circuit-card"
-        title={<div className="data-view-title"><span>赛道特性</span></div>}
-      >
-        <Descriptions column={1} size="small" colon={false}>
-          <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.direction}</span>}>
-            {circuitEnhancement.direction
-              ? formatCircuitDirection(circuitEnhancement.direction)
-              : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{RACE_INFO_TEXT.turns}</span>}>
-            {circuitEnhancement.leftTurns !== undefined && circuitEnhancement.rightTurns !== undefined
-              ? `${circuitEnhancement.leftTurns}L / ${circuitEnhancement.rightTurns}R`
-              : '-'}
-          </Descriptions.Item>
-          {isSprintWeekend ? (
-            <Descriptions.Item label={<span style={{ fontWeight: 600 }}>{t('sprintWeekend')}</span>}>
-              <Tag color="red" style={{ fontWeight: 700 }}>{t('sprintWeekend')}</Tag>
-            </Descriptions.Item>
-          ) : null}
-        </Descriptions>
-      </Card>
-
-      <Card
-        className="race-weekend-card race-info-schedule-card"
-        title={<div className="data-view-title"><span>{t('weekendSchedule')}</span></div>}
-      >
+    <section className="weekend-brief" aria-label={t('weekendSchedule')}>
         {scheduleGroups.length ? (
-          <div className="weekend-schedule" aria-label={t('weekendSchedule')}>
+          <div className="weekend-schedule">
             <div className="weekend-schedule-topbar">
               <div>
-                <span className="weekend-schedule-eyebrow">{t('weekendSchedule')}</span>
+                <h3 className="weekend-schedule-eyebrow">{t('weekendSchedule')}</h3>
                 <span className="weekend-schedule-source">{t('scheduleSourceHint')}</span>
               </div>
               <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${t('scheduleTimezoneValue')}`}>
@@ -99,7 +72,14 @@ export function RaceWeekendOverview({
         ) : (
           <div className="race-weekend-empty">{t('noPreviewData')}</div>
         )}
-      </Card>
-    </div>
+      <div className="weekend-circuit-strip">
+        <span className="weekend-circuit-label">赛道特性</span>
+        <dl>
+          <div><dt>{RACE_INFO_TEXT.direction}</dt><dd>{circuitEnhancement.direction ? formatCircuitDirection(circuitEnhancement.direction) : '-'}</dd></div>
+          <div><dt>{RACE_INFO_TEXT.turns}</dt><dd>{circuitEnhancement.leftTurns !== undefined && circuitEnhancement.rightTurns !== undefined ? `${circuitEnhancement.leftTurns}L / ${circuitEnhancement.rightTurns}R` : '-'}</dd></div>
+        </dl>
+        {isSprintWeekend ? <Tag color="red">{t('sprintWeekend')}</Tag> : null}
+      </div>
+    </section>
   );
 }
