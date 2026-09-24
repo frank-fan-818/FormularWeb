@@ -1,0 +1,83 @@
+.history-brief-surface {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-panel);
+  background: var(--bg-card);
+}
+
+.history-brief-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+}
+
+.history-brief-grid--results-only { grid-template-columns: minmax(0, 1fr); }
+.history-results { min-width: 0; padding: var(--space-5); }
+.history-stats { display: flex; gap: var(--space-6); padding-bottom: var(--space-5); }
+.history-stats > div { display: flex; align-items: baseline; gap: var(--space-3); }
+.history-stats span { color: var(--text-secondary); font-size: var(--text-sm); }
+.history-stats strong { font: 700 var(--text-2xl)/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.history-results-table .ant-table { background: transparent; }
+.history-results-table .ant-table-thead > tr > th { font-size: var(--text-xs); color: var(--text-secondary); background: var(--bg-secondary); }
+.history-results-table .ant-table-tbody > tr > td { padding: var(--space-4) var(--space-2); }
+.history-results-table .race-history-time-cell { display: grid; gap: var(--space-1); }
+.history-results-table .race-history-time-cell strong { font: 700 var(--text-lg)/1.2 var(--font-display); }
+.history-results-table .race-history-time-cell span { font-size: var(--text-xs); color: var(--text-secondary); }
+.history-winner { display: flex; align-items: center; gap: var(--space-2); }
+.history-winner-name { font-size: var(--text-xs); }
+.history-risk { min-width: 0; padding: var(--space-5); border-left: 1px solid var(--border-secondary); background: var(--bg-secondary); }
+.history-risk h3 { margin: 0; font-size: var(--text-lg); }
+.history-risk p { margin: var(--space-2) 0 var(--space-5); color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.6; }
+.history-risk-list { display: grid; gap: var(--space-4); }
+.history-risk-label { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); font-size: var(--text-sm); }
+.history-risk-label strong { font: 700 var(--text-xl)/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.history-risk-track { height: 5px; margin: var(--space-2) 0 var(--space-1); border-radius: var(--radius-control); background: var(--border-primary); overflow: hidden; }
+.history-risk-track > span { display: block; height: 100%; background: var(--history-status-color); border-radius: inherit; }
+.history-risk-row > small { color: var(--text-secondary); font-size: var(--text-xs); }
+.race-history-brief .risk-sc { --history-status-color: var(--status-sc); }
+.race-history-brief .risk-vsc { --history-status-color: var(--status-vsc); }
+.race-history-brief .risk-red { --history-status-color: var(--status-red-flag); }
+.race-history-brief .risk-yellow { --history-status-color: var(--status-yellow); }
+.history-samples { border-top: 1px solid var(--border-primary); }
+.history-samples > summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; list-style: none; font-weight: 600; }
+.history-samples > summary::-webkit-details-marker { display: none; }
+.history-samples > summary:hover { background: var(--bg-secondary); }
+.history-samples > summary:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: -3px; }
+.history-samples > summary > span:first-child { display: flex; align-items: center; gap: var(--space-2); }
+.history-samples summary small { padding: 0 var(--space-2); color: var(--text-secondary); background: var(--bg-tertiary); border-radius: var(--radius-control); font-weight: 400; }
+.history-samples-toggle { font-size: var(--text-xl); transition: transform 150ms; }
+.history-samples[open] .history-samples-toggle { transform: rotate(45deg); }
+.history-samples-list { padding: 0 var(--space-5) var(--space-2); }
+.history-sample { display: grid; grid-template-columns: 100px minmax(0, 1fr) minmax(0, 1.5fr); align-items: center; gap: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--border-secondary); font-size: var(--text-sm); }
+.history-sample > strong { display: flex; align-items: baseline; gap: var(--space-2); font-variant-numeric: tabular-nums; }
+.history-sample small { color: var(--text-secondary); font-size: var(--text-xs); font-weight: 400; }
+.history-sample-name { overflow-wrap: anywhere; }
+.history-sample-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); color: var(--text-secondary); }
+.history-sample-tags .ant-tag { margin: 0; white-space: normal; border-left: 3px solid var(--history-status-color); }
+
+@media (max-width: 1100px) {
+  .history-brief-grid { grid-template-columns: minmax(0, 1fr); }
+  .history-risk { border-left: 0; border-top: 1px solid var(--border-secondary); }
+  .history-risk-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+}
+
+@media (max-width: 600px) {
+  .race-history-brief .race-info-section-heading { align-items: flex-start; text-align: left; }
+  .history-results-table .ant-table-content > table { display: block; width: 100% !important; min-width: 0 !important; }
+  .history-results-table colgroup, .history-results-table thead, .history-results-table .ant-table-measure-row { display: none; }
+  .history-results-table tbody { display: block; }
+  .history-results-table .ant-table-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) minmax(0, 1fr); padding: var(--space-3) 0; gap: var(--space-3) var(--space-2); border-top: 1px solid var(--border-secondary); }
+  .history-results-table .ant-table-tbody > .ant-table-row > td { display: block; padding: 0; border: 0; }
+  .history-results-table .history-cell-year { grid-row: 1 / 3; }
+  .history-results-table .history-cell-podium { grid-column: 2 / -1; }
+  .history-results-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: var(--space-1); color: var(--text-secondary); font-size: var(--text-xs); }
+  .history-winner-name { display: none; }
+  .history-results, .history-risk { padding: var(--space-4); }
+  .history-stats { gap: var(--space-5); }
+  .history-stats > div { display: grid; gap: var(--space-2); }
+  .history-risk-label { align-items: start; flex-direction: column; gap: var(--space-2); }
+  .history-samples > summary { padding: var(--space-4); }
+  .history-samples-list { padding-inline: var(--space-4); }
+  .history-sample { grid-template-columns: 74px minmax(0, 1fr); gap: var(--space-2); }
+  .history-sample-tags { grid-column: 1 / -1; }
+}
