@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { importIndependently } from './fastf1-session-import.ts';
+import { databaseDiagnostic, importIndependently } from './fastf1-session-import.ts';
 import {
   hasCompleteSplitTelemetry,
   isCompleteFastF1Payload,
@@ -344,6 +344,13 @@ async function loadRows(files: string[], args: ParsedArgs) {
   );
 }
 
+let reportPath: string | undefined;
+async function writeReport(result: object) {
+  if (!reportPath) return;
+  await mkdir(path.dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, JSON.stringify({ generatedAt: new Date().toISOString(), ...result }, null, 2));
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -352,14 +359,19 @@ async function main() {
     return;
   }
 
+  if (args.season && !args.dryRun) {
+    reportPath = path.join(path.resolve(args.inputRoot), String(args.season), 'database-report.json');
+  }
   const files = await findPayloadFiles(args);
   if (!files.length) {
+    await writeReport({ imported: 0, failed: [], recovered: [] });
     console.log('No FastF1 session JSON files found to import.');
     return;
   }
 
   const rows = await loadRows(files, args);
   if (!rows.length) {
+    await writeReport({ imported: 0, failed: [], recovered: [] });
     console.log('No complete FastF1 session JSON files found to import.');
     return;
   }
@@ -374,19 +386,24 @@ async function main() {
   }
 
   const supabase = createSupabaseAdminClient();
-  const result = await importIndependently(rows, async (row) => {
-    const { error } = await supabase.from('fastf1_session_analytics')
-      .upsert(row, { onConflict: 'season,round,session' });
-    if (error) throw error;
+  const result = await importIndependently(rows, async (row, timeoutMs) => {
+    const { error, status } = await supabase.from('fastf1_session_analytics')
+      .upsert(row, { onConflict: 'season,round,session' })
+      .abortSignal(AbortSignal.timeout(timeoutMs));
+    if (error) throw { code: error.code, status };
   });
+  await writeReport(result);
   console.log(`Imported ${result.imported} FastF1 session analytics row(s).`);
+  if (result.recovered.length) console.info(JSON.stringify({ recoveredSessions: result.recovered }));
   if (result.failed.length) {
     console.error(JSON.stringify({ failedSessions: result.failed }));
     process.exitCode = 1;
   }
 }
 
-main().catch((error: unknown) => {
+main().catch(async (error: unknown) => {
+  const diagnostic = databaseDiagnostic(error);
+  await writeReport({ imported: 0, failed: [], recovered: [], fatal: diagnostic });
   if (
     typeof error === 'object'
     && error
@@ -400,6 +417,6 @@ main().catch((error: unknown) => {
     return;
   }
 
-  console.error(error instanceof Error ? error.message : error);
+  console.error(JSON.stringify({ databaseImportFailed: diagnostic }));
   process.exitCode = 1;
 });

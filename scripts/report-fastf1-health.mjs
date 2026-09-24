@@ -13,6 +13,11 @@ async function readJson(name, fallback) {
 const manifest = await readJson('manifest.json', { rounds: [] });
 const report = await readJson('export-report.json', { results: [] });
 const publication = await readJson('publication-report.json', { published: [], failed: [] });
+const database = await readJson('database-report.json', { imported: 0, failed: [], recovered: [] });
+const steps = Object.fromEntries(['restore', 'export', 'database', 'storage', 'verify'].map(step => {
+  const outcome = process.env[`FASTF1_${step.toUpperCase()}_OUTCOME`];
+  return [step, ['success', 'failure', 'skipped', 'cancelled'].includes(outcome) ? outcome : 'unknown'];
+}));
 const store = args.dryRun ? null : privateStore();
 const prefix = `health/${args.season}`;
 const name = `${args.round || 'all'}.json`;
@@ -29,7 +34,12 @@ health.season = args.season;
 health.scope = args.round || 'all';
 health.runId = process.env.GITHUB_RUN_ID || null;
 health.runAttempt = process.env.GITHUB_RUN_ATTEMPT || null;
-health.pipelineFailed = process.env.FASTF1_PIPELINE_FAILED === 'true' || !manifest.generatedAt || !report.generatedAt;
+health.steps = steps;
+health.database = database;
+health.pipelineFailed = process.env.FASTF1_PIPELINE_FAILED === 'true'
+  || Object.values(steps).includes('failure') || !manifest.generatedAt || !report.generatedAt
+  || !database.generatedAt || Boolean(database.fatal) || database.failed.length > 0
+  || publication.failed.length > 0 || (publication.rejected || []).length > 0;
 health.consecutiveRunFailures = health.pipelineFailed || Object.values(health.sessions).some((s) => s.consecutiveFailures > 0)
   ? (previous.consecutiveRunFailures || 0) + 1 : 0;
 health.publication = publication;
@@ -41,6 +51,19 @@ const lines = [
   '',
   `Checked: ${now}. Consecutive failing runs: ${health.consecutiveRunFailures}.`,
   `Storage published: ${publication.published.length}; failed: ${publication.failed.length}. Pipeline failure: ${health.pipelineFailed}.`,
+  `Database imported: ${database.imported}; failed: ${database.failed.length}; recovered after retry: ${database.recovered.length}.`,
+  '',
+  '| Pipeline step | Outcome |',
+  '| --- | --- |',
+  ...Object.entries(steps).map(([step, outcome]) => `| ${step} | ${outcome} |`),
+  '',
+  ...(!database.generatedAt ? ['Database report missing: inspect the database step log.', ''] : []),
+  ...(database.fatal ? [`Database import aborted: ${database.fatal.code}; HTTP ${database.fatal.status ?? '-'}.`, ''] : []),
+  '| Database session | Code | HTTP status (0 = transport failure) | Attempts |',
+  '| --- | --- | --- | --- |',
+  ...database.failed.map(s => `| ${s.key} | ${s.code} | ${s.status ?? '-'} | ${s.attempts} |`),
+  '',
+  ...database.recovered.map(s => `- Database recovered: ${s.key} after ${s.attempts} attempts.`),
   '',
   '| Session | Category | Consecutive failures | Missing since | Last complete snapshot |',
   '| --- | --- | --- | --- | --- |',
