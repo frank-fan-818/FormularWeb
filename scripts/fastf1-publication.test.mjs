@@ -6,6 +6,7 @@ import test from 'node:test';
 import { loadCompleteSessions, publishSessions, nextHealth } from './fastf1-publication.mjs';
 import { importIndependently } from './fastf1-session-import.ts';
 import { parse } from 'yaml';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const qualifying = { season: '2026', round: '13', session: 'Q', generatedAt: '2026-09-06T12:00:00Z',
   sessionResults: [{}], lapTimeSeries: [{}], tyreStrategies: [{}], qualifyingAnalysis: { bestLaps: [{}] } };
@@ -77,7 +78,7 @@ test('workflow publishes healthy sessions before strict verification and never m
     assert.equal(steps[index('health')].env[`FASTF1_${id.toUpperCase()}_OUTCOME`], '${{ steps.' + id + '.outcome }}');
   }
   assert.ok(steps.find(s => s.name === 'Upload sanitized diagnostics').with.path.includes('/database-report.json'));
-  const final = steps.at(-1);
+  const final = steps.find(s => s.name === 'Reject unresolved pipeline failures');
   for (const id of ['restore', 'export', 'database', 'storage', 'health', 'verify']) {
     assert.ok(final.if.includes(`steps.${id}.outcome == 'failure'`));
   }
@@ -85,4 +86,48 @@ test('workflow publishes healthy sessions before strict verification and never m
     assert.ok(steps[index(id)].run.includes('"$ROUND"'));
     assert.ok(steps[index(id)].run.includes('"$FASTF1_ROOT"'));
   }
+});
+
+test('runner failover repeats the full verified pipeline and fails closed when neither attempt passes', async () => {
+  const workflow = parse(await readFile(new URL('../.github/workflows/refresh-fastf1-analytics.yml', import.meta.url), 'utf8'));
+  const { refresh, recovery, result } = workflow.jobs;
+  assert.equal(refresh['continue-on-error'], true);
+  assert.equal(recovery['continue-on-error'], true);
+  assert.equal(recovery.needs, 'refresh');
+  assert.match(recovery.if, /!cancelled\(\)/);
+  assert.match(recovery.if, /needs.refresh.outputs.passed != 'true'/);
+  assert.deepEqual(recovery.steps, refresh.steps);
+  assert.match(refresh['runs-on'], /macos-15/);
+  assert.match(recovery['runs-on'], /ubuntu-24.04/);
+  assert.match(refresh.outputs.passed, /steps.result.outputs.passed/);
+  assert.equal(refresh.steps.at(-1).if, '${{ always() }}');
+  assert.match(refresh.steps.at(-1).env.PASSED, /job.status == 'success'/);
+  assert.match(refresh.steps.find(s => s.name === 'Upload sanitized diagnostics').with.name, /github.job/);
+  assert.deepEqual(result.needs, ['refresh', 'recovery']);
+  assert.equal(result.if, '${{ !cancelled() }}');
+  assert.equal(result['continue-on-error'], undefined);
+  assert.match(result.steps[0].run, /PRIMARY_PASSED.*!= "true".*RECOVERY_PASSED.*!= "true"/);
+  assert.match(result.steps[0].run, /exit 1/);
+});
+
+test('the actual final gate rejects exhausted recovery, missing outputs and non-boolean success', async () => {
+  const workflow = parse(await readFile(new URL('../.github/workflows/refresh-fastf1-analytics.yml', import.meta.url), 'utf8'));
+  // Git for Windows supplies bash; do not accidentally invoke the WSL launcher.
+  const bash = process.platform === 'win32'
+    ? path.resolve(path.dirname(execFileSync('where.exe', ['git.exe'], { encoding: 'utf8' }).trim().split(/\r?\n/)[0]), '../bin/bash.exe')
+    : 'bash';
+  const root = await mkdtemp(path.join(tmpdir(), 'fastf1-gate-'));
+  try {
+    for (const [primary, recovery, expected] of [
+      ['true', '', 0], ['false', 'true', 0], ['', 'true', 0],
+      ['false', 'false', 1], ['', '', 1], ['TRUE', 'success', 1], ['false', 'skipped', 1],
+    ]) {
+      const result = spawnSync(bash, ['--noprofile', '--norc', '-e', '-c', workflow.jobs.result.steps[0].run], {
+        encoding: 'utf8',
+        env: { ...process.env, PRIMARY_PASSED: primary, RECOVERY_PASSED: recovery,
+          GITHUB_STEP_SUMMARY: path.join(root, 'summary').replaceAll('\\', '/') },
+      });
+      assert.equal(result.status, expected, `${primary}/${recovery}: ${result.error || result.stderr}`);
+    }
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
