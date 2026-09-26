@@ -77,7 +77,7 @@ test('workflow publishes healthy sessions before strict verification and never m
     assert.equal(steps[index('health')].env[`FASTF1_${id.toUpperCase()}_OUTCOME`], '${{ steps.' + id + '.outcome }}');
   }
   assert.ok(steps.find(s => s.name === 'Upload sanitized diagnostics').with.path.includes('/database-report.json'));
-  const final = steps.at(-1);
+  const final = steps.find(s => s.name === 'Reject unresolved pipeline failures');
   for (const id of ['restore', 'export', 'database', 'storage', 'health', 'verify']) {
     assert.ok(final.if.includes(`steps.${id}.outcome == 'failure'`));
   }
@@ -85,4 +85,26 @@ test('workflow publishes healthy sessions before strict verification and never m
     assert.ok(steps[index(id)].run.includes('"$ROUND"'));
     assert.ok(steps[index(id)].run.includes('"$FASTF1_ROOT"'));
   }
+});
+
+test('runner failover repeats the full verified pipeline and fails closed when neither attempt passes', async () => {
+  const workflow = parse(await readFile(new URL('../.github/workflows/refresh-fastf1-analytics.yml', import.meta.url), 'utf8'));
+  const { refresh, recovery, result } = workflow.jobs;
+  assert.equal(refresh['continue-on-error'], true);
+  assert.equal(recovery['continue-on-error'], true);
+  assert.equal(recovery.needs, 'refresh');
+  assert.match(recovery.if, /!cancelled\(\)/);
+  assert.match(recovery.if, /needs.refresh.outputs.passed != 'true'/);
+  assert.deepEqual(recovery.steps, refresh.steps);
+  assert.match(refresh['runs-on'], /macos-15/);
+  assert.match(recovery['runs-on'], /ubuntu-24.04/);
+  assert.match(refresh.outputs.passed, /steps.result.outputs.passed/);
+  assert.equal(refresh.steps.at(-1).if, '${{ always() }}');
+  assert.match(refresh.steps.at(-1).env.PASSED, /job.status == 'success'/);
+  assert.match(refresh.steps.find(s => s.name === 'Upload sanitized diagnostics').with.name, /github.job/);
+  assert.deepEqual(result.needs, ['refresh', 'recovery']);
+  assert.equal(result.if, '${{ !cancelled() }}');
+  assert.equal(result['continue-on-error'], undefined);
+  assert.match(result.steps[0].run, /PRIMARY_PASSED.*!= "true".*RECOVERY_PASSED.*!= "true"/);
+  assert.match(result.steps[0].run, /exit 1/);
 });
