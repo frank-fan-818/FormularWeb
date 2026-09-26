@@ -6,6 +6,7 @@ import test from 'node:test';
 import { loadCompleteSessions, publishSessions, nextHealth } from './fastf1-publication.mjs';
 import { importIndependently } from './fastf1-session-import.ts';
 import { parse } from 'yaml';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const qualifying = { season: '2026', round: '13', session: 'Q', generatedAt: '2026-09-06T12:00:00Z',
   sessionResults: [{}], lapTimeSeries: [{}], tyreStrategies: [{}], qualifyingAnalysis: { bestLaps: [{}] } };
@@ -107,4 +108,26 @@ test('runner failover repeats the full verified pipeline and fails closed when n
   assert.equal(result['continue-on-error'], undefined);
   assert.match(result.steps[0].run, /PRIMARY_PASSED.*!= "true".*RECOVERY_PASSED.*!= "true"/);
   assert.match(result.steps[0].run, /exit 1/);
+});
+
+test('the actual final gate rejects exhausted recovery, missing outputs and non-boolean success', async () => {
+  const workflow = parse(await readFile(new URL('../.github/workflows/refresh-fastf1-analytics.yml', import.meta.url), 'utf8'));
+  // Git for Windows supplies bash; do not accidentally invoke the WSL launcher.
+  const bash = process.platform === 'win32'
+    ? path.resolve(path.dirname(execFileSync('where.exe', ['git.exe'], { encoding: 'utf8' }).trim().split(/\r?\n/)[0]), '../bin/bash.exe')
+    : 'bash';
+  const root = await mkdtemp(path.join(tmpdir(), 'fastf1-gate-'));
+  try {
+    for (const [primary, recovery, expected] of [
+      ['true', '', 0], ['false', 'true', 0], ['', 'true', 0],
+      ['false', 'false', 1], ['', '', 1], ['TRUE', 'success', 1], ['false', 'skipped', 1],
+    ]) {
+      const result = spawnSync(bash, ['--noprofile', '--norc', '-e', '-c', workflow.jobs.result.steps[0].run], {
+        encoding: 'utf8',
+        env: { ...process.env, PRIMARY_PASSED: primary, RECOVERY_PASSED: recovery,
+          GITHUB_STEP_SUMMARY: path.join(root, 'summary').replaceAll('\\', '/') },
+      });
+      assert.equal(result.status, expected, `${primary}/${recovery}: ${result.error || result.stderr}`);
+    }
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
