@@ -31,7 +31,13 @@ GitHub's existing failed-workflow notification settings deliver failure notifica
 
 ## Runner selection and acceptance
 
-Default runner: `ubuntu-latest`. Repository variable `FASTF1_RUNNER` can select a **trusted Linux runner label** after that runner is provisioned and tested. Use a dedicated label, installed bash/Node/Python prerequisites, and ensure the runner is not used for untrusted pull-request code. No runner migration or credentials changes occur automatically.
+Default runner: `macos-15`. The September 26 incident confirmed official timing requests returned 403 on GitHub Ubuntu while the mirror returned 404. The exact official paths returned 200 from the local network; the registered local collector was offline and `FASTF1_RUNNER` was unset. Repeated requests on the same hosted network could not recover the data.
+
+The scheduled workflow now makes at most two sequential attempts on independent hosted runner families. The first uses macOS; a failed attempt triggers Ubuntu 24.04 (or macOS if the first runner was overridden). Both run the same steps through a YAML anchor. The manual `primary_runner` input supports testing Ubuntu-to-macOS recovery. `FASTF1_RUNNER` remains available for an explicitly provisioned trusted Linux/macOS runner, but an offline self-hosted runner can remain queued: do not set this variable to the local collector.
+
+Each attempt gets a separate cache/export directory and diagnostic artifact. Recovery restores verified private snapshots and fetches only remaining eligible gaps. Publication is sequential and idempotent. The per-attempt jobs allow recovery, but their explicit `passed` output requires every restore/export/database/storage/verify/health step to succeed. The final required job fails unless at least one attempt passed; missing outputs, setup failures and two failed attempts cannot produce a green run. Cancellation does not launch recovery. No partial snapshot is accepted and no source error is relabeled as pending.
+
+An alternate hosted network improves recovery but cannot guarantee access to an external provider. If both attempts fail, inspect both artifacts and the source status. Do not disable the final gate. The health file records attempts (including the primary failure before a successful recovery), and a fully successful recovery resets consecutive failures for that scope. macOS hosted runners may have a higher billing multiplier than Linux on private repositories.
 
 After deployment, manually run the workflow with `season=2026`, `round=13`, then `round=14`, and finally without a round. Confirm no eligible gaps, successful database/Storage steps, zero consecutive session failures and a green final gate. Only a successful real CI run validates hosted-runner access; local unit tests cannot.
 

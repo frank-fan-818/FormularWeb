@@ -13,6 +13,13 @@ on:
         description: Optional round to repair
         required: false
         type: string
+      primary_runner:
+        description: Hosted runner for the first attempt (also used to exercise recovery)
+        required: false
+        type: choice
+        options:
+          - macos-15
+          - ubuntu-24.04
 
 permissions:
   contents: read
@@ -20,6 +27,10 @@ permissions:
 concurrency:
   group: refresh-fastf1-analytics
   cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
 
 env:
   NODE_VERSION: '24.13.0'
@@ -29,11 +40,15 @@ env:
 jobs:
   refresh:
     name: Export, verify, and publish to Supabase
-    runs-on: ${{ vars.FASTF1_RUNNER || 'ubuntu-latest' }}
+    # F1's timing source rejects GitHub's Ubuntu egress with HTTP 403.
+    # Use a hosted runner independent of the user's offline local collector.
+    runs-on: ${{ inputs.primary_runner || vars.FASTF1_RUNNER || 'macos-15' }}
     timeout-minutes: 90
+    continue-on-error: true
     outputs:
       season: ${{ steps.scope.outputs.season }}
-    steps:
+      passed: ${{ steps.result.outputs.passed }}
+    steps: &refresh-steps
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
@@ -89,7 +104,7 @@ jobs:
           fi
           echo "season=$season" >> "$GITHUB_OUTPUT"
           echo "round=$REQUESTED_ROUND" >> "$GITHUB_OUTPUT"
-          echo "FASTF1_ROOT=$RUNNER_TEMP/fastf1-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "FASTF1_ROOT=$RUNNER_TEMP/fastf1-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$GITHUB_JOB" >> "$GITHUB_ENV"
 
       - name: Test automation policies
         run: |
@@ -183,7 +198,7 @@ jobs:
         if: ${{ !cancelled() && steps.scope.outputs.season != '' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: fastf1-diagnostics-${{ steps.scope.outputs.season }}-${{ github.run_attempt }}
+          name: fastf1-diagnostics-${{ steps.scope.outputs.season }}-${{ github.run_attempt }}-${{ github.job }}
           path: |
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/export-report.json
             ${{ env.FASTF1_ROOT }}/${{ steps.scope.outputs.season }}/manifest.json
@@ -198,3 +213,45 @@ jobs:
         run: |
           echo "::error::FastF1 has unresolved fetch, publication or completeness failures. See the health summary and diagnostic artifact."
           exit 1
+
+      - name: Record verified attempt outcome
+        id: result
+        if: ${{ always() }}
+        env:
+          PASSED: ${{ job.status == 'success' && steps.restore.outcome == 'success' && steps.export.outcome == 'success' && steps.database.outcome == 'success' && steps.storage.outcome == 'success' && steps.verify.outcome == 'success' && steps.health.outcome == 'success' }}
+        run: echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
+
+  recovery:
+    name: Recover on an independent hosted runner
+    needs: refresh
+    if: ${{ !cancelled() && needs.refresh.outputs.passed != 'true' }}
+    runs-on: ${{ (inputs.primary_runner || vars.FASTF1_RUNNER || 'macos-15') == 'macos-15' && 'ubuntu-24.04' || 'macos-15' }}
+    timeout-minutes: 90
+    continue-on-error: true
+    outputs:
+      passed: ${{ steps.result.outputs.passed }}
+    # Repeat exactly the same validation/publication contract, with a fresh
+    # cache and restored complete snapshots. Never retry concurrently.
+    steps: *refresh-steps
+
+  result:
+    name: Require a verified FastF1 refresh
+    needs: [refresh, recovery]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Enforce final result
+        env:
+          PRIMARY_PASSED: ${{ needs.refresh.outputs.passed }}
+          RECOVERY_PASSED: ${{ needs.recovery.outputs.passed }}
+        run: |
+          if [ "$PRIMARY_PASSED" != "true" ] && [ "$RECOVERY_PASSED" != "true" ]; then
+            echo "::error::Neither runner completed a verified refresh. Inspect both diagnostic artifacts; missing data has not been accepted."
+            exit 1
+          fi
+          if [ "$PRIMARY_PASSED" == "true" ]; then
+            echo "FastF1 refresh passed on the primary runner." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "FastF1 refresh recovered on the alternate runner; all publication and completeness checks passed." >> "$GITHUB_STEP_SUMMARY"
+          fi
