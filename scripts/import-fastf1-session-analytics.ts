@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -7,6 +7,11 @@ import {
   hasCompleteSplitTelemetry,
   isCompleteFastF1Payload,
 } from './fastf1-payload-completeness.ts';
+
+// Match private Storage tooling: local server secrets and shared URL config can
+// live in separate files. CI-provided environment variables retain precedence.
+config({ path: '.env.local', quiet: true });
+config({ path: '.env', quiet: true });
 
 type FastF1SessionCode = 'R' | 'Q' | 'SQ' | 'SS' | 'S' | 'FP1' | 'FP2' | 'FP3';
 
@@ -169,7 +174,10 @@ function parseArgs(args: string[]): ParsedArgs {
 
     if (arg === '--help' || arg === '-h') {
       parsed.help = true;
+      continue;
     }
+    // Reject dropped npm flags and misspellings before defaulting to all seasons.
+    throw new Error('Unrecognized import argument. Use --help for supported flags.');
   }
 
   parsed.sessions = parsed.sessions.length ? [...new Set(parsed.sessions)] : DEFAULT_SESSIONS;

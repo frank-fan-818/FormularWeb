@@ -10,7 +10,22 @@ const importer = fileURLToPath(new URL('./import-fastf1-session-analytics.ts', i
 const reporter = fileURLToPath(new URL('./report-fastf1-health.mjs', import.meta.url));
 const fixture = new URL('./fixtures/fastf1-database-fetch.mjs', import.meta.url).href;
 
-for (const scenario of ['network', '503', '403', 'empty', 'invalid']) {
+for (const args of [['2026', '15', 'R'], ['--dryrun'], ['--season', '2026', '--unknown']]) {
+  test(`reject malformed import arguments before scanning or writing: ${args.join(' ')}`, async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'fastf1-args-'));
+    try {
+      const result = spawnSync(process.execPath, ['--import', import.meta.resolve('tsx'), importer, ...args], {
+        cwd: root, encoding: 'utf8', timeout: 10000,
+      });
+      assert.equal(result.status, 1, result.stdout + result.stderr);
+      assert.doesNotMatch(result.stdout, /Prepared|No FastF1|Imported|Dry run complete/);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+}
+
+for (const scenario of ['network', '503', '403', 'empty', 'invalid', 'env-files']) {
   test(`real database CLI and health summary: ${scenario}`, async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'fastf1-database-'));
     try {
@@ -26,6 +41,14 @@ for (const scenario of ['network', '503', '403', 'empty', 'invalid']) {
         SUPABASE_SERVICE_ROLE_KEY: 'test-only-key', FASTF1_PIPELINE_FAILED: 'false',
         FASTF1_DATABASE_OUTCOME: scenario === '403' || scenario === 'invalid' ? 'failure' : 'success',
         GITHUB_STEP_SUMMARY: path.join(root, 'summary.md') };
+      if (scenario === 'env-files') {
+        delete env.SUPABASE_URL;
+        delete env.VITE_SUPABASE_URL;
+        delete env.SUPABASE_SERVICE_ROLE_KEY;
+        delete env.DOTENV_CONFIG_PATH;
+        await writeFile(path.join(root, '.env'), 'VITE_SUPABASE_URL=https://example.supabase.co\n');
+        await writeFile(path.join(root, '.env.local'), 'SUPABASE_SERVICE_ROLE_KEY=test-only-key\n');
+      }
       const run = spawnSync(process.execPath, ['--import', import.meta.resolve('tsx'), '--import', fixture,
         importer, '--season', '2026', '--input', root, '--complete-only'], {
         cwd: root, env, encoding: 'utf8', timeout: 20000,
@@ -37,7 +60,7 @@ for (const scenario of ['network', '503', '403', 'empty', 'invalid']) {
       if (scenario === '403') {
         assert.deepEqual(database.failed, [{ key: '2026/1/FP2', code: '42501', status: 403, transient: false, attempts: 1 }]);
       } else if (scenario === 'invalid') assert.equal(database.fatal.code, 'database_error');
-      else if (scenario !== 'empty') assert.deepEqual(database.recovered, [{ key: '2026/1/FP2', attempts: 2 }]);
+      else if (['network', '503'].includes(scenario)) assert.deepEqual(database.recovered, [{ key: '2026/1/FP2', attempts: 2 }]);
       assert.doesNotMatch(JSON.stringify(database) + run.stdout + run.stderr, /private-.*detail|private-upstream-body/);
       await writeFile(path.join(directory, 'manifest.json'), JSON.stringify({ generatedAt: new Date().toISOString(), rounds: [] }));
       await writeFile(path.join(directory, 'export-report.json'), JSON.stringify({ generatedAt: new Date().toISOString(), results: [] }));

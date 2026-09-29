@@ -97,8 +97,8 @@ test('runner failover repeats the full verified pipeline and fails closed when n
   assert.match(recovery.if, /!cancelled\(\)/);
   assert.match(recovery.if, /needs.refresh.outputs.passed != 'true'/);
   assert.deepEqual(recovery.steps, refresh.steps);
-  assert.match(refresh['runs-on'], /macos-15/);
-  assert.match(recovery['runs-on'], /ubuntu-24.04/);
+  assert.match(refresh['runs-on'], /fastf1-collector/);
+  assert.equal(recovery['runs-on'], 'fastf1-collector');
   assert.match(refresh.outputs.passed, /steps.result.outputs.passed/);
   assert.equal(refresh.steps.at(-1).if, '${{ always() }}');
   assert.match(refresh.steps.at(-1).env.PASSED, /job.status == 'success'/);
@@ -108,6 +108,29 @@ test('runner failover repeats the full verified pipeline and fails closed when n
   assert.equal(result['continue-on-error'], undefined);
   assert.match(result.steps[0].run, /PRIMARY_PASSED.*!= "true".*RECOVERY_PASSED.*!= "true"/);
   assert.match(result.steps[0].run, /exit 1/);
+});
+
+test('workflow shell executes a script from a runner path containing spaces', async () => {
+  const workflow = parse(await readFile(new URL('../.github/workflows/refresh-fastf1-analytics.yml', import.meta.url), 'utf8'));
+  const bash = process.platform === 'win32'
+    ? path.resolve(path.dirname(execFileSync('where.exe', ['git.exe'], { encoding: 'utf8' }).trim().split(/\r?\n/)[0]), '../bin/bash.exe')
+    : 'bash';
+  const root = await mkdtemp(path.join(tmpdir(), 'fastf1 shell '));
+  try {
+    const script = path.join(root, 'step with spaces.sh');
+    await writeFile(script, 'printf "script-path-ok"\n');
+    for (const job of Object.values(workflow.jobs)) {
+      for (const step of job.steps.filter(s => s.run)) {
+        const shell = step.shell || job.defaults?.run?.shell || workflow.defaults.run.shell;
+        // Reproduce the runner's raw {0} substitution in its shell template.
+        const template = shell === 'bash' ? 'bash --noprofile --norc -e -o pipefail {0}' : shell;
+        const command = `"${bash.replaceAll('\\', '/')}"` + template.slice(4).replace('{0}', script.replaceAll('\\', '/'));
+        const result = spawnSync(bash, ['-c', command], { encoding: 'utf8' });
+        assert.equal(result.status, 0, `${step.name}: ${result.stderr}`);
+        assert.equal(result.stdout, 'script-path-ok');
+      }
+    }
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
 
 test('the actual final gate rejects exhausted recovery, missing outputs and non-boolean success', async () => {

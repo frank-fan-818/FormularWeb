@@ -14,11 +14,11 @@ on:
         required: false
         type: string
       primary_runner:
-        description: Hosted runner for the first attempt (also used to exercise recovery)
+        description: Runner for the first attempt (Ubuntu exercises local recovery)
         required: false
         type: choice
         options:
-          - macos-15
+          - fastf1-collector
           - ubuntu-24.04
 
 permissions:
@@ -30,7 +30,7 @@ concurrency:
 
 defaults:
   run:
-    shell: bash
+    shell: bash --noprofile --norc -e -o pipefail "{0}"
 
 env:
   NODE_VERSION: '24.13.0'
@@ -40,9 +40,9 @@ env:
 jobs:
   refresh:
     name: Export, verify, and publish to Supabase
-    # F1's timing source rejects GitHub's Ubuntu egress with HTTP 403.
-    # Use a hosted runner independent of the user's offline local collector.
-    runs-on: ${{ inputs.primary_runner || vars.FASTF1_RUNNER || 'macos-15' }}
+    # Both GitHub-hosted Ubuntu and macOS receive 403 from the timing source.
+    # The dedicated Windows collector is supervised on the user's network.
+    runs-on: ${{ inputs.primary_runner || vars.FASTF1_RUNNER || 'fastf1-collector' }}
     timeout-minutes: 90
     continue-on-error: true
     outputs:
@@ -75,7 +75,7 @@ jobs:
         run: python -m pip install --requirement requirements-fastf1.txt
 
       - name: Validate publish credentials
-        shell: bash
+        shell: bash --noprofile --norc -e -o pipefail "{0}"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -87,7 +87,7 @@ jobs:
 
       - name: Resolve refresh scope
         id: scope
-        shell: bash
+        shell: bash --noprofile --norc -e -o pipefail "{0}"
         env:
           REQUESTED_SEASON: ${{ inputs.season }}
           REQUESTED_ROUND: ${{ inputs.round }}
@@ -127,7 +127,7 @@ jobs:
       - name: Export completed analysis sessions
         id: export
         continue-on-error: true
-        shell: bash
+        shell: bash --noprofile --norc -e -o pipefail "{0}"
         env:
           SEASON: ${{ steps.scope.outputs.season }}
           ROUND: ${{ steps.scope.outputs.round }}
@@ -139,7 +139,7 @@ jobs:
       - name: Import every complete snapshot into Supabase
         id: database
         continue-on-error: true
-        shell: bash
+        shell: bash --noprofile --norc -e -o pipefail "{0}"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -222,10 +222,10 @@ jobs:
         run: echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
 
   recovery:
-    name: Recover on an independent hosted runner
+    name: Recover on the supervised FastF1 collector
     needs: refresh
     if: ${{ !cancelled() && needs.refresh.outputs.passed != 'true' }}
-    runs-on: ${{ (inputs.primary_runner || vars.FASTF1_RUNNER || 'macos-15') == 'macos-15' && 'ubuntu-24.04' || 'macos-15' }}
+    runs-on: fastf1-collector
     timeout-minutes: 90
     continue-on-error: true
     outputs:
@@ -253,5 +253,5 @@ jobs:
           if [ "$PRIMARY_PASSED" == "true" ]; then
             echo "FastF1 refresh passed on the primary runner." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "FastF1 refresh recovered on the alternate runner; all publication and completeness checks passed." >> "$GITHUB_STEP_SUMMARY"
+            echo "FastF1 refresh recovered on the supervised collector; all publication and completeness checks passed." >> "$GITHUB_STEP_SUMMARY"
           fi
