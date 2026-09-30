@@ -24,8 +24,20 @@ try {
     if (!$ownsMutex) { exit 0 }
 
     $gitCommand = (Get-Command git.exe -ErrorAction Stop).Source
-    $gitBin = [IO.Path]::GetFullPath((Join-Path (Split-Path $gitCommand) '..\bin'))
-    if (!(Test-Path -LiteralPath (Join-Path $gitBin 'bash.exe'))) {
+    $gitDirectory = Split-Path $gitCommand
+    $gitBin = $null
+    # Git Bash exposes mingw64/bin/git.exe; PowerShell may expose cmd/git.exe.
+    for ($level = 0; $level -lt 3 -and !$gitBin; $level++) {
+        foreach ($relative in @('bin\bash.exe', 'usr\bin\bash.exe')) {
+            $candidate = Join-Path $gitDirectory $relative
+            if (Test-Path -LiteralPath $candidate) {
+                $gitBin = Split-Path $candidate
+                break
+            }
+        }
+        $gitDirectory = Split-Path $gitDirectory
+    }
+    if (!$gitBin) {
         throw 'Git for Windows bash is required; the WSL bash launcher is not supported.'
     }
     $env:PATH = "$gitBin;$env:PATH"
