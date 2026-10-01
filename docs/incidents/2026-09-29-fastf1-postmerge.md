@@ -27,16 +27,30 @@ The importer now rejects unknown and positional arguments before scanning files 
 node --import tsx scripts/import-fastf1-session-analytics.ts --season 2026 --round 15 --session R --input <private-export-root> --complete-only --dry-run
 ```
 
-Existing uncommitted collector and dotenv changes were preserved. The additional argument guard and its tests remain local until separately committed and deployed.
+Existing uncommitted collector and dotenv changes were preserved. The argument guard and its tests are included in PR #72.
 
 ## Local validation
 
 - Build passed.
 - Frontend unit suite: 67 files, 384 tests passed.
-- Workflow verification: 42 tests passed; six workflow files validated.
+- Workflow verification: 44 tests passed; six workflow files validated.
 - Database CLI integration suite including argument rejection: 10 tests passed.
 - Private-snapshot race-analysis browser fixture: one passed, two intentionally skipped viewport cases. This is not a logged-in production browser check.
 
 ## Production acceptance
 
-Collector run [36590657024](https://github.com/frank-fan-818/FormularWeb/actions/runs/36590657024) was started after provisioning. Its result and production read-back must be recorded before declaring recovery.
+Collector run [36734942712](https://github.com/frank-fan-818/FormularWeb/actions/runs/36734942712) exported the missing race, imported five sessions and uploaded the complete race pair. Its first attempt rejected an immediate Storage read-back mismatch. The recovery attempt restored all five complete sessions, published and verified them, and finished with zero pipeline failures and zero consecutive failed runs.
+
+Production read-back confirmed the race snapshot generated at `2026-09-30T15:15:21.423708+00:00` has 22 results, 22 lap series and 22 telemetry drivers. Its database payload exactly matched private Storage and passed the shared completeness checks. Production data recovery is established; a logged-in production browser session was not inspected.
+
+The immediate mismatch followed a read of the old placeholder and disappeared on subsequent reads. This is consistent with a stale Storage response, but the transient response itself was not captured. PR #72 adds a fresh SDK `cacheNonce` and `cache: 'no-store'` to every private snapshot download, including each retry, while retaining byte-for-byte upload verification. A cache regression test failed before the change and passed afterward.
+
+Windows acceptance also exposed inherited pip mirror configuration and Git Bash executable discovery under `mingw64/bin`. The workflow now installs pinned Python dependencies through isolated pip on the official index, disables user-site imports and locates Bash from supported Git installation roots. Targeted dependency updates restored the security gate; npm audit reported zero vulnerabilities.
+
+Fresh round-15 run [36821437481](https://github.com/frank-fan-818/FormularWeb/actions/runs/36821437481), on cache-fix commit `66c53bd5`, passed on the first attempt. Production health showed all five steps successful, five complete sessions, five imported/published sessions and zero failures.
+
+Full-season run [36821708324](https://github.com/frank-fan-818/FormularWeb/actions/runs/36821708324), on code commit `651606f3`, also passed on the first attempt. It restored 75 complete sessions, skipped re-exporting those sessions, imported/published all 75 and passed strict verification for all eligible rounds. Future incomplete placeholders were rejected during restore and excluded by the schedule. Independent read-back of `health/2026/all.json` confirmed this run ID, zero failed sessions, `pipelineFailed: false` and zero consecutive failed runs.
+
+CI on `651606f3` passed security, lint, unit tests, types and Browser QA. The build job passed compilation, service-worker checks and bundle budgets but failed the Lighthouse LCP gate (five-run median 2.943 seconds versus 2.5 seconds). Local Lighthouse reproduced a 2.718-second median. The prior passing CI also had individual samples above the threshold; this suggests measurement variability but does not establish its cause. The threshold remains unchanged; final CI acceptance must be recorded separately.
+
+PR #72 must be merged before its workflow changes become scheduled behavior on the default branch. Successful acceptance runs do not guarantee collector availability during host/network outages or prevent future upstream restrictions.
