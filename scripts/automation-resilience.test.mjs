@@ -119,3 +119,22 @@ test('storage recovers reads and idempotent uploads but preserves permission err
   assert.equal((await writable.upload('key', 'bytes', { upsert: false })).error.statusCode, 503);
   assert.equal(uploads, 1);
 });
+
+test('private snapshot reads bypass an old response after an object is replaced', async () => {
+  let current = 'old snapshot';
+  const cache = new Map();
+  const reads = [];
+  const store = resilientStore({
+    download: async (key, options, parameters) => {
+      reads.push({ key, options, parameters });
+      const url = `${key}?${options?.cacheNonce || ''}`;
+      if (!cache.has(url)) cache.set(url, current);
+      return { data: cache.get(url) };
+    },
+  });
+  assert.equal((await store.download('2026/15/R.json')).data, 'old snapshot');
+  current = 'complete snapshot';
+  assert.equal((await store.download('2026/15/R.json')).data, 'complete snapshot');
+  assert.notEqual(reads[0].options.cacheNonce, reads[1].options.cacheNonce);
+  assert.equal(reads[1].parameters.cache, 'no-store');
+});

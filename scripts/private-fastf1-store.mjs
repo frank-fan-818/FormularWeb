@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { retryTransient } from './automation-retry.mjs';
 
 export function options(args = process.argv.slice(2)) {
@@ -38,7 +39,11 @@ export function resilientStore(store, retryOptions) {
   }, retryOptions).catch(error => ({ data: null, error }));
   return {
     list: (...args) => wrap(() => store.list(...args)),
-    download: (...args) => wrap(() => store.download(...args)),
+    // Restores, health reads and upload verification must see the latest object.
+    // A fresh URL also avoids a previously cached response immediately after upsert.
+    download: (key, options = {}, parameters = {}) => wrap(() => store.download(
+      key, { ...options, cacheNonce: randomUUID() }, { ...parameters, cache: 'no-store' },
+    )),
     upload: (...args) => args[2]?.upsert === true
       ? wrap(() => store.upload(...args)) : store.upload(...args),
   };
