@@ -7,13 +7,13 @@
   min-height: 42px;
   padding: 8px clamp(16px, 3vw, 32px);
   color: #d8e0e9;
-  background: var(--race-control-ink);
+  background: var(--surface-dark);
   border: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   text-align: left;
 }
-.race-weekend-signal:hover { background: color-mix(in srgb, var(--race-control-ink) 91%, var(--f1-red)); }
+.race-weekend-signal:hover { background: color-mix(in srgb, var(--surface-dark) 91%, var(--f1-red)); }
 
 .race-weekend-signal__state {
   display: inline-flex;

@@ -13,6 +13,8 @@ import { CanvasRenderer } from 'echarts/renderers';
 import * as echarts from 'echarts/core';
 import type { EChartsCoreOption, EChartsType } from 'echarts/core';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { applyChartTextTheme } from '@/utils/chartTheme';
+import { ChartDataView } from './ChartDataView';
 
 echarts.use([
   BarChart,
@@ -85,30 +87,41 @@ const EChartsPanel = ({ chartKey, height, option, ariaLabel }: EChartsPanelProps
 
   useEffect(() => {
     if (!visible) return;
-    const motionOption = typeof option === 'object' && option !== null
-      ? {
-          ...option,
-          animation: !reducedMotion,
-          animationDuration: reducedMotion ? 0 : 420,
-          animationDurationUpdate: reducedMotion ? 0 : 240,
-          animationEasing: 'cubicOut',
-          animationEasingUpdate: 'cubicOut',
-        }
-      : option;
-    chartInstanceRef.current?.setOption(motionOption as EChartsCoreOption, {
-      notMerge: true,
-      lazyUpdate: true,
-    });
+    const paint = () => {
+      const tokens = getComputedStyle(document.documentElement);
+      const themedOption = applyChartTextTheme(option, tokens.getPropertyValue('--text-primary').trim(), tokens.getPropertyValue('--text-secondary').trim());
+      const motionOption = typeof themedOption === 'object' && themedOption !== null
+        ? {
+            ...themedOption,
+            animation: !reducedMotion,
+            animationDuration: reducedMotion ? 0 : 420,
+            animationDurationUpdate: reducedMotion ? 0 : 240,
+            animationEasing: 'cubicOut',
+            animationEasingUpdate: 'cubicOut',
+          }
+        : themedOption;
+      chartInstanceRef.current?.setOption(motionOption as EChartsCoreOption, {
+        notMerge: true,
+        lazyUpdate: true,
+      });
+    };
+    paint();
+    const observer = new MutationObserver(paint);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
   }, [option, reducedMotion, visible]);
 
   return (
-    <div ref={containerRef} style={{ minHeight: height }} role="img" aria-label={accessibleLabel}>
+    <figure ref={containerRef} className="chart-panel" style={{ minHeight: height }}>
+      <div role="img" aria-label={accessibleLabel}>
       {visible ? (
         <div ref={chartElementRef} key={chartKey} style={{ height }} aria-hidden="true" />
       ) : (
         <div className="chart-viewport-placeholder" style={{ height }} aria-hidden="true" />
       )}
-    </div>
+      </div>
+      {visible ? <ChartDataView option={option} label={accessibleLabel} /> : null}
+    </figure>
   );
 };
 

@@ -386,13 +386,24 @@ export function useCachedData<T>(
   } = options;
   const { connected } = useNetworkStatus();
 
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [snapshot, setSnapshot] = useState<{ key: string; data: T } | null>(null);
+  const data = snapshot?.key === cacheKey ? snapshot.data : null;
+  const setData = useCallback((value: T) => setSnapshot({ key: cacheKey, data: value }), [cacheKey]);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<Error | null>(null);
   const [isStale, setIsStale] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const dataRef = useRef<T | null>(null);
   const requestGenerationRef = useRef(0);
+  const stateKeyRef = useRef(cacheKey);
+
+  useEffect(() => {
+    stateKeyRef.current = cacheKey;
+    dataRef.current = null;
+    setError(null);
+    setIsStale(false);
+    setUpdatedAt(null);
+  }, [cacheKey]);
 
   useEffect(() => {
     dataRef.current = data;
@@ -418,6 +429,7 @@ export function useCachedData<T>(
 
     try {
       const cached = await getCachedData();
+      if (generation !== requestGenerationRef.current) return;
       const shouldShowLoading = cached === null && dataRef.current === null;
 
       setLoading(shouldShowLoading);
@@ -463,7 +475,7 @@ export function useCachedData<T>(
     } finally {
       if (generation === requestGenerationRef.current) setLoading(false);
     }
-  }, [cacheKey, connected, fetchFn, getCachedData, refreshOnMount]);
+  }, [cacheKey, connected, fetchFn, getCachedData, refreshOnMount, setData]);
 
   useEffect(() => {
     if (!enabled) {
@@ -479,11 +491,11 @@ export function useCachedData<T>(
 
   return {
     data,
-    loading,
-    error,
+    loading: stateKeyRef.current === cacheKey ? loading : enabled,
+    error: stateKeyRef.current === cacheKey ? error : null,
     isOffline: !connected,
-    isStale,
-    updatedAt,
+    isStale: stateKeyRef.current === cacheKey && isStale,
+    updatedAt: stateKeyRef.current === cacheKey ? updatedAt : null,
     refetch: fetchData,
   };
 }

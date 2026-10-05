@@ -1,10 +1,26 @@
 # Security Risk Register
 
-Last reviewed: 2026-07-28
+Last reviewed: 2026-10-03
+
+## Current candidate: 0.20.12
+
+The project now declares `react-router-dom@^7.18.2`. The 2026-10-03 full
+dependency audit reported zero vulnerabilities. The React Router 6 assessment
+below is historical and is not a description of the current installed version.
+Keep the internal-route validation and same-origin CSP in place, and re-run the
+dependency audit for the exact release commit. Local Semgrep passed with zero
+findings on 754 source targets using all four project rules. The Windows
+certificate-store failure was resolved by running the installed scanner outside
+the sandbox. Downloaded runner toolchains and generated Lighthouse files are
+excluded alongside existing dependency/build exclusions; application rules and
+failure thresholds remain unchanged. A successful Linux CI scan is still
+required for the final release commit.
+
+## Historical assessment (2026-07-28; superseded)
 
 ## React Router 6 advisories
 
-The application currently uses `react-router-dom@6.30.4`. The npm advisory
+The application then used `react-router-dom@6.30.4`. The npm advisory
 database reports two moderate vulnerabilities for this line and does not offer
 a non-breaking patched 6.x release.
 

@@ -30,6 +30,13 @@
       "continue": true
     },
     {
+      "src": "/release.json",
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "continue": true
+    },
+    {
       "src": "/sw.js",
       "headers": {
         "Cache-Control": "no-cache, no-store, must-revalidate"

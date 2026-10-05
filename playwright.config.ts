@@ -43,6 +43,25 @@ export default defineConfig({
       },
     },
     {
+      name: 'desktop-firefox',
+      grep: /guest home preserves|keyboard users|account entry|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
+      use: {
+        ...devices['Desktop Firefox'],
+        viewport: { width: 1440, height: 900 },
+        serviceWorkers: 'block',
+      },
+    },
+    {
+      name: 'mobile-webkit',
+      grep: /guest home preserves|keyboard users|account entry|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
+      use: {
+        ...devices['iPhone 13'],
+        browserName: 'webkit',
+        viewport: { width: 375, height: 812 },
+        serviceWorkers: 'block',
+      },
+    },
+    {
       name: 'service-worker-chromium',
       grep: /service worker upgrades every long-lived tab/,
       use: {
