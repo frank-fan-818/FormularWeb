@@ -121,6 +121,83 @@ function fastF1Payload(session: 'S' | 'SQ') {
   };
 }
 
+test('chart data supports keyboard access, pagination and theme changes', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    const draws = new WeakMap<HTMLCanvasElement, { text: string; left: number; right: number }[]>();
+    const originalFill = CanvasRenderingContext2D.prototype.fillText;
+    const originalClear = CanvasRenderingContext2D.prototype.clearRect;
+    CanvasRenderingContext2D.prototype.clearRect = function (...args) {
+      draws.set(this.canvas, []);
+      return originalClear.apply(this, args);
+    };
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      const matrix = this.getTransform();
+      const width = this.measureText(text).width * matrix.a;
+      const anchor = x * matrix.a + y * matrix.c + matrix.e;
+      const left = anchor - (this.textAlign === 'center' ? width / 2 : ['right', 'end'].includes(this.textAlign) ? width : 0);
+      const values = draws.get(this.canvas) || [];
+      values.push({ text, left, right: left + width });
+      draws.set(this.canvas, values);
+      if (maxWidth === undefined) return originalFill.call(this, text, x, y);
+      return originalFill.call(this, text, x, y, maxWidth);
+    };
+    Object.assign(window, { chartAxisDraws: draws });
+  });
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/rest/v1/**', route => route.fulfill({ contentType: 'application/json', body: '[]' }));
+  await page.route('**/f1-api/**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
+    total: '2', RaceTable: { season: '2025', Races: [previousRace, race] }, StandingsTable: { StandingsLists: [] },
+  } }) }));
+  await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', route => {
+    const session = route.request().url().endsWith('/SQ.json') ? 'SQ' : 'S';
+    const payload = fastF1Payload(session);
+    payload.lapTimeSeries[0].laps = Array.from({ length: 43 }, (_, index) => ({ lapNumber: index + 1, lapTimeSeconds: 92 + index / 10 }));
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify(payload) });
+  });
+  await page.goto('/races/2/sprint?season=2025');
+  await page.getByRole('tab', { name: /^冲刺赛/ }).click();
+  const activePanel = page.getByRole('tabpanel', { name: '冲刺赛', exact: true });
+  await activePanel.locator('.chart-panel').first().scrollIntoViewIfNeeded();
+  const data = activePanel.locator('.chart-data-view').first();
+  await data.scrollIntoViewIfNeeded();
+  const summary = data.locator('summary');
+  await summary.focus();
+  await summary.press('Enter');
+  await expect(data.getByRole('table')).toBeVisible();
+  await expect(data.locator('tbody tr')).toHaveCount(20);
+  await expect(data.getByRole('button', { name: '上一页' })).toBeDisabled();
+  await data.getByRole('button', { name: '下一页' }).click();
+  await expect(data.locator('tbody tr')).toHaveCount(20);
+  await data.getByRole('button', { name: '下一页' }).click();
+  await expect(data.locator('tbody tr')).toHaveCount(3);
+  await expect(data.getByRole('button', { name: '下一页' })).toBeDisabled();
+  await expect(data.getByRole('combobox')).toHaveValue('0');
+  for (const theme of ['dark-mode', 'light-mode']) {
+    await page.evaluate(theme => {
+      document.documentElement.classList.remove('dark-mode', 'light-mode');
+      document.documentElement.classList.add(theme);
+    }, theme);
+    await expect(data.getByRole('table')).toBeVisible();
+    await expect.poll(() => data.getByRole('combobox').evaluate(element => getComputedStyle(element).backgroundColor))
+      .toBe(theme === 'dark-mode' ? 'rgb(30, 41, 59)' : 'rgb(255, 255, 255)');
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    const ticks = await activePanel.locator('.chart-panel').first().evaluate(panel => {
+      const draws = (window as unknown as { chartAxisDraws: WeakMap<HTMLCanvasElement, { text: string; left: number; right: number }[]> }).chartAxisDraws;
+      return [...panel.querySelectorAll('canvas')].flatMap(canvas => draws.get(canvas) || [])
+        .filter(item => /^\d+$/.test(item.text)).sort((a, b) => a.left - b.left);
+    });
+    expect(ticks.length).toBeGreaterThan(2);
+    for (let index = 1; index < ticks.length; index += 1) {
+      expect(ticks[index].left, `axis ticks ${ticks[index - 1].text} / ${ticks[index].text} overlap`).toBeGreaterThanOrEqual(ticks[index - 1].right);
+    }
+    await page.screenshot({ path: `artifacts/browser-qa/screenshots/chart-data-${theme}-${testInfo.project.name}.png`, animations: 'disabled' });
+  }
+  const dimensions = await page.locator('body').evaluate(body => ({ width: body.clientWidth, scroll: body.scrollWidth }));
+  expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width + 1);
+  expect(errors).toEqual([]);
+});
+
 test('Sprint classifications load without Supabase session discovery', async ({ page }, testInfo) => {
   const consoleErrors: string[] = [];
   const requestedFastF1Sessions: string[] = [];

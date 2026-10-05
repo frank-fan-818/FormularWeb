@@ -63,7 +63,16 @@ function createCriticalCssPlugin() {
         if (inlinedStylesheets === 0) {
           throw new Error('No entry stylesheets were found to inline as critical CSS')
         }
-        return transformedHtml
+        const accountEntryPreloads = Object.values(bundle)
+          .filter((entry): entry is OutputChunk => entry.type === 'chunk'
+            && /\/src\/(?:pages\/Login|components\/auth\/AuthShell)\.tsx$/.test(entry.facadeModuleId?.replace(/\\/g, '/') || ''))
+          .map((entry) => `<link rel="modulepreload" crossorigin href="/${entry.fileName}">`)
+          .join('\n')
+        const accountStyle = Object.values(bundle).find(entry => entry.type === 'asset' && /(?:^|\/)AuthShell-[\w-]+\.css$/.test(entry.fileName))
+        const stylePreload = accountStyle ? `<link rel="preload" as="style" href="/${accountStyle.fileName}">` : ''
+        const fontPreloads = ['F1UIAccountTitle-400']
+          .map(name => `<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/${name}.woff2">`).join('\n')
+        return transformedHtml.replace('</head>', `${accountEntryPreloads}\n${stylePreload}\n${fontPreloads}\n</head>`)
       },
     },
   }
@@ -129,6 +138,7 @@ async function trimCache(cache, maxEntries) {
   const keys = await cache.keys();
   await Promise.all(keys.slice(0, Math.max(0, keys.length - maxEntries)).map((key) => cache.delete(key)));
 }
+
 
 function requestClientBuildId(client) {
   return new Promise((resolve) => {
@@ -254,12 +264,29 @@ self.addEventListener('fetch', (event) => {
   }
 }
 
+function createReleaseIdentityPlugin(): Plugin {
+  return {
+    name: 'f1-release-identity',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const version = JSON.parse(readFileSync(path.resolve('package.json'), 'utf8')).version
+      const buildId = createHash('sha256').update(Object.values(bundle)
+        .sort((left, right) => left.fileName.localeCompare(right.fileName))
+        .map((entry) => `${entry.fileName}:${createHash('sha256').update(entry.type === 'chunk' ? entry.code : entry.source).digest('hex')}`).join('\n'))
+        .update(readFileSync(path.resolve('public/fonts/manifest.json')))
+        .update(version).digest('hex').slice(0, 12)
+      this.emitFile({ type: 'asset', fileName: 'release.json', source: JSON.stringify({ version, buildId }) })
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
     privateDataGuard(),
     createCriticalCssPlugin(),
     createServiceWorkerPlugin(),
+    createReleaseIdentityPlugin(),
   ],
   resolve: {
     alias: {
@@ -274,6 +301,23 @@ export default defineConfig({
         entryFileNames: 'assets/app-[hash].js',
         manualChunks(id) {
           const normalizedId = id.replace(/\\/g, '/')
+
+          // Keep small, shared bootstrap modules on one connection so cold
+          // mobile visits do not pay a request round-trip for each helper.
+          const bootstrapSources = [
+            '/src/router/routeModules.ts',
+            '/src/hooks/useAuthSession.ts',
+            '/src/hooks/authContext.ts',
+            '/src/utils/accessPolicy.ts',
+            '/src/utils/supabaseConfig.ts',
+            '/src/utils/logger.ts',
+            '/src/store/index.ts',
+          ]
+          if (bootstrapSources.some((source) => normalizedId.endsWith(source))) return 'app-runtime'
+
+          if (/\/node_modules\/(?:react|react-dom|react-router|react-router-dom|scheduler|zustand)\//.test(normalizedId)) {
+            return 'app-runtime'
+          }
 
           if (!normalizedId.includes('node_modules')) {
             return undefined

@@ -4,6 +4,24 @@ import { AuthProvider } from '@/components/auth/AuthProvider';
 import { SiteAccess, MemberAccess } from '@/components/auth/AccessGate';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { routeModules } from './routeModules';
+import { GUEST_ACCESS_KEY } from '@/utils/accessPolicy';
+import { hasStoredAuthSession } from '@/utils/supabaseConfig';
+
+// Fetch the first-visit UI alongside session discovery, not after its SDK.
+// Storage presence only selects a preload; AuthProvider still decides access.
+if (['/', '/login'].includes(window.location.pathname)) {
+  try {
+    const returningVisitor = sessionStorage.getItem(GUEST_ACCESS_KEY) === '1'
+      || hasStoredAuthSession();
+    if (window.location.pathname === '/login' || !returningVisitor) {
+      void Promise.all([routeModules.authShell(), routeModules.login()]).catch(() => {
+        // The normal route boundary handles errors when navigation occurs.
+      });
+    }
+  } catch {
+    // Disabled storage must not prevent normal session discovery or routing.
+  }
+}
 
 const Home = lazy(routeModules.home);
 const Layout = lazy(() => import('@/components/Layout'));

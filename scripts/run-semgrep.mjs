@@ -90,8 +90,11 @@ const result = run(semgrep, [
   '--exclude=node_modules',
   '--exclude=dist',
   '--exclude=coverage',
+  '--exclude=.lighthouseci',
   '--exclude=artifacts',
   '--exclude=.cache',
+  // Local runner toolchains are downloaded dependencies, not release source.
+  '--exclude=.tmp/fastf1-runner',
   '--exclude=.git',
   '--exclude=.vercel',
   '--exclude=.trae',

@@ -23,12 +23,17 @@
 - Complete `docs/browser-qa-checklist.md`
 - Check `/login`, password reset, `/privacy`, and an unknown route
 - Verify desktop 1440×900, tablet 768×1024, and mobile 375×812
+- Verify critical flows in desktop Firefox and mobile WebKit; complete a real iOS device check before claiming iOS support
+- Check chart data tables with keyboard navigation and dark/light themes
+- Run `npm run fonts:verify` after changing UI copy
 - Review console errors and failed first-party document/script/style/font requests
 - Confirm loading, empty, upstream-error, and offline shell states
 
 ## Operations
 
 - Confirm production security headers and cache rules
+- Follow `docs/production-runbook.md`; run `deployment:verify:live` against the intended release version
+- Configure production-health repository variables and verify failure notifications reach the assigned owner
 - Confirm rollback target and previous deploy are available
 - Review monitoring/error-log volume after release
 - Record accepted dependency advisories and their mitigations

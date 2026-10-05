@@ -4,6 +4,7 @@
  */
 
 :root {
+  color-scheme: light;
   /* ========================================
      Ferrari - Brand Colors
      ======================================== */
@@ -154,9 +155,12 @@
   /* ========================================
      Typography
      ======================================== */
-  --font-family: 'IBM Plex Sans', 'Noto Sans SC', 'Segoe UI', sans-serif;
-  --font-display: 'Bahnschrift', 'DIN Alternate', 'Arial Narrow', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-family: 'F1 UI Sans', 'F1 UI Hanzi', 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-display: 'F1 UI Display', 'F1 UI Hanzi', 'Bahnschrift', 'Arial Narrow', sans-serif;
+  --font-account-display: 'F1 UI Account Title', var(--font-display);
+  --font-mono: 'F1 UI Mono', 'F1 UI Hanzi', monospace;
+  --font-display-fallback: 'Bahnschrift', 'Arial Narrow', sans-serif;
+  --font-mono-fallback: ui-monospace, 'Consolas', monospace;
 
   /* Font Sizes */
   --text-xs: 12px;
@@ -231,6 +235,7 @@
    Light Mode (Default) - Warm Beige Theme
    ======================================== */
 .light-mode {
+  color-scheme: light;
   --bg-primary: #F7F7F5;
   --bg-secondary: #FFFFFF;
   --bg-tertiary: #F5F5F0;
@@ -246,6 +251,7 @@
 /* Auto dark mode via system preference (fallback before JS loads) */
 @media (prefers-color-scheme: dark) {
   :root:not(.dark-mode):not(.light-mode) {
+    color-scheme: dark;
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;
@@ -290,6 +296,7 @@
    Explicit Dark Mode Class (always wins)
    ======================================== */
 .dark-mode {
+  color-scheme: dark;
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;

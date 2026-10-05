@@ -232,7 +232,7 @@
   width: min(480px, 84vw);
   gap: var(--space-3);
   padding: var(--space-5);
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-fallback);
   background: var(--bg-card);
   border: 1px solid var(--border-secondary);
 }
@@ -244,7 +244,7 @@
 }
 
 .route-loading-signal strong {
-  font-family: var(--font-display);
+  font-family: var(--font-display-fallback);
   font-size: var(--text-xl);
 }
 

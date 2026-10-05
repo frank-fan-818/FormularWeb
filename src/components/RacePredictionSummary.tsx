@@ -44,5 +44,5 @@ function PredictionContent({ season, round, onOpen }: RacePredictionSummaryProps
 }
 
 export default function RacePredictionSummary(props: RacePredictionSummaryProps) {
-  return <MemberAccess feature="赛事预测"><PredictionContent {...props} /></MemberAccess>;
+  return <MemberAccess feature="赛事预测" compact><PredictionContent {...props} /></MemberAccess>;
 }

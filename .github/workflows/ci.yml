@@ -102,6 +102,7 @@ jobs:
       - name: Verify local F1 driver and constructor media
         run: npm run media:check
       - run: npm run test:coverage
+      - run: npm run fonts:verify
       - name: Upload coverage report
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
@@ -169,8 +170,8 @@ jobs:
       - name: Use pinned npm
         run: npm install --global npm@$NPM_VERSION
       - run: npm ci --include=dev
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install release browser matrix
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Build production bundle
         run: npm run build
       - name: Run desktop and mobile route smoke tests
