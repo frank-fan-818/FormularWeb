@@ -12,3 +12,15 @@ function isValidBrowserSupabaseUrl(value: string): boolean {
 
 export const isSupabaseConfigured = isValidBrowserSupabaseUrl(supabaseUrl)
   && supabaseAnonKey.length >= 20;
+
+// A preload hint only: cached credentials are still validated by AuthProvider.
+export function hasStoredAuthSession(): boolean {
+  if (!isSupabaseConfigured) return false;
+  try {
+    const key = `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`;
+    return Boolean(localStorage.getItem(key));
+  } catch {
+    // Unknown storage state keeps returning-user startup on the normal path.
+    return true;
+  }
+}

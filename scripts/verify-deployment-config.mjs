@@ -12,6 +12,7 @@ const apiProxyIndex = routes.findIndex((route) => route.src === '/f1-api/(.*)');
 const apiProxyRoute = routes[apiProxyIndex];
 const assetCacheRoute = routes.find((route) => route.src === '/assets/(.*)' && route.continue === true);
 const serviceWorkerRoute = routes.find((route) => route.src === '/sw.js' && route.continue === true);
+const releaseRoute = routes.find((route) => route.src === '/release.json' && route.continue === true);
 
 if (!securityRoute?.headers?.['Content-Security-Policy']
   || securityRoute.headers['X-Content-Type-Options'] !== 'nosniff') {
@@ -33,6 +34,9 @@ if (assetCacheRoute?.headers?.['Cache-Control'] !== 'public, max-age=31536000, i
 }
 if (serviceWorkerRoute?.headers?.['Cache-Control'] !== 'no-cache, no-store, must-revalidate') {
   failures.push('the service worker must never be served from an HTTP cache');
+}
+if (releaseRoute?.headers?.['Cache-Control'] !== 'no-store') {
+  failures.push('release identity must be served without an HTTP cache');
 }
 
 if (failures.length > 0) {

@@ -378,6 +378,7 @@ const LayoutComponent = () => {
 
   return (
     <div className="app-layout">
+      <a className="skip-to-content" href="#main-content">跳转到主要内容</a>
       {isMobile && mounted ? (
         <div
           className={`sidebar-overlay ${mobileSidebarOpen ? 'visible' : ''}`}
@@ -469,7 +470,7 @@ const LayoutComponent = () => {
           </Suspense>
         ) : null}
 
-        <main className="content">
+        <main className="content" id="main-content" tabIndex={-1}>
           <div className="content-inner">
             <div className="motion-route-shell" key={location.pathname}>
               <Outlet />

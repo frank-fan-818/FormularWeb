@@ -16,7 +16,10 @@ export const routeModules = {
   circuits: () => import('@/pages/Circuits'),
   circuitDetail: () => import('@/pages/CircuitDetail'),
   settings: () => import('@/pages/Settings'),
-  authShell: () => import('@/components/auth/AuthShell'),
+  authShell: () => Promise.all([
+    import('@/components/auth/AuthShell'),
+    import('@/components/auth/AuthCard'),
+  ]).then(([shell]) => shell),
   login: () => import('@/pages/Login'),
   register: () => import('@/pages/Register'),
   forgotPassword: () => import('@/pages/ForgotPassword'),

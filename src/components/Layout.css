@@ -497,6 +497,19 @@
   border-radius: var(--radius-lg);
 }
 
+.skip-to-content {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 2000;
+  padding: var(--space-3) var(--space-4);
+  color: var(--surface-dark-text);
+  background: var(--surface-dark);
+  border-radius: var(--radius-control);
+  transform: translateY(calc(-100% - var(--space-5)));
+}
+.skip-to-content:focus { transform: translateY(0); color: var(--surface-dark-text); }
+
 .content-inner {
   padding: var(--space-5);
   min-height: calc(100vh - 160px);

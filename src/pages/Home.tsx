@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import type { CSSProperties } from 'react';
+import { lazy, Suspense, type CSSProperties } from 'react';
 import DocumentHead from '@/components/DocumentHead';
-import RacePredictionSummary from '@/components/RacePredictionSummary';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
-import { formatRaceDateTimeFull, getRaceWeekendTimeline } from '@/utils/raceSchedule';
+import { formatRaceDateTimeFull, formatSessionDateLabel, getRaceWeekendTimeline } from '@/utils/raceSchedule';
 import { formatLocalDateTime } from '@/utils/dateTime';
 import { getTeamColor } from '@/utils/teamColors';
 import { buildSeasonSummary } from '@/utils/seasonSummary';
+
+const RacePredictionSummary = lazy(() => import('@/components/RacePredictionSummary'));
 
 const preloadRoute = (pathname: string) => {
   void import('@/utils/routePreload').then((module) => module.preloadRoute(pathname));
@@ -182,11 +183,13 @@ const Home = () => {
         </div>
 
         {focusRace ? (
-          <RacePredictionSummary
-            season={focusRace.season}
-            round={focusRace.round}
-            onOpen={() => navigate(focusRacePath)}
-          />
+          <Suspense fallback={<div className="home-prediction-strip is-loading" role="status">正在准备赛事预测…</div>}>
+            <RacePredictionSummary
+              season={focusRace.season}
+              round={focusRace.round}
+              onOpen={() => navigate(focusRacePath)}
+            />
+          </Suspense>
         ) : null}
 
         <dl className="home-core-facts">
@@ -238,7 +241,8 @@ const Home = () => {
                 <div key={session.key} className={`home-weekend-session is-${session.state} ${session.isNext ? 'is-next' : ''}`}>
                   <span>{session.code}</span>
                   <strong>{session.label}</strong>
-                  <time>{session.timeLabel}</time>
+                  <time dateTime={session.session?.date && session.session.time ? `${session.session.date}T${session.session.time}` : undefined}>{session.timeLabel}</time>
+                  <small>{formatSessionDateLabel(session.session ?? {})}</small>
                   <small>{session.state === 'live' ? TEXT.live : session.state === 'completed' ? '\u5df2\u7ed3\u675f' : session.isNext ? '\u4e0b\u4e00\u573a' : '\u672a\u5f00\u59cb'}</small>
                 </div>
               ))}

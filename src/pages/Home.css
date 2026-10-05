@@ -5,7 +5,7 @@
   overflow: hidden;
   margin-bottom: var(--space-6);
   color: #f8fafc;
-  background: var(--race-control-ink);
+  background: var(--surface-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: 3px solid var(--f1-red);
   border-radius: var(--radius-panel);
@@ -81,7 +81,42 @@
   font-size: clamp(36px, 5vw, 66px);
   line-height: 0.98;
   letter-spacing: -0.045em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
+
+.home-command-lead > div:first-child { min-width: 0; }
+
+.home-command-surface .member-access--compact {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-4) clamp(20px, 4vw, 40px);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border-dark);
+  border-radius: 0;
+}
+
+.home-command-surface .member-access__eyebrow { color: var(--surface-dark-text); }
+.home-command-surface .member-access h2 { margin: 0; color: var(--surface-dark-text); font-size: var(--text-base); }
+.home-command-surface .member-access p { color: var(--surface-dark-text); font-size: var(--text-xs); }
+.home-command-surface .member-access__action {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+  margin: 0;
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+.home-command-surface .member-access__action:hover { border-color: var(--surface-dark-text); }
+.home-command-surface :focus-visible { outline: 2px solid var(--surface-dark-text); outline-offset: 3px; }
 
 .home-command-lead p {
   display: flex;
@@ -191,6 +226,7 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
   background: transparent;
   border: 0;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .home-core-facts button:hover { color: #fff; }
@@ -249,8 +285,9 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 
 .home-weekend-session strong { color: #edf2f7; font-size: 12px; }
 .home-weekend-session time { color: #fff; font: 800 16px/1.2 var(--font-mono); }
-.home-weekend-session small { grid-column: 1 / -1; color: #7f8b9b; font-size: 10px; }
-.home-weekend-session.is-completed { opacity: 0.58; }
+.home-weekend-session small { grid-column: 1 / -1; color: inherit; font-size: var(--text-xs); }
+.home-weekend-session.is-completed strong,
+.home-weekend-session.is-completed time { color: inherit; }
 .home-weekend-session.is-next { border-color: rgba(255, 24, 1, 0.62); background: rgba(255, 24, 1, 0.09); }
 .home-weekend-session.is-live { border-color: var(--f1-red); }
 
@@ -276,12 +313,13 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
   font-weight: var(--font-semibold);
   cursor: pointer;
   white-space: nowrap;
+  min-height: 44px;
 }
 
 .standings-inline-link:focus-visible,
 .notice-retry:focus-visible,
 .home-error-state button:focus-visible {
-  outline: 3px solid var(--f1-red-glow);
+  outline: 2px solid var(--f1-red-text);
   outline-offset: 3px;
 }
 
@@ -486,7 +524,7 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 .standings-link-f1 {
   display: flex;
   align-items: center;
-  min-height: 24px;
+  min-height: 44px;
   border: none;
   background: transparent;
   padding: 0;
@@ -551,9 +589,10 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 
 .standings-module-state {
   display: grid;
+  grid-row: 1 / -1;
   place-items: center;
   min-height: 222px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   text-align: center;
 }
 
@@ -635,6 +674,8 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 }
 
 @media (max-width: 480px) {
+  .home-command-surface .member-access--compact { grid-template-columns: minmax(0, 1fr); }
+  .home-command-surface .member-access__action { grid-column: 1; grid-row: auto; justify-self: start; margin-top: var(--space-2); }
   .home-command-surface {
     --home-full-bleed-offset: calc(var(--space-4) + var(--space-2) + var(--space-2));
   }
