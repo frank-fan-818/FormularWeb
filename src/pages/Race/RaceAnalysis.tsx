@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -106,6 +106,9 @@ const RaceAnalysis = () => {
     enabled: telemetryEnabled && Boolean(fastF1Analytics),
     onActivate: loadFastF1Telemetry,
   });
+  useEffect(() => {
+    if (duelEnabled && selectedDuelDrivers.length === 2) loadFastF1Telemetry();
+  }, [duelEnabled, selectedDuelDrivers.length, loadFastF1Telemetry]);
 
   // ---- Memoised derived data ----
 

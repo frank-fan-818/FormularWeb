@@ -25,6 +25,7 @@ import { useRacePrimaryResults } from '@/hooks/race/useRacePrimaryResults';
 import { getRaceAggregateState, useRaceDiagnostics } from '@/hooks/race/useRaceDiagnostics';
 import { useAppStore } from '@/store';
 import { useAuthSession } from '@/hooks/useAuthSession';
+import { isFeatureEnabled } from '@/utils/featureFlags';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import type {
   FastF1RaceAnalytics,
@@ -205,7 +206,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     return isPastRace ? 'post' : 'pre';
   }, [isPastRace, raceInfo]);
   const activeWeekendMode = defaultWeekendMode;
-  const shouldLoadFastF1Qualifying = member && routeSection === 'qualifying';
+  const shouldLoadFastF1Qualifying = member && (routeSection === 'qualifying'
+    || (routeSection === 'race' && isFeatureEnabled('fastf1-duel')));
   const sprintQualifyingSessionCode = getPreferredSprintQualifyingSessionCode(season);
   const shouldLoadFastF1SprintQualifying = member && (routeSection === 'sprint'
     || (routeSection === 'qualifying' && deferredSessions.availableTabs.includes('sprintQualifying')));

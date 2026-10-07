@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import * as echarts from 'echarts/core';
+import { LinesChart, ScatterChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent } from 'echarts/components';
+import { SVGRenderer } from 'echarts/renderers';
 import type { FastF1RaceAnalytics, FastF1TelemetryDriver } from '@/types';
 import {
   buildTelemetryControlOption,
@@ -54,6 +58,29 @@ function makeAnalytics(drivers: FastF1TelemetryDriver[]): FastF1RaceAnalytics {
 }
 
 describe('telemetry heatmap option', () => {
+  it('places the full track inside the chart even without corner coordinates', () => {
+    echarts.use([LinesChart, ScatterChart, GridComponent, TooltipComponent, SVGRenderer]);
+    const driver = makeDriver('AAA', [100, 150, 200, 250]);
+    driver.positionSamples!.x = [-5000, -2000, 1000, 4000];
+    driver.positionSamples!.y = [2000, 5000, -3000, 1000];
+    const option = buildTelemetryHeatmapOption(makeAnalytics([driver]), [driver]);
+    const chart = echarts.init(null, undefined, { renderer: 'svg', ssr: true, width: 600, height: 360 });
+    try {
+      chart.setOption({ ...option, animation: false });
+      for (let i = 0; i < 4; i += 1) {
+        const pixel = chart.convertToPixel({ gridIndex: 0 }, [
+          driver.positionSamples!.x[i], driver.positionSamples!.y[i],
+        ]) as number[];
+        expect(pixel[0]).toBeGreaterThan(0);
+        expect(pixel[0]).toBeLessThan(600);
+        expect(pixel[1]).toBeGreaterThan(0);
+        expect(pixel[1]).toBeLessThan(360);
+      }
+    } finally {
+      chart.dispose();
+    }
+  });
+
   it('creates one lines series per driver instead of one series per segment', () => {
     const drivers = [
       makeDriver('AAA', [100, 150, 200, 250]),

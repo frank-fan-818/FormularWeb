@@ -556,6 +556,16 @@ function buildTelemetryHeatmapOption(
   if (!driverTracks.length) {
     return null;
   }
+  // ECharts lines stores endpoints in `coords`, which do not contribute to
+  // Cartesian axis extents. Derive bounds from the complete position channel.
+  const trackBounds = driverTracks.flatMap(({ points }) => points).reduce((bounds, point) => ({
+    minX: Math.min(bounds.minX, point.x),
+    maxX: Math.max(bounds.maxX, point.x),
+    minY: Math.min(bounds.minY, point.y),
+    maxY: Math.max(bounds.maxY, point.y),
+  }), { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity });
+  const padX = Math.max((trackBounds.maxX - trackBounds.minX) * 0.04, 1);
+  const padY = Math.max((trackBounds.maxY - trackBounds.minY) * 0.04, 1);
   const allSpeeds = driverTracks.flatMap(({ points }) => points.map((point) => point.speedKph));
   const minSpeed = allSpeeds.length ? Math.min(...allSpeeds) : 0;
   const maxSpeed = allSpeeds.length ? Math.max(...allSpeeds) : 1;
@@ -619,11 +629,15 @@ function buildTelemetryHeatmapOption(
       type: 'value',
       show: false,
       scale: true,
+      min: trackBounds.minX - padX,
+      max: trackBounds.maxX + padX,
     },
     yAxis: {
       type: 'value',
       show: false,
       scale: true,
+      min: trackBounds.minY - padY,
+      max: trackBounds.maxY + padY,
     },
     series: [
       ...heatSeries,

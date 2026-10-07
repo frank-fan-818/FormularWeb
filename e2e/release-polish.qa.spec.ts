@@ -38,6 +38,7 @@ test('guest home preserves hierarchy and readable contrast in both themes', asyn
     await expect(page.locator('html')).toHaveClass(new RegExp(`${theme}-mode`));
     const surface = page.locator('.home-command-surface');
     await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(surface).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(17, 24, 39)');
     const gate = surface.getByRole('region', { name: '赛事预测需要登录' });
     await expect(gate).toBeVisible();
     expect((await gate.boundingBox())!.height).toBeLessThan(190);
@@ -54,6 +55,24 @@ test('guest home preserves hierarchy and readable contrast in both themes', asyn
       return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
     });
     expect(contrast).toBeGreaterThanOrEqual(4.5);
+    const sidebar = page.locator('.sidebar');
+    const compact = (page.viewportSize()?.width || 1440) <= 768;
+    const menu = page.locator('.menu-toggle-btn');
+    if (compact) await menu.click();
+    await expect(sidebar).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(11, 13, 18)');
+    await expect(sidebar.locator('.sidebar-logo')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(255, 255, 255)');
+    await expect(sidebar.locator('.sidebar-nav-button.is-active')).toHaveCSS('color', theme === 'light' ? 'rgb(204, 19, 0)' : 'rgb(255, 255, 255)');
+    await sidebar.screenshot({ path: `artifacts/browser-qa/screenshots/sidebar-${theme}-${info.project.name}.png`, animations: 'disabled' });
+    if (compact) {
+      await menu.click();
+      await expect(sidebar).not.toHaveClass(/mobile-open/);
+    } else {
+      await menu.click();
+      await expect(sidebar).toHaveCSS('width', '80px');
+      await sidebar.screenshot({ path: `artifacts/browser-qa/screenshots/sidebar-collapsed-${theme}-${info.project.name}.png`, animations: 'disabled' });
+      await menu.click();
+      await expect(sidebar).toHaveCSS('width', '200px');
+    }
     const emptyStandings = page.locator('.standings-module-state');
     await emptyStandings.first().scrollIntoViewIfNeeded();
     expect((await page.locator('.standings-card-f1').first().boundingBox())!.height).toBeLessThan(320);

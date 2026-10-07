@@ -306,6 +306,68 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 .home-command-primary:hover { background: color-mix(in srgb, var(--f1-red-dark) 84%, #000); }
 .home-command-secondary:hover { border-color: rgba(255, 255, 255, 0.52); }
 
+/* The command center follows the active theme while retaining its race accents. */
+.light-mode .home-command-surface {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+  border-top-color: var(--f1-red);
+  box-shadow: var(--shadow-md);
+}
+
+.light-mode .home-command-surface::before {
+  background-image:
+    linear-gradient(var(--race-control-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--race-control-grid) 1px, transparent 1px);
+}
+
+.light-mode .home-command-surface :is(
+  .home-command-status span:last-child,
+  .home-command-lead h1,
+  .home-command-lead p strong,
+  .home-command-lead time,
+  .member-access h2,
+  .member-access__action,
+  .home-core-facts dd,
+  .home-weekend-heading h2,
+  .home-weekend-session > span,
+  .home-weekend-session strong,
+  .home-weekend-session time,
+  .home-command-secondary,
+  .home-prediction-strip,
+  .home-prediction-strip b
+) { color: var(--text-primary); }
+
+.light-mode .home-command-surface :is(
+  .home-command-status,
+  .home-command-lead p,
+  .member-access p,
+  .home-core-facts dt,
+  .home-core-facts span,
+  .home-core-facts button,
+  .home-weekend-heading span,
+  .home-weekend-session,
+  .home-prediction-strip small,
+  .home-prediction-strip > span,
+  .home-prediction-strip.is-loading,
+  .home-prediction-strip.is-empty
+) { color: var(--text-secondary); }
+
+.light-mode .home-command-surface .member-access__eyebrow { color: var(--f1-red-text); }
+.light-mode .home-command-surface :is(.home-command-status, .member-access--compact, .home-core-facts, .home-core-facts > div) { border-color: var(--border-secondary); }
+.light-mode .home-core-facts { background: var(--bg-tertiary); }
+.light-mode .home-command-surface :is(.home-command-secondary, .home-weekend-session, .home-prediction-strip) { background: var(--bg-secondary); border-color: var(--border-primary); }
+.light-mode .home-command-surface .home-prediction-strip { border-left-color: var(--f1-red); }
+.light-mode .home-command-surface :is(.home-command-secondary, .member-access__action):hover { color: var(--f1-red-text); border-color: var(--f1-red-text); background: var(--bg-tertiary); }
+.light-mode .home-core-facts button:hover { color: var(--f1-red-text); }
+.light-mode .home-command-surface .member-access__action { border-color: var(--border-primary); }
+.light-mode .home-command-surface :focus-visible { outline-color: var(--f1-red-text); }
+.light-mode .home-weekend-session.is-next { border-color: var(--f1-red); background: color-mix(in srgb, var(--f1-red) 5%, var(--bg-card)); }
+.light-mode .home-weekend-session.is-live { border-color: var(--f1-red); }
+.light-mode .home-weekend-session.is-completed :is(strong, time) { color: var(--text-secondary); }
+.light-mode button.home-prediction-strip:hover { background: var(--bg-tertiary); border-color: var(--f1-red-text); }
+.light-mode .home-command-surface .home-prediction-strip > span.is-stale { color: var(--accent-yellow); }
+
 .standings-inline-link {
   border: 0;
   background: transparent;
@@ -397,7 +459,7 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 
 .standings-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
   align-items: stretch;
 }
@@ -460,15 +522,19 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 
 .standings-list-f1 {
   display: grid;
-  grid-template-rows: repeat(3, minmax(74px, 1fr));
+  grid-template-rows: repeat(3, minmax(108px, 1fr));
   padding: 0 16px 12px;
+}
+
+.standings-list-f1:has(> .standings-module-state:only-child) {
+  grid-template-rows: minmax(222px, auto);
 }
 
 .standings-item-f1 {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: 13px 0;
+  padding: var(--space-2) 0;
   min-height: 74px;
   border-bottom: 1px solid var(--border-secondary);
   transition: background-color var(--transition-fast);
@@ -524,12 +590,15 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 .standings-link-f1 {
   display: flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 24px;
   border: none;
   background: transparent;
   padding: 0;
   text-align: left;
 }
+
+.standings-link-f1.standings-name-f1 { min-height: 32px; }
+.official-standings-card .rank-badge { flex-shrink: 0; }
 
 .standings-team-f1 {
   font-size: var(--text-xs);

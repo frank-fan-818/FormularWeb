@@ -60,29 +60,6 @@ export function RaceDriverDuelPanel({
             <h3 className="fastf1-chart-title">{t('driverDuel')}</h3>
             <p>{t('driverDuelDescription')}</p>
           </div>
-          {tyreSummaryItems.length ? (
-            <div className="duel-summary-pills" aria-label={t('driverDuel')}>
-              {tyreSummaryItems.map((item) => (
-                <span key={item.driver} className="duel-stint-pill">
-                  <strong>{item.driver}</strong>
-                  {item.stints.map((stint) => (
-                    <span key={`${item.driver}-${stint.stint}`} className="duel-stint-token">
-                      <span
-                        className="compound-swatch"
-                        style={{ backgroundColor: getCompoundColor(stint.compound) }}
-                      />
-                      <strong>{formatCompoundWithCode(season, round, stint.compound)}</strong>
-                      <em>{getTyreAgeLabel(stint)}</em>
-                      {formatSessionSeconds(stint.averagePaceSeconds)}
-                      {stint.previousDeltaSeconds !== null ? (
-                        <em>{formatSignedSeconds(stint.previousDeltaSeconds)}</em>
-                      ) : null}
-                    </span>
-                  ))}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
       )}
       extra={(
@@ -96,12 +73,11 @@ export function RaceDriverDuelPanel({
           <div className="driver-legend" aria-label={t('driverDuel')}>
             {driverItems.map((item) => {
               const isActive = selectedDrivers.includes(item.driver);
-              const isMuted = selectedDrivers.length === 2 && !isActive;
               return (
                 <button
                   key={item.driver}
                   type="button"
-                  className={`driver-legend-item${isActive ? ' is-active' : ''}${isMuted ? ' is-muted' : ''}`}
+                  className={`driver-legend-item${isActive ? ' is-active' : ''}`}
                   aria-pressed={isActive}
                   onClick={() => onToggleDriver(item.driver)}
                 >
@@ -117,6 +93,43 @@ export function RaceDriverDuelPanel({
 
           {duelReady ? (
             <div className="duel-grid">
+              <div className="duel-stint-panel">
+                <div className="telemetry-panel-title">{t('duelRacePace')}</div>
+                <div className="duel-stint-grid">
+                  {selectedDrivers.map((driver) => {
+                    const stints = tyreSummaryItems.find(item => item.driver === driver)?.stints || [];
+                    return (
+                      <section key={driver} className="duel-stint-driver" aria-label={`${driver} ${t('duelRacePace')}`}>
+                        <h4>{driver}</h4>
+                        {stints.length ? (
+                          <div className="duel-stint-scroll" tabIndex={0}>
+                            <table className="duel-stint-table">
+                              <thead><tr>
+                                <th>Stint</th><th>{t('laps')}</th><th>{t('tyreStrategy')}</th>
+                                <th>{t('stintPace')}</th><th>{t('degradation')}</th>
+                              </tr></thead>
+                              <tbody>{stints.map(stint => (
+                                <tr key={stint.stint}>
+                                  <td>{stint.stint}</td>
+                                  <td>L{stint.startLap}–{stint.endLap}</td>
+                                  <td><span className="duel-stint-compound">
+                                    <span className="compound-swatch" style={{ backgroundColor: getCompoundColor(stint.compound) }} />
+                                    {formatCompoundWithCode(season, round, stint.compound)}
+                                    <small>{getTyreAgeLabel(stint)}</small>
+                                  </span></td>
+                                  <td>{formatSessionSeconds(stint.averagePaceSeconds)}</td>
+                                  <td>{formatSignedSeconds(stint.degradationSeconds)}</td>
+                                </tr>
+                              ))}</tbody>
+                            </table>
+                          </div>
+                        ) : <p className="duel-data-message">{t('duelStintsUnavailable')}</p>}
+                      </section>
+                    );
+                  })}
+                </div>
+                <p className="duel-data-message">{t('duelPaceNote')}</p>
+              </div>
               {sectorGapItems.length ? (
                 <div className="duel-sector-panel">
                   <div className="telemetry-panel-title">{t('qualifying')} Gap</div>
@@ -130,7 +143,7 @@ export function RaceDriverDuelPanel({
                     ))}
                   </div>
                 </div>
-              ) : null}
+              ) : <p className="duel-data-message">{t('duelSectorsUnavailable')}</p>}
               {cornerRows.length ? (
                 <div className="duel-corner-panel">
                   <div className="telemetry-panel-title">{t('cornerSpeed')}</div>
@@ -157,10 +170,10 @@ export function RaceDriverDuelPanel({
                     ))}
                   </div>
                 </div>
-              ) : null}
+              ) : <p className="duel-data-message">{t('duelCornersUnavailable')}</p>}
             </div>
           ) : (
-            <div className="duel-empty-state">{t('driverDuel')}: {t('driver')} 2</div>
+            <div className="duel-empty-state">{t('duelSelectDrivers')}</div>
           )}
         </div>
       )}
