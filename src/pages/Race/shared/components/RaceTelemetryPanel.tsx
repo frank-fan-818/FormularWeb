@@ -139,7 +139,7 @@ export function RaceTelemetryPanel({
           {heatmapOption ? (
             <div className="telemetry-heatmap-panel">
               <div className="telemetry-panel-title">{t('speedHeatmap')}</div>
-              <Suspense fallback={<ChartLoadingBeacon label="Rendering control inputs" />}>
+              <Suspense fallback={<ChartLoadingBeacon label="Rendering track speed heatmap" />}>
                 <LazyEChartsPanel
                   chartKey={`fastf1-telemetry-heatmap-${season}-${round}-${driverKey}`}
                   height={isMobile ? 300 : 360}
@@ -152,7 +152,7 @@ export function RaceTelemetryPanel({
                 <span className="telemetry-heat-high" /> {t('speed')}
               </div>
             </div>
-          ) : null}
+          ) : <p className="duel-data-message">{t(selectedDrivers.length ? 'telemetryPositionsUnavailable' : 'telemetrySelectDrivers')}</p>}
 
           {controlOption ? (
             <>

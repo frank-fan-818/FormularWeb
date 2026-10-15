@@ -96,6 +96,25 @@
   border-radius: 0 3px 3px 0;
 }
 
+.light-mode .sidebar {
+  background:
+    linear-gradient(var(--race-control-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--race-control-grid) 1px, transparent 1px),
+    var(--bg-card);
+  background-size: 24px 24px, 24px 24px, auto;
+  border-right-color: var(--border-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.light-mode .sidebar-logo {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-secondary);
+}
+
+.light-mode .sidebar-nav-button { color: var(--text-secondary); }
+.light-mode .sidebar-nav-button:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.light-mode .sidebar-nav-button.is-active { color: var(--f1-red-text); background: color-mix(in srgb, var(--f1-red) 6%, var(--bg-card)); }
+
 .sidebar-nav-icon {
   width: 20px;
   height: 20px;
