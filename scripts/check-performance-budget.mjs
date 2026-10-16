@@ -36,6 +36,33 @@ if (initialJsGzipBytes > initialBudget) {
 const assetNames = await readdir(path.join(distDir, 'assets'));
 const manifest = JSON.parse(await readFile(path.join(distDir, '.vite', 'manifest.json'), 'utf8'));
 
+// Account CSS may move into a shared chunk when the frame is reused elsewhere.
+// Check the actual static graph so its first-paint preload survives refactors.
+const accountStyles = new Set();
+const accountChunks = new Set();
+function collectAccountStyles(key) {
+  if (accountChunks.has(key)) return;
+  accountChunks.add(key);
+  const entry = manifest[key];
+  if (!entry) throw new Error(`Missing account dependency in build manifest: ${key}`);
+  (entry.css || []).forEach(file => accountStyles.add(file));
+  (entry.imports || []).forEach(collectAccountStyles);
+}
+['src/pages/Login.tsx', 'src/components/auth/AuthShell.tsx'].forEach(collectAccountStyles);
+const preloadedStyles = new Set([...html.matchAll(/<link\b[^>]*>/gi)]
+  .map(([tag]) => /\brel="preload"/i.test(tag) && /\bas="style"/i.test(tag)
+    ? tag.match(/\bhref="\/([^"?]+)"/i)?.[1] : undefined)
+  .filter(Boolean));
+for (const file of accountStyles) {
+  const inlined = html.includes(`data-critical-css="${path.basename(file)}"`);
+  if (preloadedStyles.has(file) && inlined) {
+    throw new Error(`Inlined account CSS must not be downloaded again: ${file}`);
+  }
+  if (!preloadedStyles.has(file) && !inlined) {
+    throw new Error(`Account first-paint CSS is neither inlined nor preloaded: ${file}`);
+  }
+}
+
 async function routeStaticGzipBytes(sourceSuffix) {
   const routeEntry = Object.entries(manifest)
     .find(([key, value]) => key.endsWith(sourceSuffix) || value.src?.endsWith(sourceSuffix));

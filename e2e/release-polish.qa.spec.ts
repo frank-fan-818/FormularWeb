@@ -126,6 +126,19 @@ test('account entry keeps primary content visible from the first animation frame
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/release-login-${info.project.name}.png`, fullPage: true, animations: 'disabled' });
 });
 
+test('account entry paints before optional performance monitoring starts', async ({ page }) => {
+  await mockAuth(page);
+  const visibilityAtRequest: boolean[] = [];
+  await page.route('**/assets/performance-*.js', async route => {
+    visibilityAtRequest.push(await page.getByRole('heading', { name: '欢迎回来' }).isVisible());
+    await route.continue();
+  });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
+  await expect.poll(() => visibilityAtRequest.length).toBeGreaterThan(0);
+  expect(visibilityAtRequest.every(Boolean)).toBe(true);
+});
+
 test('account entry remains readable when self-hosted font delivery fails', async ({ page }, info) => {
   let fontRequests = 0;
   const errors: string[] = [];

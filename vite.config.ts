@@ -63,13 +63,30 @@ function createCriticalCssPlugin() {
         if (inlinedStylesheets === 0) {
           throw new Error('No entry stylesheets were found to inline as critical CSS')
         }
-        const accountEntryPreloads = Object.values(bundle)
+        const accountEntries = Object.values(bundle)
           .filter((entry): entry is OutputChunk => entry.type === 'chunk'
             && /\/src\/(?:pages\/Login|components\/auth\/AuthShell)\.tsx$/.test(entry.facadeModuleId?.replace(/\\/g, '/') || ''))
-          .map((entry) => `<link rel="modulepreload" crossorigin href="/${entry.fileName}">`)
-          .join('\n')
-        const accountStyle = Object.values(bundle).find(entry => entry.type === 'asset' && /(?:^|\/)AuthShell-[\w-]+\.css$/.test(entry.fileName))
-        const stylePreload = accountStyle ? `<link rel="preload" as="style" href="/${accountStyle.fileName}">` : ''
+        const accountScripts = new Set(accountEntries.map(entry => entry.fileName))
+        const accountStyles = new Set<string>()
+        const visited = new Set<string>()
+        const collectAccountStyles = (chunk: OutputChunk) => {
+          if (visited.has(chunk.fileName)) return
+          visited.add(chunk.fileName)
+          const metadata = (chunk as OutputChunk & { viteMetadata?: { importedCss: Set<string> } }).viteMetadata
+          if (metadata?.importedCss.size) accountScripts.add(chunk.fileName)
+          metadata?.importedCss.forEach(file => accountStyles.add(file))
+          chunk.imports.forEach(file => {
+            const dependency = bundle[file]
+            if (dependency?.type === 'chunk') collectAccountStyles(dependency)
+          })
+        }
+        accountEntries.forEach(collectAccountStyles)
+        const accountEntryPreloads = [...accountScripts]
+          .filter(file => !transformedHtml.includes(`href="/${file}"`))
+          .map(file => `<link rel="modulepreload" crossorigin href="/${file}">`).join('\n')
+        const stylePreload = [...accountStyles]
+          .filter(file => !transformedHtml.includes(`data-critical-css="${path.basename(file)}"`))
+          .map(file => `<link rel="preload" as="style" crossorigin href="/${file}">`).join('\n')
         const fontPreloads = ['F1UIAccountTitle-400']
           .map(name => `<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/${name}.woff2">`).join('\n')
         return transformedHtml.replace('</head>', `${accountEntryPreloads}\n${stylePreload}\n${fontPreloads}\n</head>`)
@@ -305,6 +322,10 @@ export default defineConfig({
           // Keep small, shared bootstrap modules on one connection so cold
           // mobile visits do not pay a request round-trip for each helper.
           const bootstrapSources = [
+            '/src/main.tsx',
+            '/src/i18n.ts',
+            '/src/components/auth/AccessGate.tsx',
+            '/src/api/fastf1AnalyticsCache.ts',
             '/src/router/routeModules.ts',
             '/src/hooks/useAuthSession.ts',
             '/src/hooks/authContext.ts',

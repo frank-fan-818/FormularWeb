@@ -7,7 +7,9 @@ export function clearPrivateData(): void {
   try {
     for (let index = localStorage.length - 1; index >= 0; index -= 1) {
       const key = localStorage.key(index);
-      if (key?.startsWith('f1-data-cache')) localStorage.removeItem(key);
+      if (key?.startsWith('f1-data-cache') || key?.startsWith('CapacitorStorage.f1-data-cache')) {
+        localStorage.removeItem(key);
+      }
     }
   } catch { /* Storage can be unavailable in privacy mode. */ }
   try {
@@ -26,7 +28,14 @@ export function clearPrivateData(): void {
   if (typeof caches !== 'undefined') {
     void caches.keys().then((names) => Promise.all(names.filter((name) => name.startsWith('f1-data-')).map((name) => caches.delete(name)))).catch(() => undefined);
   }
-  // Native fallback storage from older releases uses the same prefix.
+  // The Preferences web adapter uses localStorage (already purged above).
+  // Only native bridges need the plugin, avoiding its web-adapter waterfall.
+  const runtime = globalThis as typeof globalThis & {
+    Capacitor?: { isNativePlatform?: () => boolean };
+    androidBridge?: unknown;
+    webkit?: { messageHandlers?: { bridge?: unknown } };
+  };
+  if (!runtime.Capacitor?.isNativePlatform?.() && !runtime.androidBridge && !runtime.webkit?.messageHandlers?.bridge) return;
   void import('@capacitor/preferences').then(async ({ Preferences }) => {
     const { keys } = await Preferences.keys();
     await Promise.all(keys.filter((key) => key.startsWith('f1-data-cache')).map((key) => Preferences.remove({ key })));

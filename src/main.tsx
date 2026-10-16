@@ -22,11 +22,15 @@ const startPerformanceMonitoring = () => {
     });
 };
 
-if ('requestIdleCallback' in window) {
-  window.requestIdleCallback(startPerformanceMonitoring, { timeout: 2_000 });
-} else {
-  globalThis.setTimeout(startPerformanceMonitoring, 0);
-}
+// Web Vitals reads buffered entries. Give route content the initial render
+// window before fetching telemetry, even when startup briefly reports idle.
+globalThis.setTimeout(() => {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(startPerformanceMonitoring, { timeout: 2_000 });
+  } else {
+    startPerformanceMonitoring();
+  }
+}, 1_000);
 
 let loadedShellBuildId: string | null = null;
 
