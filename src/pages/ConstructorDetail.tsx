@@ -521,7 +521,7 @@ const ConstructorDetail = () => {
 
       <Card loading={!constructor && (seasonLoading || loading)} className="constructor-profile-shell">
         <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+          <div className="constructor-profile-identity">
             <ConstructorLogo constructorId={constructorId || ''} size={96} />
             <div className="constructor-profile-copy">
               <div className="constructor-profile-kicker">
@@ -529,10 +529,7 @@ const ConstructorDetail = () => {
                 <span>{constructor?.nationality || '-'}</span>
               </div>
               <h1 className="constructor-profile-name">{constructor?.name || '-'}</h1>
-              <div className="constructor-profile-tags">
-                <span>{currentSeason}</span>
-                <span>{TEXT.seasonKeyStats}</span>
-              </div>
+              <p className="constructor-profile-summary">{currentSeason} · {TEXT.seasonKeyStats}</p>
             </div>
           </div>
           <div className="constructor-profile-rank" style={{ color: teamColor }}>

@@ -50,16 +50,18 @@ const telemetry = {
   }), corners: [], cornerAnalysis: [],
 };
 
-async function installFixtures(page: Page, comparisonData = false) {
+async function installFixtures(page: Page, comparisonData = false, constructorFixtures = constructors, raceFixture = race) {
   await enterAsMember(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.route('**/f1-api/**', route => route.fulfill({ contentType: 'application/json',
-    body: JSON.stringify({ MRData: { total: /\/(results|qualifying)\.json/.test(new URL(route.request().url()).pathname) ? '3' : '1', RaceTable: { Races: [race] },
+    body: JSON.stringify({ MRData: { total: /\/(results|qualifying)\.json/.test(new URL(route.request().url()).pathname) ? '3' : '1', RaceTable: { Races: [raceFixture] },
+      DriverTable: { Drivers: drivers }, ConstructorTable: { Constructors: constructorFixtures },
+      CircuitTable: { Circuits: [race.Circuit] },
       StandingsTable: { StandingsLists: [{ season: '2026', round: '1',
-        DriverStandings: drivers.map((Driver, i) => ({ Driver, Constructors: [constructors[i === 2 ? 1 : 0]],
+        DriverStandings: drivers.map((Driver, i) => ({ Driver, Constructors: [constructorFixtures[i === 2 ? 1 : 0]],
           position: String(i + 1), points: String([320, 236, 214][i]), wins: '1' })),
-        ConstructorStandings: constructors.map((Constructor, i) => ({ Constructor, position: String(i + 1),
-          points: String([556, 405, 316][i]), wins: '1' })),
+        ConstructorStandings: constructorFixtures.map((Constructor, i) => ({ Constructor, position: String(i + 1),
+          points: String([556, 405, 316][i] ?? 0), wins: '1' })),
       }] }, SeasonTable: { Seasons: [{ season: '2026' }] } } }),
   }));
   await page.route('**/rest/v1/**', route => route.fulfill({ contentType: 'application/json', body: '[]' }));
@@ -88,6 +90,222 @@ test('populated standings keep compact aligned rows', async ({ page }, info) => 
   expect(Math.max(...heights)).toBeLessThan(120);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await section.screenshot({ path: `artifacts/browser-qa/screenshots/fixed-standings-${info.project.name}.png` });
+});
+
+test('roster cards remove driver tags and give season points clear hierarchy', async ({ page }, info) => {
+  await installFixtures(page, false, [...constructors, {
+    constructorId: 'aston_martin', name: 'Aston Martin Aramco Formula One Team', nationality: 'British', url: '#',
+  }]);
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    for (const [path, selector, expected] of [
+      ['/drivers', '.driver-lineup-card', ['320', '236', '214']],
+      ['/constructors', '.constructor-profile-card', ['556', '405', '316', '0']],
+    ] as const) {
+      await page.goto(path);
+      const cards = page.locator(selector);
+      await expect(cards).toHaveCount(expected.length);
+      await expect(cards.locator('.roster-season-score__points dd')).toHaveText([...expected]);
+      await expect(page.locator('.driver-card-meta, .driver-rank-pill, .constructor-season-chip')).toHaveCount(0);
+      for (const card of await cards.all()) {
+        const rank = (await card.locator('.roster-season-score dd').first().boundingBox())!;
+        const points = (await card.locator('.roster-season-score__points dd').boundingBox())!;
+        expect(Math.abs(points.y - rank.y)).toBeLessThanOrEqual(1);
+        expect(Math.abs(points.height - rank.height)).toBeLessThanOrEqual(1);
+        const labels = await card.locator('.roster-season-score dt').all();
+        const rankLabel = (await labels[0].boundingBox())!;
+        const pointsLabel = (await labels[1].boundingBox())!;
+        expect(Math.abs(rankLabel.y - pointsLabel.y)).toBeLessThanOrEqual(1);
+        expect(Math.abs(rankLabel.x - rank.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(pointsLabel.x - points.x)).toBeLessThanOrEqual(1);
+        expect(points.x).toBeGreaterThanOrEqual(rank.x + rank.width);
+        expect(await card.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      }
+      if (path === '/drivers') await expect(cards.locator('.driver-card-identity')).not.toContainText(['ANT', 'British']);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      await cards.first().screenshot({ path: `artifacts/browser-qa/screenshots/roster-${path.slice(1)}-${theme}-${info.project.name}.png`, animations: 'disabled' });
+      await cards.first().click();
+      await expect(page.locator(path === '/drivers' ? '.driver-profile-name' : '.constructor-profile-name')).toBeVisible();
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
+test('home overview names the leaders and shows a compact latest race name', async ({ page }, info) => {
+  const raceName = 'Formula 1 Singapore Airlines Singapore Grand Prix';
+  await installFixtures(page, false, constructors, { ...race, raceName,
+    Circuit: { ...race.Circuit, circuitId: 'marina_bay',
+      Location: { ...race.Circuit.Location, locality: 'Marina Bay', country: 'Singapore' } },
+  });
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    await page.goto('/');
+    const facts = page.locator('.home-core-facts');
+    const items = facts.locator(':scope > div');
+    await expect(items.nth(1).locator('dt')).toHaveText('车手榜领跑');
+    await expect(items.nth(1).locator('dd')).toHaveText('A. Antonelli');
+    await expect(items.nth(2).locator('dt')).toHaveText('车队榜领跑');
+    await expect(items.nth(2).locator('dd')).toHaveText('Mercedes');
+    await expect(items.nth(1).locator('span')).toHaveCount(0);
+    await expect(items.nth(2).locator('span')).toHaveCount(0);
+    const raceNameElement = items.nth(3).locator('dd');
+    await expect(raceNameElement).toHaveText('Singapore');
+    await expect(raceNameElement).toHaveCSS('white-space', 'normal');
+    expect(await raceNameElement.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    expect(await raceNameElement.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
+    const nameBox = (await raceNameElement.boundingBox())!;
+    const resultLink = items.nth(3).getByRole('button', { name: 'R1 · 查看结果', exact: true });
+    expect((await resultLink.boundingBox())!.y).toBeGreaterThanOrEqual(nameBox.y + nameBox.height - 1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await facts.screenshot({ path: `artifacts/browser-qa/screenshots/home-facts-${theme}-${info.project.name}.png`, animations: 'disabled' });
+    await resultLink.click();
+    await expect(page).toHaveURL(/\/races\/1\/results\?season=2026$/);
+  }
+  expect(errors).toEqual([]);
+});
+
+test('season overview keeps only essential facts while standings retain their detail', async ({ page }, info) => {
+  await installFixtures(page);
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    await page.goto('/seasons');
+    const facts = page.getByRole('region', { name: '赛季概览', exact: true });
+    await expect(facts.locator('strong')).toHaveText(['1/1', 'A. Antonelli', 'Mercedes', '3 / 3']);
+    await expect(facts.locator('small, time')).toHaveCount(0);
+    await expect(page.locator('.season-data-notice')).toHaveCount(0);
+    await expect(page.locator('.official-points-value')).toHaveText(['320', '236', '214']);
+    await page.getByRole('tab', { name: '车队', exact: true }).click();
+    await expect(page.locator('.ant-tabs-tabpane-active .official-points-value')).toHaveText(['556', '405', '316']);
+    expect(await facts.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await facts.screenshot({ path: `artifacts/browser-qa/screenshots/season-overview-${theme}-${info.project.name}.png`, animations: 'disabled' });
+  }
+  expect(errors).toEqual([]);
+});
+
+test('page mastheads follow the active theme and use consistent typography', async ({ page }, info) => {
+  test.setTimeout(60_000);
+  await installFixtures(page);
+  const errors: string[] = [];
+  const failures: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('requestfailed', request => {
+    if (request.failure()?.errorText !== 'net::ERR_ABORTED') failures.push(request.url());
+  });
+  const routes = [
+    ['/seasons', '.product-masthead'], ['/races', '.product-masthead'],
+    ['/drivers', '.product-masthead'], ['/constructors', '.product-masthead'],
+    ['/circuits', '.product-masthead'], ['/settings', '.product-masthead'],
+    ['/circuits/albert_park', '.product-masthead'],
+    ['/drivers/antonelli', '.driver-profile-hero'], ['/constructors/mercedes', '.constructor-profile-hero'],
+    ['/races/1/results?season=2026', '.race-command'],
+    ['/history/constructors/mercedes', '.history-hero-card'],
+  ];
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    for (const [path, selector] of routes) {
+      await page.goto(path);
+      const header = page.locator(selector);
+      await expect(header).toBeVisible();
+      await expect(header).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 41, 59)');
+      await expect(header).toHaveCSS('background-image', 'none');
+      await expect(header.locator('h1')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(226, 232, 240)');
+      if (selector === '.product-masthead') {
+        await expect(header.locator('.product-masthead__eyebrow')).toHaveCSS('font-family', /F1 UI Sans/);
+        const readable = await header.evaluate(element => {
+          const luminance = (color: string) => {
+            const channels = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
+              const channel = value / 255;
+              return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            });
+            return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+          };
+          const background = luminance(getComputedStyle(element).backgroundColor);
+          return [...element.querySelectorAll('h1, .product-masthead__eyebrow, .product-metric__value, .product-metric__label')].every(node => {
+            const foreground = luminance(getComputedStyle(node).color);
+            return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05) >= 4.5;
+          });
+        });
+        expect(readable).toBe(true);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      await header.screenshot({ path: `artifacts/browser-qa/screenshots/masthead-${path.split('?')[0].split('/').filter(Boolean).join('-')}-${theme}-${info.project.name}.png`, animations: 'disabled' });
+    }
+  }
+  expect(errors).toEqual([]);
+  expect(failures).toEqual([]);
+});
+
+test('profile typography keeps names separated and metadata readable', async ({ page }, info) => {
+  const profileConstructors = [...constructors, {
+    constructorId: 'aston_martin', name: 'Aston Martin Aramco Formula One Team', nationality: 'British', url: '#',
+  }];
+  await installFixtures(page, false, profileConstructors);
+  const errors: string[] = [];
+  const failures: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => {
+    if (['error', 'warning'].includes(message.type()) && message.text() !== 'Service Worker registration blocked by Playwright') errors.push(message.text());
+  });
+  page.on('requestfailed', request => {
+    if (request.failure()?.errorText !== 'net::ERR_ABORTED') failures.push(request.url());
+  });
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    for (const [index, driver] of drivers.entries()) {
+      await page.goto(`/drivers/${driver.driverId}`);
+      const name = page.locator('.driver-profile-name');
+      await expect(name.locator('span')).toHaveText(driver.givenName);
+      await expect(name.locator('strong')).toHaveText(driver.familyName);
+      const first = (await name.locator('span').boundingBox())!;
+      const last = (await name.locator('strong').boundingBox())!;
+      expect(last.y - (first.y + first.height)).toBeGreaterThanOrEqual(7);
+      const meta = page.locator('.driver-profile-meta');
+      await expect(meta.locator('dt')).toHaveCount(3);
+      await expect(meta.locator('dd')).toHaveText([driver.code, driver.nationality, '2026']);
+      await expect(meta.locator('.ant-tag')).toHaveCount(0);
+      expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      if (index === 0) await page.locator('.driver-profile-hero').screenshot({
+        path: `artifacts/browser-qa/screenshots/typography-driver-${theme}-${info.project.name}.png`,
+      });
+    }
+    for (const [index, constructor] of profileConstructors.entries()) {
+      await page.goto(`/constructors/${constructor.constructorId}`);
+      const name = page.locator('.constructor-profile-name');
+      await expect(name).toHaveText(constructor.name);
+      await expect(name).toHaveCSS('letter-spacing', /^(normal|0px)$/);
+      expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      await expect(page.locator('.constructor-profile-summary')).toContainText('2026');
+      await expect(page.locator('.constructor-profile-hero')).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 41, 59)');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      if (index === 0 || index === profileConstructors.length - 1) await page.locator('.constructor-profile-hero').screenshot({
+        path: `artifacts/browser-qa/screenshots/typography-constructor-${constructor.constructorId}-${theme}-${info.project.name}.png`,
+      });
+    }
+  }
+  expect(errors).toEqual([]);
+  expect(failures).toEqual([]);
 });
 
 test('driver duel displays stint comparison and telemetry paints the full track', async ({ page }, info) => {

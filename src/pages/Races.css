@@ -70,7 +70,7 @@
   font-family: var(--font-display);
   font-size: clamp(19px, 2vw, 27px);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-normal);
 }
 
 .race-calendar-copy p,

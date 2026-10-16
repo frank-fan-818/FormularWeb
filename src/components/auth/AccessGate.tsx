@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { getAccessDecision } from '@/utils/accessPolicy';
 import { hasStoredAuthSession } from '@/utils/supabaseConfig';
 import './AccessGate.css';
+
+const AuthSessionPending = lazy(() => import('./AuthSessionPending'));
 
 export function MemberAccess({ children, feature = '深度赛事分析', compact = false }: { children: ReactNode; feature?: string; compact?: boolean }) {
   const { session, loading } = useAuthSession();
@@ -32,7 +34,16 @@ export function SiteAccess() {
     if (!guest && !hasStoredAuthSession() && location.pathname === '/' && !location.search && !location.hash) {
       return <Navigate to="/login" replace state={{ from: '/' }} />;
     }
-    return <div className="member-access" role="status">正在确认登录状态…</div>;
+    return (
+      <Suspense fallback={(
+        <div className="auth-session-bootstrap" role="status" aria-live="polite">
+          <span aria-hidden="true">F1</span>
+          <p>正在确认登录状态…</p>
+        </div>
+      )}>
+        <AuthSessionPending />
+      </Suspense>
+    );
   }
   if (decision === 'login') return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
   return <Outlet />;

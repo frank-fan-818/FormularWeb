@@ -61,8 +61,8 @@
   min-height: 260px;
   padding: var(--space-7);
   border-top: 8px solid var(--f1-red);
-  background: var(--surface-strong);
-  color: var(--bg-card);
+  background: var(--bg-card);
+  color: var(--text-primary);
   overflow: hidden;
 }
 
@@ -71,10 +71,10 @@
   top: 22px;
   left: var(--space-7);
   z-index: -1;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
   content: 'TEAM OPERATIONS / CURRENT SEASON';
-  font: 700 10px/1 var(--font-mono);
-  letter-spacing: 0.16em;
+  font: var(--font-semibold) 10px/1 var(--font-family);
+  letter-spacing: var(--tracking-wide);
 }
 
 .constructor-profile-hero::after {
@@ -95,7 +95,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--text-secondary);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
   text-transform: uppercase;
@@ -108,29 +108,31 @@
   border-radius: 3px;
 }
 
+.constructor-profile-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.constructor-profile-identity > :first-child { flex-shrink: 0; }
+.constructor-profile-copy { min-width: 0; }
+
 .constructor-profile-name {
   margin: 0;
-  color: var(--bg-card);
-  font-size: clamp(3rem, 8vw, 6.5rem);
-  line-height: 0.92;
+  color: var(--text-primary);
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
   font-family: var(--font-display);
-  letter-spacing: -0.055em;
+  letter-spacing: var(--tracking-normal);
 }
 
-.constructor-profile-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
-.constructor-profile-tags span {
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: var(--radius-full);
-  padding: 4px 10px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+.constructor-profile-summary {
+  margin: var(--space-5) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
 
 .constructor-profile-rank {
@@ -161,7 +163,7 @@
   align-content: center;
 }
 
-.constructor-current-stat-card .stat-value { font-family: var(--font-display); font-size: clamp(24px, 3vw, 38px); letter-spacing: -0.04em; }
+.constructor-current-stat-card .stat-value { font-family: var(--font-display); font-size: clamp(24px, 3vw, 38px); letter-spacing: var(--tracking-normal); }
 
 .stats-row {
   display: grid;
@@ -295,6 +297,9 @@
   }
 
   .constructor-profile-hero::before { top: 20px; left: var(--space-5); }
+
+  .constructor-profile-identity { flex-direction: column; align-items: flex-start; }
+  .constructor-profile-name { font-size: clamp(2rem, 10vw, 3rem); }
 
   .constructor-profile-rank {
     justify-self: start;

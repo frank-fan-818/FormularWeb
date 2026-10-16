@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { enterAsGuest, mockAuth } from './auth-fixtures';
+import { enterAsGuest, enterAsMember, mockAuth } from './auth-fixtures';
 
 async function installSeason(page: Page) {
   await enterAsGuest(page);
@@ -38,6 +38,13 @@ test('guest home preserves hierarchy and readable contrast in both themes', asyn
     await expect(page.locator('html')).toHaveClass(new RegExp(`${theme}-mode`));
     const surface = page.locator('.home-command-surface');
     await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
+    const sessions = surface.locator('.home-weekend-session');
+    await expect(sessions).toHaveCount(5);
+    await expect(sessions.first().locator('time')).toHaveCSS('font-variant-numeric', 'lining-nums tabular-nums');
+    await expect(sessions.first().locator('time')).toHaveCSS('font-family', /F1 UI Sans/);
+    await surface.locator('.home-weekend-schedule').screenshot({
+      path: `artifacts/browser-qa/screenshots/typography-schedule-${theme}-${info.project.name}.png`, animations: 'disabled',
+    });
     await expect(surface).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(17, 24, 39)');
     const gate = surface.getByRole('region', { name: '赛事预测需要登录' });
     await expect(gate).toBeVisible();
@@ -174,12 +181,64 @@ for (const callback of ['?code=pending-test-callback', '#type=recovery&error=exp
     await page.route('**/assets/supabase-*.js', async route => { await sdkPending; await route.continue(); });
     try {
       await page.goto(`/${callback}`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('status')).toHaveText('正在确认登录状态…');
+      await expect(page.getByRole('status')).toContainText('正在确认登录状态');
+      await expect(page.locator('.auth-center')).toBeVisible();
+      await expect(page.locator('.auth-center__panel .auth-card')).toBeVisible();
       expect(new URL(page.url()).pathname).toBe('/');
       expect(new URL(page.url()).search + new URL(page.url()).hash).toBe(callback);
       await expect(page.locator('.home-command-surface')).toHaveCount(0);
     } finally {
       releaseSdk();
     }
+  });
+}
+
+for (const visitor of ['member', 'guest']) {
+  test(`returning ${visitor} sees a composed session confirmation while the SDK is pending`, async ({ page }, info) => {
+    if (visitor === 'member') await enterAsMember(page);
+    else { await enterAsGuest(page); await mockAuth(page); }
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), visitor === 'member' ? 'dark' : 'light');
+    await page.route('**/f1-api/**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      MRData: { total: '0', RaceTable: { Races: [] }, StandingsTable: { StandingsLists: [] }, SeasonTable: { Seasons: [] } },
+    }) }));
+    await page.route('**/rest/v1/**', route => route.fulfill({ contentType: 'application/json', body: '[]' }));
+    let releaseSdk: () => void = () => undefined;
+    const sdkPending = new Promise<void>(resolve => { releaseSdk = resolve; });
+    await page.route('**/assets/supabase-*.js', async route => { await sdkPending; await route.continue(); });
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    let releaseFrame: () => void = () => undefined;
+    const framePending = new Promise<void>(resolve => { releaseFrame = resolve; });
+    await page.route('**/assets/AuthSessionPending-*.js', async route => { await framePending; await route.continue(); });
+    try {
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      const bootstrap = page.locator('.auth-session-bootstrap');
+      await expect(bootstrap).toBeVisible();
+      const bootstrapBox = (await bootstrap.boundingBox())!;
+      expect(bootstrapBox.height).toBeGreaterThanOrEqual(page.viewportSize()!.height);
+      await page.screenshot({ path: `artifacts/browser-qa/screenshots/auth-session-bootstrap-${visitor}-${info.project.name}.png`, animations: 'disabled' });
+      releaseFrame();
+      const card = page.locator('.auth-center__panel .auth-card');
+      await expect(card).toBeVisible({ timeout: 2_000 });
+      await expect(page.getByRole('status')).toContainText('正在确认登录状态');
+      await expect(page.locator('.home-command-surface')).toHaveCount(0);
+      await expect(page.getByLabel('邮箱', { exact: true })).toHaveCount(0);
+      const box = (await card.boundingBox())!;
+      expect(box.width).toBeLessThanOrEqual(480);
+      expect(box.height).toBeGreaterThan(180);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      expect(new URL(page.url()).pathname).toBe('/');
+      await page.screenshot({ path: `artifacts/browser-qa/screenshots/auth-session-${visitor}-${info.project.name}.png`, animations: 'disabled' });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await expect(page.locator('.auth-session-pending__progress span')).toHaveCSS('animation-name', 'none');
+    } finally {
+      releaseFrame();
+      releaseSdk();
+    }
+    await expect(page.locator('.auth-session-pending')).toHaveCount(0);
+    await expect(page.locator('.home-command-surface')).toBeVisible();
+    expect(errors).toEqual([]);
   });
 }

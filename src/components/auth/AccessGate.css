@@ -1,7 +1,26 @@
 .member-access { padding: clamp(20px, 4vw, 40px); margin-block: 16px; border: 1px solid var(--border-primary); border-radius: var(--radius-lg); background: var(--bg-secondary); }
-.member-access__eyebrow { color: var(--f1-red-text); font: 700 11px var(--font-mono); letter-spacing: .12em; }
+.member-access__eyebrow { color: var(--f1-red-text); font: var(--font-semibold) var(--text-xs)/var(--leading-normal) var(--font-family); letter-spacing: var(--tracking-wide); }
 .member-access h2 { margin-block: 12px; color: var(--text-primary); font-size: clamp(18px, 3vw, 24px); }
 .member-access p { color: var(--text-secondary); line-height: 1.7; max-width: 640px; }
 .member-access__action { display: inline-block; margin-top: 8px; padding: 12px 20px; border-radius: var(--radius-md); color: white; background: var(--f1-red-dark); font-weight: 600; }
 .member-access__action:hover { color: white; background: var(--f1-red); }
 .member-access__action:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 4px; }
+
+.auth-session-bootstrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--bg-primary);
+}
+.auth-session-bootstrap > span {
+  padding: var(--space-2) var(--space-4);
+  color: var(--surface-dark-text);
+  background: var(--f1-red-dark);
+  font: var(--font-bold) var(--text-xl)/var(--leading-tight) var(--font-family);
+  border-radius: var(--radius-control);
+}
+.auth-session-bootstrap p { margin: 0; font-size: var(--text-sm); }

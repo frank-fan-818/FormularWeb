@@ -279,10 +279,12 @@
 
 .weekend-session-time {
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-family);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: var(--tracking-normal);
   font-size: 17px;
   font-weight: var(--font-bold);
-  line-height: 1;
+  line-height: var(--leading-normal);
   white-space: nowrap;
 }
 

@@ -106,16 +106,16 @@
 .auth-card__eyebrow {
   display: block;
   color: var(--f1-red-light);
-  font: 700 11px/1 var(--font-mono);
-  letter-spacing: 0.16em;
+  font: var(--font-semibold) var(--text-xs)/var(--leading-normal) var(--font-family);
+  letter-spacing: var(--tracking-wide);
 }
 .auth-center__brand-copy h1 {
   margin: 22px 0 26px;
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(52px, 6.2vw, 92px);
-  line-height: 0.92;
-  letter-spacing: -0.055em;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
 }
 .auth-center__brand-copy p { max-width: 520px; color: #aab1bd; font-size: 16px; line-height: 1.8; }
 .auth-center__signals {
@@ -153,7 +153,7 @@
   font-family: var(--font-account-display);
   font-size: clamp(30px, 3vw, 40px);
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: var(--tracking-normal);
 }
 .auth-card__header p { margin: 0; font-size: 14px; line-height: 1.7; }
 .auth-card__eyebrow { color: var(--f1-red-text); }
@@ -235,6 +235,43 @@
   overflow-wrap: anywhere;
 }
 .auth-card__loading { min-height: 180px; display: grid; place-items: center; }
+
+.auth-session-pending .auth-card__header { margin-bottom: var(--space-6); }
+.auth-session-pending .auth-card__header h2 {
+  font-family: var(--font-family);
+  font-size: clamp(var(--text-2xl), 3vw, var(--text-3xl));
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+}
+.auth-session-pending__progress {
+  height: var(--space-1);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--border-secondary);
+}
+.auth-session-pending__progress span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--f1-red);
+}
+.auth-session-pending__hint {
+  margin: var(--space-3) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .auth-session-pending__progress span {
+    animation: auth-session-progress var(--motion-duration-ambient) var(--motion-ease-standard) infinite;
+  }
+}
+@keyframes auth-session-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(350%); }
+}
+
 .auth-center__footer {
   width: min(100%, 480px);
   margin: 36px auto 0;

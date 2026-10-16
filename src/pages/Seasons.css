@@ -215,36 +215,25 @@
   background: var(--border-secondary);
 }
 
-.championship-facts > div,
-.championship-facts > time {
+.championship-facts > div {
   min-width: 0;
   padding: var(--space-4);
   background: var(--bg-card);
 }
 
-.championship-facts span,
-.championship-facts time {
+.championship-facts span {
   color: var(--text-secondary);
   font-size: var(--text-xs);
 }
 
 .championship-facts strong {
   display: block;
-  margin: var(--space-1) 0;
+  margin: var(--space-1) 0 0;
   overflow: hidden;
   color: var(--text-primary);
   font-size: var(--text-lg);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.championship-facts small {
-  color: var(--text-tertiary);
-}
-
-.championship-facts > time {
-  grid-column: 1 / -1;
-  padding-block: var(--space-2);
 }
 
 .official-season-tabs .ant-tabs-nav {
@@ -443,6 +432,12 @@
   color: var(--f1-red-dark);
   font-weight: var(--font-semibold);
   cursor: pointer;
+}
+
+.season-data-notice time {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
 }
 
 .season-empty-state {

@@ -639,7 +639,7 @@ const DriverDetail = () => {
       ) : (
       <div className="driver-profile-shell">
         <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+          <div className="driver-profile-identity">
             <DriverAvatar driverId={driver?.driverId || resolvedDriverId || driverId || ''} size={96} />
             <div className="driver-profile-copy">
               <div className="driver-profile-kicker">
@@ -650,11 +650,11 @@ const DriverDetail = () => {
                 <span>{driver?.givenName || '-'}</span>
                 <strong>{driver?.familyName || ''}</strong>
               </h1>
-              <div className="driver-profile-tags">
-                {driver?.code ? <Tag color="default">{driver.code}</Tag> : null}
-                <Tag color="default">{driver?.nationality || '-'}</Tag>
-                <Tag color="default">{currentSeason}</Tag>
-              </div>
+              <dl className="driver-profile-meta">
+                {driver?.code ? <div><dt>{TEXT.code}</dt><dd>{driver.code}</dd></div> : null}
+                <div><dt>{TEXT.nationality}</dt><dd>{driver?.nationality || '-'}</dd></div>
+                <div><dt>{TEXT.season}</dt><dd>{currentSeason}</dd></div>
+              </dl>
             </div>
           </div>
           <div className="driver-profile-number" style={{ color: teamColor }}>

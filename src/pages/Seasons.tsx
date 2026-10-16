@@ -195,33 +195,31 @@ const Seasons = () => {
         title={<>{currentSeason}<br />STANDINGS</>}
       />
 
-      <section className="championship-facts" aria-label="冠军形势">
+      <section className="championship-facts" aria-label="赛季概览">
         <div>
           <span>赛季进度</span>
           <strong>{seasonSummary.completedRounds}/{seasonSummary.totalRounds || '--'}</strong>
-          <small>{seasonSummary.remainingRounds} 站未完成</small>
         </div>
         <div>
-          <span>车手榜</span>
+          <span>车手榜领跑</span>
           <strong>{seasonSummary.driverLeader ? `${seasonSummary.driverLeader.Driver.givenName[0]}. ${seasonSummary.driverLeader.Driver.familyName}` : '--'}</strong>
-          <small>{seasonSummary.driverLeader ? `${seasonSummary.driverLeader.points} PTS · ${seasonSummary.driverLeader.wins} 胜${seasonSummary.driverGap === null ? '' : ` · +${seasonSummary.driverGap}`}` : '--'}</small>
         </div>
         <div>
-          <span>车队榜</span>
+          <span>车队榜领跑</span>
           <strong>{seasonSummary.constructorLeader?.Constructor.name || '--'}</strong>
-          <small>{seasonSummary.constructorLeader ? `${seasonSummary.constructorLeader.points} PTS · ${seasonSummary.constructorLeader.wins} 胜${seasonSummary.constructorGap === null ? '' : ` · +${seasonSummary.constructorGap}`}` : '--'}</small>
         </div>
         <div>
-          <span>参赛规模</span>
+          <span>车手 / 车队</span>
           <strong>{driverStandings.length} / {constructorStandings.length}</strong>
-          <small>{driverStandings.length} 位车手 · {constructorStandings.length} 支车队</small>
         </div>
-        {updatedAt ? <time>更新于 {formatLocalDateTime(updatedAt)}</time> : null}
       </section>
 
       {(isStale || (error && (driverStandings.length > 0 || constructorStandings.length > 0))) ? (
         <div className="season-data-notice" role="status">
-          <span>{TEXT.stale}</span>
+          <span>
+            {TEXT.stale}
+            {updatedAt ? <time>更新于 {formatLocalDateTime(updatedAt)}</time> : null}
+          </span>
           <button type="button" onClick={refetch}>{TEXT.retry}</button>
         </div>
       ) : null}

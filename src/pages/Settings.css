@@ -39,7 +39,7 @@
 
 .settings-card:last-child { grid-column: 1 / -1; }
 .settings-card .ant-card-head { min-height: 58px; background: var(--race-control-panel); border-bottom-color: var(--border-secondary); }
-.settings-card .ant-card-head-title { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.02em; }
+.settings-card .ant-card-head-title { font-family: var(--font-display); font-size: 17px; letter-spacing: var(--tracking-normal); }
 
 /* Setting Row: label on left, control on right */
 .setting-row {
