@@ -12,6 +12,7 @@ import { useDriverStandingsCached, useSeasonRacesCached } from '@/hooks';
 import { usePointsComparison } from '@/hooks/usePointsComparison';
 import { PointsComparisonButton, PointsComparisonControls } from '@/components/charts/PointsComparisonControls';
 import { getComparisonChartOption } from '@/utils/pointsComparison';
+import { formatShortRaceName } from '@/utils/raceDisplayName';
 import { useAppStore } from '@/store';
 import type {
   BestFinishSummary,
@@ -453,7 +454,7 @@ const DriverDetail = () => {
     });
 
     seasonRaceResults.forEach((race) => {
-      raceNames.push(race.raceName.replace(' Grand Prix', ''));
+      raceNames.push(formatShortRaceName(race));
       let raceTotalPoints = 0;
 
       if (race.Results && race.Results.length > 0) {
@@ -726,6 +727,7 @@ const DriverDetail = () => {
           {seasonRaceResults.length > 0 || comparison.data ? (
             <div
               className="chart-scroll-container"
+              aria-busy={comparison.loading}
               ref={chartContainerRef}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}

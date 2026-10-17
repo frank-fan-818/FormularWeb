@@ -5,6 +5,14 @@
 .points-comparison-picker select:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 2px; }
 .points-comparison-round { margin-left: auto; color: var(--text-secondary); font-size: var(--text-sm); }
 .points-comparison-hint { margin: var(--space-3) 0 0; color: var(--text-secondary); font-size: var(--text-sm); }
+.points-comparison-loading { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); padding: var(--space-3) var(--space-4); color: var(--text-primary); background: var(--bg-secondary); border-left: 3px solid var(--f1-red); border-radius: var(--radius-control); font-size: var(--text-sm); }
+.points-comparison-loading span { color: var(--text-secondary); }
+.points-comparison-spinner { width: var(--space-4); height: var(--space-4); flex-shrink: 0; border: 2px solid var(--border-primary); border-top-color: var(--f1-red); border-radius: var(--radius-full); }
+@media (prefers-reduced-motion: no-preference) {
+  .points-comparison-spinner { animation: route-spin var(--motion-duration-ambient) linear infinite; }
+}
+.points-comparison-loading progress { width: 100%; height: var(--space-1); accent-color: var(--f1-red); }
+.season-points-card .chart-scroll-container[aria-busy="true"] { opacity: 0.45; pointer-events: none; }
 .points-comparison-message { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); color: var(--text-secondary); }
 @media (max-width: 768px) {
   .points-comparison-controls { padding: var(--space-4); margin-bottom: 0; }

@@ -7,32 +7,36 @@ const drivers = [
   ['norris', 'Lando', 'Norris'], ['leclerc', 'Charles', 'Leclerc'],
 ].map(([driverId, givenName, familyName]) => ({ driverId, givenName, familyName, code: driverId.slice(0, 3).toUpperCase(), permanentNumber: '1', dateOfBirth: '2000-01-01', nationality: 'British', url: '#' }));
 const points = [[25, 18, 15, 0], [25, 51, 25, 0], [43, 63, 43, 0]];
-const calendar = ['Australian', 'Chinese', 'Japanese'].map((name, i) => ({ season: '2026', round: String(i + 1), raceName: `${name} Grand Prix`, date: `2026-0${i + 3}-08`, time: '04:00:00Z',
+const calendar = ['Australian', 'Chinese', 'Japanese'].map((name, i) => ({ season: '2026', round: String(i + 1), raceName: `Formula 1 Official Sponsor ${name} Grand Prix 2026`, date: `2026-0${i + 3}-08`, time: '04:00:00Z',
   Circuit: { circuitId: ['albert_park', 'shanghai', 'suzuka'][i], circuitName: `${name} Circuit`, Location: { locality: name, country: name, lat: '0', long: '0' } },
 }));
 
+function roundPoints(round: number) {
+  return points[round - 1] || points[2].map((value, i) => value + (round - 3) * [18, 20, 14, 8][i]);
+}
+
 function standings(round: number) {
   return { season: '2026', round: String(round),
-    DriverStandings: drivers.map((Driver, i) => ({ Driver, Constructors: [teams[i < 2 ? 0 : i - 1]], position: String(i + 1), positionText: String(i + 1), points: String(points[round - 1][i]), wins: '1' })),
-    ConstructorStandings: teams.map((Constructor, i) => ({ Constructor, position: String(i + 1), positionText: String(i + 1), points: String(i === 0 ? points[round - 1][0] + points[round - 1][1] : points[round - 1][i + 1]), wins: '1' })),
+    DriverStandings: drivers.map((Driver, i) => ({ Driver, Constructors: [teams[i < 2 ? 0 : i - 1]], position: String(i + 1), positionText: String(i + 1), points: String(roundPoints(round)[i]), wins: '1' })),
+    ConstructorStandings: teams.map((Constructor, i) => ({ Constructor, position: String(i + 1), positionText: String(i + 1), points: String(i === 0 ? roundPoints(round)[0] + roundPoints(round)[1] : roundPoints(round)[i + 1]), wins: '1' })),
   };
 }
 
-async function fixtures(page: Page) {
+async function fixtures(page: Page, raceCalendar = calendar) {
   await enterAsMember(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.route('**/rest/v1/**', route => route.fulfill({ contentType: 'application/json', body: '[]' }));
   await page.route('**/f1-api/**', async route => {
     const path = new URL(route.request().url()).pathname;
-    const round = Number(/\/2026\/(\d+)\//.exec(path)?.[1] || 3);
+    const round = Number(/\/2026\/(\d+)\//.exec(path)?.[1] || raceCalendar.length);
     const isStandings = /\/(driverStandings|constructorStandings)\.json$/.test(path);
     const isCalendar = path.endsWith('/2026.json');
     const isSprint = path.endsWith('/sprint.json');
     const driverId = /\/drivers\/([^/]+)\/results/.exec(path)?.[1];
     const constructorId = /\/constructors\/([^/]+)\/results/.exec(path)?.[1];
-    const races = isCalendar ? calendar : isSprint ? [] : calendar.map((race, roundIndex) => ({ ...race,
+    const races = isCalendar ? raceCalendar : isSprint ? [] : raceCalendar.map((race, roundIndex) => ({ ...race,
       Results: drivers.map((Driver, i) => ({ Driver, Constructor: teams[i < 2 ? 0 : i - 1], number: String(i + 1), position: String(i + 1), positionText: String(i + 1),
-        points: String(points[roundIndex][i] - (points[roundIndex - 1]?.[i] || 0)), grid: String(i + 1), laps: '56', status: 'Finished' }))
+        points: String(roundPoints(roundIndex + 1)[i] - (roundIndex ? roundPoints(roundIndex)[i] : 0)), grid: String(i + 1), laps: '56', status: 'Finished' }))
         .filter(result => (!driverId || result.Driver.driverId === driverId) && (!constructorId || result.Constructor.constructorId === constructorId)),
     }));
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
@@ -156,3 +160,46 @@ test('points comparison recovers loading failures and leaves missing rounds unfi
   await card.locator('.chart-data-view > summary').click();
   await expect(card.locator('.chart-data-view tbody tr').nth(1)).toContainText('—');
 });
+
+for (const kind of ['driver', 'constructor'] as const) {
+  test(`${kind} points comparison keeps 17 sponsored rounds compact and shows loading progress`, async ({ page }, info) => {
+    const venues = ['Australia', 'China', 'Japan', 'Miami', 'Canada', 'Monaco', 'Barcelona', 'Austria', 'Britain',
+      'Belgium', 'Hungary', 'Netherlands', 'Italy', 'Spain', 'Azerbaijan', 'Singapore', 'United States'];
+    const season = venues.map((name, i) => ({ ...calendar[0], round: String(i + 1),
+      raceName: `Formula 1 Official Championship Title Sponsor ${name} Grand Prix 2026`,
+      Circuit: { ...calendar[0].Circuit, circuitId: `venue_${i}`,
+        Location: { ...calendar[0].Circuit.Location, country: name, locality: name } },
+    }));
+    await fixtures(page, season);
+    let release!: () => void;
+    const slowRound = new Promise<void>(resolve => { release = resolve; });
+    await page.route(`**/2026/2/${kind === 'driver' ? 'driverStandings' : 'constructorStandings'}.json?limit=100`, async route => {
+      await slowRound;
+      await route.fallback();
+    });
+    await page.goto(kind === 'driver' ? '/drivers/russell' : '/constructors/mercedes');
+    const card = page.locator('.season-points-card');
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator('canvas')).toBeVisible();
+    await card.getByRole('button', { name: '对比', exact: true }).click();
+    await choose(page, kind === 'driver' ? 'Andrea Kimi Antonelli' : 'McLaren', kind);
+    try {
+      await expect(card.getByRole('status')).toContainText('正在读取逐站积分');
+      await expect(card.getByRole('progressbar')).toHaveAttribute('value', '16');
+      await expect(card.getByRole('progressbar')).toHaveAttribute('max', '17');
+      await expect(card.locator('.chart-scroll-container')).toHaveAttribute('aria-busy', 'true');
+      await card.screenshot({ path: `artifacts/browser-qa/screenshots/points-loading-${kind}-${info.project.name}.png`,
+        animations: 'disabled', style: '.header { visibility: hidden; }' });
+    } finally { release(); }
+    await expect(card.getByRole('status')).toHaveCount(0);
+    await expect(card.locator('.chart-scroll-container')).toHaveAttribute('aria-busy', 'false');
+    await card.locator('.chart-data-view > summary').click();
+    await expect(card.locator('.chart-data-view tbody tr')).toHaveCount(17);
+    await expect(card.locator('.chart-data-view tbody')).not.toContainText(/Formula 1|Grand Prix|2026/);
+    await expect(card.locator('.chart-data-view tbody tr').nth(15)).toContainText('Singapore');
+    await card.locator('.chart-data-view > summary').click();
+    await card.screenshot({ path: `artifacts/browser-qa/screenshots/points-17-rounds-${kind}-${info.project.name}.png`,
+      animations: 'disabled', style: '.header { visibility: hidden; }' });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  });
+}

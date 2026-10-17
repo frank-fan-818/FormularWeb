@@ -61,7 +61,52 @@ describe('official points progress API', () => {
     const count = mocks.get.mock.calls.length;
     await standingsProgressApi.getSeasonProgress('driver', '2031');
     expect(mocks.get).toHaveBeenCalledTimes(count);
+    expect(mocks.races).toHaveBeenCalledTimes(1);
     await standingsProgressApi.getSeasonProgress('constructor', '2031');
     expect(mocks.get.mock.calls.length).toBeGreaterThan(count);
+  });
+
+  it('uses compact venue names even when official names contain sponsors and years', async () => {
+    mocks.races.mockResolvedValue([{ round: '1', raceName: 'Formula 1 Singapore Airlines Singapore Grand Prix 2026',
+      Circuit: { circuitId: 'marina_bay', Location: { country: 'Singapore', locality: 'Singapore' } } }]);
+    mocks.get.mockResolvedValue(response('2032', 1));
+    const data = await standingsProgressApi.getSeasonProgress('driver', '2032');
+    expect(data.rounds[0].name).toBe('Singapore');
+  });
+
+  it('starts the next queued round without waiting for the slowest request and reports progress', async () => {
+    mocks.races.mockResolvedValue(Array.from({ length: 6 }, (_, i) => ({ round: String(i + 1), raceName: `Round ${i + 1}`,
+      Circuit: { circuitId: 'unknown', Location: { country: '', locality: '' } } })));
+    let release!: () => void;
+    const slowRound = new Promise<void>(resolve => { release = resolve; });
+    mocks.get.mockImplementation(async (path: string) => {
+      const round = Number(/\/2033\/(\d+)\//.exec(path)?.[1] || 6);
+      if (round === 1) await slowRound;
+      return response('2033', round);
+    });
+    const onProgress = vi.fn();
+    const request = standingsProgressApi.getSeasonProgress('driver', '2033', onProgress);
+    try {
+      await vi.waitFor(() => expect(mocks.get.mock.calls.some(([path]) => path.includes('/5/'))).toBe(true));
+      expect(onProgress).toHaveBeenCalledWith({ completed: 5, total: 6 });
+    } finally { release(); }
+    await request;
+    expect(onProgress).toHaveBeenLastCalledWith({ completed: 6, total: 6 });
+  });
+
+  it('retries missing rounds without throwing away successful snapshots', async () => {
+    let missing = true;
+    mocks.get.mockImplementation(async (path: string) => {
+      const round = Number(/\/2034\/(\d+)\//.exec(path)?.[1] || 3);
+      if (round === 2 && missing) throw new Error('unavailable');
+      return response('2034', round);
+    });
+    const first = await standingsProgressApi.getSeasonProgress('driver', '2034');
+    expect(first.rounds[1].snapshot).toBeNull();
+    missing = false;
+    const count = mocks.get.mock.calls.length;
+    const retried = await standingsProgressApi.getSeasonProgress('driver', '2034');
+    expect(retried.rounds[1].snapshot?.round).toBe(2);
+    expect(mocks.get).toHaveBeenCalledTimes(count + 1);
   });
 });

@@ -332,6 +332,7 @@ export default defineConfig({
             '/src/utils/accessPolicy.ts',
             '/src/utils/supabaseConfig.ts',
             '/src/utils/logger.ts',
+            '/src/utils/raceDisplayName.ts',
             '/src/store/index.ts',
           ]
           if (bootstrapSources.some((source) => normalizedId.endsWith(source))) return 'app-runtime'

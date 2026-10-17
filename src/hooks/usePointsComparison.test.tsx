@@ -61,4 +61,24 @@ describe('points comparison lifecycle', () => {
     await vi.waitFor(() => expect(latest.data).toEqual(progress));
     expect(latest.error).toBe(false);
   });
+
+  it('reports request progress immediately and ignores progress after closing comparison', async () => {
+    let report!: (progress: { completed: number; total: number }) => void;
+    let release!: (data: SeasonPointsProgress) => void;
+    api.load.mockImplementation((_kind, _season, onProgress) => {
+      report = onProgress;
+      return new Promise<SeasonPointsProgress>(resolve => { release = resolve; });
+    });
+    act(() => { renderer = create(<Probe />); });
+    await act(async () => { latest.toggle(); latest.select('b'); });
+    expect(latest.loading).toBe(true);
+    await vi.waitFor(() => expect(report).toBeTypeOf('function'));
+    act(() => report({ completed: 4, total: 17 }));
+    expect(latest.progress).toEqual({ completed: 4, total: 17 });
+    act(() => latest.toggle());
+    await act(async () => { report({ completed: 17, total: 17 }); release(progress); });
+    expect(latest.loading).toBe(false);
+    expect(latest.progress).toBeUndefined();
+    expect(latest.data).toBeNull();
+  });
 });
