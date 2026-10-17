@@ -519,7 +519,10 @@ const ConstructorDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={!constructor && (seasonLoading || loading)} className="constructor-profile-shell">
+      {!constructor && (seasonLoading || loading) ? (
+        <Card loading className="constructor-profile-loading-card" />
+      ) : (
+      <div className="constructor-profile-shell">
         <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
           <div className="constructor-profile-identity">
             <ConstructorLogo constructorId={constructorId || ''} size={96} />
@@ -690,7 +693,8 @@ const ConstructorDetail = () => {
             </Col>
           </Row>
         </Card>
-      </Card>
+      </div>
+      )}
     </div>
   );
 };

@@ -302,6 +302,20 @@ test('profile typography keeps names separated and metadata readable', async ({ 
       if (index === 0 || index === profileConstructors.length - 1) await page.locator('.constructor-profile-hero').screenshot({
         path: `artifacts/browser-qa/screenshots/typography-constructor-${constructor.constructorId}-${theme}-${info.project.name}.png`,
       });
+      if (index === 0) {
+        const chart = page.locator('.constructor-profile-shell .chart-scroll-container');
+        await chart.scrollIntoViewIfNeeded();
+        await expect(chart.locator('canvas')).toBeVisible();
+        const section = page.locator('.constructor-profile-shell > .product-section-header');
+        await section.evaluate(element => element.scrollIntoView({ block: 'start' }));
+        await page.evaluate(() => window.scrollBy(0, -100));
+        const headingBox = (await section.boundingBox())!;
+        const cardBox = (await chart.locator('xpath=ancestor::div[contains(@class,"ant-card")][1]').boundingBox())!;
+        await page.screenshot({
+          path: `artifacts/browser-qa/screenshots/constructor-detail-${theme}-${info.project.name}.png`, animations: 'disabled',
+          clip: { x: headingBox.x, y: headingBox.y, width: headingBox.width, height: cardBox.y + cardBox.height - headingBox.y },
+        });
+      }
     }
   }
   expect(errors).toEqual([]);
