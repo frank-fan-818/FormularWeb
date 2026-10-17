@@ -267,7 +267,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .motion-route-shell,
-  .motion-route-shell *,
+  /* Chart tooltip transforms position data next to the pointer, rather than animate it. */
+  .motion-route-shell *:not(.points-comparison-tooltip),
   .motion-route-shell *::before,
   .motion-route-shell *::after,
   .sidebar-nav-button::before,
