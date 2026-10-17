@@ -32,12 +32,14 @@ async function fixtures(page: Page, raceCalendar = calendar) {
     const isStandings = /\/(driverStandings|constructorStandings)\.json$/.test(path);
     const isCalendar = path.endsWith('/2026.json');
     const isSprint = path.endsWith('/sprint.json');
+    const isWinner = path.endsWith('/results/1.json');
     const driverId = /\/drivers\/([^/]+)\/results/.exec(path)?.[1];
     const constructorId = /\/constructors\/([^/]+)\/results/.exec(path)?.[1];
     const races = isCalendar ? raceCalendar : isSprint ? [] : raceCalendar.map((race, roundIndex) => ({ ...race,
       Results: drivers.map((Driver, i) => ({ Driver, Constructor: teams[i < 2 ? 0 : i - 1], number: String(i + 1), position: String(i + 1), positionText: String(i + 1),
         points: String(roundPoints(roundIndex + 1)[i] - (roundIndex ? roundPoints(roundIndex)[i] : 0)), grid: String(i + 1), laps: '56', status: 'Finished' }))
-        .filter(result => (!driverId || result.Driver.driverId === driverId) && (!constructorId || result.Constructor.constructorId === constructorId)),
+        .filter(result => (!driverId || result.Driver.driverId === driverId) && (!constructorId || result.Constructor.constructorId === constructorId)
+          && (!isWinner || result.position === '1')),
     }));
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
       total: String(isStandings ? path.includes('constructorStandings') ? teams.length : drivers.length : races.length),
@@ -164,13 +166,28 @@ test('points comparison recovers loading failures and leaves missing rounds unfi
 for (const kind of ['driver', 'constructor'] as const) {
   test(`${kind} points comparison keeps 17 sponsored rounds compact and shows loading progress`, async ({ page }, info) => {
     const venues = ['Australia', 'China', 'Japan', 'Miami', 'Canada', 'Monaco', 'Barcelona', 'Austria', 'Britain',
-      'Belgium', 'Hungary', 'Netherlands', 'Italy', 'Spain', 'Azerbaijan', 'Singapore', 'United States'];
+      'Belgium', 'Hungary', 'Netherlands', 'Italy', 'Spain', 'Azerbaijan', 'Malaysia', 'Singapore'];
     const season = venues.map((name, i) => ({ ...calendar[0], round: String(i + 1),
       raceName: `Formula 1 Official Championship Title Sponsor ${name} Grand Prix 2026`,
       Circuit: { ...calendar[0].Circuit, circuitId: `venue_${i}`,
         Location: { ...calendar[0].Circuit.Location, country: name, locality: name } },
     }));
     await fixtures(page, season);
+    // Reproduce the production mismatch: the DB omits Malaysia and assigns the
+    // future United States event to R17, while official R17 results are Singapore.
+    const shifted = [...season.filter(race => race.Circuit.Location.country !== 'Malaysia'), {
+      ...season[16], raceName: 'United States Grand Prix', date: '2099-10-25',
+      Circuit: { ...season[16].Circuit, circuitId: 'americas',
+        Location: { ...season[16].Circuit.Location, country: 'United States' } },
+    }].map((race, i) => ({ ...race, round: String(i + 1) }));
+    await page.route('**/rest/v1/races?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(
+      shifted.map(race => ({ season: 2026, round: Number(race.round), race_name: race.raceName, date: race.date,
+        circuit_id: race.Circuit.circuitId })),
+    ) }));
+    await page.route('**/rest/v1/circuits?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(
+      shifted.map(race => ({ circuit_id: race.Circuit.circuitId, name: race.Circuit.circuitName,
+        country: race.Circuit.Location.country, locality: race.Circuit.Location.locality })),
+    ) }));
     let release!: () => void;
     const slowRound = new Promise<void>(resolve => { release = resolve; });
     await page.route(`**/2026/2/${kind === 'driver' ? 'driverStandings' : 'constructorStandings'}.json?limit=100`, async route => {
@@ -196,8 +213,16 @@ for (const kind of ['driver', 'constructor'] as const) {
     await card.locator('.chart-data-view > summary').click();
     await expect(card.locator('.chart-data-view tbody tr')).toHaveCount(17);
     await expect(card.locator('.chart-data-view tbody')).not.toContainText(/Formula 1|Grand Prix|2026/);
-    await expect(card.locator('.chart-data-view tbody tr').nth(15)).toContainText('Singapore');
+    await expect(card.locator('.chart-data-view tbody tr').last()).toContainText('Singapore');
+    await expect(card.locator('.chart-data-view tbody')).not.toContainText('United States');
     await card.locator('.chart-data-view > summary').click();
+    if (info.project.name === 'desktop-chromium') {
+      const canvas = card.locator('canvas');
+      const bounds = (await canvas.boundingBox())!;
+      await canvas.hover({ position: { x: bounds.width * 0.95, y: bounds.height / 2 } });
+      await expect(card.getByText('R17 · Singapore', { exact: true })).toBeVisible();
+      await page.mouse.move(0, 0);
+    }
     await card.screenshot({ path: `artifacts/browser-qa/screenshots/points-17-rounds-${kind}-${info.project.name}.png`,
       animations: 'disabled', style: '.header { visibility: hidden; }' });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
