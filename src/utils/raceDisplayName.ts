@@ -15,9 +15,10 @@ const SHORT_NAMES: Record<string, string> = {
 
 export function formatShortRaceName(race: Pick<Race, 'raceName' | 'Circuit'> | null | undefined): string {
   if (!race) return '--';
-  return SHORT_NAMES[race.Circuit.circuitId]
-    || race.Circuit.Location.country.trim()
+  const circuit = race.Circuit;
+  return SHORT_NAMES[circuit?.circuitId ?? '']
+    || circuit?.Location?.country?.trim()
     || race.raceName.replace(/\s*(?:Grand Prix|GP|大奖赛)\s*$/i, '').trim()
-    || race.Circuit.Location.locality
+    || circuit?.Location?.locality
     || '--';
 }

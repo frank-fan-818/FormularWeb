@@ -28,4 +28,10 @@ describe('formatShortRaceName', () => {
     expect(formatShortRaceName(race('unknown', 'New Venue'))).toBe('New Venue');
     expect(formatShortRaceName(null)).toBe('--');
   });
+
+  it('falls back to the event name for sparse historical result rows', () => {
+    const historical = { raceName: 'Australian Grand Prix' } as Race;
+    expect(formatShortRaceName(historical)).toBe('Australian');
+    expect(formatShortRaceName({ ...historical, Circuit: { circuitId: 'unknown' } } as Race)).toBe('Australian');
+  });
 });
