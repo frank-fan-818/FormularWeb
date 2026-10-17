@@ -1,9 +1,11 @@
 import ergastApi, { seasonApi } from './ergast';
 import type { ErgastResponse } from '@/types';
-import type { PointsComparisonKind, PointsSnapshot, SeasonPointsProgress } from '@/types/pointsComparison';
+import type { PointsComparisonKind, PointsLoadingProgress, PointsSnapshot, SeasonPointsProgress } from '@/types/pointsComparison';
 import { assertCompleteList, assertContiguousRounds, assertUniqueValues } from '@/utils/dataCompleteness';
+import { formatShortRaceName } from '@/utils/raceDisplayName';
 
 const snapshots = new Map<string, { expires: number; request: Promise<PointsSnapshot> }>();
+const seasons = new Map<string, { expires: number; data: SeasonPointsProgress }>();
 
 function getSnapshot(kind: PointsComparisonKind, season: string, round?: number): Promise<PointsSnapshot> {
   const endpoint = kind === 'driver' ? 'driverStandings' : 'constructorStandings';
@@ -32,22 +34,38 @@ function getSnapshot(kind: PointsComparisonKind, season: string, round?: number)
 }
 
 export const standingsProgressApi = {
-  async getSeasonProgress(kind: PointsComparisonKind, season: string): Promise<SeasonPointsProgress> {
+  async getSeasonProgress(kind: PointsComparisonKind, season: string, onProgress?: (progress: PointsLoadingProgress) => void): Promise<SeasonPointsProgress> {
+    const key = `${kind}:${season}`;
+    const cached = seasons.get(key);
+    if (cached && cached.expires > Date.now()) {
+      onProgress?.({ completed: cached.data.rounds.length, total: cached.data.rounds.length });
+      return cached.data;
+    }
+    const expires = Date.now() + 5 * 60 * 1000;
     const [latest, calendar] = await Promise.all([getSnapshot(kind, season), seasonApi.getSeasonRaces(season)]);
     const races = calendar.filter(race => Number(race.round) <= latest.round)
       .sort((a, b) => Number(a.round) - Number(b.round));
     assertContiguousRounds(races, race => Number(race.round), 'points comparison calendar');
     if (races.length !== latest.round) throw new Error('赛历不完整，暂时无法对齐分站');
-    const rounds: SeasonPointsProgress['rounds'] = [];
-    // Fetch complete standings once per round, reused when another opponent is selected.
-    for (let offset = 0; offset < races.length; offset += 4) {
-      const batch = await Promise.all(races.slice(offset, offset + 4).map(async race => {
-        const round = Number(race.round);
-        const snapshot = round === latest.round ? latest : await getSnapshot(kind, season, round).catch(() => null);
-        return { round, name: race.raceName.replace(/\s+Grand Prix$/i, ''), snapshot };
-      }));
-      rounds.push(...batch);
-    }
-    return { latest, rounds };
+    const rounds: SeasonPointsProgress['rounds'] = races.map(race => ({
+      round: Number(race.round), name: formatShortRaceName(race),
+      snapshot: Number(race.round) === latest.round ? latest : null,
+    }));
+    const pending = rounds.filter(round => round.round !== latest.round);
+    let cursor = 0;
+    let completed = 1;
+    onProgress?.({ completed, total: rounds.length });
+    // Keep four requests active; one slow round must not hold up the next batch.
+    await Promise.all(Array.from({ length: Math.min(4, pending.length) }, async () => {
+      while (cursor < pending.length) {
+        const item = pending[cursor++];
+        item.snapshot = await getSnapshot(kind, season, item.round).catch(() => null);
+        onProgress?.({ completed: ++completed, total: rounds.length });
+      }
+    }));
+    const data = { latest, rounds };
+    // Incomplete snapshots must remain retryable instead of caching a partial season.
+    if (rounds.every(round => round.snapshot)) seasons.set(key, { expires, data });
+    return data;
   },
 };
