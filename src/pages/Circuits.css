@@ -166,7 +166,7 @@
 
 .circuit-atlas-copy { padding: 20px 20px 14px; }
 .circuit-atlas-country { color: var(--race-control-apex); font: 700 10px/1.2 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
-.circuit-atlas-copy h2 { min-height: 54px; margin: 7px 0 8px; color: var(--text-primary); font-family: var(--font-display); font-size: 25px; line-height: 1.08; letter-spacing: -0.035em; }
+.circuit-atlas-copy h2 { min-height: 54px; margin: 7px 0 8px; color: var(--text-primary); font-family: var(--font-display); font-size: 25px; line-height: 1.08; letter-spacing: var(--tracking-normal); }
 .circuit-atlas-copy p { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text-secondary); font-size: 12px; }
 
 .circuit-atlas-specs { display: grid; grid-template-columns: repeat(3, 1fr); border-block: 1px solid var(--border-secondary); }

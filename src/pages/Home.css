@@ -79,8 +79,8 @@
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(36px, 5vw, 66px);
-  line-height: 0.98;
-  letter-spacing: -0.045em;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -175,7 +175,7 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
   --fact-accent: var(--f1-red);
   position: relative;
   display: grid;
-  align-content: center;
+  align-content: start;
   min-width: 0;
   min-height: 104px;
   padding: 20px clamp(16px, 2.5vw, 28px);
@@ -202,21 +202,20 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 }
 
 .home-core-facts dt {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-family);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
 }
 
 .home-core-facts dd {
-  overflow: hidden;
   margin: 5px 0;
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(20px, 2.3vw, 30px);
-  line-height: 1.05;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .home-core-facts button {
@@ -272,7 +271,7 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
   grid-row: 1 / 3;
   align-self: center;
   color: #fff;
-  font: 800 11px/1 var(--font-mono);
+  font: var(--font-semibold) 11px/1.4 var(--font-family);
 }
 
 .home-weekend-session strong,
@@ -284,7 +283,12 @@ button.home-prediction-strip:hover { background: rgba(255, 255, 255, 0.09); bord
 }
 
 .home-weekend-session strong { color: #edf2f7; font-size: 12px; }
-.home-weekend-session time { color: #fff; font: 800 16px/1.2 var(--font-mono); }
+.home-weekend-session time {
+  color: #fff;
+  font: var(--font-semibold) var(--text-lg)/1.4 var(--font-family);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: var(--tracking-normal);
+}
 .home-weekend-session small { grid-column: 1 / -1; color: inherit; font-size: var(--text-xs); }
 .home-weekend-session.is-completed strong,
 .home-weekend-session.is-completed time { color: inherit; }

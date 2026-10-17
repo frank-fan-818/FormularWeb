@@ -76,18 +76,27 @@ async function mockFastDetailData(
 }
 
 test('driver points chart paints before slower profile metadata', async ({ page }, testInfo) => {
-  await mockFastDetailData(page);
-  const startedAt = Date.now();
+  let releaseMetadata!: () => void;
+  const metadataGate = new Promise<void>((resolve) => { releaseMetadata = resolve; });
+  await mockFastDetailData(page, () => metadataGate);
 
-  await page.goto('/drivers/max_verstappen', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.chart-scroll-container canvas')).toBeVisible({ timeout: 2_000 });
-  expect(Date.now() - startedAt).toBeLessThan(1_500);
-  await expect(page.getByText('正在加载图表...')).toHaveCount(0);
+  try {
+    await page.goto('/drivers/max_verstappen', { waitUntil: 'domcontentloaded' });
+    const chart = page.locator('.chart-scroll-container');
+    // The taller mobile profile can put the chart below its lazy-render range.
+    // Enter that range, then prove it paints while metadata is still held.
+    await chart.scrollIntoViewIfNeeded();
+    await expect(chart.locator('canvas')).toBeVisible({ timeout: 2_000 });
+    await expect(page.getByText('正在加载图表...')).toHaveCount(0);
 
-  await page.screenshot({
-    path: testInfo.outputPath('driver-points-chart-fast.png'),
-    fullPage: true,
-  });
+    await page.screenshot({
+      path: testInfo.outputPath('driver-points-chart-fast.png'),
+      fullPage: true,
+    });
+  } finally {
+    releaseMetadata();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
 });
 
 test('circuit atlas renders local engineering specs before remote metadata', async ({ page }, testInfo) => {

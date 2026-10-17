@@ -150,9 +150,10 @@ const Constructors = () => {
               >
                 <div className="constructor-card-topline">
                   <span className="constructor-team-swatch" style={{ backgroundColor: teamColor }} />
-                  <span className="constructor-season-chip">
-                    {TEXT.season} P{constructor.position || '-'} / {constructor.points || '0'} {TEXT.points}
-                  </span>
+                  <dl className="roster-season-score" aria-label={`${TEXT.season}成绩`}>
+                    <div><dt>排名</dt><dd>P{constructor.position || '-'}</dd></div>
+                    <div className="roster-season-score__points"><dt>{TEXT.points}</dt><dd>{constructor.points || '0'}</dd></div>
+                  </dl>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                   <ConstructorLogo constructorId={constructor.constructorId} size={48} />

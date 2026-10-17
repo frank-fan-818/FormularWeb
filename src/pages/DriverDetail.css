@@ -66,10 +66,8 @@
   min-height: 280px;
   padding: var(--space-7);
   border-top: 8px solid var(--f1-red);
-  background:
-    linear-gradient(135deg, rgba(15, 15, 18, 0.94), rgba(35, 35, 42, 0.78)),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
-  color: #ffffff;
+  background: var(--bg-card);
+  color: var(--text-primary);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
@@ -79,10 +77,10 @@
   top: 22px;
   left: var(--space-7);
   z-index: -1;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
   content: 'DRIVER DOSSIER / CURRENT SEASON';
-  font: 700 10px/1 var(--font-mono);
-  letter-spacing: 0.16em;
+  font: var(--font-semibold) 10px/1 var(--font-family);
+  letter-spacing: var(--tracking-wide);
 }
 
 .driver-profile-hero::after {
@@ -103,7 +101,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--text-secondary);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
   text-transform: uppercase;
@@ -116,13 +114,26 @@
   border-radius: 3px;
 }
 
+.driver-profile-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.driver-profile-identity > :first-child { flex-shrink: 0; }
+.driver-profile-copy { min-width: 0; }
+
 .driver-profile-name {
+  display: grid;
+  gap: var(--space-2);
   margin: 0;
-  color: #ffffff;
-  font-size: clamp(3rem, 8vw, 6.5rem);
-  line-height: 0.92;
+  color: var(--text-primary);
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
   font-family: var(--font-display);
-  letter-spacing: -0.055em;
+  letter-spacing: var(--tracking-normal);
 }
 
 .driver-profile-name span,
@@ -133,15 +144,24 @@
 .driver-profile-name span {
   font-size: clamp(1.4rem, 3vw, 2.4rem);
   font-weight: var(--font-medium);
-  color: rgba(255, 255, 255, 0.76);
+  font-family: var(--font-family);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-secondary);
 }
 
-.driver-profile-tags {
+.driver-profile-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
+  gap: var(--space-3) var(--space-5);
+  margin: var(--space-5) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
+
+.driver-profile-meta > div { display: grid; gap: var(--space-1); }
+.driver-profile-meta dt { color: var(--text-secondary); font-size: var(--text-xs); }
+.driver-profile-meta dd { margin: 0; color: var(--text-primary); font-weight: var(--font-medium); }
 
 .driver-profile-number {
   font-size: clamp(5rem, 18vw, 12rem);
@@ -171,7 +191,7 @@
   align-content: center;
 }
 
-.driver-current-stat-card .stat-value { font-family: var(--font-display); font-size: clamp(24px, 3vw, 38px); letter-spacing: -0.04em; }
+.driver-current-stat-card .stat-value { font-family: var(--font-display); font-size: clamp(24px, 3vw, 38px); letter-spacing: var(--tracking-normal); }
 
 .stats-row {
   display: grid;
@@ -456,16 +476,16 @@
     padding: 54px var(--space-5) var(--space-5);
   }
 
-  .driver-profile-hero > div:first-child {
+  .driver-profile-identity {
     flex-direction: column;
-    align-items: flex-start !important;
+    align-items: flex-start;
     width: 100%;
   }
 
   .driver-profile-copy { width: 100%; }
   .driver-profile-name { max-width: 100%; font-size: clamp(2.25rem, 11.5vw, 3rem); overflow-wrap: anywhere; }
   .driver-profile-name span { font-size: 1.25rem; }
-  .driver-profile-tags { max-width: 100%; }
+  .driver-profile-meta { max-width: 100%; }
 
   .driver-profile-number {
     justify-self: start;

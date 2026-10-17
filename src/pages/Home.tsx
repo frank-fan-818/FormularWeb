@@ -8,6 +8,7 @@ import { formatRaceDateTimeFull, formatSessionDateLabel, getRaceWeekendTimeline 
 import { formatLocalDateTime } from '@/utils/dateTime';
 import { getTeamColor } from '@/utils/teamColors';
 import { buildSeasonSummary } from '@/utils/seasonSummary';
+import { formatShortRaceName } from '@/utils/raceDisplayName';
 
 const RacePredictionSummary = lazy(() => import('@/components/RacePredictionSummary'));
 
@@ -31,8 +32,8 @@ const TEXT = {
   offlineData: '\u5f53\u524d\u79bb\u7ebf\uff0c\u5df2\u663e\u793a\u6700\u8fd1\u53ef\u7528\u6570\u636e',
   updatedAt: '\u66f4\u65b0\u4e8e',
   viewFullStandings: '\u67e5\u770b\u5b8c\u6574\u79ef\u5206\u699c',
-  driverLeader: '\u8f66\u624b\u699c',
-  constructorLeader: '\u8f66\u961f\u699c',
+  driverLeader: '\u8f66\u624b\u699c\u9886\u8dd1',
+  constructorLeader: '\u8f66\u961f\u699c\u9886\u8dd1',
   unavailable: '\u8d5b\u5b63\u6570\u636e\u6682\u65f6\u65e0\u6cd5\u52a0\u8f7d\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u540e\u91cd\u8bd5\u3002',
   retry: '\u91cd\u8bd5',
   moduleLoading: '\u6b63\u5728\u8865\u9f50\u6570\u636e...',
@@ -201,24 +202,20 @@ const Home = () => {
           <div style={{ '--fact-accent': driverLeader?.Constructors[0] ? getTeamColor(driverLeader.Constructors[0].constructorId) : undefined } as CSSProperties}>
             <dt>{TEXT.driverLeader}</dt>
             <dd>{driverLeader ? `${driverLeader.Driver.givenName[0]}. ${driverLeader.Driver.familyName}` : '--'}</dd>
-            <span>{driverLeader
-              ? `${driverLeader.points} PTS${seasonSummary.driverGap === null ? '' : ` · +${seasonSummary.driverGap}`}`
-              : resources.drivers.loading
+            {!driverLeader ? <span>{resources.drivers.loading
                 ? TEXT.moduleLoading
-                : resources.drivers.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span>
+                : resources.drivers.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span> : null}
           </div>
           <div style={{ '--fact-accent': constructorLeader ? getTeamColor(constructorLeader.Constructor.constructorId) : undefined } as CSSProperties}>
             <dt>{TEXT.constructorLeader}</dt>
             <dd>{constructorLeader?.Constructor.name || '--'}</dd>
-            <span>{constructorLeader
-              ? `${constructorLeader.points} PTS${seasonSummary.constructorGap === null ? '' : ` · +${seasonSummary.constructorGap}`}`
-              : resources.constructors.loading
+            {!constructorLeader ? <span>{resources.constructors.loading
                 ? TEXT.moduleLoading
-                : resources.constructors.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span>
+                : resources.constructors.error ? TEXT.moduleUnavailable : TEXT.moduleEmpty}</span> : null}
           </div>
           <div>
             <dt>{TEXT.latestCompleted}</dt>
-            <dd>{seasonSummary.latestCompletedRace?.raceName || '--'}</dd>
+            <dd>{formatShortRaceName(seasonSummary.latestCompletedRace)}</dd>
             {seasonSummary.latestCompletedRace ? (
               <button
                 type="button"

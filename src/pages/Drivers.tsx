@@ -9,7 +9,6 @@ import { supabaseApi } from '@/api/supabase';
 import { preloadDriverDetailRoute } from '@/utils/routePreload';
 import { getTeamColor } from '@/utils/teamColors';
 import { DriverAvatar } from '@/utils/driverImages';
-import { ConstructorLogo } from '@/utils/constructorLogos';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import type { Driver } from '@/types';
@@ -155,27 +154,23 @@ const Drivers = () => {
                         <span className="driver-number-mark" style={{ color: teamColor }}>
                           {driver.permanentNumber ? `#${driver.permanentNumber}` : driver.code || '--'}
                         </span>
-                        <span className="driver-rank-pill">
-                          {TEXT.season} P{driver.position || '-'} / {driver.points || '0'} {TEXT.points}
-                        </span>
+                        <dl className="roster-season-score" aria-label={`${TEXT.season}成绩`}>
+                          <div><dt>排名</dt><dd>P{driver.position || '-'}</dd></div>
+                          <div className="roster-season-score__points"><dt>{TEXT.points}</dt><dd>{driver.points || '0'}</dd></div>
+                        </dl>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                      <div className="driver-card-identity">
                         <DriverAvatar
                           driverId={driver.driverId}
                           size={48}
                           givenName={driver.givenName}
                           familyName={driver.familyName}
                         />
-                        <div style={{ flex: 1 }}>
+                        <div className="driver-card-copy">
                           <h3 className="driver-card-name" style={{ margin: 0 }}>
                             <span>{driver.givenName}</span>
                             <strong>{driver.familyName}</strong>
                           </h3>
-                          <div className="driver-card-meta" style={{ marginTop: 2 }}>
-                            <span>{driver.code || '-'}</span>
-                            <span>{driver.nationality || '-'}</span>
-                            <ConstructorLogo constructorId={driver.constructorId} size={20} />
-                          </div>
                         </div>
                       </div>
                       <div className="driver-card-stats">

@@ -4,9 +4,9 @@
 
 .race-detail-page {
   --race-display: 'Bahnschrift Condensed', 'DIN Condensed', 'Arial Narrow', sans-serif;
-  --race-command-surface: var(--surface-dark);
-  --race-command-muted: #9ca3af;
-  --race-command-line: rgba(255, 255, 255, 0.14);
+  --race-command-surface: var(--bg-card);
+  --race-command-muted: var(--text-secondary);
+  --race-command-line: var(--border-secondary);
   display: grid;
   gap: var(--space-4);
   min-width: 0;
@@ -17,14 +17,12 @@
   isolation: isolate;
   min-height: 340px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-4) clamp(20px, 3vw, 42px) 0;
-  background:
-    radial-gradient(circle at 82% 12%, rgba(255, 24, 1, 0.22), transparent 26%),
-    linear-gradient(120deg, #090a0c 0%, var(--race-command-surface) 58%, #1d1111 100%);
-  color: var(--surface-dark-text);
-  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.22);
+  background: var(--race-command-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
   animation: race-command-reveal 560ms var(--ease-out-expo) both;
 }
 
@@ -45,7 +43,7 @@
   bottom: -110px;
   width: 360px;
   height: 220px;
-  border: 42px solid rgba(255, 255, 255, 0.035);
+  border: 42px solid var(--race-control-grid);
   transform: skewX(-24deg) rotate(-8deg);
 }
 
@@ -55,8 +53,8 @@
   inset: 0;
   opacity: 0.36;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--race-control-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--race-control-grid) 1px, transparent 1px);
   background-size: 54px 54px;
   mask-image: linear-gradient(90deg, transparent 0%, #000 40%, #000 100%);
 }
@@ -66,12 +64,12 @@
   z-index: -1;
   right: clamp(16px, 4vw, 64px);
   top: -54px;
-  color: rgba(255, 255, 255, 0.035);
+  color: var(--race-control-grid);
   font-family: var(--race-display);
   font-size: clamp(220px, 25vw, 380px);
   font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.08em;
+  letter-spacing: var(--tracking-normal);
   pointer-events: none;
 }
 
@@ -89,20 +87,20 @@
 .race-command-back.ant-btn {
   height: 34px;
   padding: 0;
-  color: #d1d5db;
+  color: var(--text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }
 
 .race-command-back.ant-btn:hover,
 .race-command-back.ant-btn:focus-visible {
-  color: #fff !important;
+  color: var(--f1-red-text) !important;
   background: transparent !important;
 }
 
 .race-command-championship {
   overflow: hidden;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-family: var(--race-display);
   font-size: 11px;
   font-weight: 700;
@@ -117,9 +115,9 @@
   min-height: 28px;
   gap: 7px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-full);
-  color: #f3f4f6;
+  color: var(--text-primary);
   font-family: var(--race-display);
   font-size: 11px;
   font-weight: 700;
@@ -158,11 +156,11 @@
 .race-command-kicker {
   display: block;
   margin-bottom: var(--space-2);
-  color: var(--f1-red-light);
-  font-family: var(--race-display);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  color: var(--f1-red-text);
+  font-family: var(--font-family);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-wide);
 }
 
 .race-command-copy h1 {
@@ -171,19 +169,19 @@
   gap: var(--space-3);
   max-width: 900px;
   margin: 0;
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--race-display);
   font-size: clamp(42px, 6vw, 78px);
   font-stretch: condensed;
   font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 0.92;
+  letter-spacing: var(--tracking-normal);
+  line-height: var(--leading-tight);
   text-wrap: balance;
 }
 
 .race-command-copy h1 > .anticon {
   margin-top: 0.13em;
-  color: var(--f1-red);
+  color: var(--f1-red-text);
   font-size: 0.44em;
 }
 
@@ -198,14 +196,14 @@
 }
 
 .race-command-copy > p strong {
-  color: #f3f4f6;
+  color: var(--text-primary);
   font-size: var(--text-base);
 }
 
 .race-command-copy > p span::before {
   content: '/';
   margin-right: var(--space-3);
-  color: var(--f1-red);
+  color: var(--f1-red-text);
 }
 
 .race-command-meta {
@@ -223,22 +221,22 @@
   padding: 0 var(--space-3);
   border: 1px solid var(--race-command-line);
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.045);
-  color: #d1d5db;
+  background: var(--race-control-grid);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }
 
 .race-command-meta > span.is-sprint {
   border-color: rgba(255, 24, 1, 0.5);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .race-command-snapshot {
   display: grid;
   border: 1px solid var(--race-command-line);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.24);
+  background: var(--bg-secondary);
   backdrop-filter: blur(12px);
 }
 
@@ -266,7 +264,7 @@
 }
 
 .race-command-stat > span {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-family: var(--race-display);
   font-size: 10px;
   font-weight: 800;
@@ -274,7 +272,7 @@
 }
 
 .race-command-stat strong {
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--race-display);
   font-size: 24px;
   letter-spacing: 0.03em;
@@ -282,7 +280,7 @@
 
 .race-command-stat small {
   overflow: hidden;
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-size: 11px;
   text-align: right;
   text-overflow: ellipsis;
@@ -300,8 +298,8 @@
   margin: 0 calc(clamp(20px, 3vw, 42px) * -1);
   padding: 0 clamp(20px, 3vw, 42px);
   border-top: 1px solid var(--race-command-line);
-  background: rgba(0, 0, 0, 0.2);
-  color: #6b7280;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-family: var(--race-display);
   font-size: 9px;
   font-weight: 700;
@@ -313,7 +311,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-right: auto;
-  color: #d1d5db;
+  color: var(--text-secondary);
 }
 
 /* Primary race navigation */
