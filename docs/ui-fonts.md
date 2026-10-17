@@ -5,6 +5,8 @@ Sans Condensed, Mono and Sans SC fonts. Derived families are named `F1 UI Sans`,
 `F1 UI Display`, `F1 UI Mono` and `F1 UI Hanzi` to respect the OFL reserved names.
 The original licenses are shipped in `public/fonts/`.
 
+The account-entry subset covers the login page and its shared `AuthFrame` layout,
+including footer links, so the first visit does not fetch the larger extended subset.
 ASCII weight files and Chinese account-entry/extended glyph subsets are requested only
 when used. The regular/bold Sans pair avoids an extra semibold first-view download.
 ASCII files keep outlines, kerning and ligatures while dropping legacy TrueType

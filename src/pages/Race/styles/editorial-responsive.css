@@ -209,10 +209,10 @@
   .race-info-section-heading small { text-align: left; }
 
   .race-prediction-ranking { grid-template-columns: 1fr; }
-  .race-prediction-ranking > li { padding: var(--space-4); border-right: 0; border-bottom: 1px solid var(--border-secondary); }
+  .race-prediction-ranking > li { border-right: 0; border-bottom: 1px solid var(--border-secondary); }
+  .race-prediction-candidate { padding: var(--space-4); }
   .race-prediction-ranking > li:last-child { border-bottom: 0; }
-  .race-prediction-meta { align-items: flex-start; flex-wrap: wrap; }
-  .race-prediction-meta small { width: 100%; margin-left: 0; }
+  .race-prediction-meta { flex-wrap: wrap; }
 
   .race-analysis-brief { grid-template-columns: 1fr; }
   .race-analysis-brief article {

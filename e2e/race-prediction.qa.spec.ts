@@ -43,6 +43,7 @@ const prediction = {
       factors: [
         { feature: 'qualifyingPole', contribution: 0.34 },
         { feature: 'driverRecentWinRate', contribution: 0.21 },
+        { feature: 'driverRecentReliability', contribution: -0.12 },
       ],
     },
     {
@@ -65,6 +66,16 @@ const prediction = {
         { feature: 'driverStandingAdvantage', contribution: 0.16 },
       ],
     },
+    ...[
+      'george_russell', 'charles_leclerc', 'lewis_hamilton', 'oscar_piastri', 'fernando_alonso',
+      'lance_stroll', 'carlos_sainz', 'alex_albon', 'pierre_gasly', 'franco_colapinto',
+      'esteban_ocon', 'oliver_bearman', 'liam_lawson', 'arvid_lindblad', 'nico_hulkenberg',
+      'gabriel_bortoleto', 'sergio_perez', 'valtteri_bottas', 'jack_doohan',
+    ].map((driverId, index) => ({
+      driver_id: driverId, constructor_id: index === 0 ? 'mercedes' : 'test_team', rank: index + 4,
+      probability: index === 18 ? 0.00004 : (0.07 - 0.00004) / 18,
+      factors: index === 0 ? [{ feature: 'driverRecentPodiumRate', contribution: 0.1 }] : [],
+    })),
   ],
 };
 
@@ -123,6 +134,12 @@ test('winner prediction is readable and responsive on home and race info', async
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: /Kimi Antonelli/ })).toContainText('48%');
   await expect(page.getByRole('button', { name: /Kimi Antonelli/ })).toContainText('排位赛后');
+  await page.getByRole('button', { name: /Kimi Antonelli/ }).click();
+  await expect(page.getByRole('dialog', { name: '夺冠概率与预测依据' })).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('list', { name: '全部已发布车手夺冠概率' }).locator(':scope > li')).toHaveCount(22);
+  await expect.poll(() => page.getByRole('dialog').evaluate(element => element.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
 
   await page.goto('/races/13/info?season=2026', { waitUntil: 'domcontentloaded' });
   const panel = page.getByRole('region', { name: '冠军预测' });
@@ -130,12 +147,41 @@ test('winner prediction is readable and responsive on home and race info', async
   await expect(panel).toContainText('Kimi Antonelli');
   await expect(panel).toContainText('Max Verstappen');
   await expect(panel).toContainText('Lando Norris');
-  await expect(panel).toContainText('概率反映模型对当前数据的判断');
-
-  const headingCopyFits = await panel.locator('.race-info-section-heading small').evaluate((element) => (
-    element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight
-  ));
-  expect(headingCopyFits, `prediction heading copy clipping in ${testInfo.project.name}`).toBe(true);
+  await expect(panel).not.toContainText('qualifyingPole');
+  await expect(panel).not.toContainText(prediction.model_version);
+  await expect(panel.locator('time, .ant-tag')).toHaveCount(0);
+  await panel.screenshot({ path: `artifacts/browser-qa/screenshots/race-prediction-${testInfo.project.name}.png` });
+  const favourite = panel.getByRole('button', { name: /Kimi Antonelli/ });
+  await favourite.click();
+  const dialog = page.getByRole('dialog', { name: '夺冠概率与预测依据' });
+  await expect(dialog).toBeVisible();
+  const roster = dialog.getByRole('list', { name: '全部已发布车手夺冠概率' });
+  await expect(roster.locator(':scope > li')).toHaveCount(22);
+  await expect(roster.getByRole('button', { name: /Kimi Antonelli/ })).toHaveAttribute('aria-expanded', 'true');
+  await expect(dialog.getByText('排位赛杆位', { exact: true })).toBeVisible();
+  await expect(dialog.getByText('车手近期完赛可靠性', { exact: true })).toBeVisible();
+  await expect(dialog.getByText('不利因素', { exact: true })).toBeVisible();
+  await dialog.screenshot({ path: `artifacts/browser-qa/screenshots/prediction-details-${testInfo.project.name}.png`, animations: 'disabled' });
+  await roster.getByRole('button', { name: /George Russell/ }).click();
+  await expect(dialog.getByText('车手近期领奖台率', { exact: true })).toBeVisible();
+  await expect(roster.getByRole('button', { name: /Kimi Antonelli/ })).toHaveAttribute('aria-expanded', 'false');
+  const lastDriver = roster.getByRole('button', { name: /Jack Doohan/ });
+  await expect(lastDriver).toContainText('<0.1%');
+  await lastDriver.click();
+  await expect(roster.locator('.is-expanded').getByText('本次发布未提供该车手的具体评分因素，暂时无法展示预测依据。')).toBeVisible();
+  await dialog.locator('summary').click();
+  await expect(dialog.getByText(prediction.model_version)).toBeVisible();
+  const detailsOverflow = await dialog.evaluate((element) => element.scrollWidth - element.clientWidth);
+  expect(detailsOverflow).toBeLessThanOrEqual(1);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(favourite).toBeFocused();
+  await panel.getByRole('button', { name: '查看全部概率与依据 →' }).click();
+  await expect(dialog).toBeVisible();
+  await expect(roster.getByRole('button', { name: /Kimi Antonelli/ })).toHaveAttribute('aria-expanded', 'true');
+  await expect(dialog.getByText('排位赛杆位', { exact: true })).toBeInViewport();
+  await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -147,7 +193,46 @@ test('winner prediction is readable and responsive on home and race info', async
   expect(unexpectedBrowserErrors, `console/page errors in ${testInfo.project.name}`).toEqual([]);
   expect(failedRequests, `failed network requests in ${testInfo.project.name}`).toEqual([]);
 
-  await panel.screenshot({
-    path: `artifacts/browser-qa/screenshots/race-prediction-${testInfo.project.name}.png`,
+});
+
+test('prediction details follow dark theme and preserve stale-data context', async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+    version: 3, state: { currentSeason: '2026', theme: 'dark', sidebarCollapsed: false, features: {} },
+  })));
+  await installPredictionFixtures(page);
+  await page.route('**/rest/v1/race_prediction_current?**', route => route.fulfill({ contentType: 'application/json',
+    body: JSON.stringify([{ ...prediction, generated_at: '2026-01-01T00:00:00Z' }]),
+  }));
+  await page.goto('/races/13/info?season=2026');
+  const panel = page.getByRole('region', { name: '冠军预测' });
+  await expect(panel.getByText('数据待更新')).toBeVisible();
+  await panel.getByRole('button', { name: /Max Verstappen/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('头排发车', { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/数据待更新/)).toBeVisible();
+  await dialog.screenshot({ path: `artifacts/browser-qa/screenshots/prediction-details-dark-${testInfo.project.name}.png`, animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+});
+
+test('prediction handles loading, empty data and service failures with retry', async ({ page }) => {
+  await installPredictionFixtures(page);
+  let release: () => void = () => {};
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/rest/v1/race_prediction_current?**', async route => {
+    await pending;
+    await route.fulfill({ contentType: 'application/json', body: '[]' });
   });
+  await page.goto('/races/13/info?season=2026');
+  const panel = page.getByRole('region', { name: '冠军预测' });
+  await expect(panel.locator('.ant-card-loading')).toBeVisible();
+  release();
+  await expect(panel.getByText('等待可用的赛前数据')).toBeVisible();
+  await expect(panel.getByRole('button', { name: '查看全部概率与依据 →' })).toHaveCount(0);
+  await page.route('**/rest/v1/race_prediction_current?**', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
+  await page.reload();
+  await expect(panel.getByRole('alert')).toContainText('预测服务暂时不可用');
+  await page.route('**/rest/v1/race_prediction_current?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify([prediction]) }));
+  await panel.getByRole('button', { name: '重试预测' }).click();
+  await expect(panel.getByRole('button', { name: /Kimi Antonelli/ })).toBeVisible();
 });

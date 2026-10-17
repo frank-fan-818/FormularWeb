@@ -1,12 +1,15 @@
-import { Button, Card, Tag } from 'antd';
+import { lazy, Suspense } from 'react';
+import { Button, Card } from 'antd';
 import { useRacePrediction } from '@/hooks/useRacePrediction';
+import { usePredictionDetails } from '@/hooks/usePredictionDetails';
 import { getTeamColor } from '@/utils/teamColors';
 import {
   formatPredictionDriverId,
   formatPredictionProbability,
-  getPredictionFactorLabel,
   getRacePredictionPhaseLabel,
 } from '@/utils/racePredictionPresentation';
+
+const RacePredictionDetails = lazy(() => import('@/components/RacePredictionDetails'));
 
 interface RaceWinnerPredictionPanelProps {
   season: string | number;
@@ -15,13 +18,13 @@ interface RaceWinnerPredictionPanelProps {
 
 export function RaceWinnerPredictionPanel({ season, round }: RaceWinnerPredictionPanelProps) {
   const { prediction, loading, error, refetch, predictionIsStale } = useRacePrediction(season, round);
+  const { details, openDetails, closeDetails, selectDriver } = usePredictionDetails(prediction);
   const topThree = prediction?.candidates.slice(0, 3) || [];
 
   return (
     <section className="race-info-section race-prediction-section" aria-labelledby="race-prediction-heading">
       <div className="race-info-section-heading">
         <span id="race-prediction-heading">冠军预测</span>
-        <small>结合发车位、近期表现与赛道特征，随赛周数据自动更新</small>
       </div>
       <Card className="race-weekend-card race-prediction-card" loading={loading}>
         {error && !prediction ? (
@@ -38,37 +41,34 @@ export function RaceWinnerPredictionPanel({ season, round }: RaceWinnerPredictio
         ) : (
           <>
             <div className="race-prediction-meta">
-              <Tag color={prediction.phase === 'post_quali' ? 'blue' : 'default'}>{getRacePredictionPhaseLabel(prediction.phase)}</Tag>
-              <span className={predictionIsStale ? 'is-stale' : ''}>
-                {predictionIsStale ? '\u6570\u636e\u5f85\u66f4\u65b0' : '\u6570\u636e\u5df2\u66f4\u65b0'}
-              </span>
-              <time dateTime={prediction.generatedAt}>
-                {new Date(prediction.generatedAt).toLocaleString('zh-CN', { hour12: false })}
-              </time>
-              <small>{prediction.modelVersion}</small>
+              <span>{getRacePredictionPhaseLabel(prediction.phase)}</span>
+              {predictionIsStale && <span className="is-stale">数据待更新</span>}
+              <Button type="link" aria-haspopup="dialog" onClick={() => openDetails()}>查看全部概率与依据 →</Button>
             </div>
             <ol className="race-prediction-ranking">
               {topThree.map((candidate) => (
                 <li key={candidate.driverId} className={candidate.rank === 1 ? 'is-favourite' : ''}>
-                  <span className="race-prediction-rank">P{candidate.rank}</span>
-                  <i style={{ background: getTeamColor(candidate.constructorId) }} />
-                  <div>
-                    <strong>{formatPredictionDriverId(candidate.driverId)}</strong>
-                    <small>{candidate.constructorId.replace(/[_-]+/g, ' ')}</small>
-                  </div>
-                  <b>{formatPredictionProbability(candidate.probability)}</b>
-                  <div className="race-prediction-factors">
-                    {candidate.factors.filter((factor) => factor.contribution > 0).slice(0, 2).map((factor) => (
-                      <Tag key={factor.feature}>{getPredictionFactorLabel(factor.feature)}</Tag>
-                    ))}
-                  </div>
+                  <button type="button" className="race-prediction-candidate" aria-haspopup="dialog" onClick={() => openDetails(candidate.driverId)}>
+                    <span className="race-prediction-rank">P{candidate.rank}</span>
+                    <i style={{ background: getTeamColor(candidate.constructorId) }} aria-hidden="true" />
+                    <span className="race-prediction-identity">
+                      <strong>{formatPredictionDriverId(candidate.driverId)}</strong>
+                      <small>{candidate.constructorId.replace(/[_-]+/g, ' ')}</small>
+                    </span>
+                    <b>{formatPredictionProbability(candidate.probability)}</b>
+                  </button>
                 </li>
               ))}
             </ol>
-            <p className="race-prediction-disclaimer">概率反映模型对当前数据的判断，不代表比赛结果保证。</p>
           </>
         )}
       </Card>
+      {prediction && details && (
+        <Suspense fallback={<p role="status">正在打开预测详情…</p>}>
+          <RacePredictionDetails prediction={prediction} open={details.open} driverId={details.driverId}
+            onClose={closeDetails} onSelect={selectDriver} />
+        </Suspense>
+      )}
     </section>
   );
 }

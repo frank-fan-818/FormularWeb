@@ -113,6 +113,10 @@ test('keyboard users can skip navigation and reduced motion stays immediate', as
 });
 
 test('account entry keeps primary content visible from the first animation frame', async ({ page }, info) => {
+  const requestedFonts: string[] = [];
+  page.on('request', request => {
+    if (request.resourceType() === 'font') requestedFonts.push(request.url());
+  });
   await page.goto('/login');
   const panel = page.locator('.auth-center__panel');
   await expect(panel.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
@@ -123,6 +127,9 @@ test('account entry keeps primary content visible from the first animation frame
   expect(await page.locator('.auth-center__track').evaluate(element => element.getAnimations()
     .every(animation => animation.effect?.getTiming().iterations !== Infinity))).toBe(true);
   await expect(page.getByLabel('邮箱', { exact: true })).toBeEnabled();
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  expect(requestedFonts.some(url => url.includes('F1UIHanzi-400-core.woff2'))).toBe(true);
+  expect(requestedFonts.filter(url => url.includes('F1UIHanzi-400-extended.woff2'))).toEqual([]);
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/release-login-${info.project.name}.png`, fullPage: true, animations: 'disabled' });
 });
 

@@ -9,6 +9,9 @@ import { driverApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useDriverStandingsCached, useSeasonRacesCached } from '@/hooks';
+import { usePointsComparison } from '@/hooks/usePointsComparison';
+import { PointsComparisonButton, PointsComparisonControls } from '@/components/charts/PointsComparisonControls';
+import { getComparisonChartOption } from '@/utils/pointsComparison';
 import { useAppStore } from '@/store';
 import type {
   BestFinishSummary,
@@ -220,6 +223,13 @@ const DriverDetail = () => {
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
 
   const currentStanding = driverId ? findStandingByDriverId(driverStandings, driverId) : null;
+  const comparison = usePointsComparison('driver', currentSeason,
+    currentStanding?.Driver.driverId || resolvedDriverId || driverId || '',
+    driverStandings.map(standing => ({
+      id: standing.Driver.driverId,
+      name: `${standing.Driver.givenName} ${standing.Driver.familyName}`,
+      color: getTeamColor(standing.Constructors[0]?.constructorId || ''),
+    })));
   const historySeasons = driverHistory?.seasons || [];
   const firstSeason = historySeasons.length > 0 ? historySeasons[historySeasons.length - 1] : null;
   const latestSeason = historySeasons[0] || null;
@@ -269,7 +279,7 @@ const DriverDetail = () => {
   }, []);
 
   useEffect(() => {
-    if (seasonRaceResults.length === 0) {
+    if (seasonRaceResults.length === 0 && !comparison.data) {
       setChartEnabled(false);
       return;
     }
@@ -279,7 +289,7 @@ const DriverDetail = () => {
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [seasonRaceResults.length]);
+  }, [seasonRaceResults.length, comparison.data]);
 
   useEffect(() => {
     if (!driverId || seasonLoading) {
@@ -463,7 +473,7 @@ const DriverDetail = () => {
       cumulativePointsArr[cumulativePointsArr.length - 1] = totalPoints;
     }
 
-    return {
+    const option = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
@@ -608,6 +618,9 @@ const DriverDetail = () => {
       animationDuration: 1500,
       animationEasing: 'cubicOut',
     };
+    return comparison.data && comparison.own && comparison.opponent
+      ? getComparisonChartOption(option, comparison.data, comparison.own, comparison.opponent)
+      : option;
   };
 
   if (!driver && !loading && !seasonLoading) {
@@ -696,6 +709,8 @@ const DriverDetail = () => {
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
+          className="season-points-card"
+          extra={<PointsComparisonButton comparison={comparison} />}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
           styles={{
             header: {
@@ -707,7 +722,8 @@ const DriverDetail = () => {
             body: { padding: isMobile ? 0 : 24 },
           }}
         >
-          {seasonRaceResults.length > 0 ? (
+          <PointsComparisonControls comparison={comparison} kind="driver" />
+          {seasonRaceResults.length > 0 || comparison.data ? (
             <div
               className="chart-scroll-container"
               ref={chartContainerRef}
@@ -718,7 +734,7 @@ const DriverDetail = () => {
               <div
                 className="chart-scroll-content"
                 style={{
-                  width: isMobile ? Math.max(seasonRaceResults.length * 70 * chartScale, window.innerWidth) : '100%',
+                  width: isMobile ? Math.max((comparison.data?.rounds.length ?? seasonRaceResults.length) * 70 * chartScale, window.innerWidth) : '100%',
                   transform: isMobile ? 'scaleX(1)' : 'none',
                   transformOrigin: 'left center',
                 }}
@@ -732,10 +748,10 @@ const DriverDetail = () => {
                     )}
                   >
                     <LazyEChartsPanel
-                      chartKey={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}`}
+                      chartKey={`${resolvedDriverId || driverId}-${currentSeason}-${seasonRaceResults.length}-${comparison.data ? comparison.opponent?.id : ''}`}
                       option={getPointsChartOption()}
                       height={chartHeight}
-                      ariaLabel="车手本赛季各分站积分与累计积分趋势图。"
+                      ariaLabel={comparison.data ? `${comparison.own?.name} 与 ${comparison.opponent?.name} 本赛季逐站累计积分对比图。` : '车手本赛季各分站积分与累计积分趋势图。'}
                     />
                   </Suspense>
                 ) : (

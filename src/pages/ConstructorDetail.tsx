@@ -8,6 +8,9 @@ import { constructorApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
 import { supabaseApi } from '@/api/supabase';
 import { useConstructorStandingsCached } from '@/hooks';
+import { usePointsComparison } from '@/hooks/usePointsComparison';
+import { PointsComparisonButton, PointsComparisonControls } from '@/components/charts/PointsComparisonControls';
+import { getComparisonChartOption } from '@/utils/pointsComparison';
 import { useAppStore } from '@/store';
 import type {
   HistoryCareerSummary,
@@ -109,6 +112,11 @@ const ConstructorDetail = () => {
   const touchStartRef = useRef<{ distance: number; scale: number } | null>(null);
 
   const currentStanding = constructorStandings.find((item) => item.Constructor.constructorId === constructorId) || null;
+  const comparison = usePointsComparison('constructor', currentSeason, constructorId || '',
+    constructorStandings.map(standing => ({
+      id: standing.Constructor.constructorId, name: standing.Constructor.name,
+      color: getTeamColor(standing.Constructor.constructorId),
+    })));
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -138,7 +146,7 @@ const ConstructorDetail = () => {
   }, []);
 
   useEffect(() => {
-    if (seasonRaceResults.length === 0) {
+    if (seasonRaceResults.length === 0 && !comparison.data) {
       setChartEnabled(false);
       return;
     }
@@ -148,7 +156,7 @@ const ConstructorDetail = () => {
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [seasonRaceResults.length]);
+  }, [seasonRaceResults.length, comparison.data]);
 
   useEffect(() => {
     const updateChartHeight = () => {
@@ -343,7 +351,7 @@ const ConstructorDetail = () => {
       cumulativePointsArr[cumulativePointsArr.length - 1] = totalPoints;
     }
 
-    return {
+    const option = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
@@ -493,6 +501,9 @@ const ConstructorDetail = () => {
       animationDuration: 1500,
       animationEasing: 'cubicOut',
     };
+    return comparison.data && comparison.own && comparison.opponent
+      ? getComparisonChartOption(option, comparison.data, comparison.own, comparison.opponent)
+      : option;
   };
 
   if (!constructor && !loading && !seasonLoading) {
@@ -519,7 +530,10 @@ const ConstructorDetail = () => {
         {TEXT.back}
       </Button>
 
-      <Card loading={!constructor && (seasonLoading || loading)} className="constructor-profile-shell">
+      {!constructor && (seasonLoading || loading) ? (
+        <Card loading className="constructor-profile-loading-card" />
+      ) : (
+      <div className="constructor-profile-shell">
         <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
           <div className="constructor-profile-identity">
             <ConstructorLogo constructorId={constructorId || ''} size={96} />
@@ -571,6 +585,8 @@ const ConstructorDetail = () => {
         />
         <Card
           title={`${currentSeason} ${TEXT.pointsTrend}`}
+          className="season-points-card"
+          extra={<PointsComparisonButton comparison={comparison} />}
           style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden' }}
           styles={{
             header: {
@@ -582,7 +598,8 @@ const ConstructorDetail = () => {
             body: { padding: isMobile ? 0 : 24 },
           }}
         >
-          {seasonRaceResults.length > 0 ? (
+          <PointsComparisonControls comparison={comparison} kind="constructor" />
+          {seasonRaceResults.length > 0 || comparison.data ? (
             <div
               className="chart-scroll-container"
               ref={chartContainerRef}
@@ -593,7 +610,7 @@ const ConstructorDetail = () => {
               <div
                 className="chart-scroll-content"
                 style={{
-                  width: isMobile ? Math.max(seasonRaceResults.length * 70 * chartScale, window.innerWidth) : '100%',
+                  width: isMobile ? Math.max((comparison.data?.rounds.length ?? seasonRaceResults.length) * 70 * chartScale, window.innerWidth) : '100%',
                   transform: isMobile ? 'scaleX(1)' : 'none',
                   transformOrigin: 'left center',
                 }}
@@ -607,10 +624,10 @@ const ConstructorDetail = () => {
                     )}
                   >
                     <LazyEChartsPanel
-                      chartKey={`${constructorId}-${currentSeason}-${seasonRaceResults.length}`}
+                      chartKey={`${constructorId}-${currentSeason}-${seasonRaceResults.length}-${comparison.data ? comparison.opponent?.id : ''}`}
                       option={getPointsChartOption()}
                       height={chartHeight}
-                      ariaLabel="车队本赛季各分站积分与累计积分趋势图。"
+                      ariaLabel={comparison.data ? `${comparison.own?.name} 与 ${comparison.opponent?.name} 本赛季逐站累计积分对比图。` : '车队本赛季各分站积分与累计积分趋势图。'}
                     />
                   </Suspense>
                 ) : (
@@ -690,7 +707,8 @@ const ConstructorDetail = () => {
             </Col>
           </Row>
         </Card>
-      </Card>
+      </div>
+      )}
     </div>
   );
 };

@@ -188,7 +188,6 @@ const Home = () => {
             <RacePredictionSummary
               season={focusRace.season}
               round={focusRace.round}
-              onOpen={() => navigate(focusRacePath)}
             />
           </Suspense>
         ) : null}

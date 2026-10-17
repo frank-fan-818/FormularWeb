@@ -42,13 +42,17 @@
 }
 
 .constructor-profile-shell {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
 }
 
-.constructor-profile-shell > .ant-card-body {
-  padding: 0;
+.constructor-profile-loading-card {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.constructor-profile-loading-card > .ant-card-body {
+  padding-inline: 0;
 }
 
 .constructor-profile-hero {
@@ -63,6 +67,7 @@
   border-top: 8px solid var(--f1-red);
   background: var(--bg-card);
   color: var(--text-primary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
 
