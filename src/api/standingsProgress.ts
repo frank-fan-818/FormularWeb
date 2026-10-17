@@ -1,4 +1,4 @@
-import ergastApi, { seasonApi } from './ergast';
+import ergastApi from './ergast';
 import type { ErgastResponse } from '@/types';
 import type { PointsComparisonKind, PointsLoadingProgress, PointsSnapshot, SeasonPointsProgress } from '@/types/pointsComparison';
 import { assertCompleteList, assertContiguousRounds, assertUniqueValues } from '@/utils/dataCompleteness';
@@ -6,6 +6,18 @@ import { formatShortRaceName } from '@/utils/raceDisplayName';
 
 const snapshots = new Map<string, { expires: number; request: Promise<PointsSnapshot> }>();
 const seasons = new Map<string, { expires: number; data: SeasonPointsProgress }>();
+
+async function getCompletedRaces(season: string) {
+  // Calendar providers can assign different round numbers after schedule changes.
+  // Published winners identify completed Grands Prix in the standings provider's own numbering.
+  const response: ErgastResponse<never> = await ergastApi.get(`/${season}/results/1.json?limit=100`);
+  const races = response.MRData.RaceTable?.Races || [];
+  assertCompleteList(races.flatMap(race => race.Results || []), response.MRData.total, 'points comparison completed results');
+  assertUniqueValues(races, race => race.round, 'points comparison completed results');
+  if (!races.length || races.some(race => race.season !== season || !race.Results?.length
+    || race.Results.some(result => result.position !== '1'))) throw new Error('暂无已完赛的积分数据');
+  return races;
+}
 
 function getSnapshot(kind: PointsComparisonKind, season: string, round?: number): Promise<PointsSnapshot> {
   const endpoint = kind === 'driver' ? 'driverStandings' : 'constructorStandings';
@@ -42,11 +54,13 @@ export const standingsProgressApi = {
       return cached.data;
     }
     const expires = Date.now() + 5 * 60 * 1000;
-    const [latest, calendar] = await Promise.all([getSnapshot(kind, season), seasonApi.getSeasonRaces(season)]);
-    const races = calendar.filter(race => Number(race.round) <= latest.round)
+    const [reportedLatest, completedRaces] = await Promise.all([getSnapshot(kind, season), getCompletedRaces(season)]);
+    const races = completedRaces.filter(race => Number(race.round) <= reportedLatest.round)
       .sort((a, b) => Number(a.round) - Number(b.round));
     assertContiguousRounds(races, race => Number(race.round), 'points comparison calendar');
-    if (races.length !== latest.round) throw new Error('赛历不完整，暂时无法对齐分站');
+    const lastRound = Number(races[races.length - 1]?.round);
+    if (!lastRound) throw new Error('暂无已完赛的积分数据');
+    const latest = lastRound === reportedLatest.round ? reportedLatest : await getSnapshot(kind, season, lastRound);
     const rounds: SeasonPointsProgress['rounds'] = races.map(race => ({
       round: Number(race.round), name: formatShortRaceName(race),
       snapshot: Number(race.round) === latest.round ? latest : null,
