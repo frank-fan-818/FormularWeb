@@ -1,6 +1,6 @@
 import { ArrowDownOutlined, ArrowUpOutlined, FieldTimeOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import type { CSSProperties, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ConstructorLogo } from '@/utils/constructorLogos';
 import { DriverAvatar } from '@/utils/driverImages';
 import { getTeamColor } from '@/utils/teamColors';
@@ -35,8 +35,8 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
       icon: <ArrowUpOutlined />,
       label: '最大跃升',
       value: `+${insights.biggestGain.places}`,
-      driver: insights.biggestGain.result.Driver.code,
-      detail: `${insights.biggestGain.result.grid} → ${insights.biggestGain.result.position}`,
+      drivers: [insights.biggestGain.result],
+      detail: `发车 P${insights.biggestGain.result.grid} → 赛后 P${insights.biggestGain.result.position}`,
       tone: 'positive',
     } : null,
     insights.fastestLap ? {
@@ -44,8 +44,8 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
       icon: <ThunderboltOutlined />,
       label: '最快圈',
       value: insights.fastestLap.time,
-      driver: insights.fastestLap.result.Driver.code,
-      detail: `L${insights.fastestLap.lap}`,
+      drivers: [insights.fastestLap.result],
+      detail: `第 ${insights.fastestLap.lap} 圈`,
       tone: 'fastest',
     } : null,
     insights.biggestLoss ? {
@@ -53,8 +53,8 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
       icon: <ArrowDownOutlined />,
       label: '最大回落',
       value: `-${insights.biggestLoss.places}`,
-      driver: insights.biggestLoss.result.Driver.code,
-      detail: `${insights.biggestLoss.result.grid} → ${insights.biggestLoss.result.position}`,
+      drivers: [insights.biggestLoss.result],
+      detail: `发车 P${insights.biggestLoss.result.grid} → 赛后 P${insights.biggestLoss.result.position}`,
       tone: 'negative',
     } : null,
     {
@@ -62,8 +62,8 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
       icon: <FieldTimeOutlined />,
       label: '未完赛车手',
       value: String(insights.retirements.length),
-      driver: insights.retirements.length ? insights.retirements.map((item) => item.Driver.code).slice(0, 3).join(' · ') : '全员完赛',
-      detail: insights.interruptionCount ? `${insights.interruptionCount} 段赛道状态` : '无中断记录',
+      drivers: insights.retirements,
+      detail: '',
       tone: 'neutral',
     },
   ].filter(Boolean) as Array<{
@@ -71,7 +71,7 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
     icon: ReactNode;
     label: string;
     value: string;
-    driver: string;
+    drivers: NonNullable<RaceOverviewInsights['winner']>[];
     detail: string;
     tone: string;
   }>;
@@ -128,8 +128,21 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
             <span className="race-story-icon">{item.icon}</span>
             <span className="race-story-label">{item.label}</span>
             <strong>{item.value}</strong>
-            <span className="race-story-driver">{item.driver}</span>
-            <small>{item.detail}</small>
+            <div className="race-story-drivers">
+              {item.drivers.map((result) => (
+                <Link
+                  key={result.Driver.driverId}
+                  className="race-story-driver"
+                  to={`/drivers/${result.Driver.driverId}`}
+                >
+                  {getDriverName(result)}
+                </Link>
+              ))}
+              {item.key === 'retirements' && !item.drivers.length && (
+                <span className="race-story-empty">全员完赛</span>
+              )}
+            </div>
+            {item.detail && <small>{item.detail}</small>}
           </article>
         ))}
       </div>

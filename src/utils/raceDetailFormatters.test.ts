@@ -24,7 +24,11 @@ describe('raceDetailFormatters', () => {
     expect(formatSeconds(81.2345)).toBe('1:21.234');
     expect(formatSeconds(Number.NaN)).toBe('-');
     expect(formatNumber(12.345, 2)).toBe('12.35');
-    expect(formatTemperature(31.25)).toBe('31.3 C');
+    expect(formatTemperature(31.25)).toBe('31.3℃');
+    expect(formatTemperature(0)).toBe('0.0℃');
+    expect(formatTemperature(-2.5)).toBe('-2.5℃');
+    expect(formatTemperature(null)).toBe('-');
+    expect(formatTemperature(Number.NaN)).toBe('-');
     expect(formatWindSpeed(5.234)).toBe('5.2 m/s');
     expect(formatSpeed(314.159)).toBe('314.2 km/h');
     expect(formatProbability(null)).toBe('-');

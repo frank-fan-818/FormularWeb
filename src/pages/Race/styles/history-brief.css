@@ -23,8 +23,10 @@
 .history-results-table .race-history-time-cell { display: grid; gap: var(--space-1); }
 .history-results-table .race-history-time-cell strong { font: 700 var(--text-lg)/1.2 var(--font-display); }
 .history-results-table .race-history-time-cell span { font-size: var(--text-xs); color: var(--text-secondary); }
-.history-winner { display: flex; align-items: center; gap: var(--space-2); }
-.history-winner-name { font-size: var(--text-xs); }
+.history-driver-name { color: var(--text-primary); font-size: var(--text-sm); font-weight: var(--font-semibold); line-height: var(--leading-normal); overflow-wrap: anywhere; }
+.history-podium { display: grid; gap: var(--space-2); }
+.history-podium-driver { display: flex; align-items: baseline; gap: var(--space-2); }
+.history-podium-position { flex: 0 0 auto; color: var(--text-secondary); font-size: var(--text-xs); font-weight: var(--font-semibold); }
 .history-risk { min-width: 0; padding: var(--space-5); border-left: 1px solid var(--border-secondary); background: var(--bg-secondary); }
 .history-risk h3 { margin: 0; font-size: var(--text-lg); }
 .history-risk p { margin: var(--space-2) 0 var(--space-5); color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.6; }
@@ -66,12 +68,11 @@
   .history-results-table .ant-table-content > table { display: block; width: 100% !important; min-width: 0 !important; }
   .history-results-table colgroup, .history-results-table thead, .history-results-table .ant-table-measure-row { display: none; }
   .history-results-table tbody { display: block; }
-  .history-results-table .ant-table-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) minmax(0, 1fr); padding: var(--space-3) 0; gap: var(--space-3) var(--space-2); border-top: 1px solid var(--border-secondary); }
+  .history-results-table .ant-table-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: var(--space-3) 0; gap: var(--space-3) var(--space-2); border-top: 1px solid var(--border-secondary); }
   .history-results-table .ant-table-tbody > .ant-table-row > td { display: block; padding: 0; border: 0; }
-  .history-results-table .history-cell-year { grid-row: 1 / 3; }
-  .history-results-table .history-cell-podium { grid-column: 2 / -1; }
+  .history-results-table .history-cell-year, .history-results-table .history-cell-podium { grid-column: 1 / -1; }
+  .history-results-table .race-history-time-cell { display: flex; align-items: baseline; gap: var(--space-3); }
   .history-results-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: var(--space-1); color: var(--text-secondary); font-size: var(--text-xs); }
-  .history-winner-name { display: none; }
   .history-results, .history-risk { padding: var(--space-4); }
   .history-stats { gap: var(--space-5); }
   .history-stats > div { display: grid; gap: var(--space-2); }

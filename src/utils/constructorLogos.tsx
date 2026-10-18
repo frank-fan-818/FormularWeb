@@ -8,14 +8,18 @@ interface ConstructorLogoProps {
   constructorId: string;
   size?: number;
   className?: string;
+  onDark?: boolean;
 }
 
 export const ConstructorLogo: React.FC<ConstructorLogoProps> = ({
   constructorId,
   size = 32,
   className,
+  onDark = false,
 }) => {
   const media = getConstructorMedia(constructorId);
+  const darkVariant = onDark && media.darkFile;
+  const imagePath = darkVariant ? `/images/constructors/${media.darkFile}` : media.path;
   const [errored, setErrored] = useState(
     () => !media.isDeclared || FALLBACK_IDS.has(media.canonicalId),
   );
@@ -39,10 +43,10 @@ export const ConstructorLogo: React.FC<ConstructorLogoProps> = ({
 
   return (
     <img
-      src={media.path}
+      src={imagePath}
       alt={constructorId}
       className={className}
-      style={{ height: size, width: 'auto', objectFit: 'contain', filter: media.filter }}
+      style={{ height: size, width: 'auto', objectFit: 'contain', filter: darkVariant ? undefined : media.filter }}
       loading="lazy"
       onError={() => { FALLBACK_IDS.add(media.canonicalId); setErrored(true); }}
     />

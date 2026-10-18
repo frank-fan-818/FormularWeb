@@ -25,8 +25,8 @@ import type {
 import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
-import { DriverAvatar } from '@/utils/driverImages';
-import { ConstructorLogo } from '@/utils/constructorLogos';
+import { DriverProfileHero } from '@/components/drivers/DriverProfileHero';
+import { resolveDriverProfileIdentity } from '@/utils/driverDetails';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import { escapeHtml, getFirstTooltipParam } from '@/utils/chartTooltip';
 import './DriverDetail.css';
@@ -239,6 +239,9 @@ const DriverDetail = () => {
   const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
     : (driverHistory?.recentConstructorId ? getTeamColor(driverHistory.recentConstructorId) : '#1890ff');
+  const profileDriver = resolveDriverProfileIdentity(driver, currentStanding?.Driver || null,
+    showHistoryOverview ? driverHistory : null);
+  const profileSeason = showHistoryOverview && !currentStanding ? latestSeason?.season || '' : currentSeason;
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -624,7 +627,7 @@ const DriverDetail = () => {
       : option;
   };
 
-  if (!driver && !loading && !seasonLoading) {
+  if (!profileDriver && !loading && !seasonLoading && !historyLoading) {
     return (
       <div className="driver-detail-container">
         <DocumentHead title="车手详情 — F1 Dashboard" description="F1车手详情，赛季数据、生涯统计和积分走势" />
@@ -641,40 +644,26 @@ const DriverDetail = () => {
   return (
     <div className="driver-detail-container">
       <DocumentHead
-        title={driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} — F1 Dashboard` : '车手详情 — F1 Dashboard'}
-        description={`${driver?.givenName || ''} ${driver?.familyName || ''} F1车手详情，赛季数据、生涯统计和积分走势`}
+        title={profileDriver?.givenName && profileDriver?.familyName ? `${profileDriver.givenName} ${profileDriver.familyName} — F1 Dashboard` : '车手详情 — F1 Dashboard'}
+        description={`${profileDriver?.givenName || ''} ${profileDriver?.familyName || ''} F1车手详情，赛季数据、生涯统计和积分走势`}
       />
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
         {TEXT.back}
       </Button>
 
-      {!driver && (seasonLoading || loading) ? (
+      {!profileDriver && (seasonLoading || loading || historyLoading) ? (
         <Card loading className="driver-profile-loading-card" />
       ) : (
       <div className="driver-profile-shell">
-        <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div className="driver-profile-identity">
-            <DriverAvatar driverId={driver?.driverId || resolvedDriverId || driverId || ''} size={96} />
-            <div className="driver-profile-copy">
-              <div className="driver-profile-kicker">
-                <ConstructorLogo constructorId={currentStanding?.Constructors[0]?.constructorId || driverHistory?.recentConstructorId || ''} size={20} />
-                <span style={{ marginLeft: 6 }}>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</span>
-              </div>
-              <h1 className="driver-profile-name">
-                <span>{driver?.givenName || '-'}</span>
-                <strong>{driver?.familyName || ''}</strong>
-              </h1>
-              <dl className="driver-profile-meta">
-                {driver?.code ? <div><dt>{TEXT.code}</dt><dd>{driver.code}</dd></div> : null}
-                <div><dt>{TEXT.nationality}</dt><dd>{driver?.nationality || '-'}</dd></div>
-                <div><dt>{TEXT.season}</dt><dd>{currentSeason}</dd></div>
-              </dl>
-            </div>
-          </div>
-          <div className="driver-profile-number" style={{ color: teamColor }}>
-            {driver?.permanentNumber || driver?.code || '--'}
-          </div>
-        </section>
+        {profileDriver ? <DriverProfileHero
+          key={profileDriver.driverId}
+          driver={profileDriver}
+          season={profileSeason}
+          archive={showHistoryOverview}
+          teamId={currentStanding?.Constructors[0]?.constructorId || driverHistory?.recentConstructorId || ''}
+          teamName={currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || ''}
+          teamColor={teamColor}
+        /> : null}
 
         <div className="driver-current-stat-grid">
           <Card className="driver-current-stat-card">
@@ -936,13 +925,13 @@ const DriverDetail = () => {
         <Card title={TEXT.driverInfo}>
           <Row gutter={[24, 16]}>
             <Col xs={24} sm={12}>
-              <p><strong>{TEXT.name}</strong>{driver?.givenName} {driver?.familyName}</p>
-              <p><strong>{TEXT.code}</strong>{driver?.code || '-'}</p>
-              <p><strong>{TEXT.number}</strong>{driver?.permanentNumber || '-'}</p>
-              <p><strong>{TEXT.nationality}</strong>{driver?.nationality || '-'}</p>
+              <p><strong>{TEXT.name}</strong>{profileDriver?.givenName} {profileDriver?.familyName}</p>
+              <p><strong>{TEXT.code}</strong>{profileDriver?.code || '-'}</p>
+              <p><strong>{TEXT.number}</strong>{profileDriver?.permanentNumber || '-'}</p>
+              <p><strong>{TEXT.nationality}</strong>{profileDriver?.nationality || '-'}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? formatDateOnly(driver.dateOfBirth) : '-'}</p>
+              <p><strong>{TEXT.birthDate}</strong>{profileDriver?.dateOfBirth ? formatDateOnly(profileDriver.dateOfBirth) : '-'}</p>
               <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</p>
               {driverHistory?.recentConstructorName ? (
                 <p><strong>{TEXT.recentTeam}</strong>{driverHistory.recentConstructorName}</p>

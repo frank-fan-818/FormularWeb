@@ -1,4 +1,5 @@
 import type {
+  Driver,
   DriverDetails,
   DriverStanding,
   SupabaseDriverDetailRow,
@@ -6,6 +7,24 @@ import type {
 
 function firstText(...values: Array<string | null | undefined>): string {
   return values.find((value) => Boolean(value?.trim()))?.trim() || '';
+}
+
+export function resolveDriverProfileIdentity(
+  primary: Driver | null,
+  standing: Driver | null,
+  archive: Driver | null,
+): Driver | null {
+  if (!primary && !standing && !archive) return null;
+  return {
+    driverId: firstText(primary?.driverId, standing?.driverId, archive?.driverId),
+    givenName: firstText(primary?.givenName, standing?.givenName, archive?.givenName),
+    familyName: firstText(primary?.familyName, standing?.familyName, archive?.familyName),
+    permanentNumber: firstText(primary?.permanentNumber, standing?.permanentNumber, archive?.permanentNumber),
+    code: firstText(primary?.code, standing?.code, archive?.code),
+    nationality: firstText(primary?.nationality, standing?.nationality, archive?.nationality),
+    dateOfBirth: firstText(primary?.dateOfBirth, standing?.dateOfBirth, archive?.dateOfBirth),
+    url: firstText(primary?.url, standing?.url, archive?.url),
+  };
 }
 
 export function mapDriverDetails(

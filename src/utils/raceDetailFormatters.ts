@@ -29,7 +29,7 @@ export function formatNumber(value: number | null | undefined, decimals = 1): st
 
 export function formatTemperature(value: number | null | undefined): string {
   const formatted = formatNumber(value, 1);
-  return formatted === '-' ? formatted : `${formatted} C`;
+  return formatted === '-' ? formatted : `${formatted}℃`;
 }
 
 export function formatPercent(value: number | null | undefined): string {

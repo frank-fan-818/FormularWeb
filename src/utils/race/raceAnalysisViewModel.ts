@@ -18,7 +18,7 @@ export function formatAnalysisStatRange(summary?: { min: number | null; max: num
   if (!summary || summary.min === null || summary.max === null) {
     return '-';
   }
-  return `${formatNumber(summary.min, 1)}-${formatNumber(summary.max, 1)} C`;
+  return `${formatNumber(summary.min, 1)}-${formatNumber(summary.max, 1)}℃`;
 }
 
 function formatAnalysisLapRange(range: FastF1WeatherLapRange) {

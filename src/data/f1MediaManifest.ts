@@ -4,6 +4,7 @@ export interface F1MediaEntry {
   file: string;
   aliases: string[];
   filter?: string;
+  darkFile?: string;
 }
 
 export interface F1MediaManifest {

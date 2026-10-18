@@ -106,6 +106,11 @@ async function syncDrivers() {
 }
 
 async function syncConstructors() {
+  for (const [canonicalId, url] of Object.entries(sources.constructorsOnDark ?? {})) {
+    const entry = manifest.constructors[canonicalId];
+    if (!entry?.darkFile) throw new Error(`Missing dark logo declaration: ${canonicalId}`);
+    await downloadImage(url, path.join(projectRoot, 'public', 'images', 'constructors', entry.darkFile));
+  }
   for (const [canonicalId, url] of Object.entries(sources.constructors ?? {})) {
     const entry = manifest.constructors[canonicalId];
     if (!entry) {
