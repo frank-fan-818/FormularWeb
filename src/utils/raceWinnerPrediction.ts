@@ -226,6 +226,7 @@ export interface WinnerPredictionMetrics {
 }
 
 export interface TrainWinnerModelOptions {
+  raceWeights?: readonly number[];
   featureNames?: readonly WinnerPredictionFeatureName[];
   iterations?: number;
   learningRate?: number;
@@ -344,9 +345,10 @@ export function trainWinnerPredictionModel(
     weights[featureName] = 0;
   });
 
-  const validRaceGroups = raceGroups.filter((race) =>
-    race.length > 1 && race.some((candidate) => candidate.winner),
-  );
+  if (options.raceWeights && options.raceWeights.length !== raceGroups.length) throw new Error('Race weight length must match race groups');
+  if (options.raceWeights?.some((weight) => !Number.isFinite(weight) || weight <= 0)) throw new Error('Race weights must be finite and positive');
+  const validRaceGroups = raceGroups.map((race, index) => ({ race, weight: options.raceWeights?.[index] ?? 1 }))
+    .filter(({ race }) => race.length > 1 && race.some((candidate) => candidate.winner));
 
   if (!validRaceGroups.length) {
     return { bias, weights };
@@ -360,12 +362,14 @@ export function trainWinnerPredictionModel(
       gradient[featureName] = 0;
     });
 
-    validRaceGroups.forEach((race) => {
-      const prediction = predictWinnerRace(race, { bias, weights }, featureNames);
-      const probabilityByDriver = new Map(prediction.map((result) => [result.driverId, result.probability]));
-
-      race.forEach((candidate) => {
-        const error = (probabilityByDriver.get(candidate.driverId) || 0) - (candidate.winner ? 1 : 0);
+    validRaceGroups.forEach(({ race, weight }) => {
+      // Training needs probabilities only, not ranked rows or sorted explanations.
+      const scores = race.map((candidate) => scoreWinnerCandidate(candidate, { bias, weights }, featureNames));
+      const maxScore = Math.max(...scores);
+      const exponentials = scores.map((score) => Math.exp(score - maxScore));
+      const total = exponentials.reduce((sum, value) => sum + value, 0) || 1;
+      race.forEach((candidate, index) => {
+        const error = (exponentials[index] / total - (candidate.winner ? 1 : 0)) * weight;
         biasGradient += error;
         featureNames.forEach((featureName) => {
           gradient[featureName] = (gradient[featureName] || 0) + error * (candidate.features[featureName] || 0);
@@ -373,7 +377,7 @@ export function trainWinnerPredictionModel(
       });
     });
 
-    const scale = 1 / validRaceGroups.length;
+    const scale = 1 / validRaceGroups.reduce((sum, row) => sum + row.weight, 0);
     bias -= learningRate * biasGradient * scale;
 
     featureNames.forEach((featureName) => {

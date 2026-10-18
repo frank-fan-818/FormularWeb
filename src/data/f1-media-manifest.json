@@ -31,17 +31,17 @@
     "zhou": { "file": "zhou.png", "aliases": ["guanyu_zhou", "zhou_guanyu"] }
   },
   "constructors": {
-    "alpine": { "file": "alpine.png", "aliases": [] },
-    "aston_martin": { "file": "aston_martin.png", "aliases": [] },
-    "audi": { "file": "audi.webp", "aliases": [] },
-    "cadillac": { "file": "cadillac.webp", "aliases": ["cadillac_f1_team"], "filter": "invert(1)" },
-    "ferrari": { "file": "ferrari.png", "aliases": [] },
-    "haas": { "file": "haas.png", "aliases": ["haas_f1_team"] },
-    "mclaren": { "file": "mclaren.png", "aliases": [] },
-    "mercedes": { "file": "mercedes.png", "darkFile": "mercedes-white.webp", "aliases": ["alfa", "alfa_romeo"] },
-    "rb": { "file": "rb.png", "aliases": ["alphatauri", "racing_bulls", "visa_cash_app_rb"] },
-    "red_bull": { "file": "red_bull.png", "aliases": ["red_bull_racing"] },
+    "alpine": { "file": "alpine.png", "darkFile": "alpine-on-dark.webp", "aliases": [] },
+    "aston_martin": { "file": "aston_martin.png", "darkFile": "aston_martin-on-dark.webp", "aliases": [] },
+    "audi": { "file": "audi.webp", "darkFile": "audi-on-dark.webp", "aliases": [] },
+    "cadillac": { "file": "cadillac.webp", "darkFile": "cadillac-on-dark.webp", "aliases": ["cadillac_f1_team"], "filter": "invert(1)" },
+    "ferrari": { "file": "ferrari.png", "darkFile": "ferrari-on-dark.webp", "aliases": [] },
+    "haas": { "file": "haas.png", "darkFile": "haas-on-dark.webp", "aliases": ["haas_f1_team"] },
+    "mclaren": { "file": "mclaren.png", "darkFile": "mclaren-on-dark.webp", "aliases": [] },
+    "mercedes": { "file": "mercedes.png", "darkFile": "mercedes-white.webp", "aliases": [] },
+    "rb": { "file": "rb.png", "darkFile": "rb-on-dark.webp", "aliases": ["alphatauri", "racing_bulls", "visa_cash_app_rb"] },
+    "red_bull": { "file": "red_bull.png", "darkFile": "red_bull-on-dark.webp", "aliases": ["red_bull_racing"] },
     "sauber": { "file": "sauber.png", "aliases": ["kick_sauber"] },
-    "williams": { "file": "williams.png", "aliases": [] }
+    "williams": { "file": "williams.png", "darkFile": "williams-on-dark.webp", "aliases": [] }
   }
 }

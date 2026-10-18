@@ -402,6 +402,14 @@
   border: 1px solid var(--border-secondary);
 }
 
+.driver-participation-card {
+  margin-bottom: var(--space-4);
+}
+
+.driver-participation-card p {
+  margin: var(--space-2) 0 0;
+}
+
 .driver-history-meta-label {
   font-size: var(--text-sm);
   color: var(--text-secondary);

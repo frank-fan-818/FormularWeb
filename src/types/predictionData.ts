@@ -17,9 +17,17 @@ export interface PredictionQualifyingResultData {
   q3: string | null;
 }
 
+export interface PredictionPreRaceObservation {
+  observedAt: string;
+  source: string;
+  entries: Array<{ driverId: string; constructorId: string; gridPosition?: number }>;
+}
+
 export interface PredictionSeasonRaceData {
   season: number;
   round: number;
+  raceStartAt?: string;
+  preRaceObservations?: PredictionPreRaceObservation[];
   raceName: string;
   circuitId: string;
   isSprintWeekend: boolean;

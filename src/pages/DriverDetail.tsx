@@ -65,6 +65,11 @@ const TEXT = {
   loadedCareerStats: '\u5386\u53f2 summary \u5df2\u52a0\u8f7d\u3002',
   historyUnavailable: '\u6682\u672a\u83b7\u53d6\u5230\u5386\u53f2\u8d5b\u5b63\u6863\u6848\u3002',
   raceEntries: '\u53c2\u8d5b\u573a\u6b21',
+  raceStarts: '正赛出场',
+  verifiedEntries: '已核验报名次数',
+  enteredWithoutStart: '仅报名，未参加正赛',
+  testReserve: '测试／储备车手',
+  noRaceStarts: '暂无世界锦标赛正赛出场记录。',
   raceWins: '\u5206\u7ad9\u51a0\u519b',
   podiums: '\u9886\u5956\u53f0',
   poles: '\u6746\u4f4d\u6b21\u6570',
@@ -780,7 +785,7 @@ const DriverDetail = () => {
               <Col xs={24} sm={8}>
                 <Card className="driver-career-stat-card">
                   <div className="driver-career-stat-label">
-                    <FlagOutlined /> {TEXT.raceEntries}
+                    <FlagOutlined /> {driverHistory.participationStatus ? TEXT.raceStarts : TEXT.raceEntries}
                   </div>
                   <div className="driver-career-stat-value" style={{ color: teamColor }}>
                     {driverHistory?.careerSummary.raceCount ?? driver?.totalRaceStarts ?? 0}
@@ -846,6 +851,13 @@ const DriverDetail = () => {
 
             {driverHistory ? (
               <>
+                {driverHistory.participationStatus ? (
+                  <Card className="driver-history-meta-card driver-participation-card">
+                    <Tag>{driverHistory.participationStatus === 'test_reserve' ? TEXT.testReserve : TEXT.enteredWithoutStart}</Tag>
+                    <p>{driverHistory.participationNote}</p>
+                    <p>{TEXT.verifiedEntries}：{driverHistory.entryCount}</p>
+                  </Card>
+                ) : null}
                 <div className="driver-history-meta-grid">
                   <Card className="driver-history-meta-card">
                     <div className="driver-history-meta-label">{TEXT.firstSeason}</div>
@@ -871,7 +883,7 @@ const DriverDetail = () => {
 
                 <Card title={TEXT.seasonTimeline} className="driver-history-table-card">
                   {historySeasons.length === 0 ? (
-                    <Empty description={TEXT.seasonHistoryUnavailable} />
+                    <Empty description={driverHistory.participationStatus ? TEXT.noRaceStarts : TEXT.seasonHistoryUnavailable} />
                   ) : (
                     <div className="driver-history-table-wrapper">
                       <table className="driver-history-table">

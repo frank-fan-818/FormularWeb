@@ -62,6 +62,26 @@ function hasUsableCareerHistory(
   return seasons.length > 0 && summary.raceCount > 0;
 }
 
+function mapVerifiedParticipation(
+  record: DriverHistorySummaryRecord, summary: HistoryCareerSummary, seasons: DriverSeasonHistoryItem[],
+): Pick<DriverHistoryProfile, 'entryCount' | 'participationStatus' | 'participationNote'> | null {
+  const value = record.career_summary;
+  if (!isRecord(value) || seasons.length > 0 || record.best_race_finish != null) return null;
+  if (value.participationStatus !== 'entered_without_start' && value.participationStatus !== 'test_reserve') return null;
+  if (!Object.keys(summary).every(key => value[key] === 0)) return null;
+  if (typeof value.entryCount !== 'number' || !Number.isInteger(value.entryCount) || value.entryCount < 0) return null;
+  if (value.participationStatus === 'entered_without_start' ? value.entryCount === 0 : value.entryCount !== 0) return null;
+  if (typeof value.participationNote !== 'string' || !value.participationNote.trim()) return null;
+  if (typeof value.verifiedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.verifiedAt)) return null;
+  if (!Array.isArray(value.verificationSources) || value.verificationSources.length === 0
+    || !value.verificationSources.every(source => typeof source === 'string' && source.startsWith('https://'))) return null;
+  return {
+    entryCount: value.entryCount,
+    participationStatus: value.participationStatus,
+    participationNote: value.participationNote,
+  };
+}
+
 function mapBestFinishSummary(value: unknown): BestFinishSummary | null {
   if (!isRecord(value)) {
     return null;
@@ -149,11 +169,13 @@ export function mapDriverHistorySummary(
 
   const careerSummary = mapCareerSummary(record.career_summary);
   const seasons = mapDriverSeasonHistory(record.seasons);
-  if (!hasUsableCareerHistory(careerSummary, seasons)) {
+  const participation = mapVerifiedParticipation(record, careerSummary, seasons);
+  if (!hasUsableCareerHistory(careerSummary, seasons) && !participation) {
     return null;
   }
 
   return {
+    ...participation,
     driverId: record.driver_id,
     permanentNumber: record.permanent_number || '',
     code: record.code || '',

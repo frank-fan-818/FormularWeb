@@ -6,12 +6,15 @@ export interface DriverSearchSource {
   last_name: string;
   code?: string | null;
   nationality?: string | null;
+  date_of_birth?: string | null;
+  aliases?: string[];
 }
 
 export interface ConstructorSearchSource {
   constructor_id: string;
   name: string;
   nationality?: string | null;
+  aliases?: string[];
 }
 
 export interface CircuitSearchSource {
@@ -20,6 +23,7 @@ export interface CircuitSearchSource {
   locality?: string | null;
   location?: string | null;
   country?: string | null;
+  aliases?: string[];
 }
 
 export interface RaceSearchSource {
@@ -104,15 +108,15 @@ function buildDriverEntry(driver: DriverSearchSource): SearchableEntry {
       title,
       subtitle,
       route: `/history/drivers/${driver.driver_id}`,
-      keywords: uniqueNormalized([title, driver.first_name, driver.last_name, driver.driver_id, code]),
+      keywords: uniqueNormalized([title, driver.first_name, driver.last_name, driver.driver_id, code, ...(driver.aliases || [])]),
     },
     primaryKeywords: uniqueNormalized([title, driver.first_name, driver.last_name, driver.driver_id, code]),
-    aliasKeywords: [],
+    aliasKeywords: uniqueNormalized(driver.aliases || []),
   };
 }
 
 function buildConstructorEntry(constructor: ConstructorSearchSource): SearchableEntry {
-  const aliases = constructorAliases[constructor.constructor_id] || [];
+  const aliases = [...(constructorAliases[constructor.constructor_id] || []), ...(constructor.aliases || [])];
 
   return {
     entry: {
@@ -129,7 +133,7 @@ function buildConstructorEntry(constructor: ConstructorSearchSource): Searchable
 }
 
 function buildCircuitEntry(circuit: CircuitSearchSource): SearchableEntry {
-  const aliases = circuitAliases[circuit.circuit_id] || [];
+  const aliases = [...(circuitAliases[circuit.circuit_id] || []), ...(circuit.aliases || [])];
   const locality = circuit.locality || circuit.location || '';
   const subtitle = [locality, circuit.country].filter(Boolean).join(', ');
 

@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Empty, Tag } from 'antd';
-import {
-  ArrowLeftOutlined,
-  CalendarOutlined,
-  FlagOutlined,
-  TeamOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import { seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
@@ -16,6 +10,7 @@ import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/u
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
 import { TimingBeacon } from '@/components/loading/TimingBeacon';
+import { ConstructorProfileHero } from '@/components/constructors/ConstructorProfileHero';
 import './HistoryDetail.css';
 
 function formatPoints(points: number): string {
@@ -149,40 +144,10 @@ const ConstructorHistoryDetail = () => {
         </Card>
       ) : (
         <>
-          <Card className="history-hero-card">
-            <div className="history-hero">
-              <span className="history-eyebrow">
-                <TeamOutlined />
-                Constructor Archive
-              </span>
-
-              <div>
-                <h1 className="history-title">{constructor?.name}</h1>
-                <p className="history-subtitle">
-                  {constructor?.nationality || 'Historical constructor profile'}
-                </p>
-              </div>
-
-              <div className="history-chip-row">
-                <span className="history-chip history-chip--accent">
-                  <TrophyOutlined />
-                  Best Race Finish <strong>{bestFinish ? `P${bestFinish.position}` : '-'}</strong>
-                </span>
-                <span className="history-chip">
-                  <CalendarOutlined />
-                  Seasons <strong>{seasons.length}</strong>
-                </span>
-                <span className="history-chip">
-                  <FlagOutlined />
-                  Nationality <strong>{constructor?.nationality || '-'}</strong>
-                </span>
-                <span className="history-chip">
-                  <TeamOutlined />
-                  Latest Season <strong>{latestSeason?.season || '-'}</strong>
-                </span>
-              </div>
-            </div>
-          </Card>
+          {constructor ? <ConstructorProfileHero key={constructor.constructorId}
+            constructorId={constructor.constructorId} name={constructor.name} nationality={constructor.nationality}
+            season={latestSeason?.season || ''} firstSeason={firstSeason?.season} seasonsCount={seasons.length}
+            archive className="history-hero-card" /> : null}
 
           <h2 className="history-section-title">Career Summary</h2>
           <div className="history-summary-grid">

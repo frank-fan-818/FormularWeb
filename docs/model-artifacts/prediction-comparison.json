@@ -1,0 +1,560 @@
+{
+  "generatedAt": "2026-10-18T06:07:20.527Z",
+  "validationThroughSeason": 2025,
+  "selectionRule": "Earlier validation log loss improves without reducing baseline top-1; calibration must also improve Brier",
+  "evaluationNote": "2026 has already been inspected. Its scores are retrospective, not an untouched test set. Known 2026 regressions can block promotion; they are not used to tune an alternative.",
+  "selected": {
+    "pre_weekend": {
+      "name": "baseline",
+      "featureSet": "baseline",
+      "weighting": "equal",
+      "calibration": false,
+      "validation": {
+        "raw": {
+          "raceCount": 67,
+          "winnerCoverage": 0.9850746268656716,
+          "top1Accuracy": 0.4925373134328358,
+          "top3Accuracy": 0.7014925373134329,
+          "logLoss": 1.9262201199522266,
+          "brierScore": 0.6509892906095681
+        },
+        "calibrated": {
+          "raceCount": 67,
+          "winnerCoverage": 0.9850746268656716,
+          "top1Accuracy": 0.4925373134328358,
+          "top3Accuracy": 0.7014925373134329,
+          "logLoss": 1.930626700938244,
+          "brierScore": 0.651116185528395
+        }
+      },
+      "validationThroughSeason": 2025
+    },
+    "post_quali": {
+      "name": "season",
+      "featureSet": "windows_circuit",
+      "weighting": "season",
+      "calibration": false,
+      "validation": {
+        "raw": {
+          "raceCount": 68,
+          "winnerCoverage": 1,
+          "top1Accuracy": 0.6176470588235294,
+          "top3Accuracy": 0.9264705882352942,
+          "logLoss": 1.117733394161756,
+          "brierScore": 0.5073799126200523
+        },
+        "calibrated": {
+          "raceCount": 68,
+          "winnerCoverage": 1,
+          "top1Accuracy": 0.6176470588235294,
+          "top3Accuracy": 0.9264705882352942,
+          "logLoss": 1.148067831239704,
+          "brierScore": 0.5131372074033301
+        }
+      },
+      "validationThroughSeason": 2025
+    }
+  },
+  "promotion": {
+    "pre_weekend": {
+      "approved": false,
+      "reasons": [
+        "No improvement in probability errors"
+      ]
+    },
+    "post_quali": {
+      "approved": false,
+      "reasons": [
+        "Known top-1 regression",
+        "Known top-3 regression"
+      ]
+    }
+  },
+  "variants": [
+    {
+      "name": "baseline",
+      "phases": {
+        "pre_weekend": {
+          "recipe": {
+            "featureSet": "baseline",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 21,
+            "2023": 22,
+            "2024": 23,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 32,
+          "raw": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4642857142857143,
+            "top3Accuracy": 0.6785714285714286,
+            "logLoss": 1.9431819479345007,
+            "brierScore": 0.6854518072733358
+          },
+          "calibrated": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4642857142857143,
+            "top3Accuracy": 0.6785714285714286,
+            "logLoss": 1.9466967208638242,
+            "brierScore": 0.6855530210776382
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.35294117647058826,
+            "top3Accuracy": 0.5882352941176471,
+            "logLoss": 2.0100315052764057,
+            "brierScore": 0.8212746670658329
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.35294117647058826,
+            "top3Accuracy": 0.5882352941176471,
+            "logLoss": 2.0100315052764057,
+            "brierScore": 0.8212746670658329
+          }
+        },
+        "post_quali": {
+          "recipe": {
+            "featureSet": "baseline",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 22,
+            "2023": 22,
+            "2024": 24,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 49,
+          "raw": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9176470588235294,
+            "logLoss": 1.1173838679200747,
+            "brierScore": 0.5180720132882742
+          },
+          "calibrated": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9176470588235294,
+            "logLoss": 1.138019733871764,
+            "brierScore": 0.5207125070699661
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 1,
+            "logLoss": 1.0414642487633576,
+            "brierScore": 0.5055595111825134
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 1,
+            "logLoss": 1.0414642487633576,
+            "brierScore": 0.5055595111825134
+          }
+        }
+      }
+    },
+    {
+      "name": "windows",
+      "phases": {
+        "pre_weekend": {
+          "recipe": {
+            "featureSet": "windows",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 21,
+            "2023": 22,
+            "2024": 23,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 33,
+          "raw": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4642857142857143,
+            "top3Accuracy": 0.7380952380952381,
+            "logLoss": 1.9326797571316938,
+            "brierScore": 0.6920655972407711
+          },
+          "calibrated": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4642857142857143,
+            "top3Accuracy": 0.7380952380952381,
+            "logLoss": 1.939823485517175,
+            "brierScore": 0.6902646799624211
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7058823529411765,
+            "logLoss": 1.942146698522807,
+            "brierScore": 0.8270372034128604
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7058823529411765,
+            "logLoss": 1.942146698522807,
+            "brierScore": 0.8270372034128604
+          }
+        },
+        "post_quali": {
+          "recipe": {
+            "featureSet": "windows",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 22,
+            "2023": 22,
+            "2024": 24,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 50,
+          "raw": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9058823529411765,
+            "logLoss": 1.1030857756925767,
+            "brierScore": 0.5134023731584385
+          },
+          "calibrated": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9058823529411765,
+            "logLoss": 1.1242979459681233,
+            "brierScore": 0.5158265635401268
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9743920583105724,
+            "brierScore": 0.47773697056836684
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9743920583105724,
+            "brierScore": 0.47773697056836684
+          }
+        }
+      }
+    },
+    {
+      "name": "windows_circuit",
+      "phases": {
+        "pre_weekend": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 21,
+            "2023": 22,
+            "2024": 23,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 38,
+          "raw": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.42857142857142855,
+            "top3Accuracy": 0.7619047619047619,
+            "logLoss": 1.9380396143757233,
+            "brierScore": 0.6903772628536424
+          },
+          "calibrated": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.42857142857142855,
+            "top3Accuracy": 0.7619047619047619,
+            "logLoss": 1.9491383231207953,
+            "brierScore": 0.691816914507451
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7647058823529411,
+            "logLoss": 1.916892135556575,
+            "brierScore": 0.8186454552501116
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7647058823529411,
+            "logLoss": 1.916892135556575,
+            "brierScore": 0.8186454552501116
+          }
+        },
+        "post_quali": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "equal"
+          },
+          "training": {
+            "2022": 22,
+            "2023": 22,
+            "2024": 24,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 59,
+          "raw": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.611764705882353,
+            "top3Accuracy": 0.9176470588235294,
+            "logLoss": 1.0913095815761602,
+            "brierScore": 0.5019567191713135
+          },
+          "calibrated": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.611764705882353,
+            "top3Accuracy": 0.9176470588235294,
+            "logLoss": 1.1046257005565627,
+            "brierScore": 0.5040053191781243
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9624082938143687,
+            "brierScore": 0.4714979126083686
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.7058823529411765,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9624082938143687,
+            "brierScore": 0.4714979126083686
+          }
+        }
+      }
+    },
+    {
+      "name": "recent",
+      "phases": {
+        "pre_weekend": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "recent"
+          },
+          "training": {
+            "2022": 21,
+            "2023": 22,
+            "2024": 23,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 38,
+          "raw": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.44047619047619047,
+            "top3Accuracy": 0.7380952380952381,
+            "logLoss": 1.9258874558518744,
+            "brierScore": 0.6893867552497616
+          },
+          "calibrated": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.44047619047619047,
+            "top3Accuracy": 0.7380952380952381,
+            "logLoss": 1.9376053298733664,
+            "brierScore": 0.6898050182895202
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7647058823529411,
+            "logLoss": 1.8749510549655721,
+            "brierScore": 0.8140127052795928
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7647058823529411,
+            "logLoss": 1.8749510549655721,
+            "brierScore": 0.8140127052795928
+          }
+        },
+        "post_quali": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "recent"
+          },
+          "training": {
+            "2022": 22,
+            "2023": 22,
+            "2024": 24,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 59,
+          "raw": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9294117647058824,
+            "logLoss": 1.0748337467451805,
+            "brierScore": 0.493970796928957
+          },
+          "calibrated": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9294117647058824,
+            "logLoss": 1.0999025740367394,
+            "brierScore": 0.4989825004888994
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6470588235294118,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9016094062950873,
+            "brierScore": 0.4424539173021879
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6470588235294118,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9016094062950873,
+            "brierScore": 0.4424539173021879
+          }
+        }
+      }
+    },
+    {
+      "name": "season",
+      "phases": {
+        "pre_weekend": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "season"
+          },
+          "training": {
+            "2022": 21,
+            "2023": 22,
+            "2024": 23,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 38,
+          "raw": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4523809523809524,
+            "top3Accuracy": 0.7261904761904762,
+            "logLoss": 1.9396993437716994,
+            "brierScore": 0.6948347299102433
+          },
+          "calibrated": {
+            "raceCount": 84,
+            "winnerCoverage": 0.9880952380952381,
+            "top1Accuracy": 0.4523809523809524,
+            "top3Accuracy": 0.7261904761904762,
+            "logLoss": 1.9560656605567193,
+            "brierScore": 0.695887128642182
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7058823529411765,
+            "logLoss": 1.8912444283760532,
+            "brierScore": 0.8191701525375663
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.29411764705882354,
+            "top3Accuracy": 0.7058823529411765,
+            "logLoss": 1.8912444283760532,
+            "brierScore": 0.8191701525375663
+          }
+        },
+        "post_quali": {
+          "recipe": {
+            "featureSet": "windows_circuit",
+            "weighting": "season"
+          },
+          "training": {
+            "2022": 22,
+            "2023": 22,
+            "2024": 24,
+            "2025": 24,
+            "2026": 17
+          },
+          "features": 59,
+          "raw": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9294117647058824,
+            "logLoss": 1.075122803859897,
+            "brierScore": 0.49517780385650456
+          },
+          "calibrated": {
+            "raceCount": 85,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6235294117647059,
+            "top3Accuracy": 0.9294117647058824,
+            "logLoss": 1.0993903535222553,
+            "brierScore": 0.49978363968312683
+          },
+          "raw2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6470588235294118,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9046804426524613,
+            "brierScore": 0.4463693688023137
+          },
+          "calibrated2026": {
+            "raceCount": 17,
+            "winnerCoverage": 1,
+            "top1Accuracy": 0.6470588235294118,
+            "top3Accuracy": 0.9411764705882353,
+            "logLoss": 0.9046804426524613,
+            "brierScore": 0.4463693688023137
+          }
+        }
+      }
+    }
+  ]
+}

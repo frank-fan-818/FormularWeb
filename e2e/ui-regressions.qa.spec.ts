@@ -225,9 +225,15 @@ test('page mastheads follow the active theme and use consistent typography', asy
       await page.goto(path);
       const header = page.locator(selector);
       await expect(header).toBeVisible();
-      await expect(header).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 41, 59)');
-      await expect(header).toHaveCSS('background-image', 'none');
-      await expect(header.locator('h1')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(226, 232, 240)');
+      const brandedProfile = await header.evaluate(element => element.matches('.driver-profile-hero, .team-profile-hero'));
+      if (brandedProfile) {
+        await expect(header).toHaveCSS('background-image', /linear-gradient/);
+        await expect(header.locator('h1')).toHaveCSS('color', 'rgb(255, 255, 255)');
+      } else {
+        await expect(header).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 41, 59)');
+        await expect(header).toHaveCSS('background-image', 'none');
+        await expect(header.locator('h1')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(226, 232, 240)');
+      }
       if (selector === '.product-masthead') {
         await expect(header.locator('.product-masthead__eyebrow')).toHaveCSS('font-family', /F1 UI Sans/);
         const readable = await header.evaluate(element => {
@@ -281,8 +287,8 @@ test('profile typography keeps names separated and metadata readable', async ({ 
       const last = (await name.locator('strong').boundingBox())!;
       expect(last.y - (first.y + first.height)).toBeGreaterThanOrEqual(7);
       const meta = page.locator('.driver-profile-meta');
-      await expect(meta.locator('dt')).toHaveCount(3);
-      await expect(meta.locator('dd')).toHaveText([driver.code, driver.nationality, '2026']);
+      await expect(meta.locator('dt')).toHaveCount(4);
+      await expect(meta.locator('dd')).toHaveText([driver.nationality, `#${driver.permanentNumber}`, driver.code, '2026']);
       await expect(meta.locator('.ant-tag')).toHaveCount(0);
       expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
@@ -297,7 +303,8 @@ test('profile typography keeps names separated and metadata readable', async ({ 
       await expect(name).toHaveCSS('letter-spacing', /^(normal|0px)$/);
       expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       await expect(page.locator('.constructor-profile-summary')).toContainText('2026');
-      await expect(page.locator('.constructor-profile-hero')).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(30, 41, 59)');
+      await expect(page.locator('.constructor-profile-hero')).toHaveCSS('background-image', /linear-gradient/);
+      await expect(page.locator('.constructor-profile-hero h1')).toHaveCSS('color', 'rgb(255, 255, 255)');
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
       if (index === 0 || index === profileConstructors.length - 1) await page.locator('.constructor-profile-hero').screenshot({
         path: `artifacts/browser-qa/screenshots/typography-constructor-${constructor.constructorId}-${theme}-${info.project.name}.png`,

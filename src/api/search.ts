@@ -1,6 +1,8 @@
 import { supabase } from '@/utils/supabase';
 import type { SearchSources } from '@/utils/search';
 import type { ErgastResponse } from '@/types';
+import { mergeSearchSources } from '@/utils/searchSources';
+export { mergeSearchSources } from '@/utils/searchSources';
 
 const SEARCH_SOURCE_TIMEOUT_MS = 3_000;
 const JOLPICA_SEARCH_TIMEOUT_MS = 15_000;
@@ -37,14 +39,14 @@ async function listSearchRows<T>(params: {
 async function getSupabaseSearchSources(signal: AbortSignal): Promise<SearchSources> {
   const [drivers, constructors, circuits, races] = await Promise.all([
     listSearchRows<SearchSources['drivers'][number]>({
-      table: 'drivers', columns: 'driver_id, first_name, last_name, code, nationality',
-      orderBy: 'last_name', signal,
+      table: 'drivers', columns: 'driver_id, first_name, last_name, code, nationality, date_of_birth',
+      orderBy: 'driver_id', signal,
     }),
     listSearchRows<SearchSources['constructors'][number]>({
-      table: 'constructors', columns: 'constructor_id, name, nationality', orderBy: 'name', signal,
+      table: 'constructors', columns: 'constructor_id, name, nationality', orderBy: 'constructor_id', signal,
     }),
     listSearchRows<SearchSources['circuits'][number]>({
-      table: 'circuits', columns: 'circuit_id, name, locality, country', orderBy: 'name', signal,
+      table: 'circuits', columns: 'circuit_id, name, locality, country', orderBy: 'circuit_id', signal,
     }),
     listSearchRows<SearchSources['races'][number]>({
       table: 'races', columns: 'season, round, race_name, circuit_id',
@@ -117,6 +119,7 @@ async function getJolpicaSearchSources(): Promise<SearchSources> {
       last_name: driver.familyName,
       code: driver.code,
       nationality: driver.nationality,
+      date_of_birth: driver.dateOfBirth,
     })),
     constructors: constructors.map((constructor) => ({
       constructor_id: constructor.constructorId,
@@ -137,27 +140,6 @@ async function getJolpicaSearchSources(): Promise<SearchSources> {
     })),
     cacheable: [driverResult, constructorResult, circuitResult, raceResult]
       .every((result) => result.status === 'fulfilled'),
-  };
-}
-
-function mergeByKey<T>(primary: T[], fallback: T[], getKey: (item: T) => string): T[] {
-  const merged = new Map(fallback.map((item) => [getKey(item), item]));
-  primary.forEach((item) => merged.set(getKey(item), item));
-  return [...merged.values()];
-}
-
-export function mergeSearchSources(
-  supabaseSources: SearchSources | null,
-  jolpicaSources: SearchSources | null,
-): SearchSources {
-  const database = supabaseSources || { drivers: [], constructors: [], circuits: [], races: [] };
-  const upstream = jolpicaSources || { drivers: [], constructors: [], circuits: [], races: [] };
-  return {
-    drivers: mergeByKey(database.drivers, upstream.drivers, (driver) => driver.driver_id),
-    constructors: mergeByKey(database.constructors, upstream.constructors, (constructor) => constructor.constructor_id),
-    circuits: mergeByKey(database.circuits, upstream.circuits, (circuit) => circuit.circuit_id),
-    races: mergeByKey(database.races, upstream.races, (race) => `${race.season}:${race.round}`),
-    cacheable: Boolean(supabaseSources && jolpicaSources?.cacheable !== false),
   };
 }
 

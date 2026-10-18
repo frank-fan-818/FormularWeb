@@ -20,7 +20,7 @@ import type {
   SupabaseConstructorDetailRow,
 } from '@/types';
 import { getTeamColor } from '@/utils/teamColors';
-import { ConstructorLogo } from '@/utils/constructorLogos';
+import { ConstructorProfileHero } from '@/components/constructors/ConstructorProfileHero';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import { escapeHtml, getFirstTooltipParam } from '@/utils/chartTooltip';
 import './ConstructorDetail.css';
@@ -535,22 +535,9 @@ const ConstructorDetail = () => {
         <Card loading className="constructor-profile-loading-card" />
       ) : (
       <div className="constructor-profile-shell">
-        <section className="constructor-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div className="constructor-profile-identity">
-            <ConstructorLogo constructorId={constructorId || ''} size={96} />
-            <div className="constructor-profile-copy">
-              <div className="constructor-profile-kicker">
-                <span className="constructor-profile-swatch" style={{ backgroundColor: teamColor }} />
-                <span>{constructor?.nationality || '-'}</span>
-              </div>
-              <h1 className="constructor-profile-name">{constructor?.name || '-'}</h1>
-              <p className="constructor-profile-summary">{currentSeason} · {TEXT.seasonKeyStats}</p>
-            </div>
-          </div>
-          <div className="constructor-profile-rank" style={{ color: teamColor }}>
-            {currentStanding?.position ? `P${currentStanding.position}` : '--'}
-          </div>
-        </section>
+        {constructor ? <ConstructorProfileHero key={constructor.constructorId}
+          constructorId={constructor.constructorId} name={constructor.name}
+          nationality={constructor.nationality} season={currentSeason} rank={currentStanding?.position} /> : null}
 
         <div className="constructor-current-stat-grid">
           <Card className="constructor-current-stat-card">

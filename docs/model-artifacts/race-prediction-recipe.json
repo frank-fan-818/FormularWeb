@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "validationThroughSeason": 2025,
+  "generatedAt": "2026-10-18T06:07:20.527Z",
+  "phases": {
+    "pre_weekend": {
+      "featureSet": "baseline",
+      "weighting": "equal",
+      "calibration": false
+    },
+    "post_quali": {
+      "featureSet": "baseline",
+      "weighting": "equal",
+      "calibration": false
+    }
+  },
+  "challengerPhases": {
+    "pre_weekend": {
+      "name": "baseline",
+      "featureSet": "baseline",
+      "weighting": "equal",
+      "calibration": false,
+      "validation": {
+        "raw": {
+          "raceCount": 67,
+          "winnerCoverage": 0.9850746268656716,
+          "top1Accuracy": 0.4925373134328358,
+          "top3Accuracy": 0.7014925373134329,
+          "logLoss": 1.9262201199522266,
+          "brierScore": 0.6509892906095681
+        },
+        "calibrated": {
+          "raceCount": 67,
+          "winnerCoverage": 0.9850746268656716,
+          "top1Accuracy": 0.4925373134328358,
+          "top3Accuracy": 0.7014925373134329,
+          "logLoss": 1.930626700938244,
+          "brierScore": 0.651116185528395
+        }
+      },
+      "validationThroughSeason": 2025
+    },
+    "post_quali": {
+      "name": "season",
+      "featureSet": "windows_circuit",
+      "weighting": "season",
+      "calibration": false,
+      "validation": {
+        "raw": {
+          "raceCount": 68,
+          "winnerCoverage": 1,
+          "top1Accuracy": 0.6176470588235294,
+          "top3Accuracy": 0.9264705882352942,
+          "logLoss": 1.117733394161756,
+          "brierScore": 0.5073799126200523
+        },
+        "calibrated": {
+          "raceCount": 68,
+          "winnerCoverage": 1,
+          "top1Accuracy": 0.6176470588235294,
+          "top3Accuracy": 0.9264705882352942,
+          "logLoss": 1.148067831239704,
+          "brierScore": 0.5131372074033301
+        }
+      },
+      "validationThroughSeason": 2025
+    }
+  },
+  "promotion": {
+    "pre_weekend": {
+      "approved": false,
+      "reasons": [
+        "No improvement in probability errors"
+      ]
+    },
+    "post_quali": {
+      "approved": false,
+      "reasons": [
+        "Known top-1 regression",
+        "Known top-3 regression"
+      ]
+    }
+  }
+}

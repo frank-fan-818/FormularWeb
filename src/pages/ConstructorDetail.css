@@ -55,98 +55,6 @@
   padding-inline: 0;
 }
 
-.constructor-profile-hero {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-5);
-  align-items: end;
-  min-height: 260px;
-  padding: var(--space-7);
-  border-top: 8px solid var(--f1-red);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
-}
-
-.constructor-profile-hero::before {
-  position: absolute;
-  top: 22px;
-  left: var(--space-7);
-  z-index: -1;
-  color: var(--text-secondary);
-  content: 'TEAM OPERATIONS / CURRENT SEASON';
-  font: var(--font-semibold) 10px/1 var(--font-family);
-  letter-spacing: var(--tracking-wide);
-}
-
-.constructor-profile-hero::after {
-  position: absolute;
-  right: -5%;
-  bottom: -80%;
-  z-index: -1;
-  width: 52%;
-  aspect-ratio: 1;
-  content: '';
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  box-shadow: 0 0 0 48px rgba(255, 255, 255, 0.022), 0 0 0 96px rgba(255, 255, 255, 0.014);
-}
-
-.constructor-profile-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-.constructor-profile-swatch {
-  width: 12px;
-  height: 36px;
-  border-radius: 3px;
-}
-
-.constructor-profile-identity {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
-.constructor-profile-identity > :first-child { flex-shrink: 0; }
-.constructor-profile-copy { min-width: 0; }
-
-.constructor-profile-name {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
-  line-height: 1.15;
-  overflow-wrap: anywhere;
-  font-family: var(--font-display);
-  letter-spacing: var(--tracking-normal);
-}
-
-.constructor-profile-summary {
-  margin: var(--space-5) 0 0;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-}
-
-.constructor-profile-rank {
-  font-size: clamp(5rem, 18vw, 12rem);
-  line-height: 0.78;
-  font-weight: 700;
-  opacity: 0.72;
-}
-
 .constructor-current-stat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -293,22 +201,6 @@
 
   .constructor-info-card {
     border-radius: 12px;
-  }
-
-  .constructor-profile-hero {
-    grid-template-columns: 1fr;
-    min-height: 0;
-    padding: 54px var(--space-5) var(--space-5);
-  }
-
-  .constructor-profile-hero::before { top: 20px; left: var(--space-5); }
-
-  .constructor-profile-identity { flex-direction: column; align-items: flex-start; }
-  .constructor-profile-name { font-size: clamp(2rem, 10vw, 3rem); }
-
-  .constructor-profile-rank {
-    justify-self: start;
-    font-size: clamp(4rem, 32vw, 7rem);
   }
 
   .constructor-current-stat-grid {
