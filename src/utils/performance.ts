@@ -1,5 +1,4 @@
 import { logger } from '@/utils/logger';
-import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
 interface PerformanceDetails {
   source: 'supabase' | 'jolpica' | 'fetch';
@@ -72,7 +71,8 @@ function sendToAnalytics(metric: { name: string; value: number; rating: string }
   });
 }
 
-export function initWebVitals() {
+export async function initWebVitals() {
+  const { onLCP, onINP, onCLS, onFCP, onTTFB } = await import('web-vitals');
   onCLS(sendToAnalytics);
   onINP(sendToAnalytics);
   onLCP(sendToAnalytics);
