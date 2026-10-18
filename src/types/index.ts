@@ -262,6 +262,8 @@ export interface BestFinishSummary {
   seasons: string[];
 }
 
+export type DriverParticipationStatus = 'entered_without_start' | 'test_reserve';
+
 export interface DriverHistoryProfile {
   driverId: string;
   permanentNumber: string;
@@ -271,6 +273,9 @@ export interface DriverHistoryProfile {
   familyName: string;
   dateOfBirth: string;
   nationality: string;
+  entryCount?: number;
+  participationStatus?: DriverParticipationStatus;
+  participationNote?: string;
   recentConstructorName: string;
   recentConstructorId: string;
   careerSummary: HistoryCareerSummary;

@@ -30,9 +30,17 @@ const races = Array.from({ length: 5 }, (_, index) => ({
 }));
 const historyRows: Record<string, unknown[]> = {
   races,
-  race_results: races.flatMap((race) => ['max_verstappen', 'norris', 'piastri'].map((driver, index) => ({ race_id: race.id, driver_id: driver, position: index + 1, constructor_id: index === 0 ? 'red_bull' : 'mclaren' }))),
-  qualifying_results: races.map((race) => ({ race_id: race.id, driver_id: 'norris', position: 1, constructor_id: 'mclaren' })),
-  drivers: [{ driver_id: 'max_verstappen', first_name: 'Max', last_name: 'Verstappen' }, { driver_id: 'norris', first_name: 'Lando', last_name: 'Norris' }, { driver_id: 'piastri', first_name: 'Oscar', last_name: 'Piastri' }],
+  race_results: races.flatMap((race) => (race.season === 2023
+    ? ['carlos_sainz_jr', 'norris', 'lewis_hamilton']
+    : ['max_verstappen', 'norris', 'piastri']).map((driver, index) => ({ race_id: race.id, driver_id: driver, position: index + 1, constructor_id: index === 0 ? 'red_bull' : 'mclaren' }))),
+  qualifying_results: races.map((race) => ({ race_id: race.id, driver_id: race.season === 2023 ? 'carlos_sainz_jr' : 'norris', position: 1, constructor_id: 'mclaren' })),
+  drivers: [
+    { driver_id: 'max_verstappen', first_name: 'Max', last_name: 'Verstappen' },
+    { driver_id: 'norris', first_name: 'Lando', last_name: 'Norris' },
+    { driver_id: 'piastri', first_name: 'Oscar', last_name: 'Piastri' },
+    { driver_id: 'carlos_sainz_jr', first_name: 'Carlos', last_name: 'Sainz Jr.' },
+    { driver_id: 'lewis_hamilton', first_name: 'Lewis', last_name: 'Hamilton' },
+  ],
   fastf1_session_analytics: races.map((race, index) => ({ season: race.season, round: race.round, payload: { eventName: 'Italian Grand Prix', trackStatusPeriods: (index < 2 ? ['SC', 'VSC', 'RED', 'YELLOW'] : ['YELLOW']).map(type => ({ type })) } })),
 };
 
@@ -89,10 +97,20 @@ test('history brief keeps results, risks and expanded samples readable', async (
   await expect(panel.locator('.history-risk-row')).toHaveCount(4);
   await panel.scrollIntoViewIfNeeded();
   await expect(panel.locator('.history-results-table .ant-table-row')).toHaveCount(5);
+  const sainzRow = panel.locator('.ant-table-row').filter({ hasText: '2023-09-07' });
+  await expect(sainzRow.locator('.history-driver-name')).toHaveText([
+    'Carlos Sainz Jr.', 'Carlos Sainz Jr.', 'Carlos Sainz Jr.', 'Lando Norris', 'Lewis Hamilton',
+  ]);
+  await expect(sainzRow.getByText('JR', { exact: true })).toHaveCount(0);
+  for (const name of await panel.locator('.history-driver-name').all()) {
+    await expect(name).toBeVisible();
+    expect(await name.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  }
   await expect(panel.locator('.history-risk-row.risk-sc')).toContainText('40%');
   expect(await panel.locator('.ant-table-content').evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
   await expect(panel.locator('.history-samples')).not.toHaveAttribute('open', '');
-  await panel.screenshot({ style: '.header, .race-subpage-tabs { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/history-brief-${testInfo.project.name}.png` });
+  await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/history-brief-${testInfo.project.name}.png` });
+  await panel.locator('.history-results').screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/history-names-${testInfo.project.name}.png` });
   await panel.locator('summary').click();
   await expect(panel.locator('.history-sample')).toHaveCount(5);
   for (const sample of await panel.locator('.history-sample').all()) {
@@ -144,8 +162,10 @@ test('weather metrics remain readable in the shared weekend style', async ({ pag
   await page.goto('/races/13/info?season=2026');
   const panel = page.locator('.weather-brief');
   await expect(panel.locator('dt')).toHaveCount(5);
-  await expect(panel).toContainText('51.8');
-  await expect(panel).toContainText('57.1');
+  await expect(panel).toContainText('51.8℃');
+  await expect(panel).toContainText('57.1℃');
+  await expect(panel).toContainText('31.7℃');
+  await expect(panel).toContainText('32.9℃');
   await expect(panel).toContainText('37%');
   await expect(panel).toContainText('3.8 m/s');
   await expect(panel).toContainText('1 段降雨区间');

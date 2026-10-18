@@ -64,16 +64,42 @@ jobs:
       - name: Sync completed races
         run: npm run prediction:sync -- --season "${{ steps.season.outputs.value }}"
 
+      - name: Restore pre-race observations
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: data/prediction/pre-race
+          key: pre-race-v1-${{ steps.season.outputs.value }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: pre-race-v1-${{ steps.season.outputs.value }}-
+
+      - name: Capture available confirmed entries and grid
+        id: capture
+        run: npm run prediction:capture -- --season "${{ steps.season.outputs.value }}"
+
+      - name: Preserve new pre-race observations
+        if: steps.capture.outputs.changed == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: data/prediction/pre-race
+          key: pre-race-v1-${{ steps.season.outputs.value }}-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Verify prediction code
-        run: npx vitest run src/utils/currentSeasonPredictionData.test.ts src/utils/raceWinnerPrediction.test.ts
+        run: npx vitest run src/utils/currentSeasonPredictionData.test.ts src/utils/raceWinnerPrediction.test.ts src/utils/currentRacePrediction.test.ts src/utils/racePredictionTraining.test.ts src/utils/racePredictionCalibration.test.ts src/utils/racePredictionSelection.test.ts src/utils/preRaceObservationArchive.test.ts src/utils/racePredictionEvaluation.test.ts src/api/predictionPublication.test.ts src/api/predictionEvaluation.test.ts src/api/preRacePredictionInputs.test.ts
 
       - run: npm run type-check
+
+      - run: npm run prediction:type-check
 
       - name: Run security checks
         run: npm run security:check
 
       - name: Refresh rolling backtest
-        run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --prediction-phase=post-quali --model=linear
+        run: npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.season.outputs.value }}" --model=linear
+
+      - name: Score original published forecasts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run prediction:evaluate -- --season "${{ steps.season.outputs.value }}"
 
       - name: Publish next-race prediction
         env:
@@ -87,7 +113,8 @@ jobs:
           name: prediction-refresh-output
           path: |
             data/prediction/seasons/
-            docs/model-artifacts/winner-prediction-backtest.json
+            data/prediction/pre-race/
+            docs/model-artifacts/race-prediction-models.json
           if-no-files-found: error
           retention-days: 1
 
@@ -98,9 +125,19 @@ jobs:
           name: prediction-refresh-diagnostics
           path: |
             data/prediction/seasons/
-            docs/model-artifacts/winner-prediction-backtest.json
+            data/prediction/pre-race/
+            docs/model-artifacts/race-prediction-models.json
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Save actual publication evaluation
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: prediction-publication-evaluation
+          path: artifacts/prediction-evaluation/
+          if-no-files-found: ignore
+          retention-days: 90
 
   publish:
     name: Publish verified changes

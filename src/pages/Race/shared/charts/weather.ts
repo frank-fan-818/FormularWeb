@@ -190,10 +190,10 @@ function buildWeatherOption(analytics: FastF1RaceAnalytics) {
     yAxis: [
       {
         type: 'value',
-        name: 'C',
+        name: '℃',
         scale: true,
         axisLabel: {
-          formatter: (value: number) => `${value} C`,
+          formatter: (value: number) => `${value}℃`,
           color: '#64748b',
         },
         axisLine: {

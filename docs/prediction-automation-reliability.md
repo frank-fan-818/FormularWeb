@@ -1,5 +1,9 @@
 # Prediction automation reliability
 
+2026-10-18 second-round update: shared recent/circuit inputs, optional timestamped roster/grid observations and conservative model selection are implemented. See [second-round experiments and active-model decision](qa/2026-10-18-prediction-second-round.md). The tested challenger was not promoted because its 2026 winner-ranking metrics regressed.
+
+2026-10-18 update: production now uses shared features and separate phase models. See [first-round results and activation steps](qa/2026-10-18-prediction-first-round.md). The results below describe the earlier publisher and should not be treated as validation of the new model's accuracy.
+
 Validated 2026-09-06, version 0.18.4.
 
 The publisher reads every Jolpica page using the server's effective limit and merges races split across pages. Daily training-data refresh uses the same reader and now checks out `main`.

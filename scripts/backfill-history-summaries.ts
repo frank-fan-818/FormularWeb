@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
+import { readFileSync } from 'node:fs';
+import { preserveVerifiedDriverSummaries } from '../src/utils/verifiedDriverAdditions.ts';
 import type {
   HistorySummarySourceData,
   SummaryConstructorRow,
@@ -230,6 +232,8 @@ async function main(): Promise<void> {
   console.log(`Loaded official standings drivers=${sourceData.officialDriverStandings?.length || 0} constructors=${sourceData.officialConstructorStandings?.length || 0}`);
 
   const payloads = buildHistorySummaryPayloads(sourceData);
+  payloads.driverSummaries = preserveVerifiedDriverSummaries(payloads.driverSummaries,
+    JSON.parse(readFileSync(new URL('../data/reference/verified-driver-additions.json', import.meta.url), 'utf8')));
   const driverSummaries = filterDriverSummaries(payloads.driverSummaries, options.driverIds);
   const constructorSummaries = filterConstructorSummaries(payloads.constructorSummaries, options.constructorIds);
 

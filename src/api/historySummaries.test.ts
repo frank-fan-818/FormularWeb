@@ -3,8 +3,56 @@ import {
   mapConstructorHistorySummary,
   mapDriverHistorySummary,
 } from '@/api/historySummaries';
+import type { DriverHistorySummaryRecord } from '@/types';
+
+const verifiedNonStarter: DriverHistorySummaryRecord = {
+  driver_id: 'ken_miles', permanent_number: null, code: null,
+  url: 'https://www.statsf1.com/en/ken-miles.aspx',
+  given_name: 'Ken', family_name: 'Miles', date_of_birth: '1918-11-01', nationality: 'British',
+  recent_constructor_name: null, recent_constructor_id: null,
+  career_summary: {
+    raceCount: 0, poleCount: 0, winCount: 0, podiumCount: 0, championshipCount: 0, totalPoints: 0,
+    entryCount: 1, participationStatus: 'entered_without_start',
+    participationNote: 'Entered the 1961 United States Grand Prix; no World Championship race starts.',
+    verificationSources: ['https://www.statsf1.com/en/ken-miles.aspx'], verifiedAt: '2026-10-18',
+  },
+  best_race_finish: null, seasons: [],
+};
 
 describe('history summary mapping', () => {
+  it('renders an explicitly verified non-starter without inventing results or standings', () => {
+    const profile = mapDriverHistorySummary(verifiedNonStarter);
+    expect(profile).toMatchObject({
+      driverId: 'ken_miles', entryCount: 1, participationStatus: 'entered_without_start',
+      careerSummary: { raceCount: 0, winCount: 0 }, bestRaceFinish: null, seasons: [],
+    });
+  });
+
+  it('renders a verified test/reserve profile while keeping F2 titles out of F1 totals', () => {
+    const profile = mapDriverHistorySummary({
+      ...verifiedNonStarter, driver_id: 'leonardo_fornaroli', given_name: 'Leonardo', family_name: 'Fornaroli',
+      career_summary: { ...(verifiedNonStarter.career_summary as Record<string, unknown>),
+        entryCount: 0, participationStatus: 'test_reserve', participationNote: 'McLaren test and reserve driver.' },
+    });
+    expect(profile?.participationStatus).toBe('test_reserve');
+    expect(profile?.careerSummary.championshipCount).toBe(0);
+  });
+
+  it.each([
+    { verificationSources: [] },
+    { participationStatus: 'unverified' },
+    { entryCount: -1 },
+    { entryCount: 1.5 },
+    { participationNote: '' },
+    { raceCount: 1 },
+    { championshipCount: 1 },
+    { verifiedAt: '' },
+  ])('does not use incomplete or contradictory provenance to accept an empty summary: %j', patch => {
+    expect(mapDriverHistorySummary({ ...verifiedNonStarter,
+      career_summary: { ...(verifiedNonStarter.career_summary as Record<string, unknown>), ...patch },
+    })).toBeNull();
+  });
+
   it('maps a driver summary row into the existing profile shape', () => {
     const profile = mapDriverHistorySummary({
       driver_id: 'max_verstappen',

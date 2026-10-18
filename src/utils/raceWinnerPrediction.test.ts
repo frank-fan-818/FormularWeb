@@ -80,4 +80,21 @@ describe('race winner prediction utilities', () => {
     expect(metrics.top1Accuracy).toBe(1);
     expect(metrics.logLoss).toBeGreaterThan(0);
   });
+
+  it('matches the analytical gradient for one two-driver training step', () => {
+    const model = trainWinnerPredictionModel([[candidate('race', 'a', 1, true), candidate('race', 'b', 0)]], {
+      featureNames: ['gridAdvantage'], iterations: 1, learningRate: 0.2, l2: 0,
+    });
+    expect(model.weights.gridAdvantage).toBeCloseTo(0.1, 12);
+    expect(model.bias).toBeCloseTo(0, 12);
+  });
+
+  it('normalizes positive race weights without discarding older races', () => {
+    const groups = [[candidate('old', 'a', 1, true), candidate('old', 'b', 0)],
+      [candidate('new', 'a', 1), candidate('new', 'b', 0, true)]];
+    const model = trainWinnerPredictionModel(groups, { featureNames: ['gridAdvantage'], iterations: 1, learningRate: 0.2, l2: 0, raceWeights: [3, 1] });
+    expect(model.weights.gridAdvantage).toBeCloseTo(0.05, 12);
+    expect(() => trainWinnerPredictionModel(groups, { raceWeights: [1, 0] })).toThrow(/positive/i);
+    expect(() => trainWinnerPredictionModel(groups, { raceWeights: [1] })).toThrow(/length/i);
+  });
 });

@@ -67,14 +67,37 @@ jobs:
         if: steps.window.outputs.eligible == 'true'
         run: npm ci --include=dev
 
+      - name: Restore pre-race observations
+        if: steps.window.outputs.eligible == 'true'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: data/prediction/pre-race
+          key: pre-race-v1-${{ steps.window.outputs.season }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: pre-race-v1-${{ steps.window.outputs.season }}-
+
+      - name: Capture available confirmed entries and grid
+        if: steps.window.outputs.eligible == 'true'
+        id: capture
+        run: npm run prediction:capture -- --season "${{ steps.window.outputs.season }}"
+
+      - name: Preserve new pre-race observations
+        if: steps.capture.outputs.changed == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: data/prediction/pre-race
+          key: pre-race-v1-${{ steps.window.outputs.season }}-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Publish latest eligible prediction
+        # Model promotion remains an explicit comparison step; routine refreshes use the reviewed recipe.
         if: steps.window.outputs.eligible == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           for attempt in 1 2 3; do
-            if npm run prediction:publish -- --season "${{ steps.window.outputs.season }}"; then exit 0; fi
+            if npm run prediction:sync -- --season "${{ steps.window.outputs.season }}" &&
+               npm run prediction:backtest -- --season-from=2022 --season-to="${{ steps.window.outputs.season }}" &&
+               npm run prediction:publish -- --season "${{ steps.window.outputs.season }}"; then exit 0; fi
             if [ "$attempt" -lt 3 ]; then sleep 10; fi
           done
           exit 1

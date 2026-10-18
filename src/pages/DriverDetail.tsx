@@ -25,8 +25,8 @@ import type {
 import { canCountChampionshipSeason, getCountableChampionshipSeasons } from '@/utils/championship';
 import { isSeasonComplete } from '@/utils/seasonCompletion';
 import { getTeamColor } from '@/utils/teamColors';
-import { DriverAvatar } from '@/utils/driverImages';
-import { ConstructorLogo } from '@/utils/constructorLogos';
+import { DriverProfileHero } from '@/components/drivers/DriverProfileHero';
+import { resolveDriverProfileIdentity } from '@/utils/driverDetails';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import { escapeHtml, getFirstTooltipParam } from '@/utils/chartTooltip';
 import './DriverDetail.css';
@@ -65,6 +65,11 @@ const TEXT = {
   loadedCareerStats: '\u5386\u53f2 summary \u5df2\u52a0\u8f7d\u3002',
   historyUnavailable: '\u6682\u672a\u83b7\u53d6\u5230\u5386\u53f2\u8d5b\u5b63\u6863\u6848\u3002',
   raceEntries: '\u53c2\u8d5b\u573a\u6b21',
+  raceStarts: '正赛出场',
+  verifiedEntries: '已核验报名次数',
+  enteredWithoutStart: '仅报名，未参加正赛',
+  testReserve: '测试／储备车手',
+  noRaceStarts: '暂无世界锦标赛正赛出场记录。',
   raceWins: '\u5206\u7ad9\u51a0\u519b',
   podiums: '\u9886\u5956\u53f0',
   poles: '\u6746\u4f4d\u6b21\u6570',
@@ -239,6 +244,9 @@ const DriverDetail = () => {
   const teamColor = currentStanding?.Constructors[0]?.constructorId
     ? getTeamColor(currentStanding.Constructors[0].constructorId)
     : (driverHistory?.recentConstructorId ? getTeamColor(driverHistory.recentConstructorId) : '#1890ff');
+  const profileDriver = resolveDriverProfileIdentity(driver, currentStanding?.Driver || null,
+    showHistoryOverview ? driverHistory : null);
+  const profileSeason = showHistoryOverview && !currentStanding ? latestSeason?.season || '' : currentSeason;
 
   const getTouchDistance = (touches: React.TouchList): number => {
     return Math.hypot(
@@ -624,7 +632,7 @@ const DriverDetail = () => {
       : option;
   };
 
-  if (!driver && !loading && !seasonLoading) {
+  if (!profileDriver && !loading && !seasonLoading && !historyLoading) {
     return (
       <div className="driver-detail-container">
         <DocumentHead title="车手详情 — F1 Dashboard" description="F1车手详情，赛季数据、生涯统计和积分走势" />
@@ -641,40 +649,26 @@ const DriverDetail = () => {
   return (
     <div className="driver-detail-container">
       <DocumentHead
-        title={driver?.givenName && driver?.familyName ? `${driver.givenName} ${driver.familyName} — F1 Dashboard` : '车手详情 — F1 Dashboard'}
-        description={`${driver?.givenName || ''} ${driver?.familyName || ''} F1车手详情，赛季数据、生涯统计和积分走势`}
+        title={profileDriver?.givenName && profileDriver?.familyName ? `${profileDriver.givenName} ${profileDriver.familyName} — F1 Dashboard` : '车手详情 — F1 Dashboard'}
+        description={`${profileDriver?.givenName || ''} ${profileDriver?.familyName || ''} F1车手详情，赛季数据、生涯统计和积分走势`}
       />
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
         {TEXT.back}
       </Button>
 
-      {!driver && (seasonLoading || loading) ? (
+      {!profileDriver && (seasonLoading || loading || historyLoading) ? (
         <Card loading className="driver-profile-loading-card" />
       ) : (
       <div className="driver-profile-shell">
-        <section className="driver-profile-hero" style={{ borderTopColor: teamColor }}>
-          <div className="driver-profile-identity">
-            <DriverAvatar driverId={driver?.driverId || resolvedDriverId || driverId || ''} size={96} />
-            <div className="driver-profile-copy">
-              <div className="driver-profile-kicker">
-                <ConstructorLogo constructorId={currentStanding?.Constructors[0]?.constructorId || driverHistory?.recentConstructorId || ''} size={20} />
-                <span style={{ marginLeft: 6 }}>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</span>
-              </div>
-              <h1 className="driver-profile-name">
-                <span>{driver?.givenName || '-'}</span>
-                <strong>{driver?.familyName || ''}</strong>
-              </h1>
-              <dl className="driver-profile-meta">
-                {driver?.code ? <div><dt>{TEXT.code}</dt><dd>{driver.code}</dd></div> : null}
-                <div><dt>{TEXT.nationality}</dt><dd>{driver?.nationality || '-'}</dd></div>
-                <div><dt>{TEXT.season}</dt><dd>{currentSeason}</dd></div>
-              </dl>
-            </div>
-          </div>
-          <div className="driver-profile-number" style={{ color: teamColor }}>
-            {driver?.permanentNumber || driver?.code || '--'}
-          </div>
-        </section>
+        {profileDriver ? <DriverProfileHero
+          key={profileDriver.driverId}
+          driver={profileDriver}
+          season={profileSeason}
+          archive={showHistoryOverview}
+          teamId={currentStanding?.Constructors[0]?.constructorId || driverHistory?.recentConstructorId || ''}
+          teamName={currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || ''}
+          teamColor={teamColor}
+        /> : null}
 
         <div className="driver-current-stat-grid">
           <Card className="driver-current-stat-card">
@@ -791,7 +785,7 @@ const DriverDetail = () => {
               <Col xs={24} sm={8}>
                 <Card className="driver-career-stat-card">
                   <div className="driver-career-stat-label">
-                    <FlagOutlined /> {TEXT.raceEntries}
+                    <FlagOutlined /> {driverHistory.participationStatus ? TEXT.raceStarts : TEXT.raceEntries}
                   </div>
                   <div className="driver-career-stat-value" style={{ color: teamColor }}>
                     {driverHistory?.careerSummary.raceCount ?? driver?.totalRaceStarts ?? 0}
@@ -857,6 +851,13 @@ const DriverDetail = () => {
 
             {driverHistory ? (
               <>
+                {driverHistory.participationStatus ? (
+                  <Card className="driver-history-meta-card driver-participation-card">
+                    <Tag>{driverHistory.participationStatus === 'test_reserve' ? TEXT.testReserve : TEXT.enteredWithoutStart}</Tag>
+                    <p>{driverHistory.participationNote}</p>
+                    <p>{TEXT.verifiedEntries}：{driverHistory.entryCount}</p>
+                  </Card>
+                ) : null}
                 <div className="driver-history-meta-grid">
                   <Card className="driver-history-meta-card">
                     <div className="driver-history-meta-label">{TEXT.firstSeason}</div>
@@ -882,7 +883,7 @@ const DriverDetail = () => {
 
                 <Card title={TEXT.seasonTimeline} className="driver-history-table-card">
                   {historySeasons.length === 0 ? (
-                    <Empty description={TEXT.seasonHistoryUnavailable} />
+                    <Empty description={driverHistory.participationStatus ? TEXT.noRaceStarts : TEXT.seasonHistoryUnavailable} />
                   ) : (
                     <div className="driver-history-table-wrapper">
                       <table className="driver-history-table">
@@ -936,13 +937,13 @@ const DriverDetail = () => {
         <Card title={TEXT.driverInfo}>
           <Row gutter={[24, 16]}>
             <Col xs={24} sm={12}>
-              <p><strong>{TEXT.name}</strong>{driver?.givenName} {driver?.familyName}</p>
-              <p><strong>{TEXT.code}</strong>{driver?.code || '-'}</p>
-              <p><strong>{TEXT.number}</strong>{driver?.permanentNumber || '-'}</p>
-              <p><strong>{TEXT.nationality}</strong>{driver?.nationality || '-'}</p>
+              <p><strong>{TEXT.name}</strong>{profileDriver?.givenName} {profileDriver?.familyName}</p>
+              <p><strong>{TEXT.code}</strong>{profileDriver?.code || '-'}</p>
+              <p><strong>{TEXT.number}</strong>{profileDriver?.permanentNumber || '-'}</p>
+              <p><strong>{TEXT.nationality}</strong>{profileDriver?.nationality || '-'}</p>
             </Col>
             <Col xs={24} sm={12}>
-              <p><strong>{TEXT.birthDate}</strong>{driver?.dateOfBirth ? formatDateOnly(driver.dateOfBirth) : '-'}</p>
+              <p><strong>{TEXT.birthDate}</strong>{profileDriver?.dateOfBirth ? formatDateOnly(profileDriver.dateOfBirth) : '-'}</p>
               <p><strong>{TEXT.currentTeam}</strong>{currentStanding?.Constructors[0]?.name || driverHistory?.recentConstructorName || '-'}</p>
               {driverHistory?.recentConstructorName ? (
                 <p><strong>{TEXT.recentTeam}</strong>{driverHistory.recentConstructorName}</p>

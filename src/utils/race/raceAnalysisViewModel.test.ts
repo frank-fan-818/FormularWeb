@@ -10,7 +10,7 @@ describe('race analysis view model', () => {
   it('formats unavailable and populated statistic ranges', () => {
     expect(formatAnalysisStatRange()).toBe('-');
     expect(formatAnalysisStatRange({ min: null, max: 32 })).toBe('-');
-    expect(formatAnalysisStatRange({ min: 28.24, max: 31.86 })).toBe('28.2-31.9 C');
+    expect(formatAnalysisStatRange({ min: 28.24, max: 31.86 })).toBe('28.2-31.9℃');
   });
 
   it('formats rain lap ranges without mutating them', () => {

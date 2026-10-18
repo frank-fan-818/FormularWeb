@@ -53,6 +53,8 @@ describe('F1 media lookup', () => {
     expect(getConstructorMedia('cadillac').path).toBe('/images/constructors/cadillac.webp');
     expect(getConstructorMedia('racing_bulls').path).toBe('/images/constructors/rb.png');
     expect(getConstructorMedia('future_team').isDeclared).toBe(false);
+    expect(getConstructorMedia('alfa_romeo').isDeclared).toBe(false);
+    expect(getConstructorMedia('alfa').isDeclared).toBe(false);
   });
 
   it('derives a readable constructor monogram', () => {

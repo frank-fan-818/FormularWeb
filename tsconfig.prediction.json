@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "target": "ES2022", "lib": ["ES2022", "DOM", "DOM.Iterable"], "types": ["node", "vite/client"] },
+  "include": [
+    "scripts/train-race-prediction.ts",
+    "scripts/publish-race-winner-prediction.ts",
+    "scripts/evaluate-race-predictions.ts",
+    "scripts/sync-current-season-prediction-data.ts",
+    "scripts/prediction-history.ts",
+    "scripts/compare-race-prediction.ts",
+    "scripts/capture-race-prediction-inputs.ts"
+  ],
+  "references": []
+}

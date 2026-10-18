@@ -22,6 +22,7 @@ import {
   type RaceWinnerSequenceStep,
   type RaceWinnerSequenceEmbedding,
 } from '@/utils/raceWinnerSequenceModel';
+import type { RaceFormWindow, RaceFormWindows } from '@/types/racePredictionFeatures';
 
 // ============================================================================
 // Input Types
@@ -29,6 +30,8 @@ import {
 
 export interface QualifyingInput {
   position: number;
+  /** Confirmed pre-start grid; 0 means pit lane, undefined falls back to qualifying. */
+  gridPosition?: number;
   totalDrivers: number;
   q1TimeSeconds?: number | null;
   q2TimeSeconds?: number | null;
@@ -61,6 +64,7 @@ export interface StandingInput {
 }
 
 export interface DriverRecentForm {
+  windows?: RaceFormWindows;
   last10Steps: RaceWinnerSequenceStep[];
   finishPositions: number[];
   qualifyingPositions: number[];
@@ -73,6 +77,7 @@ export interface DriverRecentForm {
 }
 
 export interface ConstructorRecentForm {
+  windows?: RaceFormWindows;
   last10Steps: RaceWinnerSequenceStep[];
   finishPositions: number[];
   winCount: number;
@@ -236,6 +241,10 @@ export function normalizeRate(rate: number, neutral = 0.5): number {
   return clamp((rate - neutral) / neutral, -1, 0);
 }
 
+function normalizedWindowRate(window: RaceFormWindow | undefined, metric: 'winRate' | 'podiumRate' | 'reliabilityRate', neutral: number, fallback: number): number {
+  return window ? window.raceCount > 0 ? normalizeRate(window[metric], neutral) : 0 : fallback;
+}
+
 /**
  * Linear mapping from [min, max] → [-1, 1].
  */
@@ -271,11 +280,11 @@ export function buildQualifyingFeatures(
 ): Partial<WinnerPredictionFeatureVector> {
   const pos = q.position;
   const total = q.totalDrivers;
-
-  const gridAdvantage = normalizePosition(pos, total);
-  const gridPole = pos === 1 ? 1 : 0;
-  const gridFrontRow = pos <= 2 ? 1 : 0;
-  const gridTop3 = pos <= 3 ? 1 : 0;
+  const grid = q.gridPosition ?? pos;
+  const gridAdvantage = grid === 0 ? -1 : normalizePosition(grid, total);
+  const gridPole = grid === 1 ? 1 : 0;
+  const gridFrontRow = grid > 0 && grid <= 2 ? 1 : 0;
+  const gridTop3 = grid > 0 && grid <= 3 ? 1 : 0;
 
   // Pole model proxy: simplified version using grid position as pseudo-probability
   const poleModelProbability = pos === 1 ? 1 : pos <= 3 ? 0.6 : Math.max(0, 1 - (pos - 1) / total);
@@ -284,8 +293,8 @@ export function buildQualifyingFeatures(
 
   // Qualifying pace
   const qualifyingAdvantage = normalizePosition(pos, total);
-  const qualifyingPole = gridPole;
-  const qualifyingFrontRow = gridFrontRow;
+  const qualifyingPole = pos === 1 ? 1 : 0;
+  const qualifyingFrontRow = pos <= 2 ? 1 : 0;
 
   // Pace advantage from Q3 time gap
   let qualifyingPaceAdvantage = 0;
@@ -525,9 +534,9 @@ export function buildSequenceFeatures(
 
   // Driver form stats
   const dr = driverForm.raceCount;
-  const recentFinishAvg = driverForm.finishPositions.length > 0
+  const recentFinishAvg = driverForm.windows?.recent.averageFinish ?? (driverForm.finishPositions.length > 0
     ? driverForm.finishPositions.reduce((s, p) => s + p, 0) / driverForm.finishPositions.length
-    : 20;
+    : 20);
 
   // Trends (positive = improving = lower finish position)
   const finishTrend = -computeTrend(driverForm.finishPositions.map((p) => 1 / Math.max(p, 1)));
@@ -540,9 +549,9 @@ export function buildSequenceFeatures(
   );
 
   // Constructor trends
-  const cFinishAvg = constructorForm.finishPositions.length > 0
+  const cFinishAvg = constructorForm.windows?.recent.averageFinish ?? (constructorForm.finishPositions.length > 0
     ? constructorForm.finishPositions.reduce((s, p) => s + p, 0) / constructorForm.finishPositions.length
-    : 20;
+    : 20);
   const cFinishTrend = -computeTrend(constructorForm.finishPositions.map((p) => 1 / Math.max(p, 1)));
   const cQualifyingTrend = 0; // Not available from constructor form input
   const cWinTrend = computeTrend(
@@ -556,11 +565,11 @@ export function buildSequenceFeatures(
   const driverReliability = driverForm.totalLapsPossible > 0
     ? driverForm.totalLapsCompleted / driverForm.totalLapsPossible
     : 1;
-  const constructorReliability = 0.95; // Default assume reliable
+  const constructorReliability = constructorForm.windows?.recent.reliabilityRate ?? 0.95;
 
   return {
     // Driver momentum
-    driverShortRecentWinRate: dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.1) : 0,
+    driverShortRecentWinRate: normalizedWindowRate(driverForm.windows?.short, 'winRate', 0.1, dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.1) : 0),
     driverSequenceMomentum: driverMomentum,
     driverSequenceConsistency: driverConsistency,
     driverSequenceUpside: driverUpside,
@@ -572,14 +581,14 @@ export function buildSequenceFeatures(
       Math.round(recentFinishAvg),
       20,
     ),
-    driverRecentPodiumRate: dr > 0 ? normalizeRate(driverForm.podiumCount / dr, 0.3) : 0,
-    driverRecentWinRate: dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.1) : 0,
-    driverLongRecentWinRate: dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.05) : 0,
+    driverRecentPodiumRate: normalizedWindowRate(driverForm.windows?.recent, 'podiumRate', 0.3, dr > 0 ? normalizeRate(driverForm.podiumCount / dr, 0.3) : 0),
+    driverRecentWinRate: normalizedWindowRate(driverForm.windows?.recent, 'winRate', 0.1, dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.1) : 0),
+    driverLongRecentWinRate: normalizedWindowRate(driverForm.windows?.long, 'winRate', 0.05, dr > 0 ? normalizeRate(driverForm.winCount / dr, 0.05) : 0),
 
     // Constructor momentum
-    constructorShortRecentWinRate: constructorForm.raceCount > 0
+    constructorShortRecentWinRate: normalizedWindowRate(constructorForm.windows?.short, 'winRate', 0.1, constructorForm.raceCount > 0
       ? normalizeRate(constructorForm.winCount / constructorForm.raceCount, 0.1)
-      : 0,
+      : 0),
     constructorSequenceMomentum: constructorMomentum,
     constructorSequenceConsistency: constructorConsistency,
     constructorSequenceUpside: constructorUpside,
@@ -588,19 +597,19 @@ export function buildSequenceFeatures(
     constructorWinTrend: cWinTrend,
     constructorPodiumTrend: cPodiumTrend,
     constructorRecentFinishForm: normalizePosition(Math.round(cFinishAvg), 20),
-    constructorRecentPodiumRate: constructorForm.raceCount > 0
+    constructorRecentPodiumRate: normalizedWindowRate(constructorForm.windows?.recent, 'podiumRate', 0.3, constructorForm.raceCount > 0
       ? normalizeRate(constructorForm.podiumCount / constructorForm.raceCount, 0.3)
-      : 0,
-    constructorRecentWinRate: constructorForm.raceCount > 0
+      : 0),
+    constructorRecentWinRate: normalizedWindowRate(constructorForm.windows?.recent, 'winRate', 0.1, constructorForm.raceCount > 0
       ? normalizeRate(constructorForm.winCount / constructorForm.raceCount, 0.1)
-      : 0,
-    constructorLongRecentWinRate: constructorForm.raceCount > 0
+      : 0),
+    constructorLongRecentWinRate: normalizedWindowRate(constructorForm.windows?.long, 'winRate', 0.05, constructorForm.raceCount > 0
       ? normalizeRate(constructorForm.winCount / constructorForm.raceCount, 0.05)
-      : 0,
+      : 0),
 
     // Reliability
-    driverRecentReliability: normalizeRate(driverReliability, 0.9),
-    constructorRecentReliability: normalizeRate(constructorReliability, 0.9),
+    driverRecentReliability: normalizedWindowRate(driverForm.windows?.recent, 'reliabilityRate', 0.9, normalizeRate(driverReliability, 0.9)),
+    constructorRecentReliability: normalizedWindowRate(constructorForm.windows?.recent, 'reliabilityRate', 0.9, normalizeRate(constructorReliability, 0.9)),
   };
 }
 
@@ -901,9 +910,10 @@ export function buildInteractionFeatures(
   // ======================================================================
 
   // -- Grid / Qualifying --
-  const gridPole = q?.position === 1 ? 1 : 0;
-  const gridFrontRow = q?.position != null && q.position <= 2 ? 1 : 0;
-  const gridTop3 = q?.position != null && q.position <= 3 ? 1 : 0;
+  const grid = q?.gridPosition ?? q?.position;
+  const gridPole = grid === 1 ? 1 : 0;
+  const gridFrontRow = grid != null && grid > 0 && grid <= 2 ? 1 : 0;
+  const gridTop3 = grid != null && grid > 0 && grid <= 3 ? 1 : 0;
   const qualifyingAdvantage = q
     ? normalizePosition(q.position, q.totalDrivers)
     : 0;
@@ -956,12 +966,12 @@ export function buildInteractionFeatures(
     : 0;
 
   // -- Recent Form --
-  const driverShortRecentWinRate = df && df.raceCount > 0
+  const driverShortRecentWinRate = normalizedWindowRate(df?.windows?.short, 'winRate', 0.1, df && df.raceCount > 0
     ? normalizeRate(df.winCount / df.raceCount, 0.1)
-    : 0;
-  const constructorShortRecentWinRate = cf && cf.raceCount > 0
+    : 0);
+  const constructorShortRecentWinRate = normalizedWindowRate(cf?.windows?.short, 'winRate', 0.1, cf && cf.raceCount > 0
     ? normalizeRate(cf.winCount / cf.raceCount, 0.1)
-    : 0;
+    : 0);
 
   let driverSeqMomentum = 0;
   if (df?.last10Steps && df.last10Steps.length > 0) {
@@ -986,10 +996,10 @@ export function buildInteractionFeatures(
     constructorFinishTrend = -computeTrend(trendInput);
   }
 
-  const driverRecentReliability = df && df.totalLapsPossible > 0
+  const driverRecentReliability = normalizedWindowRate(df?.windows?.recent, 'reliabilityRate', 0.9, df && df.totalLapsPossible > 0
     ? normalizeRate(df.totalLapsCompleted / df.totalLapsPossible, 0.9)
-    : 0;
-  const constructorRecentReliability = normalizeRate(0.95, 0.9);
+    : 0);
+  const constructorRecentReliability = normalizedWindowRate(cf?.windows?.recent, 'reliabilityRate', 0.9, normalizeRate(0.95, 0.9));
 
   // -- Practice --
   const bestTimes = p?.allFpBestTimesSeconds?.filter((t): t is number => t != null);
@@ -1043,9 +1053,9 @@ export function buildInteractionFeatures(
   // ======================================================================
   return {
     // --- Grid x Circuit (all non-stub) ---
-    gridPoleCircuitInteraction: prod(gridPole, circuitLowOvertake),
-    gridFrontRowCircuitInteraction: prod(gridFrontRow, circuitQualifyingImportance),
-    gridTop3CircuitInteraction: prod(gridTop3, circuitQualifyingImportance),
+    gridPoleCircuitInteraction: prod(gridPole, cc ? circuitLowOvertake : sameCircuitPoleWinRate),
+    gridFrontRowCircuitInteraction: prod(gridFrontRow, cc ? circuitQualifyingImportance : sameCircuitPoleWinRate),
+    gridTop3CircuitInteraction: prod(gridTop3, cc ? circuitQualifyingImportance : ch?.top3GridWinPct != null ? normalizeRate(ch.top3GridWinPct / 100, 0.3) : 0),
 
     // --- Familiarity x Form (all non-stub) ---
     driverCircuitFamiliarityInteraction: prod(
@@ -1150,7 +1160,7 @@ export function buildWinnerFeatureVector(
   sources.push(
     input.qualifying
       ? buildQualifyingFeatures(input.qualifying)
-      : buildQualifyingFeatures({ position: 10, totalDrivers: 20, allPositions: Array.from({ length: 20 }, (_, i) => i + 1) }),
+      : {},
   );
 
   sources.push(

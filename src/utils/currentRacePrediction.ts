@@ -1,5 +1,6 @@
 import type { PredictionSeasonRaceData } from '@/types/predictionData';
 import type { RacePredictionPhase } from '@/types/racePrediction';
+import { buildPriorCircuitHistory, latestPreRaceObservation, summarizeRaceFormWindows } from './racePredictionHistory';
 import type {
   ConstructorRecentForm,
   DriverRecentForm,
@@ -41,10 +42,12 @@ function buildDriverForm(
     const result = race.results.find((item) => item.driverId === driverId);
     if (!result) return [];
     const qualifyingPosition = race.qualifying.find((item) => item.driverId === driverId)?.position || result.gridPosition || 20;
-    return [{ result, qualifyingPosition }];
+    return [{ result, qualifyingPosition, raceLaps: Math.max(1, ...race.results.map((row) => row.laps)) }];
   }).slice(-10);
 
   return {
+    windows: summarizeRaceFormWindows(entries.map(({ result }) => ({ won: result.position === 1, podium: result.position <= 3,
+      finish: result.position, reliability: /finished|\+\d+ laps?/i.test(result.status) ? 1 : 0 }))),
     last10Steps: entries.map(({ result, qualifyingPosition }) => ({
       finishAdvantage: Math.max(0, 1 - (result.position - 1) / 19),
       qualifyingAdvantage: Math.max(0, 1 - (qualifyingPosition - 1) / 19),
@@ -59,7 +62,7 @@ function buildDriverForm(
     raceCount: entries.length,
     dnfCount: entries.filter(({ result }) => !/finished|\+\d+ laps?/i.test(result.status)).length,
     totalLapsCompleted: entries.reduce((sum, { result }) => sum + result.laps, 0),
-    totalLapsPossible: entries.reduce((sum, { result }) => sum + Math.max(result.laps, 1), 0),
+    totalLapsPossible: entries.reduce((sum, { raceLaps }) => sum + raceLaps, 0),
   };
 }
 
@@ -73,6 +76,12 @@ function buildConstructorForm(
     .slice(-20);
 
   return {
+    windows: summarizeRaceFormWindows(history.flatMap((race) => {
+      const rows = race.results.filter((row) => row.constructorId === constructorId);
+      return rows.length ? [{ won: rows.some((row) => row.position === 1), podium: rows.some((row) => row.position <= 3),
+        finish: rows.reduce((sum, row) => sum + row.position, 0) / rows.length,
+        reliability: rows.filter((row) => /finished|\+\d+ laps?/i.test(row.status)).length / rows.length }] : [];
+    })),
     last10Steps: entries.slice(-10).map(({ result, qualifyingPosition }) => ({
       finishAdvantage: Math.max(0, 1 - (result.position - 1) / 19),
       qualifyingAdvantage: Math.max(0, 1 - (qualifyingPosition - 1) / 19),
@@ -97,11 +106,23 @@ function parseLapTime(value: string | null): number | null {
 export function buildCurrentRaceFeatureInputs(
   target: PredictionSeasonRaceData,
   completedRaces: PredictionSeasonRaceData[],
+  phase: RacePredictionPhase = getPredictionPhase(target),
+  options: { multiWindow?: boolean; circuitHistory?: boolean; asOf?: string } = {},
 ): WinnerFeatureInput[] {
-  const latestCompleted = [...completedRaces].filter(hasWinner).sort((a, b) => b.round - a.round)[0];
-  const entrants = target.qualifying.length
+  completedRaces = [...new Map(completedRaces.filter((race) => hasWinner(race) && (
+    race.season < target.season || (race.season === target.season && race.round < target.round)
+  )).map((race) => [`${race.season}-${race.round}`, race])).values()]
+    .sort((a, b) => a.season - b.season || a.round - b.round);
+  // Historical outcomes and sessions unavailable at this phase are never inputs.
+  target = { ...target, results: [], qualifying: phase === 'post_quali' ? target.qualifying : [],
+    sprintResults: phase === 'post_quali' ? target.sprintResults : [],
+    sprintQualifying: phase === 'post_quali' ? target.sprintQualifying : [] };
+  const seasonHistory = completedRaces.filter((race) => race.season === target.season);
+  const latestCompleted = completedRaces[completedRaces.length - 1];
+  const confirmed = latestPreRaceObservation(target, phase, options.asOf);
+  const entrants = confirmed?.entries || (target.qualifying.length
     ? target.qualifying.map((item) => ({ driverId: item.driverId, constructorId: item.constructorId }))
-    : (latestCompleted?.results || []).map((item) => ({ driverId: item.driverId, constructorId: item.constructorId }));
+    : (latestCompleted?.results || []).map((item) => ({ driverId: item.driverId, constructorId: item.constructorId })));
   const uniqueEntrants = [...new Map(entrants.map((entry) => [entry.driverId, entry])).values()];
   const fieldSize = Math.max(uniqueEntrants.length, 2);
   const constructors = [...new Set(uniqueEntrants.map((entry) => entry.constructorId))];
@@ -110,7 +131,7 @@ export function buildCurrentRaceFeatureInputs(
   const constructorPoints = new Map<string, number>();
   const constructorWins = new Map<string, number>();
 
-  completedRaces.filter((race) => race.round < target.round).forEach((race) => {
+  seasonHistory.forEach((race) => {
     race.results.forEach((result) => {
       driverPoints.set(result.driverId, (driverPoints.get(result.driverId) || 0) + result.points);
       constructorPoints.set(result.constructorId, (constructorPoints.get(result.constructorId) || 0) + result.points);
@@ -126,9 +147,12 @@ export function buildCurrentRaceFeatureInputs(
   const totalConstructorPoints = [...constructorPoints.values()].reduce((sum, points) => sum + points, 0);
   const qualifyingTimes = target.qualifying.map((item) => parseLapTime(item.q3 || item.q2 || item.q1));
   const qualifyingPositions = target.qualifying.map((item) => item.position);
-  const racesCompleted = completedRaces.filter((race) => race.round < target.round && hasWinner(race)).length;
+  const racesCompleted = seasonHistory.length;
 
   return uniqueEntrants.map((entry) => {
+    const driverForm = buildDriverForm(completedRaces, entry.driverId);
+    const constructorForm = buildConstructorForm(completedRaces, entry.constructorId);
+    if (options.multiWindow === false) { delete driverForm.windows; delete constructorForm.windows; }
     const qualifying = target.qualifying.find((item) => item.driverId === entry.driverId);
     const teamMate = target.qualifying.find((item) => item.constructorId === entry.constructorId && item.driverId !== entry.driverId);
     const sprint = target.sprintResults.find((item) => item.driverId === entry.driverId);
@@ -141,6 +165,7 @@ export function buildCurrentRaceFeatureInputs(
       constructorId: entry.constructorId,
       qualifying: qualifying ? {
         position: qualifying.position,
+        gridPosition: confirmed?.entries.find((row) => row.driverId === entry.driverId)?.gridPosition,
         totalDrivers: fieldSize,
         q1TimeSeconds: parseLapTime(qualifying.q1),
         q2TimeSeconds: parseLapTime(qualifying.q2),
@@ -166,8 +191,9 @@ export function buildCurrentRaceFeatureInputs(
         racesCompleted,
         fieldPointsTotal: totalConstructorPoints,
       },
-      driverRecentForm: buildDriverForm(completedRaces, entry.driverId),
-      constructorRecentForm: buildConstructorForm(completedRaces, entry.constructorId),
+      driverRecentForm: driverForm,
+      constructorRecentForm: constructorForm,
+      circuitHistory: options.circuitHistory === false ? undefined : buildPriorCircuitHistory(completedRaces, target.circuitId, entry.driverId, entry.constructorId),
       sprint: {
         isSprintWeekend: target.isSprintWeekend,
         sprintPosition: sprint?.position,

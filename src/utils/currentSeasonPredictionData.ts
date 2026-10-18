@@ -38,6 +38,8 @@ interface JolpicaRaceBase {
 
 interface JolpicaScheduleRace extends JolpicaRaceBase {
   raceName: string;
+  date?: string;
+  time?: string;
   Circuit: {
     circuitId: string;
   };
@@ -126,6 +128,7 @@ export function buildPredictionSeasonSnapshot(
       return {
         season,
         round: positiveInteger(race.round),
+        ...(race.date ? { raceStartAt: `${race.date}T${race.time || '00:00:00Z'}` } : {}),
         raceName: race.raceName,
         circuitId: normalizePredictionEntityId(race.Circuit.circuitId),
         isSprintWeekend: sprintResults.length > 0 || sprintQualifying.length > 0,

@@ -1,0 +1,295 @@
+{
+  "verifiedAt": "2026-10-18",
+  "drivers": [
+    {
+      "driverId": "carlo_abate",
+      "upstreamId": "abate",
+      "givenName": "Carlo",
+      "familyName": "Abate",
+      "dateOfBirth": "1932-07-10",
+      "nationality": "Italian",
+      "entryCount": 3,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered World Championship events in 1962 and 1963; no race starts.",
+      "verificationNotes": "STATS F1 lists three entries; Jolpica currently returns only two withdrawn-event rows.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/abate.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/abate/results.json",
+        "https://www.statsf1.com/en/carlo-abate.aspx"
+      ]
+    },
+    {
+      "driverId": "alex_blignaut",
+      "upstreamId": "blignaut",
+      "givenName": "Alex",
+      "familyName": "Blignaut",
+      "dateOfBirth": "1932-11-30",
+      "nationality": "South African",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1965 South African Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/blignaut.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/blignaut/results.json",
+        "https://www.statsf1.com/en/alex-blignaut.aspx"
+      ]
+    },
+    {
+      "driverId": "menato_boffa",
+      "upstreamId": "boffa",
+      "givenName": "Menato",
+      "familyName": "Boffa",
+      "dateOfBirth": "1930-01-04",
+      "nationality": "Italian",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1961 Italian Grand Prix; no World Championship race starts.",
+      "verificationNotes": "Also documented as Mennato Boffa; retain the upstream spelling Menato for identity matching.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/boffa.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/boffa/results.json",
+        "https://www.statsf1.com/en/mennato-boffa.aspx"
+      ]
+    },
+    {
+      "driverId": "david_clapham",
+      "upstreamId": "clapham",
+      "givenName": "David",
+      "familyName": "Clapham",
+      "dateOfBirth": null,
+      "nationality": "South African",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1965 South African Grand Prix; no World Championship race starts.",
+      "verificationNotes": "Birth date unresolved: STATS F1/Jolpica say 18 May 1931; other references say 17 May. Leave NULL.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/clapham.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/clapham/results.json",
+        "https://www.statsf1.com/en/dave-clapham.aspx",
+        "https://en.wikipedia.org/wiki/David_Clapham"
+      ]
+    },
+    {
+      "driverId": "geoff_duke",
+      "upstreamId": "duke",
+      "givenName": "Geoff",
+      "familyName": "Duke",
+      "dateOfBirth": "1923-03-29",
+      "nationality": "British",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1961 German Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/duke.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/duke/results.json",
+        "https://www.statsf1.com/en/geoff-duke.aspx"
+      ]
+    },
+    {
+      "driverId": "leonardo_fornaroli",
+      "upstreamId": "leonardo_fornaroli",
+      "givenName": "Leonardo",
+      "familyName": "Fornaroli",
+      "dateOfBirth": "2004-12-03",
+      "nationality": "Italian",
+      "entryCount": 0,
+      "participationStatus": "test_reserve",
+      "participationNote": "McLaren test and reserve driver in 2026. No World Championship race starts recorded at verification.",
+      "verificationNotes": "Identity and birth date verified with the official F3 profile; F1 role verified with Formula1.com.",
+      "recentConstructorId": "mclaren",
+      "recentConstructorName": "McLaren",
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/leonardo_fornaroli.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/leonardo_fornaroli/results.json",
+        "https://www.fiaformula3.com/en/latest/article/in-profile-leonardo-fornaroli.41m3gVN6N8Zek7FxLF1Sp",
+        "https://www.formula1.com/en/latest/article/exclusive-fornaroli-on-testing-with-mclaren-the-different-world-of-f1-and-pushing-for-a-full-time-seat.4Ppi0w2M4hSaKdhGHldkBQ.4Ppi0w2M4hSaKdhGHldkBQ"
+      ]
+    },
+    {
+      "driverId": "colton_herta",
+      "upstreamId": "colton_herta",
+      "givenName": "Colton",
+      "familyName": "Herta",
+      "dateOfBirth": "2000-03-30",
+      "nationality": "American",
+      "entryCount": 0,
+      "participationStatus": "test_reserve",
+      "participationNote": "Cadillac test driver in 2026. No World Championship race starts recorded at verification.",
+      "verificationNotes": "Identity, birth date and test role verified with official F2 and Cadillac/F1 sources.",
+      "recentConstructorId": "cadillac",
+      "recentConstructorName": "Cadillac",
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/colton_herta.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/colton_herta/results.json",
+        "https://www.fiaformula2.com/en/drivers/colton-herta",
+        "https://news.cadillac.com/newsroom.detail.html/Pages/news/us/en/2025/sep/0903-Cadillac-Formula-1-Team-Colton-Herta-Test-Driver.html"
+      ]
+    },
+    {
+      "driverId": "gary_hocking",
+      "upstreamId": "hocking",
+      "givenName": "Gary",
+      "familyName": "Hocking",
+      "dateOfBirth": "1937-09-30",
+      "nationality": "Rhodesian",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1962 South African Grand Prix; no World Championship race starts.",
+      "verificationNotes": "Use historical racing nationality Rhodesian, corroborated by STATS F1 and Jolpica.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/hocking.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/hocking/results.json",
+        "https://www.statsf1.com/en/gary-hocking.aspx"
+      ]
+    },
+    {
+      "driverId": "ken_miles",
+      "upstreamId": "ken_miles",
+      "givenName": "Ken",
+      "familyName": "Miles",
+      "dateOfBirth": "1918-11-01",
+      "nationality": "British",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1961 United States Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/ken_miles.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/ken_miles/results.json",
+        "https://www.statsf1.com/en/ken-miles.aspx"
+      ]
+    },
+    {
+      "driverId": "thomas_monarch",
+      "upstreamId": "monarch",
+      "givenName": "Thomas",
+      "familyName": "Monarch",
+      "dateOfBirth": null,
+      "nationality": "American",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Listed as an entry for the 1963 Mexican Grand Prix; did not participate and has no World Championship race starts.",
+      "verificationNotes": "The event entry is corroborated; biographical identification and birth date are disputed. Do not import the upstream birth date or speculative biography.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/monarch.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/monarch/results.json",
+        "https://www.statsf1.com/en/thomas-monarch.aspx",
+        "https://autosportworld.info/en/f1/seasons/1963/mexico/",
+        "https://www.wikidata.org/wiki/Q3544896"
+      ]
+    },
+    {
+      "driverId": "peter_monteverdi",
+      "upstreamId": "monteverdi",
+      "givenName": "Peter",
+      "familyName": "Monteverdi",
+      "dateOfBirth": "1934-06-07",
+      "nationality": "Swiss",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1961 German Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/monteverdi.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/monteverdi/results.json",
+        "https://www.statsf1.com/en/peter-monteverdi.aspx"
+      ]
+    },
+    {
+      "driverId": "ray_reed",
+      "upstreamId": "reed",
+      "givenName": "Ray",
+      "familyName": "Reed",
+      "dateOfBirth": "1932-04-30",
+      "nationality": "Rhodesian",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1965 South African Grand Prix; no World Championship race starts.",
+      "verificationNotes": "STATS F1 identifies racing nationality as Rhodesian; upstream South African is not used.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/reed.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/reed/results.json",
+        "https://www.statsf1.com/en/ray-reed.aspx"
+      ]
+    },
+    {
+      "driverId": "rob_slotemaker",
+      "upstreamId": "slotemaker",
+      "givenName": "Rob",
+      "familyName": "Slotemaker",
+      "dateOfBirth": "1929-06-13",
+      "nationality": "Dutch",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1962 Dutch Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/slotemaker.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/slotemaker/results.json",
+        "https://www.statsf1.com/en/rob-slotemaker.aspx"
+      ]
+    },
+    {
+      "driverId": "ernie_de_vos",
+      "upstreamId": "vos",
+      "givenName": "Ernie",
+      "familyName": "De Vos",
+      "dateOfBirth": "1941-07-01",
+      "nationality": "Canadian",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1963 United States Grand Prix; no World Championship race starts.",
+      "verificationNotes": "STATS F1 corroborates Canadian racing nationality; Dutch birth place is not racing nationality.",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/vos.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/vos/results.json",
+        "https://www.statsf1.com/en/ernie-devos.aspx"
+      ]
+    },
+    {
+      "driverId": "syd_van_der_vyver",
+      "upstreamId": "vyver",
+      "givenName": "Syd",
+      "familyName": "Van der Vyver",
+      "dateOfBirth": "1920-06-01",
+      "nationality": "South African",
+      "entryCount": 1,
+      "participationStatus": "entered_without_start",
+      "participationNote": "Entered the 1962 South African Grand Prix; no World Championship race starts.",
+      "verificationNotes": "",
+      "recentConstructorId": null,
+      "recentConstructorName": null,
+      "sourceUrls": [
+        "https://api.jolpi.ca/ergast/f1/drivers/vyver.json",
+        "https://api.jolpi.ca/ergast/f1/drivers/vyver/results.json",
+        "https://www.statsf1.com/en/syd-van-der-vyver.aspx"
+      ]
+    }
+  ]
+}

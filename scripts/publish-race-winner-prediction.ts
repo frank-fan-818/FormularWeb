@@ -7,29 +7,23 @@ import { withRetry } from '../src/utils/withRetry.ts';
 import { fetchPaginatedRaceTable } from '../src/api/jolpicaRacePagination.ts';
 import { createClient } from '@supabase/supabase-js';
 import type { PredictionSeasonRaceData } from '../src/types/predictionData.ts';
+import type { RacePredictionModelArtifact, PhasePredictionModel } from '../src/types/racePredictionModel.ts';
+import { buildPhaseCandidates, eligiblePredictionHistory, PREDICTION_FEATURE_SCHEMA_VERSION, predictPhaseRace, selectPhaseModel } from '../src/utils/racePredictionTraining.ts';
+import { loadPredictionHistory, loadPreRaceObservations } from './prediction-history.ts';
+import { latestPreRaceObservation } from '../src/utils/racePredictionHistory.ts';
 import {
-  buildCurrentRaceFeatureInputs,
   getPredictionPhase,
   hasCompletePredictionField,
   selectPredictionTarget,
   type ScheduledPredictionRace,
 } from '../src/utils/currentRacePrediction.ts';
-import { buildWinnerCandidates } from '../src/utils/winnerFeatureBuilder.ts';
 import {
   predictWinnerRace,
-  type WinnerPredictionWeights,
 } from '../src/utils/raceWinnerPrediction.ts';
 
 const JOLPICA_BASE_URL = 'https://api.jolpi.ca/ergast/f1';
-const MODEL_PATH = path.resolve('docs/model-artifacts/winner-prediction-backtest.json');
+const MODEL_PATH = path.resolve('docs/model-artifacts/race-prediction-models.json');
 const REQUEST_TIMEOUT_MS = 15_000;
-
-interface ModelArtifact {
-  generatedAt: string;
-  config: { modelKind: string; featureCount: number };
-  metrics: unknown;
-  model: WinnerPredictionWeights;
-}
 
 type JsonRecord = Record<string, unknown>;
 
@@ -154,7 +148,7 @@ export async function loadSeason(season: number): Promise<ScheduledPredictionRac
 }
 
 export async function publishToSupabase(
-  artifact: ModelArtifact,
+  artifact: PhasePredictionModel,
   modelVersion: string,
   target: ScheduledPredictionRace,
   generatedAt: string,
@@ -204,11 +198,11 @@ export async function publishToSupabase(
   if (deactivateError) throw deactivateError;
   const { error: modelError } = await supabase.from('prediction_models').upsert({
     version: modelVersion,
-    feature_schema_version: 1,
-    trained_through_season: target.season,
-    trained_through_round: Math.max(0, target.round - 1),
-    artifact: artifact.model,
-    metrics: artifact.metrics,
+    feature_schema_version: PREDICTION_FEATURE_SCHEMA_VERSION,
+    trained_through_season: artifact.training.trainedThrough.season,
+    trained_through_round: artifact.training.trainedThrough.round,
+    artifact: { phase: artifact.phase, featureNames: artifact.featureNames, model: artifact.model, training: artifact.training, recipe: artifact.recipe, calibration: artifact.calibration },
+    metrics: artifact.backtest,
     is_active: true,
   }, { onConflict: 'version' });
   if (modelError) throw modelError;
@@ -251,16 +245,25 @@ async function main() {
     log('skipped', { season, reason: 'no-future-race' });
     return;
   }
-  const completedRaces: PredictionSeasonRaceData[] = races.filter((race) => race.results.some((result) => result.position === 1));
-  const featureInputs = buildCurrentRaceFeatureInputs(target, completedRaces);
-  if (!hasCompletePredictionField(featureInputs.length)) {
-    throw new Error(`Incomplete entry field for ${season}/${target.round}: ${featureInputs.length} candidates. Publication must be retried.`);
+  target.preRaceObservations = loadPreRaceObservations(season, target.round);
+  const artifact = JSON.parse(readFileSync(MODEL_PATH, 'utf8')) as RacePredictionModelArtifact;
+  const liveHistory: PredictionSeasonRaceData[] = races.filter((race) => race.results.some((result) => result.position === 1));
+  const historical = loadPredictionHistory(artifact.config.historyStartSeason, season);
+  const completedRaces = eligiblePredictionHistory([...historical, ...liveHistory.map((race) => ({ ...race, preRaceObservations: loadPreRaceObservations(race.season, race.round) }))], generatedAt);
+  const phaseModel = selectPhaseModel(artifact, target, completedRaces);
+  const candidates = buildPhaseCandidates(target, completedRaces, phaseModel.phase, phaseModel.recipe.featureSet, generatedAt);
+  if (!hasCompletePredictionField(candidates.length)) {
+    throw new Error(`Incomplete entry field for ${season}/${target.round}: ${candidates.length} candidates. Publication must be retried.`);
   }
 
-  const artifact = JSON.parse(readFileSync(MODEL_PATH, 'utf8')) as ModelArtifact;
-  const modelVersion = `winner-linear-head-${artifact.generatedAt.slice(0, 10)}`;
-  const candidates = buildWinnerCandidates(`${season}-${target.round}`, featureInputs);
-  const prediction = predictWinnerRace(candidates, artifact.model);
+  const modelHash = createHash('sha256').update(JSON.stringify({ schema: artifact.featureSchemaVersion,
+    phase: phaseModel.phase, features: phaseModel.featureNames, model: phaseModel.model, training: phaseModel.training,
+    recipe: phaseModel.recipe, calibration: phaseModel.calibration })).digest('hex').slice(0, 16);
+  const modelVersion = `winner-v3-${phaseModel.phase}-${modelHash}`;
+  const prediction = predictPhaseRace(candidates, phaseModel);
+  const confirmed = latestPreRaceObservation(target, phaseModel.phase, generatedAt);
+  const inputCoverage = { roster: confirmed ? 'confirmed' : target.qualifying.length ? 'qualifying' : 'estimated',
+    grid: confirmed?.entries.every((row) => row.gridPosition !== undefined) ? 'confirmed' : 'qualifying-proxy' };
   const inputHash = createHash('sha256').update(JSON.stringify({ target, completedRaces, modelVersion })).digest('hex');
   const output = {
     season,
@@ -272,17 +275,19 @@ async function main() {
     dataCutoffAt: generatedAt,
     inputHash,
     candidates: prediction,
+    inputCoverage,
   };
   const outputPath = getArg('output');
   if (outputPath) writeFileSync(path.resolve(outputPath), `${JSON.stringify(output, null, 2)}\n`, 'utf8');
   const publication = hasFlag('dry-run')
     ? { published: false, runId: null }
-    : await publishToSupabase(artifact, modelVersion, target, generatedAt, inputHash, prediction);
+    : await publishToSupabase(phaseModel, modelVersion, target, generatedAt, inputHash, prediction);
   log(hasFlag('dry-run') ? 'generated' : publication.published ? 'published' : 'unchanged', {
     season,
     round: target.round,
     phase: output.phase,
     candidateCount: prediction.length,
+    inputCoverage,
     favourite: prediction[0]?.driverId,
     probability: prediction[0]?.probability,
     inputHash,
