@@ -73,3 +73,15 @@ Jolpica 返回车手 881 条、车队 214 条、赛道 78 条。两源存在 762
 - Raw diagnostic paths: `artifacts/search-audit/sources.json`、`verification.json`、`races.json`（均在 Git 忽略的 artifacts 目录中）。
 
 当前结果为本地代码和构建验证，尚未部署到线上。
+
+## PR 79 跨浏览器测试修复
+
+- CI run `39109018845` 的其他任务通过，Browser QA 中此搜索用例在 Firefox 和 WebKit 失败。
+- 已在本地复现 Firefox 的 `page.goto: NS_BINDING_ABORTED`。CI trace 显示 WebKit 的失败请求是 `Load request cancelled`：离开页面时取消的日历、赛道数据或延迟资源请求。原监听器仅排除 Chromium 的 `net::ERR_ABORTED`。
+- 将缓存持久化检查移到首页搜索完成后的单独 reload；车手、赛道与车队导航使用 SPA 历史返回，并等待真实详情标题和历史内容。补齐详情页所需的受控响应，防止仅检查 URL 就让空档案通过。
+- 仅排除三个明确的浏览器取消错误名称，其他请求失败仍断言为空，并保留具体错误类型与 URL。保留控制台错误、重复数量、路由 ID、v5 删除和 v6 缓存检查。
+- 变更仅涉及测试和本记录，提交类型为 `test:`，按版本规则保持 `0.23.1`。
+- `src/utils/searchSources.test.ts`、`src/utils/search.test.ts` 和 `src/hooks/useGlobalSearch.test.ts`：25 项通过。相关 ESLint 与差异检查通过。
+- 生产构建 URL：`http://127.0.0.1:4173`；应用代码和生产构建沿用已验证的 `f9142e65`。
+- 浏览器：桌面 Chromium 1440×900、手机 Chromium 375×812、平板 Chromium 768×1024、桌面 Firefox 1440×900、手机 WebKit 375×812；每种连续运行 3 次，15 项全部通过，无重试。
+- 证据：`artifacts/pr79-search-baseline.log`、`artifacts/pr79-search-matrix.log`、`artifacts/pr79-ci-browser/test-results/` 和本地 `artifacts/browser-qa/test-results/`。搜索截图由各用例输出为 `search-identities.png`。
