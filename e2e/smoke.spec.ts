@@ -362,7 +362,9 @@ test('settings language changes stay synchronized with the header', async ({ pag
   await expect(headerLanguage).toHaveValue('zh-CN');
   await expect(headerLanguage).toHaveAccessibleName('语言');
 
-  await page.locator('.settings-card').first().locator('.ant-select').click();
+  await page.locator('.setting-row')
+    .filter({ has: page.getByText('语言', { exact: true }) })
+    .locator('.ant-select').click();
   const visibleEnglishOption = page
     .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
     .filter({ hasText: /^English$/ });
