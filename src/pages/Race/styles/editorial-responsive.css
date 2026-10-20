@@ -12,17 +12,16 @@
 
 @media (max-width: 1100px) {
   .race-command-main {
-    grid-template-columns: minmax(0, 1fr) minmax(310px, 0.75fr);
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.6fr);
     gap: var(--space-5);
   }
 
-  .race-command-copy h1 { font-size: clamp(40px, 6vw, 62px); }
   .race-overview-debrief { grid-template-columns: 1fr; }
   .race-debrief-heading { grid-row: auto; min-height: 220px; }
   .race-podium { padding-left: var(--space-5); }
   .race-story-grid { margin-left: var(--space-5); }
-  .race-page-intro { grid-template-columns: auto minmax(0, 1fr); }
-  .race-page-intro-aside { grid-column: 2; }
+  .race-page-intro { grid-template-columns: minmax(0, 1fr); }
+  .race-page-intro-aside { grid-column: 1; }
   .race-page-pulse { justify-content: flex-start; }
 }
 
@@ -40,23 +39,12 @@
   .race-command {
     min-height: 0;
     border-radius: var(--radius-md);
-    padding: var(--space-3) var(--space-4) 0;
-  }
-
-  .race-command-round-mark {
-    right: 8px;
-    top: 28px;
-    font-size: 180px;
+    padding: var(--space-4);
   }
 
   .race-command-utility {
-    grid-template-columns: auto 1fr;
     gap: var(--space-2);
-    padding-bottom: var(--space-3);
   }
-
-  .race-command-championship { display: none; }
-  .race-command-state { justify-self: end; font-size: 9px; }
 
   .race-command-main {
     grid-template-columns: 1fr;
@@ -67,46 +55,33 @@
   }
 
   .race-command-copy h1 {
-    gap: var(--space-2);
-    font-size: clamp(36px, 12vw, 54px);
+    font-size: clamp(var(--text-3xl), 10vw, var(--text-4xl));
   }
 
   .race-command-copy > p {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
     margin-top: var(--space-3);
   }
 
-  .race-command-copy > p span::before { display: none; }
+  .race-command-copy > p strong { font-size: var(--text-lg); }
+
+  .race-command-start {
+    padding: var(--space-4) 0 0;
+    border-top: 1px solid var(--race-command-line);
+    border-left: 0;
+  }
 
   .race-command-snapshot {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
   }
 
   .race-command-stat {
-    grid-template-columns: 1fr;
-    align-content: start;
-    gap: 2px;
-    min-height: 92px;
-    padding: var(--space-3);
-    border-right: 1px solid var(--race-command-line);
-    border-bottom: 0;
+    grid-template-columns: minmax(80px, 0.5fr) minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--space-3);
   }
 
-  .race-command-stat:last-child { border-right: 0; }
-  .race-command-stat strong { font-size: 20px; }
-  .race-command-stat small { text-align: left; }
-
-  .race-command-footer {
-    justify-content: flex-start;
-    overflow-x: auto;
-    margin: 0 calc(var(--space-4) * -1);
-    padding: 0 var(--space-4);
-    white-space: nowrap;
-  }
-
-  .race-command-footer span:not(:first-child) { display: none; }
+  .race-command-stat strong { font-size: var(--text-xl); }
 
   .race-subpage-tabs {
     top: 56px;
@@ -120,18 +95,12 @@
   .race-command-tab-label small { display: none; }
 
   .race-page-intro {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     min-height: 0;
-    padding: var(--space-5) var(--space-3);
+    padding: var(--space-4) var(--space-3);
   }
 
-  .race-page-intro-index {
-    min-width: 42px;
-    font-size: 58px;
-  }
-
-  .race-page-intro h2 { font-size: clamp(26px, 8vw, 36px); }
   .race-page-intro-aside { grid-column: 1 / -1; width: 100%; }
   .race-page-pulse { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .race-page-pulse > span { justify-content: center; min-width: 0; padding: 0 var(--space-2); }
@@ -225,20 +194,14 @@
 }
 
 @media (max-width: 430px) {
-  .race-command-meta > span { max-width: 100%; font-size: 10px; }
-  .race-command-stat { padding: 10px 7px; }
-  .race-command-stat > span { font-size: 8px; }
-  .race-command-stat small { font-size: 9px; }
   .race-subpage-tabs .ant-tabs-tab { padding: 0 6px !important; }
   .race-subpage-tabs .ant-tabs-nav-more { padding: 0 4px; }
   .race-command-tab-label { gap: 3px; }
   .race-command-tab-label > .anticon { font-size: 13px; }
   .race-command-tab-label strong { font-size: 11px; }
-  .race-page-intro p { font-size: 13px; }
   .race-page-pulse { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .race-podium { padding-right: var(--space-2); padding-left: var(--space-2); }
   .race-podium-driver > strong { font-size: 16px; }
-  .race-podium-driver > em { font-size: 8px; }
   .race-story-card > strong { font-size: 24px; }
   .race-session-tab-label span { font-size: 12px; }
 }

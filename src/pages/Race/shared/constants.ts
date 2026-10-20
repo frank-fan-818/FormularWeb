@@ -16,7 +16,7 @@ export const TEXT = {
   sprintWeekend: '\u51b2\u523a\u5468\u672b',
   weekendSchedule: '\u5468\u672b\u65f6\u95f4\u8868',
   scheduleTimezone: '\u6211\u7684\u65f6\u95f4',
-  scheduleTimezoneValue: '\u5317\u4eac\u65f6\u95f4',
+  scheduleTimezoneValue: 'UTC+8',
   scheduleSourceHint: '\u6309\u5b98\u65b9\u8d5b\u7a0b\u7ed3\u6784\u5c55\u793a',
   mobileHint: '\u70b9\u51fb\u4e0a\u65b9\u5706\u70b9\u5207\u6362\u4f1a\u8bdd',
   season: '\u8d5b\u5b63',

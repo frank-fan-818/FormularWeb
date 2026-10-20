@@ -3,12 +3,12 @@
 .race-page-intro {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: var(--space-5);
   overflow: hidden;
-  min-height: 154px;
-  padding: var(--space-5) var(--space-6);
+  min-height: 0;
+  padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--surface-dark);
   border-bottom: 1px solid var(--border-primary);
   background:
@@ -27,17 +27,6 @@
   opacity: 0.5;
   background: repeating-linear-gradient(120deg, transparent 0 14px, var(--race-control-grid) 14px 15px);
   pointer-events: none;
-}
-
-.race-page-intro-index {
-  align-self: stretch;
-  min-width: 66px;
-  color: color-mix(in srgb, var(--f1-red) 18%, var(--text-primary));
-  font-family: var(--race-display);
-  font-size: clamp(64px, 7vw, 100px);
-  font-weight: 800;
-  letter-spacing: var(--tracking-normal);
-  line-height: 0.85;
 }
 
 .race-page-intro-copy {
@@ -61,19 +50,11 @@
   margin: 0;
   color: var(--text-primary);
   font-family: var(--race-display);
-  font-size: clamp(28px, 3vw, 44px);
+  font-size: var(--text-xl);
   font-weight: 800;
   letter-spacing: var(--tracking-normal);
   line-height: 1.12;
   text-wrap: balance;
-}
-
-.race-page-intro p {
-  max-width: 760px;
-  margin: var(--space-3) 0 0;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.65;
 }
 
 .race-page-intro-aside {
@@ -270,14 +251,6 @@
 
 .race-podium-team img {
   max-width: 28px;
-}
-
-.race-podium-driver > em {
-  margin-top: auto;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-style: normal;
 }
 
 .race-story-grid {

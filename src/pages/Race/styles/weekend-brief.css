@@ -1,8 +1,6 @@
 /* One surface for schedule and circuit facts, scoped to weekend intelligence. */
-.race-info-page > .race-page-intro { padding-block: var(--space-5); min-height: 0; gap: var(--space-5); }
+.race-info-page > .race-page-intro { padding-block: var(--space-4); min-height: 0; gap: var(--space-5); }
 .race-info-page > .race-page-intro::after { display: none; }
-.race-info-page .race-page-intro-index { font-size: 64px; }
-.race-info-page .race-page-intro h2 { font-size: clamp(24px, 2.5vw, 36px); }
 .race-info-page .race-page-pulse { gap: var(--space-4); }
 .race-info-page .race-page-pulse > span { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 0; min-height: 0; }
 .race-info-page .race-page-pulse strong { font-size: var(--text-xl); }
@@ -35,7 +33,6 @@
 }
 @media (max-width: 600px) {
   .race-info-page > .race-page-intro { gap: var(--space-3); padding-block: var(--space-4); }
-  .race-info-page .race-page-intro-index { font-size: 44px; }
   .race-info-page .race-page-pulse { display: flex; flex-wrap: wrap; gap: var(--space-3); }
   .weekend-brief .weekend-schedule { padding: var(--space-4); gap: var(--space-4); }
   .weekend-circuit-strip { padding: var(--space-4); gap: var(--space-3); }

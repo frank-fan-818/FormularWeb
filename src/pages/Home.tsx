@@ -4,7 +4,7 @@ import DocumentHead from '@/components/DocumentHead';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
-import { formatRaceDateTimeFull, formatSessionDateLabel, getRaceWeekendTimeline } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import { formatLocalDateTime } from '@/utils/dateTime';
 import { getTeamColor } from '@/utils/teamColors';
 import { buildSeasonSummary } from '@/utils/seasonSummary';
@@ -58,6 +58,7 @@ const WEEKEND_LABELS = {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { formatRaceDateTimeFull, formatSessionDateLabel, getRaceWeekendTimeline, timeZoneLabel } = useRaceSchedule();
   const { currentSeason } = useAppStore();
   const {
     driverStandings,
@@ -230,7 +231,7 @@ const Home = () => {
           <div className="home-weekend-schedule" aria-label={TEXT.weekendSchedule}>
             <div className="home-weekend-heading">
               <h2>{TEXT.weekendSchedule}</h2>
-              <span>北京时间</span>
+              <span>{timeZoneLabel}</span>
             </div>
             <div className="home-weekend-sessions">
               {weekendTimeline.slice(0, 5).map((session) => (

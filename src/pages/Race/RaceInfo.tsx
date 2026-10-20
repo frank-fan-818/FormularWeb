@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 import { useRaceData } from './RaceContext';
 import { isFeatureEnabled } from '@/utils/featureFlags';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
-import { getRaceWeekendScheduleGroups, getRaceWeekendTimeline } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import { TEXT } from '@/pages/Race/shared/constants';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { RaceWeekendOverview } from '@/pages/Race/shared/components/RaceWeekendOverview';
@@ -16,6 +16,7 @@ import { RaceHistoricalContextPanel } from '@/pages/Race/shared/components/RaceH
 import { RaceUpgradeSummaryPanel } from '@/pages/Race/shared/components/RaceUpgradeSummaryPanel';
 
 const RaceInfo = () => {
+  const { getRaceWeekendScheduleGroups, getRaceWeekendTimeline } = useRaceSchedule();
   const { session } = useAuthSession();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -101,17 +102,8 @@ const RaceInfo = () => {
         </button>
       </nav>
       <RacePageIntro
-        index="05"
-        eyebrow="WEEKEND INFO"
-        title="赛周日程与赛道信息"
-        aside={(
-          <div className="race-page-pulse">
-            <span><strong>{weekendSchedule.length}</strong> 场次</span>
-            {session ? <span><strong>{racePreviewSummary?.sampleSize || 0}</strong> 历史样本</span> : null}
-            <span><strong>{raceUpgradeSummary?.teams.length || 0}</strong> 升级车队</span>
-            {isSprintWeekend ? <span className="is-accent"><strong>SPRINT</strong> 周末</span> : null}
-          </div>
-        )}
+        eyebrow="INTELLIGENCE"
+        title="周末情报"
       />
       <RaceWeekendOverview
         circuitEnhancement={circuitEnhancement}

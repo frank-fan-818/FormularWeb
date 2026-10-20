@@ -13,6 +13,7 @@
 
 .races-calendar-page { max-width: 1280px; }
 .races-calendar-page > .page-title { display: none; }
+.races-calendar-page .product-metric__value { white-space: normal; overflow-wrap: anywhere; }
 
 .race-calendar-list { display: grid; gap: 8px; }
 .race-calendar-list--featured { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }

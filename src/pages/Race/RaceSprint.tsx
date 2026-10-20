@@ -321,9 +321,8 @@ const RaceSprint = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          index="04"
-          eyebrow="SPRINT WEEKEND / 冲刺周末"
-          title="本场比赛没有冲刺赛"
+          eyebrow="SPRINT"
+          title="冲刺周末"
         />
         <Card className="race-empty-command-card">
           <p>{'\u672C\u573A\u6BD4\u8D5B\u65E0\u51B2\u523A\u8D5B'}</p>
@@ -671,28 +670,8 @@ const RaceSprint = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        index="04"
-        eyebrow="SPRINT WEEKEND / 冲刺周末"
-        title="冲刺赛分析"
-        aside={fastF1SprintSummary ? (
-          <div className="fastf1-summary-strip" aria-label={t('fastF1Analysis')}>
-            <span>
-              {fastF1SprintSummary.driverCount}
-              {' '}
-              {t('drivers')}
-            </span>
-            <span>
-              {fastF1SprintSummary.maxLap}
-              {' '}
-              {t('summaryLaps')}
-            </span>
-            <span>
-              {fastF1SprintSummary.stints}
-              {' '}
-              {t('stints')}
-            </span>
-          </div>
-        ) : null}
+        eyebrow="SPRINT"
+        title="冲刺周末"
       />
 
       {!session ? <MemberAccess feature="圈速与策略分析">{null}</MemberAccess> : null}

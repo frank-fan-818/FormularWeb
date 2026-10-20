@@ -1,0 +1,21 @@
+# Time zone preference
+
+- Date: 2026-10-20
+- PR branch: codex/race-ui-time-zone
+- Primary task: choose a display time zone and see consistent race/session dates and times across the app.
+- Settings: Appearance → Time zone, searchable UTC-offset selector, default UTC+8; saved locally.
+- Supported zones: standard fixed UTC offsets from UTC-12 through UTC+14, including fractional offsets. Fixed UTC offsets do not follow regional daylight-saving rules.
+- Affected displays: Home, race calendar, race header, weekend schedule, circuit detail and weekend signal.
+- Conversion: date, clock time, weekday and schedule day grouping all follow the preference. Source timestamps, live status and untimed calendar dates are unchanged.
+- Migration: storage schema 4 adds a validated preference while preserving version-3 season/theme choices and existing legacy migrations.
+- Design: reuse existing Settings rows, Ant Design Select and design tokens; no new visual system or extra small-print hints.
+- Build URL: http://127.0.0.1:4173 (local production build, deterministic fixtures).
+- Viewports: 1440×900, 768×1024, 375×812.
+- Validation: 95 unit-test files / 545 tests passed, including UTC offsets, year rollover, unknown times, schedule regrouping, immediate React updates, persistence and version-3 migration.
+- Production build, TypeScript, targeted ESLint, UTF-8 check (444 source files) and diff checks passed. Existing logger static/dynamic import build warning remains.
+- Feature browser checks: 6 passed across desktop/tablet/mobile. Verified default UTC+8, UTC+0 conversion, fractional/negative offsets, Chinese/English setting labels, persisted selection after navigation/reload, and synchronized Home/calendar/weekend displays.
+- Regression browser checks: 40 passed / 8 intentional skips, including both themes, weekend schedule, analysis availability and major routes.
+- Routes checked: /, /settings, /races, /races/1/info, /races/1/race, /drivers/max_verstappen, /constructors/red_bull and /circuits/monaco, plus account and not-found smoke routes.
+- Console/network: no application errors or failed requests in the time-zone workflow; only deliberately unavailable private snapshots return mocked 404s.
+- Findings / Blocking: none.
+- Screenshots: artifacts/browser-qa/screenshots/time-zone-settings-*.png and time-zone-race-*.png.

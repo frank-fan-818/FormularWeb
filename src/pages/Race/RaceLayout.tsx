@@ -7,13 +7,12 @@ import {
   BarChartOutlined,
   CalendarOutlined,
   CompassOutlined,
-  FlagOutlined,
   FundProjectionScreenOutlined,
   ThunderboltOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
 import { RaceDataProvider, useRaceData } from './RaceContext';
-import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { getRaceRouteSection } from '@/utils/race/raceSessionState';
 import { preloadRaceSectionRoute } from '@/utils/routePreload';
@@ -22,6 +21,7 @@ import '../RaceDetail.css';
 
 const InnerLayout = () => {
   const { t } = useTranslation();
+  const { formatRaceDateTimeFull } = useRaceSchedule();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -37,10 +37,6 @@ const InnerLayout = () => {
     raceResults,
     qualifyingResults,
     fastF1Analytics,
-    fastF1QualifyingAnalytics,
-    fastF1SprintQualifyingAnalytics,
-    fastF1SprintShootoutAnalytics,
-    fastF1SprintAnalytics,
     activeWeekendMode,
     sessionLoadErrors,
     retryActiveSession,
@@ -57,15 +53,6 @@ const InnerLayout = () => {
     || availableDbSessions.includes('S');
   const isSprintWeekend = hasSprint || hasSprintQualifying;
   const routeTab = getRaceRouteSection(location.pathname);
-  const hasActiveFastF1Analytics = routeTab === 'qualifying'
-    ? Boolean(fastF1QualifyingAnalytics)
-    : routeTab === 'sprint'
-      ? Boolean(
-        fastF1SprintAnalytics
-        || fastF1SprintQualifyingAnalytics
-        || fastF1SprintShootoutAnalytics,
-      )
-      : Boolean(fastF1Analytics);
   const activeSessionErrorKey = routeTab === 'qualifying' && sessionLoadErrors.sprintQualifying
     ? 'sprintQualifying'
     : routeTab;
@@ -136,11 +123,6 @@ const InnerLayout = () => {
   return (
     <div className="race-detail-page">
       <section className="race-command" aria-labelledby="race-command-title">
-        <span className="race-command-round-mark" aria-hidden="true">
-          {String(raceInfo.round).padStart(2, '0')}
-        </span>
-        <div className="race-command-grid" aria-hidden="true" />
-
         <div className="race-command-utility">
           <Button
             type="text"
@@ -150,58 +132,55 @@ const InnerLayout = () => {
           >
             返回赛历
           </Button>
-          <span className="race-command-championship">
-            FIA FORMULA ONE WORLD CHAMPIONSHIP
-          </span>
           <span className={`race-command-state state-${activeWeekendMode}`}>
             <i />
-            {activeWeekendMode === 'post' ? 'FINAL · 已完赛' : 'UPCOMING · 赛前'}
+            {activeWeekendMode === 'post' ? '已完赛' : '赛前'}
           </span>
         </div>
 
         <div className="race-command-main">
           <div className="race-command-copy">
             <span className="race-command-kicker">
-              {raceInfo.season} SEASON / ROUND {String(raceInfo.round).padStart(2, '0')}
+              {raceInfo.season} 赛季 · 第 {raceInfo.round} 站
             </span>
             <h1 id="race-command-title">
-              <FlagOutlined />
               <span>{raceInfo.raceName}</span>
             </h1>
             <p>
               <strong>{raceInfo.Circuit.circuitName}</strong>
               <span>{raceInfo.Circuit.Location.locality} · {raceInfo.Circuit.Location.country}</span>
             </p>
-            <div className="race-command-meta">
-              <span><CalendarOutlined />{formatRaceDateTimeFull(raceInfo)}</span>
-              {isSprintWeekend ? <span className="is-sprint"><ThunderboltOutlined />SPRINT WEEKEND</span> : null}
-            </div>
+            {isSprintWeekend ? <span className="race-command-sprint"><ThunderboltOutlined />冲刺周末</span> : null}
           </div>
 
+          <div className="race-command-start" aria-label="正赛时间">
+            <span><CalendarOutlined />正赛时间</span>
+            <strong>{formatRaceDateTimeFull(raceInfo)}</strong>
+          </div>
+        </div>
+
+        {insights.winner || insights.pole || insights.fastestLap ? (
           <div className="race-command-snapshot" aria-label="比赛关键数据">
-            <div className="race-command-stat is-primary">
-              <span>{insights.winner ? 'RACE WINNER' : 'RACE STATUS'}</span>
-              <strong>{insights.winner?.Driver.code || 'PENDING'}</strong>
-              <small>{insights.winner ? insights.winner.Constructor.name : '等待比赛结果'}</small>
-            </div>
-            <div className="race-command-stat">
-              <span>POLE POSITION</span>
-              <strong>{insights.pole?.Driver.code || '—'}</strong>
-              <small>{insights.pole?.Constructor.name || '排位结果待发布'}</small>
-            </div>
-            <div className="race-command-stat">
-              <span>FASTEST LAP</span>
-              <strong>{insights.fastestLap?.result.Driver.code || '—'}</strong>
-              <small>{insights.fastestLap?.time || `${insights.totalLaps || '—'} LAPS`}</small>
-            </div>
+            {insights.winner ? (
+              <div className="race-command-stat is-primary">
+                <span>冠军</span>
+                <strong>{insights.winner.Driver.givenName} {insights.winner.Driver.familyName}</strong>
+              </div>
+            ) : null}
+            {insights.pole ? (
+              <div className="race-command-stat">
+                <span>杆位</span>
+                <strong>{insights.pole.Driver.givenName} {insights.pole.Driver.familyName}</strong>
+              </div>
+            ) : null}
+            {insights.fastestLap ? (
+              <div className="race-command-stat">
+                <span>最快圈 · {insights.fastestLap.time}</span>
+                <strong>{insights.fastestLap.result.Driver.givenName} {insights.fastestLap.result.Driver.familyName}</strong>
+              </div>
+            ) : null}
           </div>
-        </div>
-
-        <div className="race-command-footer">
-          <span><i className="signal-dot" /> RACE DATA LINK</span>
-          <span>{raceResults.length || qualifyingResults.length ? 'CLASSIFICATION AVAILABLE' : 'AWAITING SESSION DATA'}</span>
-          <span>{hasActiveFastF1Analytics ? 'FASTF1 ANALYTICS ONLINE' : 'FASTF1 ANALYTICS STANDBY'}</span>
-        </div>
+        ) : null}
       </section>
 
       {raceLoadError ? (

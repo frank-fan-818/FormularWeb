@@ -480,10 +480,8 @@ const RaceQualifying = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          index="02"
-          eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
-          title={unavailableCopy.title}
-          description={unavailableCopy.description}
+          eyebrow="QUALIFYING"
+          title="排位解构"
         />
         <Card className="race-empty-command-card">
           <p>{unavailableCopy.description}</p>
@@ -497,16 +495,8 @@ const RaceQualifying = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        index="02"
-        eyebrow="QUALIFYING DECONSTRUCTED / 排位解构"
-        title="排位赛分析"
-        aside={(
-          <div className="race-page-pulse">
-            <span><strong>{qSectorRows.length}</strong> 有效圈</span>
-            <span><strong>{qTeamMateRows.length}</strong> 组队友</span>
-            <span><strong>{hasSprintQualifying ? 2 : 1}</strong> 排位场次</span>
-          </div>
-        )}
+        eyebrow="QUALIFYING"
+        title="排位解构"
       />
 
       {!session ? <MemberAccess feature="圈速与策略分析">{null}</MemberAccess> : null}
