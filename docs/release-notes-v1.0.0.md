@@ -42,6 +42,9 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
 
 ## Publication record to fill after acceptance
 
+- Code candidate CI: `7642950e267b627edc09c504317670b9cd9dad35`,
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39437406396
+  (all jobs passed; 548 unit tests and 294 browser checks).
 - Final accepted commit and CI run:
 - Production deployment and verified `/release.json` identity:
 - Rollback deployment:

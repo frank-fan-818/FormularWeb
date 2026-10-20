@@ -52,16 +52,22 @@ been confirmed. The ordered record is
   branches 56.67%, functions 61.46%, lines 61.17%.
 - Production build, TypeScript, strict ESLint, UI-font integrity/coverage and
   repository secret/SQL scan passed.
-- First browser matrix: 293 passed, 35 designed skips, one Firefox document-load
-  race. The test now waits for the original document load before testing reload;
-  all three related Firefox checks pass. The candidate full gate passed every
-  preceding check but ended with 292 browser passes, 35 designed skips and two
-  blank-page tablet timeouts. The unchanged four-test tablet history suite then
-  passed independently; this subset does not replace final full-matrix CI.
+- Candidate `7642950e267b627edc09c504317670b9cd9dad35` passed all six Linux
+  CI jobs, including the full browser matrix: **294 passed, 35 designed skips,
+  no failed or flaky tests and no test retries**:
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39437406396.
+- Windows local browser runs were not consistently green. After fixing the
+  Firefox document-load race, the last local matrix had 289 passes, 35 designed
+  skips and five failures: three profile-loop timeouts, one WebKit reload request
+  race and one WebKit fifteen-archive loop timeout. The earlier four-test tablet
+  history suite passed unchanged on recheck. Retain these local runner stability
+  findings for follow-up; do not describe the local umbrella quality command as
+  passing. The unchanged code candidate passed the complete Linux matrix above.
 - Semgrep found no findings; dependency audit passed. Lighthouse's five-run gate
   passed with performance 96 and accessibility/best-practices/SEO 100. FCP and
   render-chain warnings remain non-blocking under the existing configuration.
-- Final-commit Linux CI, including its full browser matrix, remains pending.
+- PR #81 remains a draft while SMTP/new signup is pending. Any later code change
+  still requires its own successful CI; the cited run certifies the SHA above.
 - Evidence is under ignored `artifacts/release-1.0.0/` and `artifacts/browser-qa/`.
   Only sanitized summaries are committed.
 
