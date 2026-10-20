@@ -285,19 +285,8 @@ const RaceResults = () => {
   return (
     <div className="race-results-page">
       <RacePageIntro
-        index="01"
-        eyebrow="WEEKEND OVERVIEW / 赛事概览"
-        title="赛事结果"
-        description={raceResults.length
-          ? undefined
-          : '已发布的练习、排位与冲刺成绩会在这里汇总。'}
-        aside={(
-          <div className="race-page-pulse">
-            <span><strong>{tabItems.length}</strong> 场次</span>
-            <span><strong>{raceResults.length || qualifyingResults.length}</strong> 车手</span>
-            <span><strong>{insights.interruptionCount}</strong> 中断阶段</span>
-          </div>
-        )}
+        eyebrow="OVERVIEW"
+        title="赛事概览"
       />
 
       <RaceOverviewPanel insights={insights} />

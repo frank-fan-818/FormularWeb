@@ -461,7 +461,7 @@ test('Race analysis uses an available private FastF1 snapshot', async ({ page },
 
   await page.goto('/races/2/race?season=2025', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByText('FASTF1 ANALYTICS ONLINE')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Race analysis key findings' })).toBeVisible();
   await expect(page.getByText('Timing snapshot unavailable')).toHaveCount(0);
   await expect(page.getByText('Race analysis is not available yet')).toHaveCount(0);
 });

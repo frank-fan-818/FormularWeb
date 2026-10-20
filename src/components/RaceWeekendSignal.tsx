@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { Race } from '@/types';
-import { formatSessionDateTime, getRaceWeekendTimeline } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import './RaceWeekendSignal.css';
 
 interface RaceWeekendSignalProps {
@@ -15,6 +15,7 @@ const LABELS = {
 
 export function RaceWeekendSignal({ race, ongoing }: RaceWeekendSignalProps) {
   const navigate = useNavigate();
+  const { formatSessionDateTime, getRaceWeekendTimeline } = useRaceSchedule();
   const timeline = getRaceWeekendTimeline(race, LABELS);
   const session = timeline.find((item) => item.isNext) ?? timeline[timeline.length - 1];
   const path = `/races/${race.round}/info?season=${encodeURIComponent(race.season)}`;

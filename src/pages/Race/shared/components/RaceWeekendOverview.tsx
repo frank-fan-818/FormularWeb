@@ -1,6 +1,7 @@
 import { Tag } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from '@/i18n';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import type { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import { formatCircuitDirection } from '@/utils/circuitEnhancements';
 import type { getRaceWeekendScheduleGroups } from '@/utils/raceSchedule';
@@ -20,6 +21,7 @@ export function RaceWeekendOverview({
   resultSessionKeys,
 }: RaceWeekendOverviewProps) {
   const { t } = useTranslation();
+  const { timeZoneLabel } = useRaceSchedule();
   return (
     <section className="weekend-brief" aria-label={t('weekendSchedule')}>
         {scheduleGroups.length ? (
@@ -29,10 +31,10 @@ export function RaceWeekendOverview({
                 <h3 className="weekend-schedule-eyebrow">{t('weekendSchedule')}</h3>
                 <span className="weekend-schedule-source">{t('scheduleSourceHint')}</span>
               </div>
-              <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${t('scheduleTimezoneValue')}`}>
+              <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${timeZoneLabel}`}>
                 <ClockCircleOutlined />
                 <strong>{t('scheduleTimezone')}</strong>
-                {t('scheduleTimezoneValue')}
+                {timeZoneLabel}
               </span>
             </div>
             <div className="weekend-schedule-days">

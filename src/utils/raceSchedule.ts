@@ -1,5 +1,6 @@
 import type { Race } from '@/types';
 import { formatDateOnly } from '@/utils/dateTime';
+import { DEFAULT_TIME_ZONE_OFFSET, formatUtcOffset, normalizeTimeZoneOffset } from '@/utils/timeZone';
 
 export interface RaceWeekendSession {
   key: string;
@@ -26,7 +27,9 @@ export interface RaceWeekendTimelineItem extends RaceWeekendSession {
   isNext: boolean;
 }
 
-const BEIJING_TIME_ZONE = 'Asia/Shanghai';
+function getDisplayDate(timestamp: number, offsetMinutes: number): Date {
+  return new Date(timestamp + normalizeTimeZoneOffset(offsetMinutes) * 60_000);
+}
 
 export function getSessionTimestamp(session: { date?: string; time?: string } | null | undefined): number | null {
   if (!session?.date || !session.time) {
@@ -45,6 +48,7 @@ export function getRaceWeekendTimeline(
   race: Race | null,
   labels: Parameters<typeof getRaceWeekendSchedule>[1],
   now = new Date(),
+  offsetMinutes = DEFAULT_TIME_ZONE_OFFSET,
 ): RaceWeekendTimelineItem[] {
   const nowTime = now.getTime();
   const baseItems = getRaceWeekendSchedule(race, labels).map((item) => {
@@ -59,7 +63,7 @@ export function getRaceWeekendTimeline(
     return {
       ...item,
       timestamp,
-      timeLabel: formatSessionTimeLabel(item.session ?? {}),
+      timeLabel: formatSessionTimeLabel(item.session ?? {}, offsetMinutes),
       state,
       isNext: false,
     };
@@ -69,21 +73,24 @@ export function getRaceWeekendTimeline(
   return baseItems.map((item, index) => ({ ...item, isNext: index === nextIndex }));
 }
 
-function getSessionDate(session: { date?: string; time?: string }): Date | null {
+function getSessionDate(session: { date?: string; time?: string }, offsetMinutes: number): Date | null {
   if (!session?.date) {
     return null;
   }
 
   const timestamp = getSessionTimestamp(session);
   if (timestamp !== null) {
-    return new Date(timestamp);
+    return getDisplayDate(timestamp, offsetMinutes);
   }
 
   const fallbackTimestamp = Date.parse(`${session.date}T00:00:00Z`);
   return Number.isNaN(fallbackTimestamp) ? null : new Date(fallbackTimestamp);
 }
 
-export function formatSessionDateTime(session: { date?: string; time?: string } | null | undefined): string {
+export function formatSessionDateTime(
+  session: { date?: string; time?: string } | null | undefined,
+  offsetMinutes = DEFAULT_TIME_ZONE_OFFSET,
+): string {
   if (!session?.date) {
     return '-';
   }
@@ -99,20 +106,20 @@ export function formatSessionDateTime(session: { date?: string; time?: string } 
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: BEIJING_TIME_ZONE,
+    timeZone: 'UTC',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(new Date(timestamp)).replace(/\//g, '-') + ' \u5317\u4eac\u65f6\u95f4';
+  }).format(getDisplayDate(timestamp, offsetMinutes)).replace(/\//g, '-') + ` ${formatUtcOffset(offsetMinutes)}`;
 }
 
-export function formatRaceDateTime(race: Pick<Race, 'date' | 'time'>): string {
-  return formatSessionDateTime({ date: race.date, time: race.time });
+export function formatRaceDateTime(race: Pick<Race, 'date' | 'time'>, offsetMinutes = DEFAULT_TIME_ZONE_OFFSET): string {
+  return formatSessionDateTime({ date: race.date, time: race.time }, offsetMinutes);
 }
 
-export function formatRaceDateTimeFull(race: Pick<Race, 'date' | 'time'>): string {
+export function formatRaceDateTimeFull(race: Pick<Race, 'date' | 'time'>, offsetMinutes = DEFAULT_TIME_ZONE_OFFSET): string {
   if (!race.date) {
     return '-';
   }
@@ -128,53 +135,53 @@ export function formatRaceDateTimeFull(race: Pick<Race, 'date' | 'time'>): strin
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: BEIJING_TIME_ZONE,
+    timeZone: 'UTC',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(new Date(timestamp)).replace(/\//g, '-') + ' \u5317\u4eac\u65f6\u95f4';
+  }).format(getDisplayDate(timestamp, offsetMinutes)).replace(/\//g, '-') + ` ${formatUtcOffset(offsetMinutes)}`;
 }
 
-export function formatSessionDayLabel(session: { date?: string; time?: string }): string {
-  const date = getSessionDate(session);
+export function formatSessionDayLabel(session: { date?: string; time?: string }, offsetMinutes = DEFAULT_TIME_ZONE_OFFSET): string {
+  const date = getSessionDate(session, offsetMinutes);
   if (!date) {
     return '-';
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: BEIJING_TIME_ZONE,
+    timeZone: 'UTC',
     weekday: 'short',
   }).format(date);
 }
 
-export function formatSessionDateLabel(session: { date?: string; time?: string }): string {
-  const date = getSessionDate(session);
+export function formatSessionDateLabel(session: { date?: string; time?: string }, offsetMinutes = DEFAULT_TIME_ZONE_OFFSET): string {
+  const date = getSessionDate(session, offsetMinutes);
   if (!date) {
     return '-';
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: BEIJING_TIME_ZONE,
+    timeZone: 'UTC',
     month: '2-digit',
     day: '2-digit',
   }).format(date).replace(/\//g, '-');
 }
 
-export function formatSessionTimeLabel(session: { date?: string; time?: string }): string {
+export function formatSessionTimeLabel(session: { date?: string; time?: string }, offsetMinutes = DEFAULT_TIME_ZONE_OFFSET): string {
   const timestamp = getSessionTimestamp(session);
   if (timestamp === null) {
     return session.date ? '\u65f6\u95f4\u5f85\u5b9a' : '-';
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: BEIJING_TIME_ZONE,
+    timeZone: 'UTC',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(new Date(timestamp));
+  }).format(getDisplayDate(timestamp, offsetMinutes));
 }
 
 export function getRaceWeekendSchedule(
@@ -204,15 +211,18 @@ export function getRaceWeekendSchedule(
   ].filter((s) => s.session?.date) as RaceWeekendSession[];
 }
 
-export function getRaceWeekendScheduleGroups(sessions: RaceWeekendTimelineItem[]): RaceWeekendScheduleGroup[] {
+export function getRaceWeekendScheduleGroups(
+  sessions: RaceWeekendTimelineItem[],
+  offsetMinutes = DEFAULT_TIME_ZONE_OFFSET,
+): RaceWeekendScheduleGroup[] {
   const groups = new Map<string, RaceWeekendScheduleGroup>();
 
   sessions.forEach((item) => {
     if (!item.session?.date) return; // skip sessions without date for grouping
-    const groupKey = formatSessionDateLabel(item.session);
+    const groupKey = formatSessionDateLabel(item.session, offsetMinutes);
     const sessionItem = {
       ...item,
-      timeLabel: formatSessionTimeLabel(item.session),
+      timeLabel: formatSessionTimeLabel(item.session, offsetMinutes),
       timestamp: getSessionTimestamp(item.session),
     };
     const currentGroup = groups.get(groupKey);
@@ -224,7 +234,7 @@ export function getRaceWeekendScheduleGroups(sessions: RaceWeekendTimelineItem[]
 
     groups.set(groupKey, {
       key: groupKey,
-      dayLabel: formatSessionDayLabel(item.session),
+      dayLabel: formatSessionDayLabel(item.session, offsetMinutes),
       dateLabel: groupKey,
       sessions: [sessionItem],
     });

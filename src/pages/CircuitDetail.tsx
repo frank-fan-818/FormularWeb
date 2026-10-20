@@ -6,7 +6,7 @@ import CircuitImage from '@/components/circuits/CircuitImage';
 import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Circuit, CircuitRouteState, Race } from '@/types';
-import { formatRaceDateTimeFull } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
@@ -73,6 +73,7 @@ function formatStatValue(value: unknown, suffix = '', isLoading = false): string
 const CircuitDetail = () => {
   const { circuitId } = useParams<{ circuitId: string }>();
   const navigate = useNavigate();
+  const { formatRaceDateTimeFull } = useRaceSchedule();
   const location = useLocation();
   const { currentSeason } = useAppStore();
   const {

@@ -46,7 +46,6 @@ import { getTeamColor, normalizeConstructorId } from '@/utils/teamColors';
 import { useRaceAnalysisControls } from '@/hooks/race/useRaceAnalysisControls';
 import { useViewportActivation } from '@/hooks/race/useViewportActivation';
 import {
-  formatAnalysisStatRange,
   formatCornerSpeedSet,
   getCornerSpeedRows,
   type CornerSpeedRow,
@@ -369,10 +368,8 @@ const RaceAnalysis = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          index="03"
-          eyebrow="RACE DEBRIEF / DATA INTEGRATION"
-          title="Building the race debrief"
-          description="Synchronising timing, strategy, conditions and car-data channels. Each module becomes available independently."
+          eyebrow="RACE ANALYSIS"
+          title="比赛解读"
         />
         {officialRaceClassification}
         <div className="analysis-module-state-stack" aria-label="Race analysis loading">
@@ -396,10 +393,8 @@ const RaceAnalysis = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          index="03"
-          eyebrow="RACE DEBRIEF / DATA STATUS"
-          title={unavailableCopy.title}
-          description={unavailableCopy.description}
+          eyebrow="RACE ANALYSIS"
+          title="比赛解读"
         />
         {officialRaceClassification}
         <AnalysisModuleState
@@ -423,52 +418,8 @@ const RaceAnalysis = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        index="03"
-        eyebrow="RACE DEBRIEF / ENGINEERING VIEW"
-        title="Race analysis"
-        aside={fastF1Summary ? (
-          <div className="fastf1-summary-strip" aria-label={t('raceAnalysisGroup')}>
-            <span>
-              {fastF1Summary.driverCount}
-              {' '}
-              {t('drivers')}
-            </span>
-            <span>
-              {fastF1Summary.maxLap}
-              {' '}
-              {t('summaryLaps')}
-            </span>
-            <span>
-              {fastF1Summary.stints}
-              {' '}
-              {t('stints')}
-            </span>
-            <span>
-              {fastF1Summary.statusCount}
-              {' '}
-              {t('raceStatus')}
-            </span>
-            {fastF1Summary.weatherSummary ? (
-              <>
-                <span>
-                  {t('trackTemp')}
-                  {' '}
-                  {formatAnalysisStatRange(fastF1Summary.weatherSummary.trackTempC)}
-                </span>
-                <span>
-                  {t('airTemp')}
-                  {' '}
-                  {formatAnalysisStatRange(fastF1Summary.weatherSummary.airTempC)}
-                </span>
-                <span>
-                  {t('humidity')}
-                  {' '}
-                  {formatPercent(fastF1Summary.weatherSummary.humidityPct.average)}
-                </span>
-              </>
-            ) : null}
-          </div>
-        ) : null}
+        eyebrow="RACE ANALYSIS"
+        title="比赛解读"
       />
 
       {officialRaceClassification}

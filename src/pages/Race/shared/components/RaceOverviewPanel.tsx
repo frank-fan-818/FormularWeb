@@ -116,7 +116,6 @@ export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
                 <ConstructorLogo constructorId={result.Constructor.constructorId} size={20} />
                 {result.Constructor.name}
               </span>
-              <em>{result.Time?.time || result.status}</em>
             </button>
           );
         })}

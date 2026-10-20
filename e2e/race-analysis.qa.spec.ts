@@ -106,7 +106,7 @@ test('race analysis route remains responsive across available data states', asyn
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
   await page.goto('/races/1/race?season=2026', { waitUntil: 'domcontentloaded' });
-  const stateHeading = page.locator('.race-page-intro h2', { hasText: '正赛分析数据延迟' });
+  const stateHeading = page.locator('.analysis-module-state-card h3', { hasText: '正赛分析数据延迟' });
   await expect(stateHeading).toBeVisible({ timeout: 15_000 });
   expect(Date.now() - startedAt).toBeLessThan(2_500);
 

@@ -5,7 +5,8 @@ import { useRacesByStatus, useRaceStatus, useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Race } from '@/types';
 import { preloadRoute } from '@/utils/routePreload';
-import { formatRaceDateTime } from '@/utils/raceSchedule';
+import { useRaceSchedule } from '@/hooks/useRaceSchedule';
+import { formatShortRaceName } from '@/utils/raceDisplayName';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import { TimingBeacon } from '@/components/loading/TimingBeacon';
@@ -13,6 +14,7 @@ import './Races.css';
 
 const RaceCard = ({ race, index }: { race: Race; index: number }) => {
   const navigate = useNavigate();
+  const { formatRaceDateTime } = useRaceSchedule();
   const { status, color } = useRaceStatus(race);
   const statusLabel = status === 'ongoing'
     ? '\u8d5b\u4e8b\u5468\u672b'
@@ -54,7 +56,6 @@ const Races = () => {
     upcomingRaces,
     completedRaces,
   } = useRacesByStatus(races);
-  const progress = Math.round((completedRaces.length / Math.max(races.length, 1)) * 100);
 
   return (
     <div className="list-page-container races-calendar-page">
@@ -64,10 +65,10 @@ const Races = () => {
         eyebrow={`${currentSeason} / WORLD CHAMPIONSHIP`}
         title={<>{currentSeason}<br />RACE CALENDAR</>}
         metrics={[
-          { label: '\u8d5b\u5386', value: races.length || '--', detail: '\u5168\u5b63\u5206\u7ad9' },
-          { label: '\u5df2\u5b8c\u6210', value: `${completedRaces.length}`, detail: `${progress}% \u8d5b\u5b63\u8fdb\u5ea6` },
-          { label: '\u4e0b\u4e00\u7ad9', value: nextRace ? `R${nextRace.round}` : '--', detail: nextRace?.raceName || '\u5f85\u5b9a' },
-          { label: '\u5f53\u524d\u72b6\u6001', value: ongoingRace ? '\u8d5b\u4e8b\u5468\u672b' : '\u8d5b\u5386\u8fdb\u884c\u4e2d', detail: ongoingRace?.raceName || `${currentSeason} SEASON`, accent: 'var(--accent-orange)' },
+          { label: '\u8d5b\u5386', value: races.length || '--' },
+          { label: '\u5df2\u5b8c\u6210', value: `${completedRaces.length}` },
+          { label: '\u4e0b\u4e00\u7ad9', value: formatShortRaceName(nextRace) },
+          { label: '\u5f53\u524d\u72b6\u6001', value: ongoingRace ? '\u8d5b\u4e8b\u5468\u672b' : '\u8d5b\u5386\u8fdb\u884c\u4e2d', accent: 'var(--accent-orange)' },
         ]}
       />
       {loading ? (

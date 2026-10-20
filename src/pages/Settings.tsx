@@ -12,6 +12,7 @@ import { useAppStore } from '@/store';
 import { useSeasons } from '@/hooks';
 import { version } from '../../package.json';
 import type { ThemeMode } from '@/store';
+import { TIME_ZONE_OPTIONS } from '@/utils/timeZone';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import './Settings.css';
 
@@ -19,7 +20,7 @@ const { Text, Link } = Typography;
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme, currentSeason, setCurrentSeason } = useAppStore();
+  const { theme, setTheme, currentSeason, setCurrentSeason, timeZoneOffsetMinutes, setTimeZoneOffsetMinutes } = useAppStore();
   const { seasons } = useSeasons();
 
   const themeOptions: Array<{ label: string; value: ThemeMode }> = [
@@ -93,6 +94,21 @@ const Settings = () => {
                 void i18n.changeLanguage(lang);
               }}
               options={languageOptions}
+              style={{ width: 160 }}
+            />
+          </div>
+          <Divider />
+          <div className="setting-row">
+            <div className="setting-label">
+              <Text strong>{t('settingsTimeZone')}</Text>
+            </div>
+            <Select
+              aria-label={t('settingsTimeZone')}
+              showSearch
+              optionFilterProp="label"
+              value={timeZoneOffsetMinutes}
+              onChange={setTimeZoneOffsetMinutes}
+              options={TIME_ZONE_OPTIONS}
               style={{ width: 160 }}
             />
           </div>
