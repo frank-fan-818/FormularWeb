@@ -11,6 +11,10 @@ export function getAuthErrorMessage(error: unknown): string {
   }
 
   const message = error instanceof Error ? error.message.toLowerCase() : '';
+  const code = error instanceof Error && 'code' in error ? error.code : undefined;
+  if (code === 'same_password' || message.includes('new password should be different')) {
+    return '新密码不能与旧密码相同，请设置一个不同的密码。';
+  }
   if (message.includes('invalid login credentials')) {
     return '邮箱或密码不正确。';
   }

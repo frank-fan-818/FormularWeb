@@ -1,6 +1,7 @@
 # 生产发布与回滚手册
 
-本手册对应 0.20.12 发布候选。脚本可执行不等于部署已验证；每次操作都需要保存对应提交和生产证据。
+本手册用于 Web 1.0 发布候选。2026-10-20 当前生产版本仍为 `0.24.0`；源码版本准备不代表已经发行。
+每次操作都需要保存对应提交和生产证据。当前验收记录见 `docs/plans/2026-10-20-v1-release-p0.md`。
 
 ## 发布门禁
 
@@ -9,6 +10,22 @@
 3. 根据 `docs/release-checklist.md` 使用专用测试账号检查注册、登录、恢复密码、刷新页面和退出；检查 Supabase 回调地址、匿名读写边界、会员预测读取和私有 Storage。不要将测试口令或服务密钥写入报告。
 4. 抽样核对当前赛季赛历、已结束比赛成绩、练习赛、FastF1 和预测生成时间。空数据要与上游实际状态一致，不能以夹具测试代替抽样。
 5. 记录最近同步任务的成功时间与失败处理人，再发布候选部署。
+
+### 2026-10-20 已核实的生产迁移
+
+- 项目：`zmihswdvixurhjjsazrl`，与 Vercel 的生产 `VITE_SUPABASE_URL` 一致。
+- 已补应用 `scripts/sql/2026-08-11-error-log-diagnostics.sql`，修复生产缺失的诊断字段。
+- 已应用 `supabase/migrations/20261018000100_prediction_evaluations.sql`，原失败的预测同步任务重跑成功。
+- 已应用并重复验证 `supabase/migrations/20261020000100_release_access_hardening.sql`。
+- 执行 `supabase db query --linked --file scripts/sql/verify-release-access.sql`，确认游客、匿名登录、会员和服务端角色边界。
+- 不要为绕过缺表错误创建公开的 `exec_sql` RPC；使用已审查的迁移。
+
+### 注册邮件阻断项
+
+维护者已确认未开启自定义 SMTP，真实新账号注册触发限流。公开注册发布前必须配置可用发信服务，
+在 Supabase SMTP 页面直接填写凭据，保存后以可收信的测试地址完成注册、验证和登录。
+不得将 SMTP 密码、API key、恢复链接或浏览器会话加入报告；不要用关闭邮箱验证来绕过问题。
+现有测试账号登录、刷新、退出和使用不同新密码的恢复链路已由维护者实测通过。
 
 ## 部署后只读检查
 
@@ -19,7 +36,7 @@ PowerShell：
 
 ```powershell
 $env:PRODUCTION_URL = 'https://formular-web.vercel.app'
-$env:EXPECTED_RELEASE_VERSION = '0.20.12'
+$env:EXPECTED_RELEASE_VERSION = '1.0.0'
 npm run deployment:verify:live
 ```
 
@@ -50,4 +67,12 @@ npm run deployment:verify:live
 4. 把 `EXPECTED_RELEASE_VERSION` 更新为恢复版本，重新运行线上检查；用两个已打开的标签页检查升级、导航与登录状态。
 5. 再次核对真实数据和访问边界，记录故障时间、影响范围、恢复部署与验证结果。保留故障部署的日志以定位根因。
 
-当前仅完成可执行检查和本地升级测试；真实生产回滚演练、负责人指定与通知送达尚未完成。
+2026-10-20 已执行生产域名回滚与恢复演练：
+
+- 从 `0.24.0 / dpl_3ReqGbzydeK1BaUPWPiKy7XMPgtj` 回滚至
+  `0.23.1 / dpl_3QiFGqFN8p9Z61Qu4tzR3pSUzyJG`，读取域名记录确认切换成功。
+- 随后 promote 恢复原 `0.24.0` 部署，读取域名记录确认恢复成功；未执行数据库回滚。
+- 恢复后健康检查全部通过：
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39429693278。
+- 发布与故障负责人为 `frank-fan-818`，已获维护者确认。GitHub 设置已开启 Actions 的站内与邮件失败通知，维护者已确认收到原失败任务的提醒。
+- 仓库监控变量目前为生产地址及 `EXPECTED_RELEASE_VERSION=0.24.0`。只有 1.0 实际部署后才改为 `1.0.0`。

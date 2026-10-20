@@ -9,7 +9,11 @@ Use this skill when preparing a release-worthy commit, updating `package.json` v
 
 ## Version Rules
 
-The project uses SemVer in `X.Y.Z` format and is currently in the `0.x.x` development phase.
+The project uses SemVer in `X.Y.Z` format. The first stable Web release targets
+`1.0.0`; this is an explicit release decision, not a requirement to count through
+all `0.x.x` versions. Preparing that version in source does not mean it has been
+published: the final release checklist and production verification must pass
+before creating the stable tag and GitHub Release.
 
 | Commit Type | Version Change | Use For |
 |-------------|----------------|---------|

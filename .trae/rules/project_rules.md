@@ -112,5 +112,6 @@ Use `.trae/skills/` as the project-specific skill source. Do not treat skill fil
 - For new API endpoints: follow contract-first flow in `docs/engineering-specification.md` §1.5
 - For multi-step data pipelines: follow workflow design flow in `docs/engineering-specification.md` §2.3-2.5
 - Run `version-manager` before version bumps or tags
+- The first stable Web release can explicitly move from `0.x.x` to `1.0.0`; preparing the source version does not prove publication or replace release verification.
 - Run `github-security-check` before pushing
 - If versioning and pushing both apply, run `version-manager`, then `github-security-check`, then commit/push steps

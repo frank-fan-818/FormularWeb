@@ -1,4 +1,98 @@
-# Release Readiness Report — 0.20.12
+# Release Readiness Report — Web 1.0 candidate
+
+Date: 2026-10-20 (Asia/Shanghai)
+
+## Current decision
+
+**Do not publish the stable release yet.** Source and lockfile are prepared for
+`1.0.0`; production remains `0.24.0` at
+`d193339990f00db1f9eba185426d6610fbad48b6`. The missing production SMTP service
+blocks real public signup. The maintainer has chosen to retain existing media for
+non-profit use; its authorization has not been independently verified and is a
+recorded limitation, not a cleared licensing finding. Notification receipt has
+been confirmed. The ordered record is
+`docs/plans/2026-10-20-v1-release-p0.md`.
+
+## Completed production acceptance
+
+- Maintainer used the dedicated account to verify login, reload, logout,
+  recovery email, changing to a different password and signing in again.
+- Reusing the old password reproduced a misleading service-unavailable message.
+  Added failing unit regressions, then mapped the Supabase `same_password` code
+  and legacy response to a clear static message. This source fix is not yet live.
+- Confirmed the production Supabase project against Vercel configuration.
+  Found unapplied member permissions and diagnostic schema changes. Applied the
+  existing diagnostic migration and the new access-hardening migration; verified
+  the latter twice for idempotency. Browser business writes and diagnostic reads
+  are revoked; member-only analytics and predictions reject guests and Supabase
+  anonymous auth sessions; service publication permissions are retained.
+- Added `scripts/sql/verify-release-access.sql`, a read-only transaction that
+  checks actual grants/RLS, private Storage and simulated anonymous/member claims.
+  It failed before the production fix and passed afterward.
+- Applied the existing prediction evaluation migration missing in production.
+  The originally failing forecast sync then completed successfully:
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39427224523.
+- Read current published source samples: 23 races in the 2026 calendar; the latest
+  result is round 17 Singapore, with 22 classified entries. The 2024 Bahrain
+  sample has 20 entries; its podium positions and points agree with the historical
+  database sample after source ID aliases are accounted for. Current page data
+  uses `src/api/season.ts` and published result endpoints; old database seed round
+  mappings were not treated as current canonical data and were not bulk rewritten.
+- Latest FastF1 publication reports 85 Storage and 85 database publications with
+  zero failures. Forecast publication now includes the next scheduled round.
+- Configured the explicit production URL and expected online version `0.24.0`.
+  Performed a real deployment rollback to the retained `0.23.1`, read back the
+  domain target, promoted the original `0.24.0` deployment, and read back recovery.
+  No database rollback occurred. All public health checks passed after recovery:
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39429693278.
+
+## Candidate verification
+
+- Full unit/coverage run: **96 files / 548 tests passed**, statements 60.83%,
+  branches 56.67%, functions 61.46%, lines 61.17%.
+- Production build, TypeScript, strict ESLint, UI-font integrity/coverage and
+  repository secret/SQL scan passed.
+- First browser matrix: 293 passed, 35 designed skips, one Firefox document-load
+  race. The test now waits for the original document load before testing reload;
+  all three related Firefox checks pass. The candidate full gate passed every
+  preceding check but ended with 292 browser passes, 35 designed skips and two
+  blank-page tablet timeouts. The unchanged four-test tablet history suite then
+  passed independently; this subset does not replace final full-matrix CI.
+- Semgrep found no findings; dependency audit passed. Lighthouse's five-run gate
+  passed with performance 96 and accessibility/best-practices/SEO 100. FCP and
+  render-chain warnings remain non-blocking under the existing configuration.
+- Final-commit Linux CI, including its full browser matrix, remains pending.
+- Evidence is under ignored `artifacts/release-1.0.0/` and `artifacts/browser-qa/`.
+  Only sanitized summaries are committed.
+
+## Remaining release gates
+
+1. **SMTP and new signup:** maintainer confirms custom SMTP is disabled. New
+   signup hit rate limiting. Configure a real sending service in Supabase and
+   complete verification/login with a new test address; do not disable email
+   verification or expose SMTP credentials to work around this gate.
+
+## Recorded non-blocking media decision
+
+Source manifests and ownership notes exist for Formula 1/OpenF1 headshots and
+constructor marks. No separate redistribution authorization was found in the
+repository. MIT covers the project code; do not describe it as granting
+third-party image or trademark rights. The maintainer has directed that current
+media be retained for non-profit use and not block this release. This records
+the maintainer's decision; it does not establish an independent licensing
+clearance. See the official
+[Formula 1 guidelines](https://www.formula1.com/en/information/guidelines.4EOKE9RRqevL4niTK9kWyt)
+for the rights holder's published position.
+
+## Final publication
+
+Complete final release PR CI, deploy the exact accepted commit, verify `1.0.0`
+online, update monitor expected version, then create `v1.0.0` and the GitHub
+Release. No stable tag has been made.
+
+---
+
+# Historical release report — 0.20.12 (superseded)
 
 Date: 2026-10-03 (Asia/Shanghai)
 
