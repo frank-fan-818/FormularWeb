@@ -118,6 +118,8 @@ Execution rules:
 - decide whether SemVer major/minor/patch applies
 - update `package.json` before commit when a bump is required
 - use `vX.Y.Z` format for tags
+- The first stable Web release may explicitly move from `0.x.x` to `1.0.0`;
+  source version preparation does not replace the release checklist or prove publication.
 
 ## Skill Order
 

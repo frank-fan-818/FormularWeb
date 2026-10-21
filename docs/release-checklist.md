@@ -13,7 +13,12 @@
 - Service-role keys exist only in protected server/CI secrets
 - Latest `scripts/sql/` security hardening migration has been applied
 - Supabase Auth redirect URLs include the production `/login` callback
+- Production email delivery uses a configured custom SMTP service; complete a
+  real signup/verification/login and recovery flow with the dedicated test inbox
 - Anonymous users cannot insert, update, or delete application data
+- Run `supabase db query --linked --file scripts/sql/verify-release-access.sql`
+  against the confirmed production project; member-only database rows and private
+  Storage must also reject Supabase anonymous sign-in sessions
 - Authenticated diagnostic rows persist only an allowlisted error category,
   SHA-256 fingerprint, length, and sanitized static labels; raw error messages
   and browser URL query/fragment data are never stored
@@ -38,3 +43,5 @@
 - Review monitoring/error-log volume after release
 - Record accepted dependency advisories and their mitigations
 - Bump SemVer and use a `vX.Y.Z` tag for a release
+- Preparing `1.0.0` in source is allowed before rollout, but do not publish the
+  stable tag/Release while any P0 acceptance item remains pending

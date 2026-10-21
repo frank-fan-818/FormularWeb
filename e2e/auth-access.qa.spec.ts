@@ -76,6 +76,9 @@ test('first visit shows a standalone login; guest choice survives refresh', asyn
   await page.getByRole('button', { name: '以游客身份浏览' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
+  // Firefox can still be completing the original document load after the SPA
+  // switches routes. Reload the settled document, not that in-flight load.
+  await page.waitForLoadState('load');
   await page.reload();
   await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
   expect(errors).toEqual([]);

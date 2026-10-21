@@ -48,8 +48,8 @@ const ResetPassword = () => {
           className="auth-card__alert"
           type="warning"
           showIcon
-          message="重置链接无效或已过期"
-          description="请重新申请密码重置邮件，并使用邮件中的最新链接。"
+          message="无法验证重置链接"
+          description="请在发起申请的同一浏览器中打开最新的重置邮件链接；如果链接已使用或已过期，请重新申请。"
         />
       ) : (
         <>
