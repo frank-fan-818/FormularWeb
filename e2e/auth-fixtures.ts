@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { loadEnv } from 'vite';
+import { mockTurnstile } from './turnstile-fixtures';
 
 const env = loadEnv('production', process.cwd(), 'VITE_');
 export const authStorageKey = `sb-${new URL(env.VITE_SUPABASE_URL || 'https://example.supabase.co').hostname.split('.')[0]}-auth-token`;
@@ -20,6 +21,7 @@ export async function enterAsMember(page: Page) {
 }
 
 export async function mockAuth(page: Page) {
+  await mockTurnstile(page);
   await page.route('**/auth/v1/**', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify(route.request().url().includes('/user') ? testSession.user : testSession),

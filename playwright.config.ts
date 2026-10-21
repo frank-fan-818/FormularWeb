@@ -44,7 +44,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-firefox',
-      grep: /guest home preserves|keyboard users|account entry|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
+      grep: /guest home preserves|keyboard users|account entry|account CAPTCHA|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1440, height: 900 },
@@ -53,7 +53,7 @@ export default defineConfig({
     },
     {
       name: 'mobile-webkit',
-      grep: /guest home preserves|keyboard users|account entry|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
+      grep: /guest home preserves|keyboard users|account entry|account CAPTCHA|first visit|session discovery preserves|chart data|renders without a browser error|motion system|global search/,
       use: {
         ...devices['iPhone 13'],
         browserName: 'webkit',

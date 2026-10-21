@@ -1,4 +1,5 @@
-import { AuthUnavailableError } from '@/utils/authErrors';
+import { AuthCaptchaRequiredError, AuthUnavailableError } from '@/utils/authErrors';
+import { getTurnstileSiteKey } from '@/utils/turnstile';
 export { AuthUnavailableError, getAuthErrorMessage } from '@/utils/authErrors';
 import { z } from 'zod';
 import { isSupabaseConfigured, supabase } from '@/utils/supabase';
@@ -19,23 +20,33 @@ function ensureAuthConfigured(): void {
 }
 
 
+function captchaOptions(token?: string): { captchaToken?: string } {
+  const captchaToken = token?.trim();
+  if (getTurnstileSiteKey() && !captchaToken) throw new AuthCaptchaRequiredError();
+  return captchaToken ? { captchaToken } : {};
+}
+
 export const authApi = {
-  async signIn(email: string, password: string): Promise<void> {
+  async signIn(email: string, password: string, captchaToken?: string): Promise<void> {
     ensureAuthConfigured();
+    const captcha = captchaOptions(captchaToken);
     const credentials = {
       email: emailSchema.parse(email),
       password: signInPasswordSchema.parse(password),
+      ...(captcha.captchaToken ? { options: captcha } : {}),
     };
     const { error } = await supabase.auth.signInWithPassword(credentials);
     if (error) throw error;
   },
 
-  async signUp(email: string, password: string): Promise<void> {
+  async signUp(email: string, password: string, captchaToken?: string): Promise<void> {
     ensureAuthConfigured();
+    const captcha = captchaOptions(captchaToken);
     const credentials = {
       email: emailSchema.parse(email),
       password: newPasswordSchema.parse(password),
       options: {
+        ...captcha,
         emailRedirectTo: `${window.location.origin}/login?verified=1`,
       },
     };
@@ -43,11 +54,12 @@ export const authApi = {
     if (error) throw error;
   },
 
-  async requestPasswordReset(email: string): Promise<void> {
+  async requestPasswordReset(email: string, captchaToken?: string): Promise<void> {
     ensureAuthConfigured();
+    const captcha = captchaOptions(captchaToken);
     const { error } = await supabase.auth.resetPasswordForEmail(
       emailSchema.parse(email),
-      { redirectTo: `${window.location.origin}/reset-password` },
+      { redirectTo: `${window.location.origin}/reset-password`, ...captcha },
     );
     if (error) throw error;
   },

@@ -5,23 +5,28 @@ import { MailOutlined } from '@ant-design/icons';
 import { authApi, getAuthErrorMessage } from '@/api/auth';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { isSupabaseConfigured } from '@/utils/supabase';
+import { AuthCaptcha } from '@/components/auth/AuthCaptcha';
+import { useAuthCaptcha } from '@/hooks/useAuthCaptcha';
 
 interface ResetRequestValues { email: string }
 
 const ForgotPassword = () => {
   const location = useLocation();
+  const captcha = useAuthCaptcha(isSupabaseConfigured);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleSubmit = async ({ email }: ResetRequestValues) => {
+    if (submitting || captcha.pending) return;
     setSubmitting(true);
     setFeedback(null);
     try {
-      await authApi.requestPasswordReset(email);
+      await authApi.requestPasswordReset(email, captcha.token);
       setFeedback({ type: 'success', message: '如果该邮箱已注册，你将收到一封密码重置邮件。请在当前浏览器中打开邮件里的最新链接。' });
     } catch (error) {
       setFeedback({ type: 'error', message: getAuthErrorMessage(error) });
     } finally {
+      captcha.reset();
       setSubmitting(false);
     }
   };
@@ -54,8 +59,9 @@ const ForgotPassword = () => {
         >
           <Input type="email" prefix={<MailOutlined />} placeholder="name@example.com" autoComplete="email" />
         </Form.Item>
+        <AuthCaptcha captcha={captcha} />
         <Form.Item noStyle>
-          <Button className="auth-card__primary" type="primary" htmlType="submit" block loading={submitting}>发送重置邮件</Button>
+          <Button className="auth-card__primary" type="primary" htmlType="submit" block loading={submitting} disabled={captcha.pending}>发送重置邮件</Button>
         </Form.Item>
       </Form>
     </AuthCard>

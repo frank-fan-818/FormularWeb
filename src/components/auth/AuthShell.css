@@ -332,3 +332,6 @@
 .auth-card__access-comparison > div { display: grid; gap: 4px; }
 .auth-card__access-comparison strong { color: var(--text-primary); font-size: 13px; }
 .auth-card__access-comparison span { color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+
+.auth-captcha { margin-bottom: var(--space-4); min-width: 0; }
+.auth-captcha__status { margin: var(--space-2) 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }

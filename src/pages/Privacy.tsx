@@ -13,7 +13,7 @@ const Privacy = () => (
         <Link to="/login">返回账号入口</Link>
         <Text className="privacy-kicker">PRIVACY / ACCOUNT</Text>
         <Title level={1}>隐私说明</Title>
-        <Paragraph type="secondary">最后更新：2026 年 9 月 12 日</Paragraph>
+        <Paragraph type="secondary">最后更新：2026 年 10 月 21 日</Paragraph>
       </header>
 
       <Card>
@@ -32,6 +32,8 @@ const Privacy = () => (
         <Title level={2}>第三方服务</Title>
         <Paragraph>
           账号与诊断数据使用 Supabase；公开 F1 数据可能来自 Jolpica/Ergast 兼容接口。
+          启用人机验证时，登录、注册和找回密码表单会加载 Cloudflare Turnstile，处理验证所需的浏览器和网络信息，
+          并将验证令牌交给 Supabase 校验；普通游客浏览不加载该验证组件。
           这些服务会依据各自政策处理网络请求中的必要技术信息。
         </Paragraph>
 

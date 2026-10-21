@@ -42,7 +42,7 @@ def ranges(points):
     return ','.join(f'U+{start:X}' + (f'-{end:X}' if end != start else '') for start, end in result)
 
 
-core_names = {'Login.tsx', 'AuthShell.tsx', 'AuthFrame.tsx', 'AuthCard.tsx', 'AccessGate.tsx'}
+core_names = {'Login.tsx', 'AuthShell.tsx', 'AuthFrame.tsx', 'AuthCard.tsx', 'AuthCaptcha.tsx', 'AccessGate.tsx'}
 all_chars, core_chars = set(), set()
 for source in (ROOT / 'src').rglob('*'):
     if source.suffix not in {'.ts', '.tsx', '.json'} or '.test.' in source.name:
