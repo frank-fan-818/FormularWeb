@@ -18,6 +18,8 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
   one, rather than presenting that input error as an authentication outage.
 - Recovery requests now identify resend throttling correctly and explain that
   the latest email link must open in the browser that requested it.
+- Updated Vite and the transitive redirect dependency to compatible security
+  patches after the fresh release audit identified vulnerable versions.
 - Connected `frankpitwall.com` to the existing deployment and configured project
   authentication mail through Resend; real signup and recovery were accepted.
 - Production database permissions now match member-only analytics and prediction

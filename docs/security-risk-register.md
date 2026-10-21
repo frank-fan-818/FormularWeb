@@ -1,8 +1,25 @@
 # Security Risk Register
 
-Last reviewed: 2026-10-03
+Last reviewed: 2026-10-21
 
-## Current candidate: 0.20.12
+## Current candidate: 1.0.0
+
+The fresh release CI audit on `9867f74d` blocked publication for vulnerable
+`follow-redirects@1.16.0` and `vite@8.1.5`; build/browser jobs did not run.
+Updated only the compatible patch resolutions to `follow-redirects@1.16.1` and
+`vite@8.1.6`, retaining the Vite 8.1 line in the lockfile. No audit severity
+threshold or exception was changed. The repeated local dependency audit reports
+zero vulnerabilities; all 551 unit tests and the production build pass with the
+patched dependencies. The final commit still requires full Linux CI.
+
+Upstream references:
+
+- [follow-redirects 1.16.1](https://github.com/follow-redirects/follow-redirects/releases/tag/v1.16.1)
+- [Vite 8.1.6](https://github.com/vitejs/vite/releases/tag/v8.1.6)
+- [Redirect credential stripping advisory](https://github.com/advisories/GHSA-q3jh-wrc6-jgq8)
+- [Vite bundled editor patch versions](https://github.com/advisories/GHSA-698v-4r3x-3vcv)
+
+## Previous candidate: 0.20.12 (historical)
 
 The project now declares `react-router-dom@^7.18.2`. The 2026-10-03 full
 dependency audit reported zero vulnerabilities. The React Router 6 assessment

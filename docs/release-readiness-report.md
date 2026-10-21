@@ -8,7 +8,8 @@ Date: 2026-10-21 (Asia/Shanghai)
 `1.0.0`; production remains `0.24.0` at
 `d193339990f00db1f9eba185426d6610fbad48b6`. Custom-domain signup and password
 recovery through Resend SMTP passed with the maintainer. The final recovery UI
-and rate-limit message fix still needs its own complete CI. The maintainer has chosen to retain existing media for
+and rate-limit message fix plus dependency security patches still need complete
+CI. The maintainer has chosen to retain existing media for
 non-profit use; its authorization has not been independently verified and is a
 recorded limitation, not a cleared licensing finding. Notification receipt has
 been confirmed. The ordered record is
@@ -77,6 +78,11 @@ been confirmed. The ordered record is
   errors or failed requests; the deliberate HTTP 429 and Playwright's configured
   service-worker block notice are explicitly allowed. Desktop and mobile
   screenshots were inspected; no overflow or overlapping controls was found.
+- Fresh candidate CI `9867f74d` passed type/unit/lint jobs but failed dependency
+  audit; build/browser jobs were skipped. Patched only `vite` 8.1.5 -> 8.1.6 and
+  transitive `follow-redirects` 1.16.0 -> 1.16.1. The repeated local audit reports
+  zero vulnerabilities; 551 unit tests and production build pass with the new
+  lockfile. This later candidate still requires complete CI.
 - Production build, TypeScript, strict ESLint, UI-font integrity/coverage and
   repository secret/SQL scan passed.
 - Candidate `7642950e267b627edc09c504317670b9cd9dad35` passed all six Linux
