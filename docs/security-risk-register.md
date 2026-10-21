@@ -10,7 +10,11 @@ Updated only the compatible patch resolutions to `follow-redirects@1.16.1` and
 `vite@8.1.6`, retaining the Vite 8.1 line in the lockfile. No audit severity
 threshold or exception was changed. The repeated local dependency audit reports
 zero vulnerabilities; all 551 unit tests and the production build pass with the
-patched dependencies. The final commit still requires full Linux CI.
+patched dependencies. Patched code candidate
+`2e3d1668ca8427200fd2ae3e534f125339ced51e` subsequently passed all six Linux
+CI jobs, including the complete security gate:
+https://github.com/frank-fan-818/FormularWeb/actions/runs/39551388530.
+Main's required checks must also pass on the final PR head before merging.
 
 Upstream references:
 

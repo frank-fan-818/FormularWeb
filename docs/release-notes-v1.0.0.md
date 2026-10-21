@@ -34,9 +34,9 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
 
 ## Limits and pending publication work
 
-- Final candidate CI, production rollout and online version verification remain
-  required before publication. Custom SMTP and real new-domain signup/recovery
-  acceptance passed on 2026-10-21.
+- Production rollout and online version verification remain required before
+  publication. Code-candidate CI, custom SMTP and real new-domain signup/recovery
+  acceptance passed on 2026-10-21; retain all required checks on the final PR head.
 - The maintainer has chosen to retain current third-party images and marks for
   non-profit use. Source records exist; usage authorization has not been
   independently verified and is retained as a documented limitation.
@@ -49,9 +49,10 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
 
 ## Publication record to fill after acceptance
 
-- Code candidate CI: `7642950e267b627edc09c504317670b9cd9dad35`,
-  https://github.com/frank-fan-818/FormularWeb/actions/runs/39437406396
-  (all jobs passed; 548 unit tests and 294 browser checks).
+- Code candidate CI: `2e3d1668ca8427200fd2ae3e534f125339ced51e`,
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39551388530
+  (all six jobs passed; 551 unit tests, 304 browser checks, 35 designed skips,
+  no retries or flaky tests).
 - Final accepted commit and CI run:
 - Production deployment and verified `/release.json` identity:
 - Rollback deployment:

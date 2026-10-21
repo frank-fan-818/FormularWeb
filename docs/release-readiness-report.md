@@ -4,12 +4,12 @@ Date: 2026-10-21 (Asia/Shanghai)
 
 ## Current decision
 
-**Production acceptance is complete; final candidate CI and rollout remain.** Source and lockfile are prepared for
+**Production acceptance and code-candidate CI are complete; rollout remains.** Source and lockfile are prepared for
 `1.0.0`; production remains `0.24.0` at
 `d193339990f00db1f9eba185426d6610fbad48b6`. Custom-domain signup and password
-recovery through Resend SMTP passed with the maintainer. The final recovery UI
-and rate-limit message fix plus dependency security patches still need complete
-CI. The maintainer has chosen to retain existing media for
+recovery through Resend SMTP passed with the maintainer. Code candidate
+`2e3d1668ca8427200fd2ae3e534f125339ced51e`, including recovery guidance and
+dependency security patches, passed all six Linux CI jobs. The maintainer has chosen to retain existing media for
 non-profit use; its authorization has not been independently verified and is a
 recorded limitation, not a cleared licensing finding. Notification receipt has
 been confirmed. The ordered record is
@@ -82,7 +82,13 @@ been confirmed. The ordered record is
   audit; build/browser jobs were skipped. Patched only `vite` 8.1.5 -> 8.1.6 and
   transitive `follow-redirects` 1.16.0 -> 1.16.1. The repeated local audit reports
   zero vulnerabilities; 551 unit tests and production build pass with the new
-  lockfile. This later candidate still requires complete CI.
+  lockfile. The patched candidate's complete CI subsequently passed as below.
+- Code candidate `2e3d1668ca8427200fd2ae3e534f125339ced51e` passed all six
+  Linux jobs: **96 unit files / 551 tests; 304 browser checks passed, 35 designed
+  skips, no retries or flaky tests**. Coverage: statements 60.88%, branches
+  56.75%, functions 61.41%, lines 61.23%. Security audit, Semgrep, workflow checks,
+  types, lint, build, service worker, bundle budgets and Lighthouse all passed:
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39551388530.
 - Production build, TypeScript, strict ESLint, UI-font integrity/coverage and
   repository secret/SQL scan passed.
 - Candidate `7642950e267b627edc09c504317670b9cd9dad35` passed all six Linux
@@ -96,20 +102,18 @@ been confirmed. The ordered record is
   history suite passed unchanged on recheck. Retain these local runner stability
   findings for follow-up; do not describe the local umbrella quality command as
   passing. The unchanged code candidate passed the complete Linux matrix above.
-- Semgrep found no findings; dependency audit passed. Lighthouse's five-run gate
+- Baseline Semgrep found no findings; dependency audit passed. Lighthouse's five-run gate
   passed with performance 96 and accessibility/best-practices/SEO 100. FCP and
   render-chain warnings remain non-blocking under the existing configuration.
-- PR #81 remains a draft while final candidate CI is pending. Any later code change
-  still requires its own successful CI; the cited run certifies the SHA above.
+- PR #81 carries the final candidate and publication evidence. Any later code
+  change still requires successful CI; the cited runs certify their exact SHAs.
+  Main's six required checks must remain green on the final PR head.
 - Evidence is under ignored `artifacts/release-1.0.0/` and `artifacts/browser-qa/`.
   Only sanitized summaries are committed.
 
 ## Remaining release gates
 
-1. **Final candidate CI:** run the complete Linux workflow for the recovery-message
-   delta and retain the exact successful commit/run; the earlier candidate CI
-   does not certify these later changes.
-2. **Publication:** deploy the accepted commit, verify the online `1.0.0` identity
+1. **Publication:** deploy the accepted commit, verify the online `1.0.0` identity
    and public health, then update the monitor expectation and stable tag/Release.
 
 ## Recorded non-blocking media decision
