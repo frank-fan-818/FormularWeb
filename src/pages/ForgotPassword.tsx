@@ -18,7 +18,7 @@ const ForgotPassword = () => {
     setFeedback(null);
     try {
       await authApi.requestPasswordReset(email);
-      setFeedback({ type: 'success', message: '如果该邮箱已注册，你将收到一封密码重置邮件。' });
+      setFeedback({ type: 'success', message: '如果该邮箱已注册，你将收到一封密码重置邮件。请在当前浏览器中打开邮件里的最新链接。' });
     } catch (error) {
       setFeedback({ type: 'error', message: getAuthErrorMessage(error) });
     } finally {
@@ -30,7 +30,7 @@ const ForgotPassword = () => {
     <AuthCard
       eyebrow="ACCOUNT RECOVERY"
       title="重置密码"
-      intro="输入注册邮箱，我们会发送密码重置链接。"
+      intro="输入注册邮箱，我们会发送密码重置链接。请在同一浏览器中申请并打开邮件链接。"
       footer={<span>想起密码了？<Link state={location.state} to="/login">返回登录</Link></span>}
     >
       {!isSupabaseConfigured ? <Alert className="auth-card__alert" type="warning" showIcon message="身份服务尚未配置" /> : null}

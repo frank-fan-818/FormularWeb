@@ -1,13 +1,14 @@
 # Release Readiness Report — Web 1.0 candidate
 
-Date: 2026-10-20 (Asia/Shanghai)
+Date: 2026-10-21 (Asia/Shanghai)
 
 ## Current decision
 
-**Do not publish the stable release yet.** Source and lockfile are prepared for
+**Production acceptance is complete; final candidate CI and rollout remain.** Source and lockfile are prepared for
 `1.0.0`; production remains `0.24.0` at
-`d193339990f00db1f9eba185426d6610fbad48b6`. The missing production SMTP service
-blocks real public signup. The maintainer has chosen to retain existing media for
+`d193339990f00db1f9eba185426d6610fbad48b6`. Custom-domain signup and password
+recovery through Resend SMTP passed with the maintainer. The final recovery UI
+and rate-limit message fix still needs its own complete CI. The maintainer has chosen to retain existing media for
 non-profit use; its authorization has not been independently verified and is a
 recorded limitation, not a cleared licensing finding. Notification receipt has
 been confirmed. The ordered record is
@@ -17,6 +18,19 @@ been confirmed. The ordered record is
 
 - Maintainer used the dedicated account to verify login, reload, logout,
   recovery email, changing to a different password and signing in again.
+- Connected `frankpitwall.com` and `www` to the existing Vercel project, verified
+  public DNS, normal HTTPS certificate validation, all nine public health checks
+  and `www` HTTP 308 path-preserving redirection. Production remains `0.24.0`.
+- Verified the three Resend DNS records, including the exact complete DKIM public
+  key. The maintainer confirmed provider verification, saved custom SMTP and
+  the new-origin callback configuration, then completed real new-user signup,
+  verification mail, login/reload and password recovery/re-login on the domain.
+  No credential, mailbox address or recovery link was collected in the report.
+- Cross-browser recovery lacks the requesting browser's PKCE verifier. A resend
+  in under a minute also reproduced misleading outage text. Retesting with a
+  fresh link in the original browser passed; the source now explains that
+  requirement and maps rate-limit codes/HTTP 429 to the existing throttling text.
+  Failing regressions demonstrated the old mapping before the minimal fix.
 - Reusing the old password reproduced a misleading service-unavailable message.
   Added failing unit regressions, then mapped the Supabase `same_password` code
   and legacy response to a clear static message. This source fix is not yet live.
@@ -45,11 +59,24 @@ been confirmed. The ordered record is
   domain target, promoted the original `0.24.0` deployment, and read back recovery.
   No database rollback occurred. All public health checks passed after recovery:
   https://github.com/frank-fan-818/FormularWeb/actions/runs/39429693278.
+- Switched the health target to the accepted custom domain, retaining expected
+  version `0.24.0`; the dispatched workflow passed:
+  https://github.com/frank-fan-818/FormularWeb/actions/runs/39550119844.
 
 ## Candidate verification
 
-- Full unit/coverage run: **96 files / 548 tests passed**, statements 60.83%,
+- Baseline full unit/coverage run: **96 files / 548 tests passed**, statements 60.83%,
   branches 56.67%, functions 61.46%, lines 61.17%.
+- Updated full unit suite: **96 files / 551 tests passed**; production build,
+  strict ESLint, UTF-8, font coverage and repository security scan passed.
+- Dedicated recovery browser regression: **10 passed with no retries** across
+  desktop Chromium/Firefox (1440x900), tablet Chromium (768x1024), and mobile
+  Chromium/WebKit (375x812). It exercises the real SDK's PKCE verifier storage,
+  mocked resend throttling, password update and sign-out, and rejects a callback
+  without the requesting browser's verifier. No unexpected console warnings,
+  errors or failed requests; the deliberate HTTP 429 and Playwright's configured
+  service-worker block notice are explicitly allowed. Desktop and mobile
+  screenshots were inspected; no overflow or overlapping controls was found.
 - Production build, TypeScript, strict ESLint, UI-font integrity/coverage and
   repository secret/SQL scan passed.
 - Candidate `7642950e267b627edc09c504317670b9cd9dad35` passed all six Linux
@@ -66,17 +93,18 @@ been confirmed. The ordered record is
 - Semgrep found no findings; dependency audit passed. Lighthouse's five-run gate
   passed with performance 96 and accessibility/best-practices/SEO 100. FCP and
   render-chain warnings remain non-blocking under the existing configuration.
-- PR #81 remains a draft while SMTP/new signup is pending. Any later code change
+- PR #81 remains a draft while final candidate CI is pending. Any later code change
   still requires its own successful CI; the cited run certifies the SHA above.
 - Evidence is under ignored `artifacts/release-1.0.0/` and `artifacts/browser-qa/`.
   Only sanitized summaries are committed.
 
 ## Remaining release gates
 
-1. **SMTP and new signup:** maintainer confirms custom SMTP is disabled. New
-   signup hit rate limiting. Configure a real sending service in Supabase and
-   complete verification/login with a new test address; do not disable email
-   verification or expose SMTP credentials to work around this gate.
+1. **Final candidate CI:** run the complete Linux workflow for the recovery-message
+   delta and retain the exact successful commit/run; the earlier candidate CI
+   does not certify these later changes.
+2. **Publication:** deploy the accepted commit, verify the online `1.0.0` identity
+   and public health, then update the monitor expectation and stable tag/Release.
 
 ## Recorded non-blocking media decision
 

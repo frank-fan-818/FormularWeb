@@ -21,7 +21,9 @@ export function getAuthErrorMessage(error: unknown): string {
   if (message.includes('email not confirmed')) {
     return '请先完成邮箱验证后再登录。';
   }
-  if (message.includes('rate limit') || message.includes('too many')) {
+  if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit'
+    || (error instanceof Error && 'status' in error && error.status === 429)
+    || message.includes('rate limit') || message.includes('too many')) {
     return '请求过于频繁，请稍后再试。';
   }
   if (message.includes('network') || message.includes('fetch')) {

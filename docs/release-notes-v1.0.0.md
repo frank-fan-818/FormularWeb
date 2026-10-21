@@ -16,6 +16,10 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
 
 - Password recovery now explains that a new password must differ from the old
   one, rather than presenting that input error as an authentication outage.
+- Recovery requests now identify resend throttling correctly and explain that
+  the latest email link must open in the browser that requested it.
+- Connected `frankpitwall.com` to the existing deployment and configured project
+  authentication mail through Resend; real signup and recovery were accepted.
 - Production database permissions now match member-only analytics and prediction
   access. Guests and anonymous auth sessions cannot read those rows; browser
   clients cannot mutate business data or read diagnostics.
@@ -28,8 +32,9 @@ the acceptance record in `docs/plans/2026-10-20-v1-release-p0.md` has open gates
 
 ## Limits and pending publication work
 
-- Custom SMTP and a real new-user verification/login test are required before
-  the public account-registration release.
+- Final candidate CI, production rollout and online version verification remain
+  required before publication. Custom SMTP and real new-domain signup/recovery
+  acceptance passed on 2026-10-21.
 - The maintainer has chosen to retain current third-party images and marks for
   non-profit use. Source records exist; usage authorization has not been
   independently verified and is retained as a documented limitation.
