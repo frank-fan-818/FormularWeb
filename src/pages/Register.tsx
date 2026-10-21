@@ -5,6 +5,8 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { authApi, getAuthErrorMessage, newPasswordSchema } from '@/api/auth';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { isSupabaseConfigured } from '@/utils/supabase';
+import { AuthCaptcha } from '@/components/auth/AuthCaptcha';
+import { useAuthCaptcha } from '@/hooks/useAuthCaptcha';
 
 interface RegisterFormValues {
   email: string;
@@ -22,18 +24,21 @@ const passwordRule = {
 
 const Register = () => {
   const location = useLocation();
+  const captcha = useAuthCaptcha(isSupabaseConfigured);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleSubmit = async (values: RegisterFormValues) => {
+    if (submitting || captcha.pending) return;
     setSubmitting(true);
     setFeedback(null);
     try {
-      await authApi.signUp(values.email, values.password);
+      await authApi.signUp(values.email, values.password, captcha.token);
       setFeedback({ type: 'success', message: '账号申请已提交。请打开验证邮件完成注册，然后返回登录。' });
     } catch (error) {
       setFeedback({ type: 'error', message: getAuthErrorMessage(error) });
     } finally {
+      captcha.reset();
       setSubmitting(false);
     }
   };
@@ -85,8 +90,9 @@ const Register = () => {
         >
           <Input.Password prefix={<LockOutlined />} placeholder="再次输入密码" autoComplete="new-password" />
         </Form.Item>
+        <AuthCaptcha captcha={captcha} />
         <Form.Item noStyle>
-          <Button className="auth-card__primary" type="primary" htmlType="submit" block loading={submitting}>创建账号</Button>
+          <Button className="auth-card__primary" type="primary" htmlType="submit" block loading={submitting} disabled={captcha.pending}>创建账号</Button>
         </Form.Item>
       </Form>
     </AuthCard>

@@ -5,13 +5,24 @@ export class AuthUnavailableError extends Error {
   }
 }
 
+export class AuthCaptchaRequiredError extends Error {
+  constructor() {
+    super('CAPTCHA verification required');
+    this.name = 'AuthCaptchaRequiredError';
+  }
+}
+
 export function getAuthErrorMessage(error: unknown): string {
+  if (error instanceof AuthCaptchaRequiredError) return '请先完成人机验证。';
   if (error instanceof AuthUnavailableError) {
     return '身份服务暂未配置，请稍后再试。';
   }
 
   const message = error instanceof Error ? error.message.toLowerCase() : '';
   const code = error instanceof Error && 'code' in error ? error.code : undefined;
+  if (code === 'captcha_failed' || message.includes('captcha')) {
+    return '人机验证未通过或已过期，请重新验证后再试。';
+  }
   if (code === 'same_password' || message.includes('new password should be different')) {
     return '新密码不能与旧密码相同，请设置一个不同的密码。';
   }

@@ -3,6 +3,10 @@ import { AuthApiError } from '@supabase/supabase-js';
 import { getAuthErrorMessage } from './authErrors';
 
 describe('authentication error messages', () => {
+  it('explains CAPTCHA rejection without exposing provider details', () => {
+    expect(getAuthErrorMessage(new AuthApiError('captcha provider internal response', 400, 'captcha_failed')))
+      .toBe('人机验证未通过或已过期，请重新验证后再试。');
+  });
   it('explains a reused recovery password without claiming the service is unavailable', () => {
     expect(getAuthErrorMessage(new AuthApiError(
       'New password should be different from the old password.', 422, 'same_password',

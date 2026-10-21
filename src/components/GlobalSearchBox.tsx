@@ -84,8 +84,9 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
     reset();
   };
 
-  const showFeedback = dropdownOpen && (searchLoading || searchError || (searchValue.trim() && groups.length === 0));
-  const showResults = dropdownOpen && groups.length > 0;
+  const hasQuery = searchValue.trim().length > 0;
+  const showFeedback = dropdownOpen && hasQuery && (searchLoading || Boolean(searchError) || groups.length === 0);
+  const showResults = dropdownOpen && hasQuery && groups.length > 0;
   const groupLabels: Record<SearchEntityType, string> = {
     driver: t('searchGroupDrivers'),
     constructor: t('searchGroupConstructors'),
@@ -95,7 +96,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
 
   return (
     <div className={`global-search ${mobileOptimized ? 'is-mobile-optimized' : ''}`}>
-      <div className={`global-search-input-wrap ${searchError ? 'has-error' : ''}`}>
+      <div className={`global-search-input-wrap ${hasQuery && searchError ? 'has-error' : ''}`}>
         <SearchIcon />
         <input
           ref={inputRef}
@@ -126,7 +127,7 @@ const GlobalSearchBox = ({ autoFocus = false, mobileOptimized = false }: GlobalS
             }, 120);
           }}
           role="combobox"
-          aria-expanded={dropdownOpen}
+          aria-expanded={showResults || showFeedback}
           aria-autocomplete="list"
           aria-label={t('searchPlaceholder')}
           enterKeyHint="search"

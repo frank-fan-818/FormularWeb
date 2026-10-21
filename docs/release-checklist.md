@@ -13,6 +13,9 @@
 - Service-role keys exist only in protected server/CI secrets
 - Latest `scripts/sql/` security hardening migration has been applied
 - Supabase Auth redirect URLs include the production `/login` callback
+- If enabling Turnstile, deploy the public Site Key and updated forms before
+  enabling Supabase CAPTCHA with the Secret Key; verify all three auth forms and
+  rejection of missing/invalid tokens as described in `docs/turnstile-setup.md`
 - Production email delivery uses a configured custom SMTP service; complete a
   real signup/verification/login and recovery flow with the dedicated test inbox
 - Anonymous users cannot insert, update, or delete application data

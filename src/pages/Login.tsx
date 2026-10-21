@@ -5,6 +5,8 @@ import { AuthCard, AuthNotice } from '@/components/auth/AuthCard';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { getAuthReturnPath } from '@/utils/authNavigation';
 import { isSupabaseConfigured } from '@/utils/supabaseConfig';
+import { AuthCaptcha } from '@/components/auth/AuthCaptcha';
+import { useAuthCaptcha } from '@/hooks/useAuthCaptcha';
 
 interface LoginFormValues {
   email: string;
@@ -16,6 +18,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { session, loading: sessionLoading, enterGuest, leaveGuest, error: sessionError, retry } = useAuthSession();
+  const captcha = useAuthCaptcha(!session && isSupabaseConfigured);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -27,15 +30,17 @@ const Login = () => {
       : null;
 
   const handleSubmit = async (values: LoginFormValues) => {
+    if (submitting || captcha.pending) return;
     setSubmitting(true);
     setErrorMessage(null);
     try {
       const { authApi } = await import('@/api/auth');
-      await authApi.signIn(values.email, values.password);
+      await authApi.signIn(values.email, values.password, captcha.token);
       navigate(returnPath, { replace: true });
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error));
     } finally {
+      captcha.reset();
       setSubmitting(false);
     }
   };
@@ -88,7 +93,7 @@ const Login = () => {
           className="auth-login-form"
           onSubmit={(event) => {
             event.preventDefault();
-            if (submitting || sessionLoading || !isSupabaseConfigured) return;
+            if (submitting || sessionLoading || !isSupabaseConfigured || captcha.pending) return;
             const fields = new FormData(event.currentTarget);
             void handleSubmit({ email: String(fields.get('email') || ''), password: String(fields.get('password') || '') });
           }}
@@ -104,7 +109,8 @@ const Login = () => {
           <div className="auth-card__helper-row">
             <Link className="auth-card__text-link" state={location.state} to="/forgot-password">忘记密码？</Link>
           </div>
-            <button className="auth-card__button auth-card__primary" type="submit" disabled={submitting || sessionLoading} aria-busy={submitting || sessionLoading}>
+            <AuthCaptcha captcha={captcha} />
+            <button className="auth-card__button auth-card__primary" type="submit" disabled={submitting || sessionLoading || captcha.pending} aria-busy={submitting || sessionLoading}>
               {submitting ? '正在登录…' : sessionLoading ? '正在确认账号…' : '登录'}
             </button>
           </fieldset>
