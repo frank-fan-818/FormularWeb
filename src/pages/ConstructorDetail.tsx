@@ -567,8 +567,6 @@ const ConstructorDetail = () => {
         </div>
 
         <ProductSectionHeader
-          index="01"
-          eyebrow={`${currentSeason} / TEAM FORM`}
           title={TEXT.pointsTrend}
         />
         <Card

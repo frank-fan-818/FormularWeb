@@ -103,8 +103,6 @@ const Drivers = () => {
     <div className="list-page-container drivers-lineup-page">
       <DocumentHead title="车手列表 — F1 Dashboard" description="F1车手列表，查看本赛季车手阵容和数据统计" />
       <ProductMasthead
-        index="03"
-        eyebrow={`${currentSeason} / GRID ROSTER`}
         title={<>THE<br />DRIVER GRID</>}
         metrics={[
           { label: '\u73b0\u5f79\u8f66\u624b', value: drivers.length || '--', detail: `${driverGroups.length} \u652f\u8f66\u961f` },
@@ -120,7 +118,7 @@ const Drivers = () => {
         <div className="driver-lineup-empty">当前赛季暂无车手阵容数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="PADDOCK INDEX" title="车手阵容" />
+        <ProductSectionHeader title="车手阵容" />
         <div className="driver-lineup-container">
           {driverGroups.map((group, groupIndex) => {
             const teamColor = getTeamColor(group.constructorId);

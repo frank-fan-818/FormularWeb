@@ -59,6 +59,13 @@ const SeasonIcon = ({ className }: IconProps) => (
   </IconBase>
 );
 
+const NewsIcon = ({ className }: IconProps) => (
+  <IconBase className={className}>
+    <rect x="4" y="4" width="16" height="16" rx="2" />
+    <path d="M8 8h8M8 12h8M8 16h3M14 16h2" />
+  </IconBase>
+);
+
 const RaceIcon = ({ className }: IconProps) => (
   <IconBase className={className}>
     <path d="M7.5 6.5h9l1.2 4.2H6.3L7.5 6.5Z" />
@@ -181,6 +188,8 @@ const resolveActiveNavKey = (pathname: string) => {
     return '/seasons';
   }
 
+  if (pathname === '/news' || pathname.startsWith('/news/')) return '/news';
+
   return '';
 };
 
@@ -206,6 +215,7 @@ const LayoutComponent = () => {
   };
   const navItems = [
     { key: '/', icon: HomeIcon, label: t('home') },
+    { key: '/news', icon: NewsIcon, label: t('newsTitle') },
     { key: '/seasons', icon: SeasonIcon, label: t('seasonStandings') },
     { key: '/races', icon: RaceIcon, label: t('races') },
     { key: '/drivers', icon: DriverIcon, label: t('drivers') },

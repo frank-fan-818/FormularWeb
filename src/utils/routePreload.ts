@@ -25,6 +25,7 @@ const raceSectionModules: Record<string, RouteModuleKey> = {
 export function getRoutePreloadKeys(pathname: string): RouteModuleKey[] {
   const normalizedPath = pathname.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
   if (normalizedPath === '/') return [];
+  if (normalizedPath === '/news') return ['news'];
   if (normalizedPath === '/seasons') return ['seasons'];
   if (normalizedPath === '/races') return ['races'];
 

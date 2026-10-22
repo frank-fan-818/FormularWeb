@@ -61,8 +61,6 @@ const Races = () => {
     <div className="list-page-container races-calendar-page">
       <DocumentHead title="比赛列表 — F1 Dashboard" description="F1比赛日程列表，查看各站比赛信息" />
       <ProductMasthead
-        index="02"
-        eyebrow={`${currentSeason} / WORLD CHAMPIONSHIP`}
         title={<>{currentSeason}<br />RACE CALENDAR</>}
         metrics={[
           { label: '\u8d5b\u5386', value: races.length || '--' },
@@ -81,7 +79,7 @@ const Races = () => {
         <>
           {(ongoingRace || nextRace) ? (
             <section>
-              <ProductSectionHeader index="01" eyebrow="NOW / NEXT" title="当前与下一站" />
+              <ProductSectionHeader title="当前与下一站" />
               <div className="race-calendar-list race-calendar-list--featured">
                 {ongoingRace ? <RaceCard race={ongoingRace} index={0} /> : null}
                 {nextRace ? <RaceCard race={nextRace} index={1} /> : null}
@@ -90,7 +88,7 @@ const Races = () => {
           ) : null}
           {upcomingRaces.length > 0 ? (
             <section>
-              <ProductSectionHeader index="02" eyebrow="UPCOMING" title="未开始比赛" />
+              <ProductSectionHeader title="未开始比赛" />
               <div className="race-calendar-list">
                 {upcomingRaces.map((race, index) => <RaceCard key={race.round} race={race} index={index} />)}
               </div>
@@ -98,7 +96,7 @@ const Races = () => {
           ) : null}
           {completedRaces.length > 0 ? (
             <section>
-              <ProductSectionHeader index="03" eyebrow="ARCHIVE" title="已完成比赛" />
+              <ProductSectionHeader title="已完成比赛" />
               <div className="race-calendar-list">
                 {[...completedRaces].reverse().map((race, index) => <RaceCard key={race.round} race={race} index={index} />)}
               </div>

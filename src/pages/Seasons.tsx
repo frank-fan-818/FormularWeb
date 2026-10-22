@@ -190,8 +190,6 @@ const Seasons = () => {
     <div className="list-page-container season-standings-page">
       <DocumentHead title="季节列表 — F1 Dashboard" description="F1赛季积分榜，查看车手和车队排名" />
       <ProductMasthead
-        index="01"
-        eyebrow={`${currentSeason} / CHAMPIONSHIP`}
         title={<>{currentSeason}<br />STANDINGS</>}
       />
 

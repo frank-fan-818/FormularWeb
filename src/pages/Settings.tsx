@@ -42,9 +42,7 @@ const Settings = () => {
   return (
     <div className="page-container settings-page">
       <ProductMasthead
-        index="06"
         tone="utility"
-        eyebrow="PREFERENCES / LOCAL"
         title="CONTROL SETTINGS"
         metrics={[
           { label: '\u5f53\u524d\u8d5b\u5b63', value: currentSeason },

@@ -8,6 +8,7 @@ const host = '127.0.0.1';
 const port = 4173;
 const mockF1Api = process.env.F1_API_MOCK_EMPTY === '1';
 const mockCanonicalF1Api = process.env.F1_API_MOCK_CANONICAL === '1';
+const newsFeeds = JSON.parse(readFileSync(new URL('../config/news-feeds.json', import.meta.url), 'utf8'));
 const buildManifest = JSON.parse(
   readFileSync(resolve(distRoot, '.vite', 'manifest.json'), 'utf8'),
 );
@@ -40,8 +41,27 @@ if (!existsSync(resolve(distRoot, 'index.html'))) {
   throw new Error('dist/index.html is missing; run npm run build first.');
 }
 
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
   const pathname = decodeURIComponent(new URL(request.url || '/', `http://${host}`).pathname);
+  if (pathname === '/news-feed' || pathname.startsWith('/news-feed/')) {
+    const source = pathname.slice('/news-feed/'.length);
+    if (!Object.hasOwn(newsFeeds, source) || !['GET', 'HEAD'].includes(request.method || '')) {
+      response.writeHead(404, { 'Content-Type': 'text/plain' }); response.end('Not found'); return;
+    }
+    try {
+      const upstream = await fetch(newsFeeds[source], { signal: AbortSignal.timeout(10_000),
+        headers: { 'User-Agent': 'FormularOneWeb/1.2 (F1 feed reader)', Accept: 'application/atom+xml, application/rss+xml, application/xml, text/xml' } });
+      const contentType = upstream.headers.get('Content-Type') || '';
+      if (!upstream.ok || !/(?:application|text)\/(?:atom\+xml|rss\+xml|xml)(?:;|$)/i.test(contentType)) throw new Error('Invalid feed');
+      const body = await upstream.text();
+      if (body.length > 1_000_000) throw new Error('Feed too large');
+      response.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400', 'X-Content-Type-Options': 'nosniff' });
+      response.end(request.method === 'HEAD' ? undefined : body);
+    } catch {
+      response.writeHead(502, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' }); response.end('News source unavailable');
+    }
+    return;
+  }
   if (pathname === '/fastf1' || pathname.startsWith('/fastf1/')) {
     response.writeHead(404, { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain' });
     response.end('Not found');

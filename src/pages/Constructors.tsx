@@ -78,8 +78,6 @@ const Constructors = () => {
     <div className="list-page-container constructors-page">
       <DocumentHead title="车队列表 — F1 Dashboard" description="F1车队列表，查看本赛季车队阵容和数据统计" />
       <ProductMasthead
-        index="04"
-        eyebrow={`${currentSeason} / TEAM LIBRARY`}
         title={<>THE<br />CONSTRUCTORS</>}
         metrics={[
           { label: '\u53c2\u8d5b\u8f66\u961f', value: constructors.length || '--', detail: `${currentSeason} GRID` },
@@ -95,7 +93,7 @@ const Constructors = () => {
         <div className="constructor-library-empty">当前赛季暂无车队数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="TEAM INDEX" title="车队列表" />
+        <ProductSectionHeader title="车队列表" />
         <div className="constructor-library-grid">
           {constructors.map((constructor) => {
             const teamColor = getTeamColor(constructor.constructorId);

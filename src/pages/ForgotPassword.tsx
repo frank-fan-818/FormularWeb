@@ -33,7 +33,6 @@ const ForgotPassword = () => {
 
   return (
     <AuthCard
-      eyebrow="ACCOUNT RECOVERY"
       title="重置密码"
       intro="输入注册邮箱，我们会发送密码重置链接。请在同一浏览器中申请并打开邮件链接。"
       footer={<span>想起密码了？<Link state={location.state} to="/login">返回登录</Link></span>}

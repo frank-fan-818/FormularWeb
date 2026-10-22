@@ -480,7 +480,6 @@ const RaceQualifying = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          eyebrow="QUALIFYING"
           title="排位解构"
         />
         <Card className="race-empty-command-card">
@@ -495,7 +494,6 @@ const RaceQualifying = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        eyebrow="QUALIFYING"
         title="排位解构"
       />
 

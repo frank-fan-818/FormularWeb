@@ -3,7 +3,7 @@ import { Card, Typography } from 'antd';
 import DocumentHead from '@/components/DocumentHead';
 import './Privacy.css';
 
-const { Paragraph, Text, Title } = Typography;
+const { Paragraph, Title } = Typography;
 
 const Privacy = () => (
   <>
@@ -11,7 +11,6 @@ const Privacy = () => (
     <article className="privacy-page">
       <header>
         <Link to="/login">返回账号入口</Link>
-        <Text className="privacy-kicker">PRIVACY / ACCOUNT</Text>
         <Title level={1}>隐私说明</Title>
         <Paragraph type="secondary">最后更新：2026 年 10 月 21 日</Paragraph>
       </header>

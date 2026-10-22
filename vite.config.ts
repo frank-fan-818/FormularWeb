@@ -1,9 +1,33 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, type Plugin, type ViteDevServer } from 'vite'
 import type { OutputBundle, OutputChunk } from 'rollup'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { createHash } from 'node:crypto'
+import { Agent as HttpsAgent } from 'node:https'
 import { existsSync, readFileSync } from 'node:fs'
+
+const newsFeedUpstreams: Record<string, string> = JSON.parse(readFileSync(path.resolve(__dirname, 'config/news-feeds.json'), 'utf8'));
+const newsFeedAgent = new HttpsAgent({ keepAlive: true, proxyEnv: process.env });
+const newsFeedProxy = Object.fromEntries(Object.entries(newsFeedUpstreams).map(([id, upstream]) => {
+  const url = new URL(upstream);
+  return [`/news-feed/${id}`, { target: url.origin, changeOrigin: true, secure: true, agent: newsFeedAgent,
+    headers: { 'User-Agent': 'FormularOneWeb/1.2 (F1 feed reader)', Accept: 'application/atom+xml, application/rss+xml, application/xml, text/xml' },
+    rewrite: () => `${url.pathname}${url.search}` }];
+}));
+
+function newsFeedGuard(): Plugin {
+  const configure = (server: Pick<ViteDevServer, 'middlewares'>) => {
+    server.middlewares.use((req, res, next) => {
+      const pathname = (req.url || '').split('?')[0];
+      if ((pathname === '/news-feed' || pathname.startsWith('/news-feed/'))
+        && (!Object.hasOwn(newsFeedProxy, pathname) || !['GET', 'HEAD'].includes(req.method || ''))) {
+        res.writeHead(404); res.end(); return;
+      }
+      next();
+    });
+  };
+  return { name: 'fixed-news-feed-boundary', configureServer: configure, configurePreviewServer: configure };
+}
 
 const f1ApiProxy = {
   '/f1-api': {
@@ -301,6 +325,7 @@ export default defineConfig({
   plugins: [
     react(),
     privateDataGuard(),
+    newsFeedGuard(),
     createCriticalCssPlugin(),
     createServiceWorkerPlugin(),
     createReleaseIdentityPlugin(),
@@ -367,10 +392,10 @@ export default defineConfig({
   server: {
     port: 3000,
     open: false,
-    proxy: f1ApiProxy,
+    proxy: { ...f1ApiProxy, ...newsFeedProxy },
   },
   preview: {
-    proxy: f1ApiProxy,
+    proxy: { ...f1ApiProxy, ...newsFeedProxy },
   },
   test: {
     environment: 'node',

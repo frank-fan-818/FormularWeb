@@ -89,8 +89,6 @@ const Circuits = () => {
     <div className="list-page-container circuit-atlas-page">
       <DocumentHead title="赛道列表 — F1 Dashboard" description="F1赛道列表，查看各赛道信息和数据统计" />
       <ProductMasthead
-        index="05"
-        eyebrow={`${currentSeason} / CIRCUIT ATLAS`}
         title={<>TRACK<br />ENGINEERING</>}
         metrics={[
           { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--', detail: `${currentSeason} CALENDAR` },
@@ -106,7 +104,7 @@ const Circuits = () => {
         <div className="circuit-atlas-empty">当前赛季暂无赛道数据。</div>
       ) : (
         <>
-        <ProductSectionHeader index="01" eyebrow="CALENDAR MAP" title="赛道列表" />
+        <ProductSectionHeader title="赛道列表" />
         <div className="circuit-atlas-grid">
           {circuits.map((circuit) => (
             <Card

@@ -34,7 +34,6 @@ const ResetPassword = () => {
 
   return (
     <AuthCard
-      eyebrow="SECURE RECOVERY"
       title="设置新密码"
       intro="重置链接验证成功后，为账号设置一个新的安全密码。"
       footer={<span><Link to="/login">返回登录</Link></span>}

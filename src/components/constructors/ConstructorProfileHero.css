@@ -5,8 +5,8 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   align-items: center;
   gap: var(--space-5);
-  min-height: 420px;
-  padding: var(--space-7);
+  min-height: 340px;
+  padding: var(--space-6);
   overflow: hidden;
   border: 0;
   border-top: 4px solid var(--team-profile-accent);
@@ -43,7 +43,6 @@
 }
 
 .team-profile-copy { position: relative; z-index: 2; min-width: 0; }
-.team-profile-eyebrow { margin-bottom: var(--space-5); font-size: var(--text-xs); font-weight: var(--font-semibold); color: color-mix(in srgb, var(--surface-dark-text) 68%, transparent); letter-spacing: 0.1em; }
 .team-profile-kicker { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); font-size: var(--text-xs); font-weight: var(--font-semibold); color: color-mix(in srgb, var(--surface-dark-text) 80%, transparent); letter-spacing: 0.06em; }
 .constructor-profile-name.team-profile-name { margin: 0; color: var(--surface-dark-text); font: var(--font-bold) clamp(38px, 5vw, 68px)/1.12 var(--font-display); overflow-wrap: anywhere; letter-spacing: var(--tracking-normal); }
 .constructor-profile-summary.team-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-5); margin: var(--space-5) 0 0; font-size: var(--text-sm); line-height: var(--leading-normal); }
@@ -65,6 +64,5 @@
   .constructor-profile-name.team-profile-name { font-size: clamp(36px, 9vw, 56px); }
   .team-profile-art { position: relative; inset: auto; width: 100%; min-height: 120px; padding: var(--space-2) 0 0; }
   .team-profile-watermark { top: auto; bottom: var(--space-5); font-size: clamp(100px, 35vw, 200px); }
-  .team-profile-eyebrow { margin-bottom: var(--space-4); }
   .team-profile-art.is-fallback { min-height: 180px; }
 }

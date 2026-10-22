@@ -2,20 +2,18 @@ import type { ReactNode } from 'react';
 import { useAuthEntryPaint } from '@/hooks/useAuthEntryPaint';
 
 interface AuthCardProps {
-  eyebrow: string;
   title: string;
   intro: string;
   children: ReactNode;
   footer?: ReactNode;
 }
 
-export const AuthCard = ({ eyebrow, title, intro, children, footer }: AuthCardProps) => {
+export const AuthCard = ({ title, intro, children, footer }: AuthCardProps) => {
   useAuthEntryPaint();
   return (
   <div className="auth-card">
     <div className="auth-card__body">
       <header className="auth-card__header">
-        <span className="auth-card__eyebrow">{eyebrow}</span>
         <h2>{title}</h2>
         <p>{intro}</p>
       </header>

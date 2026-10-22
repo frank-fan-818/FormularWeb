@@ -368,7 +368,6 @@ const RaceAnalysis = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          eyebrow="RACE ANALYSIS"
           title="比赛解读"
         />
         {officialRaceClassification}
@@ -393,7 +392,6 @@ const RaceAnalysis = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          eyebrow="RACE ANALYSIS"
           title="比赛解读"
         />
         {officialRaceClassification}
@@ -418,7 +416,6 @@ const RaceAnalysis = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        eyebrow="RACE ANALYSIS"
         title="比赛解读"
       />
 

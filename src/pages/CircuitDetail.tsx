@@ -130,8 +130,6 @@ const CircuitDetail = () => {
       </Button>
 
       <ProductMasthead
-        index="05"
-        eyebrow={`${circuit.Location.country} / ${circuit.Location.locality}`}
         title={<>{circuit.circuitName}</>}
         accent="var(--race-control-apex)"
         aside={(
@@ -152,7 +150,7 @@ const CircuitDetail = () => {
         ]}
       />
 
-      <ProductSectionHeader index="01" eyebrow="TECHNICAL SHEET" title="赛道参数" />
+      <ProductSectionHeader title="赛道参数" />
       <div className="content-grid">
         <Card className="circuit-image-card">
           <div className="circuit-image-wrapper">

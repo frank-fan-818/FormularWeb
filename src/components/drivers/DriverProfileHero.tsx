@@ -26,7 +26,6 @@ export function DriverProfileHero({ driver, season, teamId, teamName, teamColor,
       aria-label={`${name} 车手档案`}
       style={{ '--driver-accent': teamColor } as CSSProperties}>
       <div className="driver-profile-copy">
-        <div className="driver-profile-eyebrow">{season ? `${season} / ` : ''}{archive ? 'DRIVER ARCHIVE / 车手历史' : 'DRIVER DOSSIER'}</div>
         <div className="driver-profile-kicker">
           <ConstructorLogo constructorId={teamId} size={20} onDark className="driver-profile-team-logo" />
           <span>{teamName || '-'}</span>
