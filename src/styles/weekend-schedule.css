@@ -1,0 +1,70 @@
+/* Shared compact schedule for the home page and race details. */
+.compact-weekend-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.compact-weekend-heading :is(h2, h3) {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.compact-weekend-heading > span { color: var(--text-secondary); font-size: var(--text-xs); }
+.compact-weekend-sessions { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.compact-weekend-session {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-secondary);
+  border-inline-start: 1px solid var(--border-secondary);
+  border-block-start: 2px solid transparent;
+}
+
+.compact-weekend-session:first-child { border-inline-start: 0; }
+.compact-weekend-session-heading,
+.compact-weekend-session-start {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.compact-weekend-session strong { color: var(--text-primary); font-size: var(--text-sm); }
+.compact-weekend-session time {
+  color: var(--text-primary);
+  font: var(--font-semibold) var(--text-lg)/1.4 var(--font-family);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: var(--tracking-normal);
+}
+
+.compact-weekend-session-date,
+.compact-weekend-session small { color: inherit; font-size: var(--text-xs); white-space: nowrap; }
+.compact-weekend-session-date { font-variant-numeric: lining-nums tabular-nums; }
+.compact-weekend-session.is-completed :is(strong, time) { color: inherit; }
+.compact-weekend-session:is(.is-next, .is-live) {
+  border-block-start-color: var(--f1-red);
+  background: color-mix(in srgb, var(--f1-red) 5%, transparent);
+}
+.compact-weekend-session:is(.is-next, .is-live) small { color: var(--f1-red-text); }
+
+@media (max-width: 768px) {
+  .compact-weekend-sessions { grid-template-columns: minmax(0, 1fr); }
+  .compact-weekend-session {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    border-inline-start: 2px solid transparent;
+    border-block-start: 1px solid var(--border-secondary);
+  }
+  .compact-weekend-session:first-child { border-inline-start: 2px solid transparent; border-block-start: 0; }
+  .compact-weekend-session:is(.is-next, .is-live) { border-inline-start-color: var(--f1-red); border-block-start-color: var(--border-secondary); }
+  .compact-weekend-session-start { justify-content: flex-end; }
+  .compact-weekend-session time { font-size: var(--text-base); }
+}

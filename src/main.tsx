@@ -5,6 +5,7 @@ import { initializeI18n } from '@/i18n';
 import App from '@/App';
 import './index.css';
 import '@/pages/Home.css';
+import '@/styles/weekend-schedule.css';
 import '@/styles/motion-system.css';
 
 await initializeI18n();

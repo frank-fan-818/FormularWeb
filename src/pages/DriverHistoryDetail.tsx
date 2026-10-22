@@ -161,7 +161,7 @@ const DriverHistoryDetail = () => {
               </span>
 
               <div>
-                <h1 className="history-title">
+                <h1 className="history-title" title={`${driver?.givenName || ''} ${driver?.familyName || ''}`.trim()}>
                   {driver?.givenName} {driver?.familyName}
                 </h1>
                 <p className="history-subtitle">

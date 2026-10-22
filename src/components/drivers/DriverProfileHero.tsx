@@ -30,8 +30,8 @@ export function DriverProfileHero({ driver, season, teamId, teamName, teamColor,
           <ConstructorLogo constructorId={teamId} size={20} onDark className="driver-profile-team-logo" />
           <span>{teamName || '-'}</span>
         </div>
-        <h1 className="driver-profile-name">
-          <span>{driver.givenName || '-'}</span>
+        <h1 className="driver-profile-name" title={name}>
+          <span>{driver.givenName || '-'}</span>{' '}
           <strong>{driver.familyName}</strong>
         </h1>
         <dl className="driver-profile-meta">

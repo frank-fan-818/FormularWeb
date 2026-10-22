@@ -8,7 +8,7 @@
   gap: var(--space-5);
   overflow: hidden;
   min-height: 0;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-6);
   border-top: 1px solid var(--surface-dark);
   border-bottom: 1px solid var(--border-primary);
   background:
@@ -53,7 +53,9 @@
   font-weight: 800;
   letter-spacing: var(--tracking-normal);
   line-height: 1.12;
-  text-wrap: balance;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .race-page-intro-aside {

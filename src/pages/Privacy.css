@@ -4,12 +4,14 @@
 }
 
 .privacy-page > header {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 
 .privacy-page h1 {
   margin: var(--space-2) 0 !important;
   font-family: var(--font-display);
+  font-size: clamp(var(--text-xl), 2.1vw, var(--text-3xl));
+  white-space: nowrap;
 }
 
 .privacy-page h2 {

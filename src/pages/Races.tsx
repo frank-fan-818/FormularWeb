@@ -61,7 +61,7 @@ const Races = () => {
     <div className="list-page-container races-calendar-page">
       <DocumentHead title="比赛列表 — F1 Dashboard" description="F1比赛日程列表，查看各站比赛信息" />
       <ProductMasthead
-        title={<>{currentSeason}<br />RACE CALENDAR</>}
+        title={`${currentSeason} RACE CALENDAR`}
         metrics={[
           { label: '\u8d5b\u5386', value: races.length || '--' },
           { label: '\u5df2\u5b8c\u6210', value: `${completedRaces.length}` },

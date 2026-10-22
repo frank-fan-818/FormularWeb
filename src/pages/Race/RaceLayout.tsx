@@ -143,7 +143,7 @@ const InnerLayout = () => {
             <span className="race-command-kicker">
               {raceInfo.season} 赛季 · 第 {raceInfo.round} 站
             </span>
-            <h1 id="race-command-title">
+            <h1 id="race-command-title" title={raceInfo.raceName}>
               <span>{raceInfo.raceName}</span>
             </h1>
             <p>

@@ -34,7 +34,7 @@ export function ConstructorProfileHero({ constructorId, name, nationality, seaso
           <ConstructorLogo key={constructorId} constructorId={constructorId} size={24} onDark />
           <span>FORMULA ONE TEAM</span>
         </div>
-        <h1 className="constructor-profile-name team-profile-name">{name || '-'}</h1>
+        <h1 className="constructor-profile-name team-profile-name" title={name}>{name || '-'}</h1>
         <dl className="team-profile-meta constructor-profile-summary">
           <div><dt>注册国籍</dt><dd className="team-profile-nationality">
             {flag && failedFlag !== flag ? <img src={flag} alt="" width={28} height={20}

@@ -103,7 +103,7 @@ const Drivers = () => {
     <div className="list-page-container drivers-lineup-page">
       <DocumentHead title="车手列表 — F1 Dashboard" description="F1车手列表，查看本赛季车手阵容和数据统计" />
       <ProductMasthead
-        title={<>THE<br />DRIVER GRID</>}
+        title="THE DRIVER GRID"
         metrics={[
           { label: '\u73b0\u5f79\u8f66\u624b', value: drivers.length || '--', detail: `${driverGroups.length} \u652f\u8f66\u961f` },
           { label: '\u79ef\u5206\u9886\u8dd1', value: drivers[0] ? `${drivers[0].givenName[0]}. ${drivers[0].familyName}` : '--', detail: drivers[0] ? `${drivers[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: drivers[0] ? getTeamColor(drivers[0].constructorId) : undefined },

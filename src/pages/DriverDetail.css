@@ -63,8 +63,8 @@
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: center;
-  min-height: 360px;
-  padding: var(--space-6);
+  min-height: 220px;
+  padding: var(--space-4);
   border-top: 4px solid var(--driver-accent);
   background: linear-gradient(110deg,
     color-mix(in srgb, var(--driver-accent) 26%, var(--surface-dark)) 0%,
@@ -104,7 +104,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
   color: var(--surface-dark-text);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
@@ -123,26 +123,27 @@
 .driver-profile-copy { position: relative; z-index: 2; min-width: 0; }
 
 .driver-profile-name {
-  display: grid;
-  gap: var(--space-2);
+  display: block;
   margin: 0;
   color: var(--surface-dark-text);
-  font-size: clamp(2.75rem, 5.5vw, 5rem);
+  font-size: clamp(var(--text-xl), 2.1vw, var(--text-3xl));
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: var(--font-display);
   letter-spacing: var(--tracking-normal);
 }
 
 .driver-profile-name span,
 .driver-profile-name strong {
-  display: block;
+  display: inline;
 }
 
 .driver-profile-name span {
-  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-size: inherit;
   font-weight: var(--font-medium);
-  font-family: var(--font-family);
+  font-family: inherit;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-normal);
   color: color-mix(in srgb, var(--surface-dark-text) 78%, transparent);
@@ -152,7 +153,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-5);
-  margin: var(--space-5) 0 0;
+  margin: var(--space-3) 0 0;
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
 }
@@ -493,12 +494,11 @@
   .driver-profile-hero {
     grid-template-columns: 1fr;
     min-height: 0;
-    padding: var(--space-5) var(--space-5) 0;
+    padding: var(--space-4) var(--space-4) 0;
   }
 
   .driver-profile-copy { width: 100%; }
-  .driver-profile-name { max-width: 100%; font-size: clamp(2.25rem, 11.5vw, 3rem); overflow-wrap: anywhere; }
-  .driver-profile-name span { font-size: 1.25rem; }
+  .driver-profile-name { max-width: 100%; font-size: clamp(var(--text-xl), 4.5vw, var(--text-2xl)); }
   .driver-profile-meta { max-width: 100%; }
 
   .driver-profile-number {
@@ -508,9 +508,9 @@
     font-size: clamp(12rem, 60vw, 20rem);
   }
 
-  .driver-profile-portrait { position: relative; inset: auto; width: 100%; height: 300px; margin-top: var(--space-2); }
+  .driver-profile-portrait { position: relative; inset: auto; width: 100%; height: 180px; margin-top: var(--space-2); }
   .driver-profile-portrait > img { height: 230%; }
-  .driver-profile-portrait.is-fallback { height: 220px; }
+  .driver-profile-portrait.is-fallback { height: 160px; }
 
   .driver-current-stat-grid {
     grid-template-columns: 1fr;

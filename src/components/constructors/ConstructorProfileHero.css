@@ -5,8 +5,8 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   align-items: center;
   gap: var(--space-5);
-  min-height: 340px;
-  padding: var(--space-6);
+  min-height: 220px;
+  padding: var(--space-4);
   overflow: hidden;
   border: 0;
   border-top: 4px solid var(--team-profile-accent);
@@ -43,9 +43,9 @@
 }
 
 .team-profile-copy { position: relative; z-index: 2; min-width: 0; }
-.team-profile-kicker { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); font-size: var(--text-xs); font-weight: var(--font-semibold); color: color-mix(in srgb, var(--surface-dark-text) 80%, transparent); letter-spacing: 0.06em; }
-.constructor-profile-name.team-profile-name { margin: 0; color: var(--surface-dark-text); font: var(--font-bold) clamp(38px, 5vw, 68px)/1.12 var(--font-display); overflow-wrap: anywhere; letter-spacing: var(--tracking-normal); }
-.constructor-profile-summary.team-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-5); margin: var(--space-5) 0 0; font-size: var(--text-sm); line-height: var(--leading-normal); }
+.team-profile-kicker { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); font-size: var(--text-xs); font-weight: var(--font-semibold); color: color-mix(in srgb, var(--surface-dark-text) 80%, transparent); letter-spacing: 0.06em; }
+.constructor-profile-name.team-profile-name { margin: 0; color: var(--surface-dark-text); font: var(--font-bold) clamp(var(--text-xl), 2.1vw, var(--text-3xl))/1.12 var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: var(--tracking-normal); }
+.constructor-profile-summary.team-profile-meta { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); margin: var(--space-3) 0 0; font-size: var(--text-sm); line-height: var(--leading-normal); }
 .team-profile-meta > div { display: grid; gap: var(--space-1); }
 .team-profile-meta dt { font-size: var(--text-xs); color: color-mix(in srgb, var(--surface-dark-text) 65%, transparent); }
 .team-profile-meta dd { margin: 0; font-weight: var(--font-semibold); color: var(--surface-dark-text); }
@@ -60,8 +60,8 @@
 .history-hero-card.team-profile-hero { border-radius: var(--radius-lg); }
 
 @media (max-width: 768px) {
-  .constructor-profile-hero.team-profile-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: var(--space-5); }
-  .constructor-profile-name.team-profile-name { font-size: clamp(36px, 9vw, 56px); }
+  .constructor-profile-hero.team-profile-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: var(--space-4); }
+  .constructor-profile-name.team-profile-name { font-size: clamp(var(--text-xl), 4.5vw, var(--text-2xl)); }
   .team-profile-art { position: relative; inset: auto; width: 100%; min-height: 120px; padding: var(--space-2) 0 0; }
   .team-profile-watermark { top: auto; bottom: var(--space-5); font-size: clamp(100px, 35vw, 200px); }
   .team-profile-art.is-fallback { min-height: 180px; }

@@ -190,7 +190,7 @@ const Seasons = () => {
     <div className="list-page-container season-standings-page">
       <DocumentHead title="季节列表 — F1 Dashboard" description="F1赛季积分榜，查看车手和车队排名" />
       <ProductMasthead
-        title={<>{currentSeason}<br />STANDINGS</>}
+        title={`${currentSeason} STANDINGS`}
       />
 
       <section className="championship-facts" aria-label="赛季概览">
