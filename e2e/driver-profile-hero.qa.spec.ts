@@ -70,7 +70,7 @@ test('driver hero uses the driver nationality and the correct portrait for anoth
   const hero = page.locator('.driver-profile-hero');
   await expect(hero.locator('.driver-profile-flag')).toHaveAttribute('src', '/images/flags/mc.svg');
   await expect(hero.locator('.driver-profile-portrait > img')).toHaveAttribute('src', '/images/drivers/portraits/leclerc.webp');
-  await expect(hero.getByRole('heading')).toHaveText('CharlesLeclerc');
+  await expect(hero.getByRole('heading')).toHaveText('Charles Leclerc');
 });
 
 test('driver hero falls back cleanly for missing portraits and unknown nationality', async ({ page }) => {

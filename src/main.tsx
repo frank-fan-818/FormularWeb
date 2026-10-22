@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Analytics } from '@vercel/analytics/react';
 import { initializeI18n } from '@/i18n';
 import App from '@/App';
 import './index.css';
@@ -13,9 +12,18 @@ await initializeI18n();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
-    {import.meta.env.PROD && <Analytics />}
   </React.StrictMode>,
 );
+
+// Keep optional analytics outside the critical application bundle. The SDK
+// starts page-view tracking as soon as it loads, including SPA navigation.
+if (import.meta.env.PROD) {
+  void import('@vercel/analytics')
+    .then(({ inject }) => inject({ mode: 'production', framework: 'react' }))
+    .catch(() => {
+      // Analytics must not interrupt navigation when its chunk is unavailable.
+    });
+}
 
 const startPerformanceMonitoring = () => {
   void import('@/utils/performance')
