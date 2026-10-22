@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { collectUiGlyphs } from './ui-font-glyphs.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const directory = path.join(root, 'public', 'fonts');
@@ -22,38 +23,19 @@ for (const family of ['sans', 'sans-condensed', 'sans-sc', 'mono']) {
   if (!license.includes('SIL OPEN FONT LICENSE')) failures.push(`Missing OFL license: ${family}`);
 }
 const points = new Set(manifest.uiCodepoints);
-async function verifySource(directory) {
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const filename = path.join(directory, entry.name);
-    if (entry.isDirectory()) await verifySource(filename);
-    else if (/\.(?:ts|tsx|json)$/.test(entry.name) && !entry.name.includes('.test.')) {
-      const source = await readFile(filename, 'utf8');
-      const decoded = source + [...source.matchAll(/\\u([0-9a-f]{4})/gi)].map(match => String.fromCodePoint(parseInt(match[1], 16))).join('');
-      for (const char of decoded) {
-        const point = char.codePointAt(0);
-        if ((point >= 0x2e80 && point <= 0x9fff || point >= 0xff00 && point <= 0xffef) && !points.has(point)) {
-          failures.push(`UI font missing U+${point.toString(16).toUpperCase()} in ${path.relative(root, filename)}`);
-        }
-      }
-    }
-  }
+const required = await collectUiGlyphs(root);
+for (const point of required.uiCodepoints) {
+  if (!points.has(point)) failures.push(`UI font missing U+${point.toString(16).toUpperCase()} in ${[...required.origins.get(point)].join(', ')}`);
 }
-await verifySource(path.join(root, 'src'));
+const corePoints = new Set(manifest.coreCodepoints || []);
+for (const point of required.coreCodepoints) {
+  if (!corePoints.has(point)) failures.push(`Account/core font missing U+${point.toString(16).toUpperCase()}`);
+}
 const titlePoints = new Set(manifest.accountTitleCodepoints);
-const titleCopy = [];
-for (const filename of ['Register.tsx', 'ForgotPassword.tsx', 'ResetPassword.tsx']) {
-  const source = await readFile(path.join(root, 'src', 'pages', filename), 'utf8');
-  titleCopy.push(...[...source.matchAll(/title="([^"]+)"/g)].map(match => match[1]));
-}
-const login = await readFile(path.join(root, 'src', 'pages', 'Login.tsx'), 'utf8');
-for (const match of login.matchAll(/title=\{session \? '([^']+)' : '([^']+)'\}/g)) titleCopy.push(match[1], match[2]);
-for (const char of titleCopy.join('')) {
-  const point = char.codePointAt(0);
-  if (point >= 0x2e80 && point <= 0x9fff && !titlePoints.has(point)) failures.push('Account title glyphs changed; regenerate fonts');
-}
+for (const point of required.accountTitleCodepoints) if (!titlePoints.has(point)) failures.push('Account title glyphs changed; regenerate fonts');
 const css = await readFile(path.join(root, 'src', 'styles', 'fonts.css'), 'utf8');
 if (/https?:/i.test(css) || [...css.matchAll(/font-display:\s*([^;}]+)/gi)].some(match => match[1].trim() !== 'optional')) failures.push('UI fonts must be self-hosted and use optional loading');
 if ([...css.matchAll(/@font-face\s*\{/g)].length !== manifest.assets.length
     || manifest.assets.some(asset => !css.includes(`/fonts/${asset.file}`))) failures.push('Font CSS must match every declared font asset');
-if (failures.length) throw new Error([...new Set(failures)].join('\n'));
+if (failures.length) throw new Error([...new Set(failures), 'Run npm run fonts:sync to update generated font assets, then rerun verification.'].join('\n'));
 process.stdout.write(`Font verification passed: ${manifest.assets.length} WOFF2 assets, ${points.size} UI codepoints, OFL licenses and SHA-256 hashes.\n`);

@@ -26,8 +26,32 @@ and SHA-256 hashes. `npm run fonts:verify` checks source UI glyphs, asset hashes
 WOFF2 headers, same-origin delivery and the bundled OFL licenses. Run it after
 copy changes. New Chinese glyphs require regeneration; do not bypass the gate.
 
-Regeneration requires Python with fontTools 4.51.0 and Brotli. Download the
-official packages to `.cache/release-fonts/` without installing their scripts:
+Ordinary UI-copy changes are synchronized automatically by `npm run build`
+(the `prebuild` hook), by `quality:check`, and before CI's font verification.
+Use `npm run fonts:sync` to synchronize explicitly. With no missing UI/core/title
+glyphs it exits without Python, network access, or changing any files.
+
+When new glyphs are needed, the synchronizer uses the complete official regular
+Chinese font in `scripts/font-sources/` as a **build-only** input. It is outside
+`public/` and never ships to the browser. Python 3.10+ is required only for this
+case; set `PYTHON` to its executable if necessary. Hash-locked fontTools 4.51.0
+and Brotli 1.2.0 wheels are cached under `.cache/ui-font-tools`. The generator
+checks the actual cmap and updates the changed WOFF2, CSS range and manifest
+together. It preserves unchanged assets and uses the original font timestamp
+for deterministic regeneration. Commit the resulting generated files with the
+copy change. CI can also synchronize a copy-only change from a clean checkout.
+
+`npm run fonts:verify` stays read-only and strict: it tests the shared glyph
+collector and CI/build ordering, then checks source coverage, core/title coverage,
+font hashes, file declarations, licensing and optional loading. A damaged font
+still fails verification. Missing glyph diagnostics include the repair command.
+`npm run fonts:test:integration` exercises a copy-only npm build in an isolated
+directory, including real glyph generation, no-op rebuilding and corrupt-asset
+rejection. It requires Python and the pinned subset tools.
+
+The older `build-ui-fonts.py` is retained for deliberately rebuilding **all**
+families (for example, an upstream Latin-font update). That manual operation
+requires the full official package archives:
 
 ```powershell
 New-Item -ItemType Directory -Path .cache/release-fonts -Force | Out-Null
