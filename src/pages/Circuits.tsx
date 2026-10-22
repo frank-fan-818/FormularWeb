@@ -10,7 +10,7 @@ import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import { getCircuitDetailsSync } from '@/utils/circuitData';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
-import type { Circuit, Race } from '@/types';
+import type { Circuit } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
@@ -89,11 +89,9 @@ const Circuits = () => {
     <div className="list-page-container circuit-atlas-page">
       <DocumentHead title="赛道列表 — F1 Dashboard" description="F1赛道列表，查看各赛道信息和数据统计" />
       <ProductMasthead
-        title={<>TRACK<br />ENGINEERING</>}
+        title="TRACK ENGINEERING"
         metrics={[
-          { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--', detail: `${currentSeason} CALENDAR` },
-          { label: '\u5df2\u8865\u5145\u5de5\u7a0b\u6570\u636e', value: circuits.filter((circuit) => circuit.length).length || '--', detail: '\u957f\u5ea6 / \u5f2f\u9053 / \u7eaa\u5f55' },
-          { label: '\u51b2\u523a\u5468\u672b', value: races.filter((race) => Boolean((race as Race & { Sprint?: unknown }).Sprint)).length || '0', detail: '\u7279\u6b8a\u8d5b\u5236' },
+          { label: '\u672c\u5b63\u8d5b\u9053', value: circuits.length || '--' },
         ]}
       />
       {loading ? (

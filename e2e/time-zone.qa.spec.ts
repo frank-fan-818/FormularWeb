@@ -37,7 +37,7 @@ async function chooseOffset(page: Page, label: string, accessibleName = '时区'
   await page.locator('.ant-select-dropdown').getByText(label, { exact: true }).click();
 }
 
-test('time zone setting updates race times and day groups across navigation and reloads', async ({ page }, info) => {
+test('time zone setting updates race times and session dates across navigation and reloads', async ({ page }, info) => {
   const errors: string[] = [];
   const failures: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -50,7 +50,7 @@ test('time zone setting updates race times and day groups across navigation and 
   const start = page.locator('.race-command-start');
   await expect(start).toContainText('2026-11-02 04:00 UTC+8');
   await expect(page.locator('.weekend-time-toggle')).toContainText('UTC+8');
-  await expect(page.locator('.weekend-schedule-day')).toHaveCount(2);
+  await expect(page.locator('.weekend-brief .compact-weekend-session-date')).toHaveText(['11-01', '11-02', '11-02', '11-02']);
 
   await page.goto('/settings');
   await chooseOffset(page, 'UTC+0');
@@ -61,7 +61,7 @@ test('time zone setting updates race times and day groups across navigation and 
   await page.goto('/races/1/info?season=2026');
   await expect(start).toContainText('2026-11-01 20:00 UTC+0');
   await expect(page.locator('.weekend-time-toggle')).toContainText('UTC+0');
-  await expect(page.locator('.weekend-schedule-day')).toHaveCount(1);
+  await expect(page.locator('.weekend-brief .compact-weekend-session-date')).toHaveText(['11-01', '11-01', '11-01', '11-01']);
   await expect(page.locator('.weekend-session-time')).toHaveText(['15:30', '18:00', '19:00', '20:00']);
   await page.reload();
   await expect(start).toContainText('2026-11-01 20:00 UTC+0');

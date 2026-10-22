@@ -11,7 +11,7 @@ export function RacePageIntro({
   return (
     <header className="race-page-intro">
       <div className="race-page-intro-copy">
-        <h2>{title}</h2>
+        <h2 title={title}>{title}</h2>
       </div>
       {aside ? <div className="race-page-intro-aside">{aside}</div> : null}
     </header>

@@ -38,6 +38,10 @@ test('guest home preserves hierarchy and readable contrast in both themes', asyn
     await expect(page.locator('html')).toHaveClass(new RegExp(`${theme}-mode`));
     const surface = page.locator('.home-command-surface');
     await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
+    const titleLine = await surface.locator('h1').evaluate(title => ({
+      height: title.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(title).lineHeight),
+    }));
+    expect(titleLine.height).toBeLessThanOrEqual(titleLine.lineHeight + 1);
     const sessions = surface.locator('.home-weekend-session');
     await expect(sessions).toHaveCount(5);
     await expect(sessions.first().locator('time')).toHaveCSS('font-variant-numeric', 'lining-nums tabular-nums');

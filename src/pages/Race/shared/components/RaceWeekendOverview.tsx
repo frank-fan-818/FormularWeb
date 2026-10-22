@@ -1,5 +1,4 @@
 import { Tag } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from '@/i18n';
 import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import type { getCircuitEnhancement } from '@/utils/circuitEnhancements';
@@ -21,53 +20,40 @@ export function RaceWeekendOverview({
   resultSessionKeys,
 }: RaceWeekendOverviewProps) {
   const { t } = useTranslation();
-  const { timeZoneLabel } = useRaceSchedule();
+  const { timeZoneLabel, formatSessionDateLabel } = useRaceSchedule();
+  const sessions = scheduleGroups.flatMap((group) => group.sessions);
   return (
     <section className="weekend-brief" aria-label={t('weekendSchedule')}>
-        {scheduleGroups.length ? (
-          <div className="weekend-schedule">
-            <div className="weekend-schedule-topbar">
-              <div>
-                <h3 className="weekend-schedule-eyebrow">{t('weekendSchedule')}</h3>
-                <span className="weekend-schedule-source">{t('scheduleSourceHint')}</span>
-              </div>
+        {sessions.length ? (
+          <div className="compact-weekend-schedule">
+            <div className="compact-weekend-heading">
+              <h3>{t('weekendSchedule')}</h3>
               <span className="weekend-time-toggle" aria-label={`${t('scheduleTimezone')} ${timeZoneLabel}`}>
-                <ClockCircleOutlined />
-                <strong>{t('scheduleTimezone')}</strong>
                 {timeZoneLabel}
               </span>
             </div>
-            <div className="weekend-schedule-days">
-              {scheduleGroups.map((group) => (
-                <section key={group.key} className="weekend-schedule-day">
-                  <div className="weekend-day-header">
-                    <span className="weekend-day-name">{group.dayLabel}</span>
-                    <span className="weekend-day-date">
-                      <CalendarOutlined />
-                      {group.dateLabel}
-                    </span>
+            <div className="compact-weekend-sessions">
+              {sessions.map((item) => (
+                <div key={item.key} className={`compact-weekend-session is-${item.state} ${item.isNext ? 'is-next' : ''}`}>
+                  <div className="compact-weekend-session-heading">
+                    <strong>{item.label}</strong>
+                    {resultSessionKeys.includes(item.key) || item.state === 'live' || item.state === 'completed' || item.isNext ? (
+                      <small>
+                        {resultSessionKeys.includes(item.key)
+                          ? '结果已收录'
+                          : item.state === 'live'
+                            ? '进行中'
+                            : item.state === 'completed'
+                              ? '已结束'
+                              : '下一场'}
+                      </small>
+                    ) : null}
                   </div>
-                  <div className="weekend-session-list">
-                    {group.sessions.map((item) => (
-                      <div key={item.key} className={`weekend-session weekend-session-${item.tone} is-${item.state} ${item.isNext ? 'is-next' : ''}`}>
-                        <span className="weekend-session-code">{item.code}</span>
-                        <span className="weekend-session-main">
-                          <strong>{item.label}</strong>
-                          <span>
-                            {resultSessionKeys.includes(item.key)
-                              ? '结果已收录'
-                              : item.state === 'live'
-                                ? '进行中'
-                                : item.state === 'completed'
-                                  ? '已结束'
-                                  : item.isNext ? '下一场' : '未开始'}
-                          </span>
-                        </span>
-                        <time className="weekend-session-time">{item.timeLabel}</time>
-                      </div>
-                    ))}
+                  <div className="compact-weekend-session-start">
+                    <span className="compact-weekend-session-date">{formatSessionDateLabel(item.session ?? {})}</span>
+                    <time className="weekend-session-time" dateTime={item.session?.date && item.session.time ? `${item.session.date}T${item.session.time}` : undefined}>{item.timeLabel}</time>
                   </div>
-                </section>
+                </div>
               ))}
             </div>
           </div>

@@ -32,10 +32,10 @@ const ProductMasthead = ({
   const style = accent ? ({ '--product-accent': accent } as CSSProperties) : undefined;
 
   return (
-    <header className={`product-masthead product-masthead--${tone} ${className}`.trim()} style={style}>
+    <header className={`product-masthead product-masthead--${tone} ${metrics.length === 1 ? 'product-masthead--single-metric' : ''} ${className}`.trim()} style={style}>
       <div className="product-masthead__grid-mark" aria-hidden="true" />
       <div className="product-masthead__main">
-        <h1 className="product-masthead__title">{title}</h1>
+        <h1 className="product-masthead__title" title={typeof title === 'string' ? title : undefined}>{title}</h1>
         {description ? <p className="product-masthead__description">{description}</p> : null}
         {actions ? <div className="product-masthead__actions">{actions}</div> : null}
       </div>

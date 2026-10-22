@@ -130,7 +130,7 @@ const CircuitDetail = () => {
       </Button>
 
       <ProductMasthead
-        title={<>{circuit.circuitName}</>}
+        title={circuit.circuitName}
         accent="var(--race-control-apex)"
         aside={(
           <div className="circuit-command-map">

@@ -153,7 +153,7 @@ const Home = () => {
 
         <div className="home-command-lead">
           <div>
-            <h1 id="home-command-title">{focusRace?.raceName || `${currentSeason} ${TEXT.seasonEnded}`}</h1>
+            <h1 id="home-command-title" title={focusRace?.raceName || `${currentSeason} ${TEXT.seasonEnded}`}>{focusRace?.raceName || `${currentSeason} ${TEXT.seasonEnded}`}</h1>
             {focusRace ? (
               <p>
                 <strong>{focusRace.Circuit.circuitName}</strong>
@@ -229,18 +229,23 @@ const Home = () => {
 
         {weekendTimeline.length > 0 ? (
           <div className="home-weekend-schedule" aria-label={TEXT.weekendSchedule}>
-            <div className="home-weekend-heading">
+            <div className="home-weekend-heading compact-weekend-heading">
               <h2>{TEXT.weekendSchedule}</h2>
               <span>{timeZoneLabel}</span>
             </div>
-            <div className="home-weekend-sessions">
+            <div className="home-weekend-sessions compact-weekend-sessions">
               {weekendTimeline.slice(0, 5).map((session) => (
-                <div key={session.key} className={`home-weekend-session is-${session.state} ${session.isNext ? 'is-next' : ''}`}>
-                  <span>{session.code}</span>
-                  <strong>{session.label}</strong>
-                  <time dateTime={session.session?.date && session.session.time ? `${session.session.date}T${session.session.time}` : undefined}>{session.timeLabel}</time>
-                  <small>{formatSessionDateLabel(session.session ?? {})}</small>
-                  <small>{session.state === 'live' ? TEXT.live : session.state === 'completed' ? '\u5df2\u7ed3\u675f' : session.isNext ? '\u4e0b\u4e00\u573a' : '\u672a\u5f00\u59cb'}</small>
+                <div key={session.key} className={`home-weekend-session compact-weekend-session is-${session.state} ${session.isNext ? 'is-next' : ''}`}>
+                  <div className="compact-weekend-session-heading">
+                    <strong>{session.label}</strong>
+                    {session.state === 'live' || session.state === 'completed' || session.isNext ? (
+                      <small>{session.state === 'live' ? TEXT.live : session.state === 'completed' ? '\u5df2\u7ed3\u675f' : '\u4e0b\u4e00\u573a'}</small>
+                    ) : null}
+                  </div>
+                  <div className="compact-weekend-session-start">
+                    <span className="compact-weekend-session-date">{formatSessionDateLabel(session.session ?? {})}</span>
+                    <time dateTime={session.session?.date && session.session.time ? `${session.session.date}T${session.session.time}` : undefined}>{session.timeLabel}</time>
+                  </div>
                 </div>
               ))}
             </div>

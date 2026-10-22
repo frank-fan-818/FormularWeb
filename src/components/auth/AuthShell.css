@@ -146,13 +146,14 @@
 }
 .auth-card:hover { transform: none !important; }
 .auth-card__body { padding: clamp(28px, 4vw, 44px); }
-.auth-card__header { margin-bottom: 30px; }
+.auth-card__header { margin-bottom: var(--space-4); }
 .auth-card__header h2 {
   margin: 0 0 var(--space-2);
   font-family: var(--font-account-display);
-  font-size: clamp(30px, 3vw, 40px);
+  font-size: clamp(var(--text-xl), 2.1vw, var(--text-3xl));
   line-height: 1;
   letter-spacing: var(--tracking-normal);
+  white-space: nowrap;
 }
 .auth-card__header p { margin: 0; font-size: 14px; line-height: 1.7; }
 .auth-card .ant-form-item { margin-bottom: 20px; }
@@ -306,7 +307,7 @@
   .auth-center__panel { margin: auto; }
   .auth-card { border-radius: var(--radius-xl) !important; box-shadow: var(--shadow-md) !important; }
   .auth-card__body { padding: 28px 22px; }
-  .auth-card__header { margin-bottom: 24px; }
+  .auth-card__header { margin-bottom: var(--space-4); }
   .auth-center__footer { margin-top: 26px; flex-wrap: wrap; justify-content: center; }
   .auth-center__footer > span { flex-basis: 100%; text-align: center; }
 }

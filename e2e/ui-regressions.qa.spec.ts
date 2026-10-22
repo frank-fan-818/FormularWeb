@@ -234,14 +234,33 @@ test('page mastheads follow the active theme and use consistent typography', asy
         await expect(header).toHaveCSS('background-image', 'none');
         await expect(header.locator('h1')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(226, 232, 240)');
       }
+      const titleLine = await header.locator('h1').evaluate(title => ({
+        height: title.getBoundingClientRect().height,
+        lineHeight: parseFloat(getComputedStyle(title).lineHeight),
+      }));
+      await expect(header.locator('h1')).toHaveCSS('white-space', 'nowrap');
+      // Inline first/last-name fonts can expand a single line's baseline box.
+      expect(titleLine.height).toBeLessThan(titleLine.lineHeight * 1.5);
       if (selector === '.product-masthead') {
         await expect(header.locator('.product-masthead__eyebrow, .product-masthead__index')).toHaveCount(0);
         const spacing = await header.evaluate(element => ({
           padding: parseFloat(getComputedStyle(element).paddingTop),
           titleSize: parseFloat(getComputedStyle(element.querySelector('h1')!).fontSize),
+          titleHeight: element.querySelector('h1')!.getBoundingClientRect().height,
+          titleLineHeight: parseFloat(getComputedStyle(element.querySelector('h1')!).lineHeight),
         }));
-        expect(spacing.padding).toBeLessThanOrEqual(16);
-        expect(spacing.titleSize).toBeLessThanOrEqual(42);
+        expect(spacing.padding).toBeLessThanOrEqual(12);
+        expect(spacing.titleSize).toBeLessThanOrEqual(32);
+        expect(spacing.titleHeight).toBeLessThanOrEqual(spacing.titleLineHeight + 1);
+        await expect(header.locator('h1 br')).toHaveCount(0);
+        if (['/seasons', '/races', '/drivers', '/constructors', '/circuits', '/settings'].includes(path)) {
+          expect(await header.locator('h1').evaluate(title => title.scrollWidth - title.clientWidth)).toBeLessThanOrEqual(1);
+        }
+        if (path === '/circuits') {
+          await expect(header.locator('.product-metric')).toHaveCount(1);
+          await expect(header.locator('.product-metric__label')).toHaveText('本季赛道');
+          await expect(header).not.toContainText(/已补充工程数据|冲刺周末/);
+        }
         const readable = await header.evaluate(element => {
           const luminance = (color: string) => {
             const channels = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
@@ -291,12 +310,13 @@ test('profile typography keeps names separated and metadata readable', async ({ 
       await expect(name.locator('strong')).toHaveText(driver.familyName);
       const first = (await name.locator('span').boundingBox())!;
       const last = (await name.locator('strong').boundingBox())!;
-      expect(last.y - (first.y + first.height)).toBeGreaterThanOrEqual(7);
+      expect(Math.abs(last.y - first.y)).toBeLessThanOrEqual(3);
+      expect(last.x - (first.x + first.width)).toBeGreaterThan(0);
       const meta = page.locator('.driver-profile-meta');
       await expect(meta.locator('dt')).toHaveCount(4);
       await expect(meta.locator('dd')).toHaveText([driver.nationality, `#${driver.permanentNumber}`, driver.code, '2026']);
       await expect(meta.locator('.ant-tag')).toHaveCount(0);
-      expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      await expect(name).toHaveAttribute('title', `${driver.givenName} ${driver.familyName}`);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
       if (index === 0) await page.locator('.driver-profile-hero').screenshot({
         path: `artifacts/browser-qa/screenshots/typography-driver-${theme}-${info.project.name}.png`,
@@ -306,8 +326,9 @@ test('profile typography keeps names separated and metadata readable', async ({ 
       await page.goto(`/constructors/${constructor.constructorId}`);
       const name = page.locator('.constructor-profile-name');
       await expect(name).toHaveText(constructor.name);
+      await expect(name).toHaveAttribute('title', constructor.name);
       await expect(name).toHaveCSS('letter-spacing', /^(normal|0px)$/);
-      expect(await name.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      await expect(name).toHaveCSS('white-space', 'nowrap');
       await expect(page.locator('.constructor-profile-summary')).toContainText('2026');
       await expect(page.locator('.constructor-profile-hero')).toHaveCSS('background-image', /linear-gradient/);
       await expect(page.locator('.constructor-profile-hero h1')).toHaveCSS('color', 'rgb(255, 255, 255)');

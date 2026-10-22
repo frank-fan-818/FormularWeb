@@ -78,7 +78,7 @@ const Constructors = () => {
     <div className="list-page-container constructors-page">
       <DocumentHead title="车队列表 — F1 Dashboard" description="F1车队列表，查看本赛季车队阵容和数据统计" />
       <ProductMasthead
-        title={<>THE<br />CONSTRUCTORS</>}
+        title="THE CONSTRUCTORS"
         metrics={[
           { label: '\u53c2\u8d5b\u8f66\u961f', value: constructors.length || '--', detail: `${currentSeason} GRID` },
           { label: '\u79ef\u5206\u9886\u8dd1', value: constructors[0]?.name || '--', detail: constructors[0] ? `${constructors[0].points} PTS` : '\u6b63\u5728\u8bfb\u53d6', accent: constructors[0] ? getTeamColor(constructors[0].constructorId) : undefined },

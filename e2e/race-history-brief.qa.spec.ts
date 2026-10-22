@@ -140,17 +140,31 @@ test('history brief explains missing results and unknown status frequencies', as
 
 test('weekend schedule uses one surface with readable circuit facts', async ({ page }, testInfo) => {
   await installHistoryFixtures(page);
-  await page.goto('/races/13/info?season=2026');
-  const panel = page.locator('.weekend-brief');
-  await expect(panel.locator('.weekend-session')).toHaveCount(5);
-  await expect(panel.getByRole('heading', { name: '周末时间表' })).toHaveCount(1);
-  await expect(panel.locator('.weekend-circuit-strip')).toContainText('4L / 7R');
-  await expect(panel.locator('.ant-card')).toHaveCount(0);
-  for (const item of await panel.locator('.weekend-session').all()) {
-    expect(await item.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  const errors: string[] = [];
+  const failures: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error' && !message.text().includes('404')) errors.push(message.text()); });
+  page.on('requestfailed', request => { if (request.failure()?.errorText !== 'net::ERR_ABORTED') failures.push(request.url()); });
+  for (const theme of ['light', 'dark']) {
+    await page.addInitScript(theme => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+      version: 3, state: { currentSeason: '2026', theme, sidebarCollapsed: false, features: {} },
+    })), theme);
+    await page.goto('/races/13/info?season=2026');
+    const panel = page.locator('.weekend-brief');
+    await expect(page.locator('html')).toHaveClass(new RegExp(`${theme}-mode`));
+    await expect(panel.locator('.compact-weekend-session')).toHaveCount(5);
+    await expect(panel.getByRole('heading', { name: '周末时间表' })).toHaveCount(1);
+    await expect(panel.locator('.weekend-circuit-strip')).toContainText('4L / 7R');
+    await expect(panel.locator('.ant-card')).toHaveCount(0);
+    await expect(panel.locator('.compact-weekend-sessions')).not.toContainText(/周[一二三四五六日天]|未开始/);
+    for (const item of await panel.locator('.compact-weekend-session').all()) {
+      expect(await item.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/weekend-brief-${theme}-${testInfo.project.name}.png` });
   }
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-  await panel.screenshot({ style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }', path: `artifacts/browser-qa/screenshots/weekend-brief-${testInfo.project.name}.png` });
+  expect(errors).toEqual([]);
+  expect(failures).toEqual([]);
 });
 
 test('weather metrics remain readable in the shared weekend style', async ({ page }, testInfo) => {
