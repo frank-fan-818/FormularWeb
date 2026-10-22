@@ -53,6 +53,14 @@ supabase/.temp/
 # Misc
 *.log
 
+# Retired local references (backups live under ignored artifacts/).
+/f1db.zip
+/import-f1db.ts
+/IMAGES_GUIDE.md
+/第6周.txt
+/第7周.txt
+/第8周.txt
+
 # Trae project rules and skills are shared; other Trae IDE state stays local.
 .trae/*
 !.trae/rules/

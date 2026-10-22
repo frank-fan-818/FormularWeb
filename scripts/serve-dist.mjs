@@ -43,6 +43,12 @@ if (!existsSync(resolve(distRoot, 'index.html'))) {
 
 const server = createServer(async (request, response) => {
   const pathname = decodeURIComponent(new URL(request.url || '/', `http://${host}`).pathname);
+  // Vercel serves this script in production. Local QA must not send real visits.
+  if (pathname === '/_vercel/insights/script.js') {
+    response.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+    response.end('/* Web Analytics is disabled in local QA. */');
+    return;
+  }
   if (pathname === '/news-feed' || pathname.startsWith('/news-feed/')) {
     const source = pathname.slice('/news-feed/'.length);
     if (!Object.hasOwn(newsFeeds, source) || !['GET', 'HEAD'].includes(request.method || '')) {
