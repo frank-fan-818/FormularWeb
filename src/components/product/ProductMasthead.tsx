@@ -9,8 +9,6 @@ export interface ProductMetric {
 }
 
 interface ProductMastheadProps {
-  index?: string;
-  eyebrow: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   metrics?: ProductMetric[];
@@ -22,8 +20,6 @@ interface ProductMastheadProps {
 }
 
 const ProductMasthead = ({
-  index,
-  eyebrow,
   title,
   description,
   metrics = [],
@@ -39,10 +35,6 @@ const ProductMasthead = ({
     <header className={`product-masthead product-masthead--${tone} ${className}`.trim()} style={style}>
       <div className="product-masthead__grid-mark" aria-hidden="true" />
       <div className="product-masthead__main">
-        <div className="product-masthead__eyebrow">
-          {index ? <span className="product-masthead__index">{index}</span> : null}
-          <span>{eyebrow}</span>
-        </div>
         <h1 className="product-masthead__title">{title}</h1>
         {description ? <p className="product-masthead__description">{description}</p> : null}
         {actions ? <div className="product-masthead__actions">{actions}</div> : null}

@@ -51,6 +51,26 @@
       "dest": "https://api.jolpi.ca/ergast/f1/$1"
     },
     {
+      "src": "/news-feed/motorsport",
+      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
+      "dest": "https://www.motorsport.com/rss/f1/news/"
+    },
+    {
+      "src": "/news-feed/fia",
+      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
+      "dest": "https://www.fia.com/rss/press-release"
+    },
+    {
+      "src": "/news-feed/reddit",
+      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
+      "dest": "https://www.reddit.com/r/formula1/.rss?limit=50"
+    },
+    {
+      "src": "/news-feed(?:/.*)?",
+      "status": 404,
+      "headers": { "Cache-Control": "no-store" }
+    },
+    {
       "handle": "filesystem"
     },
     {

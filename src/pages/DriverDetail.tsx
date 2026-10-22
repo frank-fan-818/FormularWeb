@@ -698,8 +698,6 @@ const DriverDetail = () => {
         </div>
 
         <ProductSectionHeader
-          index="01"
-          eyebrow={`${currentSeason} / FORM`}
           title={TEXT.pointsTrend}
         />
         <Card

@@ -77,7 +77,7 @@ test('search opens the constructor archive with the same branded hero and preser
   await page.getByRole('listbox').getByRole('option').filter({ hasText: 'Mercedes' }).click();
   await expect(page).toHaveURL(/\/history\/constructors\/mercedes$/);
   const hero = page.locator('.team-profile-hero');
-  await expect(hero.locator('.team-profile-eyebrow')).toContainText('TEAM ARCHIVE');
+  await expect(hero.locator('.team-profile-eyebrow')).toHaveCount(0);
   await expect(hero.locator('.team-profile-car')).toBeVisible();
   await expect(hero.locator('.team-profile-meta')).toContainText('2025–2026');
   await expect(page.getByText('Season Timeline', { exact: true })).toBeVisible();
@@ -95,7 +95,8 @@ test('historical constructors retain their own identity without borrowing a Merc
   const hero = page.locator('.team-profile-hero');
   await expect(hero.getByRole('heading', { name: 'Alfa Romeo' })).toBeVisible();
   await expect(hero.locator('.team-profile-flag')).toHaveAttribute('src', '/images/flags/ch.svg');
-  await expect(hero.locator('.team-profile-eyebrow')).toContainText('2023 / TEAM ARCHIVE');
+  await expect(hero.locator('.team-profile-meta')).toContainText('2023');
+  await expect(hero.locator('.team-profile-eyebrow')).toHaveCount(0);
   await expect(hero.locator('.team-profile-car')).toHaveCount(0);
   await expect(hero.locator('img[src*="mercedes"]')).toHaveCount(0);
   await expect(hero.locator('.team-profile-logo-fallback')).toHaveText('AR');

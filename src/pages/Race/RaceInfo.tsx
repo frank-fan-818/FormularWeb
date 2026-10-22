@@ -102,7 +102,6 @@ const RaceInfo = () => {
         </button>
       </nav>
       <RacePageIntro
-        eyebrow="INTELLIGENCE"
         title="周末情报"
       />
       <RaceWeekendOverview

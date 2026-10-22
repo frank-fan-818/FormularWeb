@@ -30,7 +30,6 @@ export function ConstructorProfileHero({ constructorId, name, nationality, seaso
       aria-label={`${name} 车队档案`}
       style={{ '--team-profile-accent': getTeamColor(constructorId) } as CSSProperties}>
       <div className="team-profile-copy">
-        <div className="team-profile-eyebrow">{season ? `${season} / ` : ''}{archive ? 'TEAM ARCHIVE / 车队历史' : 'TEAM DOSSIER / 车队档案'}</div>
         <div className="team-profile-kicker">
           <ConstructorLogo key={constructorId} constructorId={constructorId} size={24} onDark />
           <span>FORMULA ONE TEAM</span>

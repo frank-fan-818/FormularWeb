@@ -285,7 +285,6 @@ const RaceResults = () => {
   return (
     <div className="race-results-page">
       <RacePageIntro
-        eyebrow="OVERVIEW"
         title="赛事概览"
       />
 

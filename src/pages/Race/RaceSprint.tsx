@@ -321,7 +321,6 @@ const RaceSprint = () => {
     return (
       <div className="fastf1-analytics-section">
         <RacePageIntro
-          eyebrow="SPRINT"
           title="冲刺周末"
         />
         <Card className="race-empty-command-card">
@@ -670,7 +669,6 @@ const RaceSprint = () => {
   return (
     <div className="fastf1-analytics-section">
       <RacePageIntro
-        eyebrow="SPRINT"
         title="冲刺周末"
       />
 

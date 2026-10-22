@@ -6,7 +6,6 @@ export default function AuthSessionPending() {
     <AuthFrame>
       <div className="auth-session-pending" role="status" aria-live="polite">
         <AuthCard
-          eyebrow="ACCOUNT ACCESS"
           title="正在确认登录状态"
           intro="正在连接你的账号，完成后将自动进入数据中心。"
         >

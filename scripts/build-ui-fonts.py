@@ -143,7 +143,7 @@ face('F1 UI Account Title', 'F1UIAccountTitle-400.woff2', 400, ranges(headline_p
 (ROOT / 'src' / 'styles' / 'fonts.css').write_text('\n'.join(CSS) + '\n', encoding='utf-8')
 (DEST / 'manifest.json').write_text(json.dumps({'source': 'https://github.com/IBM/plex',
     'license': 'OFL-1.1', 'packages': {f'@ibm/plex-{name}': version for name, version, *_ in packages}
-    | {'@ibm/plex-sans-sc': '1.1.0'}, 'uiCodepoints': sorted(all_chars),
+    | {'@ibm/plex-sans-sc': '1.1.0'}, 'uiCodepoints': sorted(all_chars), 'coreCodepoints': sorted(core_chars),
     'accountTitleCodepoints': sorted(headline_points), 'assets': ASSETS}, indent=2) + '\n', encoding='utf-8')
 print(f'Built {len(ASSETS)} fonts, {len(core_chars)} core / {len(all_chars)} UI codepoints, '
       f'{sum(asset["bytes"] for asset in ASSETS) / 1024:.1f} KiB total')

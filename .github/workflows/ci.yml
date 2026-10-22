@@ -97,11 +97,16 @@ jobs:
           cache: npm
       - name: Use pinned npm
         run: npm install --global npm@$NPM_VERSION
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.11'
       - run: npm ci --include=dev
       - run: npm run toolchain:verify
       - name: Verify local F1 driver and constructor media
         run: npm run media:check
       - run: npm run test:coverage
+      - name: Synchronize UI font subsets for current copy
+        run: npm run fonts:sync
       - run: npm run fonts:verify
       - name: Upload coverage report
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -125,6 +130,9 @@ jobs:
           cache: npm
       - name: Use pinned npm
         run: npm install --global npm@$NPM_VERSION
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.11'
       - name: Install dependencies
         run: npm ci --include=dev
       - name: Verify Lighthouse assertions
@@ -170,6 +178,9 @@ jobs:
           cache: npm
       - name: Use pinned npm
         run: npm install --global npm@$NPM_VERSION
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.11'
       - run: npm ci --include=dev
       - name: Install release browser matrix
         run: npx playwright install --with-deps chromium firefox webkit

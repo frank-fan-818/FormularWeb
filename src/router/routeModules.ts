@@ -1,5 +1,6 @@
 export const routeModules = {
   home: () => import('@/pages/Home'),
+  news: () => import('@/pages/News'),
   seasons: () => import('@/pages/Seasons'),
   races: () => import('@/pages/Races'),
   raceLayout: () => import('@/pages/Race/RaceLayout'),

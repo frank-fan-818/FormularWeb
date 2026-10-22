@@ -127,7 +127,7 @@ test('global search opens a driver archive with the same flag, portrait and tran
   await option.click();
   await expect(page).toHaveURL(new RegExp(`/history/drivers/${profiles[0].id}$`));
   const hero = page.locator('.driver-profile-hero');
-  await expect(hero.locator('.driver-profile-eyebrow')).toContainText('DRIVER ARCHIVE');
+  await expect(hero.locator('.driver-profile-eyebrow')).toHaveCount(0);
   await expect(hero.locator('.driver-profile-flag')).toHaveAttribute('src', '/images/flags/it.svg');
   await expect(hero.locator('.driver-profile-portrait > img')).toHaveAttribute('src', '/images/drivers/portraits/antonelli.webp');
   await expect(hero.locator('.driver-profile-team-logo')).toHaveAttribute('src', '/images/constructors/mercedes-white.webp');
@@ -152,7 +152,8 @@ test('an archive-only retired driver keeps the flag and team styling with the ac
   const hero = page.locator('.driver-profile-hero');
   await expect(hero.getByRole('heading', { name: 'Daniel Ricciardo' })).toBeVisible();
   await expect(hero.locator('.driver-profile-flag')).toHaveAttribute('src', '/images/flags/au.svg');
-  await expect(hero.locator('.driver-profile-eyebrow')).toContainText('2024 / DRIVER ARCHIVE');
+  await expect(hero.locator('.driver-profile-meta')).toContainText('2024');
+  await expect(hero.locator('.driver-profile-eyebrow')).toHaveCount(0);
   await expect(hero.locator('.driver-profile-avatar')).toHaveAttribute('src', '/images/drivers/ricciardo.png');
   await expect(hero.locator('.driver-profile-portrait.is-fallback')).toBeVisible();
   await expect(hero.locator('.driver-profile-kicker')).toContainText('Racing Bulls');

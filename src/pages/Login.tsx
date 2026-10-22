@@ -61,7 +61,6 @@ const Login = () => {
 
   return (
     <AuthCard
-      eyebrow="ACCOUNT ACCESS"
       title={session ? '账号已连接' : '欢迎回来'}
       intro={session ? '已解锁圈速、遥测、策略分析与预测。' : '登录，进入你的 F1 数据中心。'}
       footer={!session ? <span>还没有账号？<Link state={location.state} to="/register">创建账号</Link></span> : undefined}

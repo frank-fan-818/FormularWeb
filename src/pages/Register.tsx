@@ -45,7 +45,6 @@ const Register = () => {
 
   return (
     <AuthCard
-      eyebrow="CREATE ACCOUNT"
       title="创建账号"
       intro="使用邮箱注册。完成验证后即可登录。"
       footer={<span>已经有账号？<Link state={location.state} to="/login">返回登录</Link></span>}

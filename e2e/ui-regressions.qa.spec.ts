@@ -235,7 +235,13 @@ test('page mastheads follow the active theme and use consistent typography', asy
         await expect(header.locator('h1')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(226, 232, 240)');
       }
       if (selector === '.product-masthead') {
-        await expect(header.locator('.product-masthead__eyebrow')).toHaveCSS('font-family', /F1 UI Sans/);
+        await expect(header.locator('.product-masthead__eyebrow, .product-masthead__index')).toHaveCount(0);
+        const spacing = await header.evaluate(element => ({
+          padding: parseFloat(getComputedStyle(element).paddingTop),
+          titleSize: parseFloat(getComputedStyle(element.querySelector('h1')!).fontSize),
+        }));
+        expect(spacing.padding).toBeLessThanOrEqual(16);
+        expect(spacing.titleSize).toBeLessThanOrEqual(42);
         const readable = await header.evaluate(element => {
           const luminance = (color: string) => {
             const channels = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
