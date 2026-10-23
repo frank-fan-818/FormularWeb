@@ -285,21 +285,8 @@
     padding: 6px;
   }
 }
-.race-layout-skeleton {
-  display: grid;
-  gap: var(--space-4);
-}
 
-.race-skeleton-line,
-.race-skeleton-hero,
-.race-skeleton-tabs {
-  border-radius: var(--radius-panel);
-  background: var(--bg-tertiary);
-}
 
-.race-skeleton-line { width: 140px; height: 36px; }
-.race-skeleton-hero { min-height: 260px; }
-.race-skeleton-tabs { min-height: 56px; }
 
 .race-load-error {
   display: flex;

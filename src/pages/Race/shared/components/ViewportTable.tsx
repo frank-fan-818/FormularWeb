@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { TableProps } from 'antd';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 
 const DeferredAntTable = lazy(() => import('./DeferredAntTable'));
 
@@ -27,11 +28,11 @@ export default function ViewportTable<T extends object>(props: TableProps<T>) {
   return (
     <div ref={anchorRef} className="viewport-table-anchor">
       {visible ? (
-        <Suspense fallback={<div className="viewport-table-skeleton" role="status" aria-label="正在加载表格" />}>
+        <Suspense fallback={<TimingBeacon variant="inline" label="正在加载表格" />}>
           <DeferredAntTable {...(props as unknown as TableProps<object>)} />
         </Suspense>
       ) : (
-        <div className="viewport-table-skeleton" role="status" aria-label="表格将在接近视口时加载" />
+        <TimingBeacon variant="inline" label="表格将在接近视口时加载" />
       )}
     </div>
   );

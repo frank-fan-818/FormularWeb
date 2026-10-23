@@ -111,3 +111,32 @@ test('team profile recovers from an unavailable car image', async ({ page }) => 
   await expect(page.locator('.team-profile-logo-fallback')).toHaveAttribute('src', '/images/constructors/mercedes-white.webp');
   await expect(page.locator('.constructor-current-stat-grid')).toContainText('578');
 });
+
+test('team points and wins stay readable after a circuit page is visited', async ({ page }, info) => {
+  await installFixtures(page);
+  await page.addInitScript(() => localStorage.setItem('f1-dashboard-storage', JSON.stringify({
+    version: 3, state: { currentSeason: '2026', theme: 'light', sidebarCollapsed: false, features: {} },
+  })));
+  await page.goto('/constructors/mercedes');
+  const values = page.locator('.constructor-current-stat-grid .stat-value');
+  await expect(values).toHaveText(['P1', '578 分', '11']);
+  // Keep the SPA document alive so the circuit route's CSS remains loaded.
+  await page.evaluate(() => {
+    history.pushState(null, '', '/circuits');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page.locator('.circuit-atlas-page')).toBeVisible();
+  await page.goBack();
+  await expect(values).toHaveText(['P1', '578 分', '11']);
+  for (const [theme, color] of [['light-mode', 'rgb(34, 34, 34)'], ['dark-mode', 'rgb(226, 232, 240)']]) {
+    await page.evaluate(value => {
+      document.documentElement.classList.remove('light-mode', 'dark-mode');
+      document.documentElement.classList.add(value);
+    }, theme);
+    await expect(values.nth(1)).toHaveCSS('color', color);
+    await expect(values.nth(2)).toHaveCSS('color', color);
+    await page.locator('.constructor-profile-shell').screenshot({
+      path: `artifacts/browser-qa/screenshots/team-stats-${theme}-${info.project.name}.png`, animations: 'disabled',
+    });
+  }
+});

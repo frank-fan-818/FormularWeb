@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Empty, Spin, Tag } from 'antd';
+import { Button, Card, Empty, Tag } from 'antd';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -149,7 +150,7 @@ const DriverHistoryDetail = () => {
 
       {loading ? (
         <Card className="history-loading-card">
-          <Spin size="large" />
+          <TimingBeacon label="正在加载车手历史档案" />
         </Card>
       ) : (
         <>

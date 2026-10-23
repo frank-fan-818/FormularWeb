@@ -12,6 +12,8 @@ test('new literal and escaped Chinese copy is discovered without including test 
   try {
     await mkdir(path.join(root, 'src', 'pages'), { recursive: true });
     await mkdir(path.join(root, 'src', 'locales'), { recursive: true });
+    await mkdir(path.join(root, 'src', 'router'), { recursive: true });
+    await writeFile(path.join(root, 'src', 'router', 'index.tsx'), '<strong>正在加载页面</strong>');
     await writeFile(path.join(root, 'src', 'pages', 'Login.tsx'), 'title={session ? "欢迎" : "登录"}; t("accountLabel");');
     await writeFile(path.join(root, 'src', 'pages', 'Register.tsx'), 'title="创建账号"');
     await writeFile(path.join(root, 'src', 'locales', 'zh-CN.json'), '{"accountLabel":"新闻帖子","escaped":"\\u544a"}');
@@ -19,7 +21,7 @@ test('new literal and escaped Chinese copy is discovered without including test 
     await writeFile(path.join(root, 'src', 'fixture.test.ts'), 'this_test_only = "龘"');
     const glyphs = await collectUiGlyphs(root);
     for (const char of '新闻帖子告社欢迎登录创建账号') assert.ok(glyphs.uiCodepoints.includes(char.codePointAt(0)), char);
-    for (const char of '新闻帖子') assert.ok(glyphs.coreCodepoints.includes(char.codePointAt(0)), char);
+    for (const char of '新闻帖子正在加载页面') assert.ok(glyphs.coreCodepoints.includes(char.codePointAt(0)), char);
     for (const char of '欢迎登录创建账号') assert.ok(glyphs.accountTitleCodepoints.includes(char.codePointAt(0)), char);
     assert.ok(!glyphs.uiCodepoints.includes('龘'.codePointAt(0)));
   } finally { await rm(root, { recursive: true, force: true }); }

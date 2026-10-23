@@ -3,6 +3,7 @@ import { Button, Card } from 'antd';
 import { useRacePrediction } from '@/hooks/useRacePrediction';
 import { usePredictionDetails } from '@/hooks/usePredictionDetails';
 import { getTeamColor } from '@/utils/teamColors';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import {
   formatPredictionDriverId,
   formatPredictionProbability,
@@ -26,8 +27,8 @@ export function RaceWinnerPredictionPanel({ season, round }: RaceWinnerPredictio
       <div className="race-info-section-heading">
         <span id="race-prediction-heading">冠军预测</span>
       </div>
-      <Card className="race-weekend-card race-prediction-card" loading={loading}>
-        {error && !prediction ? (
+      <Card className="race-weekend-card race-prediction-card">
+        {loading ? <TimingBeacon variant="inline" label="正在加载冠军预测" /> : error && !prediction ? (
           <div className="race-prediction-state" role="alert">
             <strong>预测服务暂时不可用</strong>
             <span>历史数据和其他赛事模块不受影响。</span>

@@ -121,14 +121,15 @@ Execution rules:
 - The first stable Web release may explicitly move from `0.x.x` to `1.0.0`;
   source version preparation does not replace the release checklist or prove publication.
 
-## Complete Release Rule
+## Explicit Commit and Release Rule
 
-- Requests to "deploy", "release", "ship", or "全部部署" authorize one complete release workflow: validate the intended changes, prepare the version, run security checks, commit all task-related source/config/test/rule changes, push to GitHub, merge through the repository's PR/check policy, deploy that committed revision, and verify production.
-- Do not treat a local-directory Vercel upload as a completed release while its source remains uncommitted or unpushed. Do not stop after pushing a feature branch when the release requires the production branch to be updated.
-- Keep GitHub, the production version/build, and the deployment record aligned; record the deployed commit SHA. Update the existing production health-check expected version after release.
-- Preserve unrelated user changes; "all changes" means all changes in the authorized task, excluding secrets, local artifacts, private data and unrelated work. Commit rule changes requested as part of the task too.
-- Follow existing branch protection, required checks and reviews; never bypass them. If any step is blocked, state exactly what completed and what remains pending, and do not claim the entire release is complete. Do not ask again for actions already authorized by the release request.
-- Source-only requests still authorize source-only work. Only an explicit user instruction to skip/defer commit, push, merge or deployment narrows the release workflow; report that exception clearly.
+- Default to local edits and appropriate verification. Accumulate related changes locally; do not automatically commit, push, open a PR, merge or deploy after each small change.
+- Wait until the user explicitly says "提交", "提交到 GitHub", "commit", or gives equivalent authorization for the current batch before committing or pushing. A previous batch's authorization is not standing permission for future edits. Do not repeatedly prompt the user to commit after routine edits.
+- Requests to change UI, fix code, or update rules do not authorize submission. Requests to deploy or release do not override this explicit commit gate; if the requested deployment depends on uncommitted changes, report that submission is still awaiting the user's instruction.
+- When submission is authorized, include all task-related source/config/test/documentation/rule changes in that batch. Preserve unrelated user changes and exclude secrets, local artifacts and private data.
+- Commit/push authorization alone does not authorize production deployment. When both submission and release are explicitly authorized, complete validation, version preparation, security checks, commit/push, PR merge under repository policy, deployment from the committed revision, and production verification together.
+- For an authorized release, keep GitHub, the production version/build and the deployment record aligned; record the deployed SHA and update the production health-check expected version. A dirty local upload or feature-branch-only push does not complete that release.
+- Follow branch protection, required checks and reviews; never bypass them. Report completed and pending steps accurately, and do not ask again for steps already authorized for the current batch.
 
 ## Skill Order
 

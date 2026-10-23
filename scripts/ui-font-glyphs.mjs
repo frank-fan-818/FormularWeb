@@ -32,13 +32,16 @@ export async function collectUiGlyphs(root) {
   const titles = new Set();
   const origins = new Map();
   for (const record of records) {
+    // The route fallback renders before account pages; its copy must not fetch the extended subset.
+    const isCore = coreNames.has(record.name)
+      || record.filename.split(path.sep).join('/') === 'src/router/index.tsx';
     for (const point of chineseCodepoints(record.text)) {
       ui.add(point);
       if (!origins.has(point)) origins.set(point, new Set());
       origins.get(point).add(record.filename);
-      if (coreNames.has(record.name)) core.add(point);
+      if (isCore) core.add(point);
     }
-    if (coreNames.has(record.name)) {
+    if (isCore) {
       for (const match of record.text.matchAll(/\bt\(['"]([^'"]+)['"]/g)) {
         for (const point of chineseCodepoints(translations[match[1]] || '')) core.add(point);
       }

@@ -78,11 +78,7 @@ const InnerLayout = () => {
   if ((seasonLoading || primaryLoading) && !raceInfo) {
     return (
       <div className="race-detail-page race-layout-progressive">
-        <div className="race-layout-skeleton" role="status" aria-label={t('loading')}>
-          <div className="race-skeleton-line" />
-          <div className="race-skeleton-hero" />
-          <div className="race-skeleton-tabs" />
-        </div>
+        <TimingBeacon variant="page" label={t('loading')} />
         <Suspense fallback={<TimingBeacon label="Switching session view" detail="Loading the requested race module" />}>
           <Outlet />
         </Suspense>

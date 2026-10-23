@@ -284,9 +284,25 @@ code {
   color: var(--text-primary);
 }
 
-/* Spin */
-.ant-spin-dot-item {
-  background-color: var(--f1-red);
+/* Shared, compact content loading indicator. */
+.loading-indicator,
+.ant-spin .ant-spin-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 2px solid var(--border-primary);
+  border-top-color: var(--f1-red);
+  border-radius: 50%;
+  animation: loading-indicator-turn 900ms linear infinite;
+}
+.ant-spin .ant-spin-dot.ant-spin-dot-spin { animation: loading-indicator-turn 900ms linear infinite; }
+.ant-spin .ant-spin-dot .ant-spin-dot-item { display: none; }
+@keyframes loading-indicator-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .loading-indicator,
+  .ant-spin .ant-spin-dot { animation: none !important; }
 }
 
 /* Standings Cards */

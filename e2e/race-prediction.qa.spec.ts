@@ -225,7 +225,8 @@ test('prediction handles loading, empty data and service failures with retry', a
   });
   await page.goto('/races/13/info?season=2026');
   const panel = page.getByRole('region', { name: '冠军预测' });
-  await expect(panel.locator('.ant-card-loading')).toBeVisible();
+  await expect(panel.getByRole('status', { name: '正在加载冠军预测' })).toBeVisible();
+  await expect(panel.locator('.ant-skeleton')).toHaveCount(0);
   release();
   await expect(panel.getByText('等待可用的赛前数据')).toBeVisible();
   await expect(panel.getByRole('button', { name: '查看全部概率与依据 →' })).toHaveCount(0);
