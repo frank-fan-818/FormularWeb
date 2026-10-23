@@ -1,3 +1,4 @@
+import newsFeedHandler from '../api/news-feed.mjs';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -54,18 +55,8 @@ const server = createServer(async (request, response) => {
     if (!Object.hasOwn(newsFeeds, source) || !['GET', 'HEAD'].includes(request.method || '')) {
       response.writeHead(404, { 'Content-Type': 'text/plain' }); response.end('Not found'); return;
     }
-    try {
-      const upstream = await fetch(newsFeeds[source], { signal: AbortSignal.timeout(10_000),
-        headers: { 'User-Agent': 'FormularOneWeb/1.2 (F1 feed reader)', Accept: 'application/atom+xml, application/rss+xml, application/xml, text/xml' } });
-      const contentType = upstream.headers.get('Content-Type') || '';
-      if (!upstream.ok || !/(?:application|text)\/(?:atom\+xml|rss\+xml|xml)(?:;|$)/i.test(contentType)) throw new Error('Invalid feed');
-      const body = await upstream.text();
-      if (body.length > 1_000_000) throw new Error('Feed too large');
-      response.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400', 'X-Content-Type-Options': 'nosniff' });
-      response.end(request.method === 'HEAD' ? undefined : body);
-    } catch {
-      response.writeHead(502, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' }); response.end('News source unavailable');
-    }
+    request.url = `/api/news-feed?source=${source}`;
+    await newsFeedHandler(request, response);
     return;
   }
   if (pathname === '/fastf1' || pathname.startsWith('/fastf1/')) {

@@ -114,6 +114,62 @@ test('news retains last good source contents when a refresh fails', async ({ pag
   await expect(page.locator('.news-sidebar, .news-masthead .product-metric-rail')).toHaveCount(0);
 });
 
+test('news paints fast sources while a slow source and its filtered view remain loading', async ({ page }, info) => {
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/news-feed/fia', async route => {
+    await held;
+    await route.fulfill({ contentType: 'application/rss+xml', body: feeds.fia });
+  });
+  try {
+    await page.goto('/news');
+    await expect(page.getByText('68 条消息', { exact: true })).toBeVisible();
+    await expect(page.locator('.news-entry')).toHaveCount(15);
+    await expect(page.locator('.news-source-times')).toContainText('正在更新');
+    await page.screenshot({ path: `artifacts/browser-qa/screenshots/news-progressive-${info.project.name}.png`, animations: 'disabled' });
+    await page.getByRole('button', { name: '官方公告', exact: true }).click();
+    await expect(page.getByText('正在获取围场动态', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '暂无符合条件的消息' })).toHaveCount(0);
+    release();
+    await expect(page.locator('.news-entry')).toContainText('FIA confirms');
+    await expect(page.getByText('正在获取围场动态', { exact: true })).toHaveCount(0);
+  } finally {
+    release();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
+});
+
+test('news restores all source caches on reload before background updates and preserves retrieval times after failure', async ({ page }, info) => {
+  await page.goto('/news');
+  await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '刷新动态', exact: true })).toBeEnabled();
+  const timestamps = await page.locator('.news-source-times time').evaluateAll(times => times.map(time => time.getAttribute('datetime')));
+  expect(timestamps).toHaveLength(3);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/news-feed/*', async route => {
+    await held;
+    await route.fulfill({ contentType: 'text/html', body: '<html>Unavailable</html>' });
+  });
+  try {
+    await page.reload();
+    await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '正在更新', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: '官方公告', exact: true }).click();
+    await expect(page.locator('.news-entry')).toContainText('FIA confirms');
+    await page.getByRole('button', { name: '全部', exact: true }).click();
+    await page.screenshot({ path: `artifacts/browser-qa/screenshots/news-cached-${info.project.name}.png`, animations: 'disabled' });
+    release();
+    await expect(page.locator('.news-notice')).toContainText('Motorsport.com');
+    await expect(page.locator('.news-source-times')).toContainText('保留上次内容');
+    expect(await page.locator('.news-source-times time').evaluateAll(times => times.map(time => time.getAttribute('datetime')))).toEqual(timestamps);
+    await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
+  } finally {
+    release();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
+});
+
 test('news distinguishes total failure, partial failure, valid empty feeds and recovery', async ({ page }) => {
   let mode: 'failed' | 'partial' | 'empty' = 'failed';
   await page.route('**/news-feed/*', route => {

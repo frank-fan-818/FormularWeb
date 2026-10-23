@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getNews } from '@/api/news';
+import { getCachedNews, getNews } from '@/api/news';
 import type { NewsResult } from '@/types/news';
+import { recordLoadMetric } from '@/utils/performance';
 
 const REFRESH_INTERVAL_MS = 5 * 60_000;
 
 export function useNews() {
-  const [data, setData] = useState<NewsResult>({ items: [], sources: [] });
+  const [data, setData] = useState<NewsResult>(getCachedNews);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const request = useRef<AbortController | null>(null);
@@ -19,8 +20,18 @@ export function useNews() {
     lastAttempt.current = Date.now();
     setLoading(true);
     setError(false);
+    const startedAt = performance.now();
+    let contentRecorded = false;
     try {
-      const result = await getNews({ refresh, signal: controller.signal });
+      const result = await getNews({ refresh, signal: controller.signal, onUpdate: progress => {
+        if (!controller.signal.aborted) {
+          setData(progress);
+          if (!contentRecorded && progress.items.length) {
+            contentRecorded = true;
+            recordLoadMetric('news_first_content', performance.now() - startedAt, 'success');
+          }
+        }
+      } });
       if (!controller.signal.aborted) setData(result);
     } catch {
       if (!controller.signal.aborted) setError(true);

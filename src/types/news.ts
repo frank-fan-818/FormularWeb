@@ -22,11 +22,18 @@ export interface NewsItem {
 
 export interface NewsSourceState {
   sourceId: NewsSourceId;
-  status: 'ready' | 'stale' | 'error';
+  status: 'loading' | 'ready' | 'stale' | 'error';
   updatedAt: string | null;
+  refreshing?: boolean;
 }
 
 export interface NewsResult {
   items: NewsItem[];
   sources: NewsSourceState[];
+}
+
+export interface NewsRequestOptions {
+  refresh?: boolean;
+  signal?: AbortSignal;
+  onUpdate?: (result: NewsResult) => void;
 }

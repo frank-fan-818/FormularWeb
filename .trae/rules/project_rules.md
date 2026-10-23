@@ -70,6 +70,14 @@ From Andrej Karpathy's observations on LLM coding pitfalls:
 - Review `git diff` before commit
 - Prefer feature branches over direct `main` edits
 
+### Complete Release Is One Workflow
+
+- "Deploy", "release", "ship" and "全部部署" include validation, version preparation, security scanning, commit, GitHub push, PR merge under existing repository policy, production deployment from that committed revision, and post-deployment verification.
+- Commit all task-related application, configuration, test, documentation and requested rule changes together in the release workflow. Preserve unrelated user work and exclude secrets, generated artifacts and private exports.
+- GitHub and production must contain the same release changes. A dirty local Vercel upload or a feature-branch-only push does not complete a release. Record the deployed commit SHA/version/build, and synchronize the existing health-check expected version.
+- Do not bypass branch protection, checks or reviews. Continue authorized steps without asking for repeat permission. If a step cannot finish, identify the blocker and pending step; report partial completion accurately.
+- Honor explicit source-only requests or explicit instructions to defer a release step; otherwise do not silently omit commit, push, merge or deployment.
+
 ### Recommended Flow
 ```bash
 git status

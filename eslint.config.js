@@ -26,6 +26,7 @@ export default [
     ],
   },
   js.configs.recommended,
+  { files: ['api/**/*.mjs'], languageOptions: { globals: { ...globals.node, ...globals.es2020 } } },
   {
     files: [
       'src/**/*.{ts,tsx}',

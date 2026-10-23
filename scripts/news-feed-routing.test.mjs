@@ -10,8 +10,8 @@ test('news feeds use fixed HTTPS upstreams before the SPA fallback, with bounded
     assert.equal(new URL(upstream).protocol, 'https:');
     const index = config.routes.findIndex(route => route.src === `/news-feed/${source}`);
     assert.ok(index > 0 && index < config.routes.findIndex(route => route.handle === 'filesystem'));
-    assert.equal(config.routes[index].dest, upstream);
-    assert.equal(config.routes[index].headers['Cache-Control'], 'public, s-maxage=300, stale-while-revalidate=86400');
+    assert.equal(config.routes[index].dest, `/api/news-feed?source=${source}`);
+    assert.equal(config.routes[index].headers, undefined, 'the handler controls cacheability by response status');
   }
   const unknown = config.routes.findIndex(route => route.src === '/news-feed(?:/.*)?' && route.status === 404);
   assert.ok(unknown > config.routes.findIndex(route => route.src === '/news-feed/fia'));

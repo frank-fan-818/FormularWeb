@@ -1,0 +1,25 @@
+# Deploy application sources, not local credentials, evidence, or private exports.
+.git
+.vercel
+.env*
+node_modules
+dist
+coverage
+artifacts
+.cache
+.tmp
+.claude
+.agents
+.codex
+.aws
+data/private-fastf1
+public/fastf1
+f1_cache
+.f1_cache
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519

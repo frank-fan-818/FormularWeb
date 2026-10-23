@@ -39,7 +39,8 @@ const RaceResults = () => {
     fp3Results,
     raceInfo,
     availableDbSessions,
-    primaryLoading,
+    raceResultsLoading,
+    qualifyingResultsLoading,
     loadingSessionTabs,
     loadedSessionTabs,
     sessionLoadErrors,
@@ -70,7 +71,8 @@ const RaceResults = () => {
   );
 
   const getTableLoading = (tabKey: string, data: unknown[]): boolean => {
-    if (primaryLoading) return true;
+    if (tabKey === 'race') return raceResultsLoading && data.length === 0;
+    if (tabKey === 'qualifying') return qualifyingResultsLoading && data.length === 0;
     return DEFERRED_TAB_KEYS.includes(tabKey) && loadingSessionTabs.includes(tabKey) && data.length === 0;
   };
 
@@ -288,7 +290,7 @@ const RaceResults = () => {
         title="赛事概览"
       />
 
-      <RaceOverviewPanel insights={insights} />
+      <RaceOverviewPanel insights={insights} loading={raceResultsLoading} />
 
       <section className="race-classification-shell" aria-labelledby="race-classification-title">
         <div className="race-classification-heading">

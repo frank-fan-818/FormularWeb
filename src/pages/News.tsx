@@ -37,7 +37,8 @@ export default function News() {
     const source = NEWS_SOURCES.find(item => item.id === state.sourceId)!;
     return (sourceId === 'all' || sourceId === state.sourceId) && (kind === 'all' || source.kind === kind);
   });
-  const unavailableSources = relevantSources.filter(source => source.status !== 'ready');
+  const sourcesLoading = loading && relevantSources.some(source => source.refreshing || source.status === 'loading');
+  const unavailableSources = relevantSources.filter(source => !source.refreshing && (source.status === 'stale' || source.status === 'error'));
   const allFailed = error || (relevantSources.length > 0 && relevantSources.every(source => source.status === 'error'));
   const emptyTitle = allFailed ? t('newsUnavailable') : t('newsEmpty');
 
@@ -85,11 +86,24 @@ export default function News() {
             </div>
           </div>
 
-          {!loading && unavailableSources.length > 0 && !allFailed ? (
+          {unavailableSources.length > 0 && !allFailed ? (
             <div className="news-notice" role="status">
               {t('newsPartial', { sources: unavailableSources.map(state => NEWS_SOURCES.find(source => source.id === state.sourceId)!.name).join(' / ') })}
             </div>
           ) : null}
+
+          <div className="news-source-times" role="status" aria-label={t('newsSources')}>
+            {relevantSources.map(state => (
+              <span key={state.sourceId}>
+                <strong>{NEWS_SOURCES.find(source => source.id === state.sourceId)!.name}</strong>
+                {state.updatedAt ? <>{' · '}{t('newsUpdated')}{' '}
+                  <time dateTime={state.updatedAt}>{formatNewsTimestamp(state.updatedAt, offset)} {formatUtcOffset(offset)}</time>
+                </> : null}
+                {' · '}{t(state.refreshing || state.status === 'loading' ? 'newsRefreshing'
+                  : state.status === 'stale' ? 'newsSourceStale' : state.status === 'error' ? 'newsSourceError' : 'newsSourceReady')}
+              </span>
+            ))}
+          </div>
 
           <div className={`news-result-heading${kind === 'social' ? ' news-result-heading--social' : ''}`}>
             {kind !== 'social' ? <>
@@ -101,7 +115,7 @@ export default function News() {
             </button>
           </div>
 
-          {loading && items.length === 0 ? (
+          {sourcesLoading && filtered.length === 0 ? (
             <div className="news-state" role="status"><TimingBeacon label={t('newsLoading')} detail={t('newsLoadingDetail')} /></div>
           ) : filtered.length === 0 ? (
             <div className="news-state">

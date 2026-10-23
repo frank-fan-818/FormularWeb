@@ -291,7 +291,7 @@ const RaceQualifying = () => {
     qualifyingResults,
     sprintQualifyingResults,
     raceInfo,
-    primaryLoading,
+    qualifyingResultsLoading,
   } = useRaceData();
 
   // ---- Qualifying (Q) data ----
@@ -472,7 +472,7 @@ const RaceQualifying = () => {
 
   // ---- Early return (no data) ----
 
-  if (!primaryLoading && !qualifyingResults.length && !fastF1QualifyingAnalytics?.qualifyingAnalysis) {
+  if (!qualifyingResultsLoading && !qualifyingResults.length && !fastF1QualifyingAnalytics?.qualifyingAnalysis) {
     const unavailableCopy = getSessionUnavailableCopy({
       label: '排位赛',
       phase: getSessionDataPhase(raceInfo?.Qualifying),
