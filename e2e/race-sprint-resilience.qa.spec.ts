@@ -427,8 +427,6 @@ test('Race intelligence leaves skeleton state when optional APIs stall', async (
 });
 
 test('Race analysis uses an available private FastF1 snapshot', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop-chromium', 'Private snapshot resolution is viewport-independent.');
-
   await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', (route) => {
     expect(route.request().headers().authorization).toBe('Bearer test-only-access-token');
     if (!route.request().url().endsWith('/R.json')) return route.fulfill({ status: 404, body: '{}' });
@@ -464,7 +462,12 @@ test('Race analysis uses an available private FastF1 snapshot', async ({ page },
 
   await page.goto('/races/2/race?season=2025', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByRole('region', { name: 'Race analysis key findings' })).toBeVisible();
+  const analysisIndex = page.getByRole('navigation', { name: '正赛分析', exact: true });
+  await expect(analysisIndex).toBeVisible();
+  await expect(analysisIndex.locator('a[href="#analysis-lap-pace"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Race analysis key findings' })).toHaveCount(0);
   await expect(page.getByText('Timing snapshot unavailable')).toHaveCount(0);
   await expect(page.getByText('Race analysis is not available yet')).toHaveCount(0);
+  await analysisIndex.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/race-analysis-${testInfo.project.name}.png`, animations: 'disabled' });
 });

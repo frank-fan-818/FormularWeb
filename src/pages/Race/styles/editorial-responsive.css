@@ -183,14 +183,6 @@
   .race-prediction-ranking > li:last-child { border-bottom: 0; }
   .race-prediction-meta { flex-wrap: wrap; }
 
-  .race-analysis-brief { grid-template-columns: 1fr; }
-  .race-analysis-brief article {
-    min-height: 108px;
-    padding: var(--space-4);
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  }
-  .race-analysis-brief article:last-child { border-bottom: 0; }
 }
 
 @media (max-width: 430px) {

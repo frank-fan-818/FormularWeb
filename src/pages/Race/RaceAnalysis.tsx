@@ -408,9 +408,6 @@ const RaceAnalysis = () => {
     );
   }
 
-  const strategySummary = fastF1Analytics.strategyAnalysis?.summary;
-  const biggestStrategyGain = strategySummary?.biggestPositionGain;
-
   // ---- Render ----
 
   return (
@@ -420,32 +417,6 @@ const RaceAnalysis = () => {
       />
 
       {officialRaceClassification}
-
-      <section className="race-analysis-brief" aria-label="Race analysis key findings">
-        <article>
-          <span>PACE SIGNAL</span>
-          <strong>{fastF1Analytics.fastestLap?.driver || '—'}</strong>
-          <p>
-            {fastF1Analytics.fastestLap
-              ? `L${fastF1Analytics.fastestLap.lapNumber} · ${formatSeconds(fastF1Analytics.fastestLap.lapTimeSeconds)}`
-              : 'Fastest-lap reference pending'}
-          </p>
-        </article>
-        <article>
-          <span>STRATEGY SWING</span>
-          <strong>{biggestStrategyGain?.driver || strategySummary?.pitStopCount || '—'}</strong>
-          <p>
-            {biggestStrategyGain
-              ? `Pit window L${biggestStrategyGain.pitLap} · +${biggestStrategyGain.value} positions`
-              : `${strategySummary?.pitStopCount || 0} recorded pit stops`}
-          </p>
-        </article>
-        <article>
-          <span>RACE CONTROL</span>
-          <strong>{fastF1Analytics.trackStatusPeriods?.length || 0}</strong>
-          <p>{fastF1Analytics.trackStatusPeriods?.length ? 'Control periods affected the race rhythm' : 'No significant control periods recorded'}</p>
-        </article>
-      </section>
 
       <nav className="analysis-section-nav" aria-label={t('raceAnalysisGroup')}>
         <span className="analysis-section-nav-label">ANALYSIS INDEX</span>
