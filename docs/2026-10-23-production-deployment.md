@@ -24,3 +24,7 @@ The initial P0–P3 deployment was uploaded from the local working tree with the
 - Remote production health run succeeded: https://github.com/frank-fan-818/FormularWeb/actions/runs/39892546618
 
 Local ignored evidence: `artifacts/production/verification.json`, `cache-verification.json`, `browser-verification.json`, `news-desktop.png`, `race-desktop.png`.
+
+## Source synchronization follow-up
+
+PR https://github.com/frank-fan-818/FormularWeb/pull/85 includes the complete source and explicit release workflow rules. Protected-branch CI exposed browser-generated ResizeObserver delivery notices during Ant Design tab layout. Per the W3C Resize Observer processing model these carry no JavaScript exception and pending observations are delivered in a later loop. The global error boundary now cancels only that exact native notice with a null error object, preventing false application reports and their secondary network failures. Genuine script exceptions, including ResizeObserver callback errors, still follow the original error path; unit tests cover the distinction. Experimental chart-resize and Sprint-mount changes were discarded. Optional Web Vitals initialization was separated from request metrics to preserve the original homepage budget. This fix prepares version 1.2.3 for the final Git-linked deployment after required checks pass.
