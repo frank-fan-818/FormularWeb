@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { seasonApi } from '@/api/ergast';
-import { raceSessionResultsApi } from '@/api/raceSessionResults';
-import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
 import type {
   QualifyingResult,
   Race,
@@ -82,6 +79,7 @@ interface UseRaceDeferredSessionsOptions {
   activeSessionTab: RaceClassificationSessionKey;
   flowId?: string;
   allowAnalytics?: boolean;
+  discoveryEnabled?: boolean;
 }
 
 export async function loadRaceSessionWithFallback(
@@ -136,6 +134,7 @@ export function useRaceDeferredSessions({
   activeSessionTab,
   flowId,
   allowAnalytics = true,
+  discoveryEnabled = true,
 }: UseRaceDeferredSessionsOptions) {
   const [sprintResults, setSprintResults] = useState<Result[]>([]);
   const [sprintQualifyingResults, setSprintQualifyingResults] = useState<QualifyingResult[]>([]);
@@ -186,7 +185,7 @@ export function useRaceDeferredSessions({
   }, [raceIdentity]);
 
   useEffect(() => {
-    if (!round) return;
+    if (!round || !discoveryEnabled) return;
     let cancelled = false;
     const requestedIdentity = raceIdentity;
     diagnostics?.log({ operation: 'session_discovery', outcome: 'started', source: 'supabase' });
@@ -218,7 +217,7 @@ export function useRaceDeferredSessions({
         }
       });
     return () => { cancelled = true; };
-  }, [diagnostics, discoveryReloadKey, raceIdentity, round, season]);
+  }, [diagnostics, discoveryEnabled, discoveryReloadKey, raceIdentity, round, season]);
 
   useEffect(() => {
     if (!round || !sessionsToLoad.length) {
@@ -358,3 +357,18 @@ export function useRaceDeferredSessions({
     retrySession,
   };
 }
+
+const seasonApi = {
+  getSprintResults: (...args: Parameters<typeof import('@/api/ergast').seasonApi.getSprintResults>) => import('@/api/ergast').then(module => module.seasonApi.getSprintResults(...args)),
+};
+
+const raceSessionResultsApi = {
+  getAvailableSessions: (...args: Parameters<typeof import('@/api/raceSessionResults').raceSessionResultsApi.getAvailableSessions>) => import('@/api/raceSessionResults').then(module => module.raceSessionResultsApi.getAvailableSessions(...args)),
+  getPracticeResult: (...args: Parameters<typeof import('@/api/raceSessionResults').raceSessionResultsApi.getPracticeResult>) => import('@/api/raceSessionResults').then(module => module.raceSessionResultsApi.getPracticeResult(...args)),
+  getSprintQualifyingResult: (...args: Parameters<typeof import('@/api/raceSessionResults').raceSessionResultsApi.getSprintQualifyingResult>) => import('@/api/raceSessionResults').then(module => module.raceSessionResultsApi.getSprintQualifyingResult(...args)),
+  getSprintResult: (...args: Parameters<typeof import('@/api/raceSessionResults').raceSessionResultsApi.getSprintResult>) => import('@/api/raceSessionResults').then(module => module.raceSessionResultsApi.getSprintResult(...args)),
+};
+
+const fastF1AnalyticsApi = {
+  getRaceAnalytics: (...args: Parameters<typeof import('@/api/fastf1Analytics').fastF1AnalyticsApi.getRaceAnalytics>) => import('@/api/fastf1Analytics').then(module => module.fastF1AnalyticsApi.getRaceAnalytics(...args)),
+};

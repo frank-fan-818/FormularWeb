@@ -10,7 +10,8 @@ vi.mock('web-vitals', () => {
   return vitals;
 });
 
-import { initWebVitals, measureRequest } from './performance';
+import { measureRequest } from './performance';
+import { initWebVitals } from './webVitals';
 
 describe('optional performance monitoring', () => {
   it('loads Web Vitals only when monitoring starts, preserving normal request results', async () => {

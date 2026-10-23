@@ -25,7 +25,7 @@ function getJolpica<T>(path: string): Promise<T> {
       throw error;
     }
     return response.json() as Promise<T>;
-  }), { timeoutMs: 8000, maxRetries: 2 });
+  }), { timeoutMs: 4000, maxRetries: 1, totalTimeoutMs: 10_000 });
 }
 
 export const seasonApi = {

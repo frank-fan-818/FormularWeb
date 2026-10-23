@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fiaCarUpgradesApi } from '@/api/fiaCarUpgrades';
 import type { FiaRaceUpgradeSummary } from '@/api/fiaCarUpgrades';
 import { RequestTimeoutError, withTimeout } from '@/utils/withRetry';
 
@@ -34,7 +33,7 @@ export function useFiaRaceUpgrades(season: string, round: string | undefined, en
       if (!loaded) setLoading(true);
       setError(null);
       withTimeout(
-        fiaCarUpgradesApi.getRaceUpgrades(season, round),
+        import('@/api/fiaCarUpgrades').then(({ fiaCarUpgradesApi }) => fiaCarUpgradesApi.getRaceUpgrades(season, round)),
         FIA_UPGRADES_TIMEOUT_MS,
       )
         .then((summary) => {

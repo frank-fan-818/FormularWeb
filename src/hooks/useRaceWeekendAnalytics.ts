@@ -1,8 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  buildPostRaceTelemetrySummary,
-  raceWeekendAnalyticsApi,
-} from '@/api/raceWeekendAnalytics';
+import { useCallback, useEffect, useState } from 'react';
 import type {
   DriverPostRaceTelemetrySummary,
   FastF1RaceAnalytics,
@@ -41,7 +37,7 @@ export function useRacePreviewSummary(
     setError(null);
 
     withTimeout(
-      raceWeekendAnalyticsApi.getRacePreviewSummary(season, round, circuitId),
+      import('@/api/raceWeekendAnalytics').then(({ raceWeekendAnalyticsApi }) => raceWeekendAnalyticsApi.getRacePreviewSummary(season, round, circuitId)),
       RACE_PREVIEW_TIMEOUT_MS,
     )
       .then((summary) => {
@@ -82,5 +78,13 @@ export function useRacePreviewSummary(
 export function usePostRaceTelemetrySummary(
   analytics: FastF1RaceAnalytics | null | undefined,
 ): DriverPostRaceTelemetrySummary[] {
-  return useMemo(() => buildPostRaceTelemetrySummary(analytics), [analytics]);
+  const [state, setState] = useState<{ analytics: typeof analytics; summary: DriverPostRaceTelemetrySummary[] }>({ analytics: null, summary: [] });
+  useEffect(() => {
+    let cancelled = false;
+    if (analytics) void import('@/api/raceWeekendAnalytics').then(({ buildPostRaceTelemetrySummary }) => {
+      if (!cancelled) setState({ analytics, summary: buildPostRaceTelemetrySummary(analytics) });
+    }).catch(() => { /* Optional summary must not block classifications. */ });
+    return () => { cancelled = true; };
+  }, [analytics]);
+  return state.analytics === analytics ? state.summary : [];
 }

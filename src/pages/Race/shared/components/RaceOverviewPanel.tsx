@@ -8,6 +8,7 @@ import type { RaceOverviewInsights } from '@/utils/raceOverviewInsights';
 
 interface RaceOverviewPanelProps {
   insights: RaceOverviewInsights;
+  loading?: boolean;
 }
 
 function getDriverName(result: RaceOverviewInsights['winner']) {
@@ -15,16 +16,16 @@ function getDriverName(result: RaceOverviewInsights['winner']) {
   return `${result.Driver.givenName} ${result.Driver.familyName}`;
 }
 
-export function RaceOverviewPanel({ insights }: RaceOverviewPanelProps) {
+export function RaceOverviewPanel({ insights, loading = false }: RaceOverviewPanelProps) {
   const navigate = useNavigate();
   const podium = [insights.podium[1], insights.podium[0], insights.podium[2]].filter(Boolean);
 
   if (!insights.winner) {
     return (
-      <section className="race-overview-awaiting" aria-live="polite">
+      <section className="race-overview-awaiting" aria-live="polite" aria-busy={loading}>
         <span>RACE DEBRIEF</span>
-        <h2>正赛结果尚未发布</h2>
-        <p>当前可查看已发布的练习、排位和冲刺赛成绩。</p>
+        <h2>{loading ? '正在获取正赛成绩' : '正赛结果尚未发布'}</h2>
+        <p>{loading ? '其他场次的已加载成绩仍可查看。' : '当前可查看已发布的练习、排位和冲刺赛成绩。'}</p>
       </section>
     );
   }

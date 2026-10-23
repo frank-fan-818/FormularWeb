@@ -1,3 +1,4 @@
+import { isResizeDeliveryNotice } from '@/utils/windowErrors';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { initializeI18n } from '@/i18n';
@@ -26,7 +27,7 @@ if (import.meta.env.PROD) {
 }
 
 const startPerformanceMonitoring = () => {
-  void import('@/utils/performance')
+  void import('@/utils/webVitals')
     .then(({ initWebVitals }) => initWebVitals())
     .catch(() => {
       // Telemetry is non-critical and must never delay or break the application.
@@ -214,6 +215,8 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 window.addEventListener('error', (event) => {
+  if (isResizeDeliveryNotice(event)) { event.preventDefault(); return; }
+
   void import('@/utils/logger').then(({ logger }) => {
     logger.errorWithDiagnosticContext({
       event: 'exit', module: 'global', function: 'window.error',

@@ -46,29 +46,30 @@
     {
       "src": "/f1-api/(.*)",
       "headers": {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400"
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400",
+        "x-vercel-enable-rewrite-caching": "1",
+        "Vercel-CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400"
       },
       "dest": "https://api.jolpi.ca/ergast/f1/$1"
     },
     {
       "src": "/news-feed/motorsport",
-      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
-      "dest": "https://www.motorsport.com/rss/f1/news/"
+      "dest": "/api/news-feed?source=motorsport"
     },
     {
       "src": "/news-feed/fia",
-      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
-      "dest": "https://www.fia.com/rss/press-release"
+      "dest": "/api/news-feed?source=fia"
     },
     {
       "src": "/news-feed/reddit",
-      "headers": { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400" },
-      "dest": "https://www.reddit.com/r/formula1/.rss?limit=50"
+      "dest": "/api/news-feed?source=reddit"
     },
     {
       "src": "/news-feed(?:/.*)?",
       "status": 404,
-      "headers": { "Cache-Control": "no-store" }
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     },
     {
       "handle": "filesystem"

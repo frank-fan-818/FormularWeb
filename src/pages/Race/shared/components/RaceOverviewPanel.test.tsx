@@ -64,4 +64,13 @@ describe('race overview stories', () => {
     expect(view.root.findAllByProps({ className: 'race-story-grid' })).toHaveLength(0);
     view.unmount();
   });
+
+  it('distinguishes a pending race classification from an unpublished result', () => {
+    const insights = buildRaceOverviewInsights([], [], null);
+    const view = create(<MemoryRouter><RaceOverviewPanel insights={insights} loading /></MemoryRouter>);
+    expect(view.root.findByType('h2').children).toEqual(['正在获取正赛成绩']);
+    view.update(<MemoryRouter><RaceOverviewPanel insights={insights} loading={false} /></MemoryRouter>);
+    expect(view.root.findByType('h2').children).toEqual(['正赛结果尚未发布']);
+    view.unmount();
+  });
 });

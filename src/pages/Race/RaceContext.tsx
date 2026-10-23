@@ -60,6 +60,8 @@ export interface RaceDataContextValue {
   seasonRaces: Race[];
   seasonLoading: boolean;
   primaryLoading: boolean;
+  raceResultsLoading: boolean;
+  qualifyingResultsLoading: boolean;
   raceLoadError: Error | null;
   retryRaceData: () => void;
   isPastRace: boolean;
@@ -171,6 +173,7 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     routeSection,
     activeSessionTab,
     allowAnalytics: member,
+    discoveryEnabled: !primaryResults.loading,
     flowId: diagnosticFlowId,
   });
   const isPastRace = Boolean(raceInfo && isAfterLocalDateEnd(raceInfo.date));
@@ -289,6 +292,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     seasonRaces: races,
     seasonLoading,
     primaryLoading: primaryResults.loading,
+    raceResultsLoading: primaryResults.raceLoading,
+    qualifyingResultsLoading: primaryResults.qualifyingLoading,
     raceLoadError,
     retryRaceData,
     isPastRace,
@@ -338,6 +343,8 @@ export function RaceDataProvider({ children }: RaceDataProviderProps) {
     races,
     seasonLoading,
     primaryResults.loading,
+    primaryResults.raceLoading,
+    primaryResults.qualifyingLoading,
     raceLoadError,
     retryRaceData,
     isPastRace,

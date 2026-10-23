@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fastF1AnalyticsApi } from '@/api/fastf1Analytics';
 import type { FastF1RaceAnalytics, FastF1TelemetryAnalysis } from '@/types';
 import { createLoggerScope } from '@/utils/logger';
 
@@ -37,7 +36,7 @@ export function useFastF1SessionAnalytics(
     setLoading(true);
     setError(null);
 
-    fastF1AnalyticsApi.getRaceAnalytics(season, round, session, controller.signal, diagnostics)
+    import('@/api/fastf1Analytics').then(({ fastF1AnalyticsApi }) => fastF1AnalyticsApi.getRaceAnalytics(season, round, session, controller.signal, diagnostics))
       .then((analytics) => {
         if (controller.signal.aborted) return;
         setData(analytics);
@@ -128,7 +127,7 @@ export function useFastF1RaceTelemetry(
     controllerRef.current?.abort();
     controllerRef.current = controller;
 
-    fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal, diagnostics)
+    import('@/api/fastf1Analytics').then(({ fastF1AnalyticsApi }) => fastF1AnalyticsApi.getRaceTelemetry(season, round, session, controller.signal, diagnostics))
       .then((payload) => {
         if (controller.signal.aborted) return;
         setData(payload?.telemetry || null);

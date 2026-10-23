@@ -1,19 +1,86 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getNews, clearNewsCache } from './news';
+import { getNews, getCachedNews, clearNewsCache } from './news';
 import { parseNewsFeed } from '@/utils/news';
+import type { NewsSource } from '@/types/news';
 
-vi.mock('@/utils/news', async importOriginal => ({
-  ...await importOriginal<typeof import('@/utils/news')>(),
-  parseNewsFeed: vi.fn((xml: string, source: { id: string }) => [{
-    id: source.id, sourceId: source.id, kind: 'news', title: xml,
-    url: source.id === 'reddit' ? 'https://www.reddit.com/r/formula1/comments/abc123/discussion/' : `https://www.motorsport.com/${source.id}`, publishedAt: '2026-10-21T08:00:00Z',
-  }]),
-}));
+vi.mock('@/utils/news', async importOriginal => {
+  const original = await importOriginal<typeof import('@/utils/news')>();
+  return { ...original, parseNewsFeed: vi.fn((xml: string, source: NewsSource) => [original.normalizeNewsItem({
+    title: source.id === 'fia' ? `F1 ${xml}` : xml,
+    url: source.id === 'reddit' ? 'https://www.reddit.com/r/formula1/comments/abc123/discussion/' : source.id === 'fia' ? 'https://www.fia.com/news/f1-update' : `https://www.motorsport.com/${source.id}`,
+    publishedAt: '2026-10-21T08:00:00Z',
+  }, source)!]) };
+});
 
 afterEach(() => { clearNewsCache(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
 const feed = (body = 'Headline') => new Response(body, { headers: { 'Content-Type': 'application/rss+xml' } });
 
 describe('independent news source loading', () => {
+  it('publishes completed sources while another source is still pending', async () => {
+    let releaseFia!: (response: Response) => void;
+    const fia = new Promise<Response>(resolve => { releaseFia = resolve; });
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async url =>
+      url === '/news-feed/fia' ? fia : feed()));
+    const onUpdate = vi.fn();
+    let complete = false;
+    const pending = getNews({ onUpdate }).then(result => { complete = true; return result; });
+    await vi.waitFor(() => expect(onUpdate.mock.lastCall?.[0].items).toHaveLength(2));
+    expect(complete).toBe(false);
+    expect(onUpdate.mock.lastCall?.[0].sources.find((source: { sourceId: string }) => source.sourceId === 'fia'))
+      .toMatchObject({ status: 'loading', refreshing: true });
+    releaseFia(feed());
+    expect((await pending).items).toHaveLength(3);
+  });
+
+  it('restores every source immediately after reload and retains timestamps when background updates fail', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-22T08:00:00Z'));
+    const storage = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) });
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => feed('F1 headline')));
+    const fresh = await getNews();
+    clearNewsCache();
+    const snapshot = getCachedNews();
+    expect(snapshot.items).toHaveLength(3);
+    expect(snapshot.sources.every(source => source.updatedAt === '2026-10-22T08:00:00.000Z')).toBe(true);
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')));
+    const failed = await getNews();
+    expect(failed.items).toEqual(fresh.items);
+    expect(failed.sources.every(source => source.status === 'stale' && source.updatedAt === fresh.sources[0].updatedAt)).toBe(true);
+    vi.setSystemTime(new Date('2026-10-23T08:00:01Z'));
+    expect(getCachedNews().items).toEqual([]);
+  });
+
+  it('revalidates stored source items and rejects expired or future cache timestamps', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-22T08:00:00Z'));
+    const stored = { updatedAt: '2026-10-22T07:00:00Z', items: [
+      { title: 'Safe story', url: 'https://www.motorsport.com/f1/news/safe/', publishedAt: '2026-10-22T06:00:00Z' },
+      { title: 'Unsafe story', url: 'https://evil.test/', publishedAt: '2026-10-22T06:00:00Z' },
+    ] };
+    vi.stubGlobal('localStorage', { getItem: (key: string) => key === 'f1-news-feed-motorsport-v1' ? JSON.stringify(stored) : null });
+    expect(getCachedNews().items.map(item => item.title)).toEqual(['Safe story']);
+    clearNewsCache();
+    stored.updatedAt = '2026-10-23T08:00:00Z';
+    expect(getCachedNews().items).toEqual([]);
+  });
+
+  it('does not publish a cancelled source over a newer request', async () => {
+    let release!: (response: Response) => void;
+    const held = new Promise<Response>(resolve => { release = resolve; });
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(() => held));
+    const controller = new AbortController();
+    const onUpdate = vi.fn();
+    const pending = getNews({ signal: controller.signal, onUpdate });
+    const rejected = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    controller.abort();
+    const updates = onUpdate.mock.calls.length;
+    release(feed());
+    await rejected;
+    expect(onUpdate).toHaveBeenCalledTimes(updates);
+    expect(getCachedNews().items).toEqual([]);
+  });
+
   it('accepts Atom and restores validated Reddit posts after reload, but expires them after 24 hours', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-22T08:00:00Z'));
@@ -26,7 +93,7 @@ describe('independent news source loading', () => {
     clearNewsCache();
     fetcher.mockRejectedValue(new Error('offline'));
     const stale = await getNews();
-    expect(stale.items).toMatchObject([{ sourceId: 'reddit', title: 'Atom title' }]);
+    expect(stale.items).toEqual(expect.arrayContaining([expect.objectContaining({ sourceId: 'reddit', title: 'Atom title' })]));
     expect(stale.sources.find(source => source.sourceId === 'reddit')?.status).toBe('stale');
     vi.setSystemTime(new Date('2026-10-23T08:00:01Z'));
     const expired = await getNews();

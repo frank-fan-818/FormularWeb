@@ -146,9 +146,12 @@ test('chart data supports keyboard access, pagination and theme changes', async 
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/rest/v1/**', route => route.fulfill({ contentType: 'application/json', body: '[]' }));
-  await page.route('**/f1-api/**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
-    total: '2', RaceTable: { season: '2025', Races: [previousRace, race] }, StandingsTable: { StandingsLists: [] },
-  } }) }));
+  await page.route('**/f1-api/**', route => {
+    const classification = /\/(?:sprint|results|qualifying)\.json$/.test(new URL(route.request().url()).pathname);
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ MRData: {
+      total: classification ? '0' : '2', RaceTable: { season: '2025', Races: classification ? [] : [previousRace, race] }, StandingsTable: { StandingsLists: [] },
+    } }) });
+  });
   await page.route('**/storage/v1/object/authenticated/fastf1-private/2025/2/*.json', route => {
     const session = route.request().url().endsWith('/SQ.json') ? 'SQ' : 'S';
     const payload = fastF1Payload(session);

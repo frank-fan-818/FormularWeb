@@ -9,6 +9,7 @@ export interface RetryOptions {
   maxRetries?: number;
   baseDelayMs?: number;
   timeoutMs?: number;
+  totalTimeoutMs?: number;
   signal?: AbortSignal;
   jitterRatio?: number;
   onRetry?: (attempt: number, error: Error) => void;
@@ -84,23 +85,27 @@ export async function withRetry<T>(
   options: RetryOptions = {},
 ): Promise<T> {
   const settings = { ...DEFAULT_OPTIONS, ...options };
+  const deadline = options.totalTimeoutMs ? Date.now() + options.totalTimeoutMs : Infinity;
   let lastError: Error | undefined;
 
   for (let attempt = 0; attempt <= settings.maxRetries; attempt += 1) {
     throwIfAborted(settings.signal);
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw new RequestTimeoutError(options.totalTimeoutMs!);
+    const attemptTimeout = Math.min(settings.timeoutMs > 0 ? settings.timeoutMs : Infinity, remaining);
     const attemptController = new AbortController();
     const unlink = linkAbortSignal(settings.signal, attemptController);
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      if (settings.timeoutMs <= 0) {
+      if (!Number.isFinite(attemptTimeout)) {
         return await fn(attemptController.signal);
       }
       const timeoutPromise = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
-          reject(new RequestTimeoutError(settings.timeoutMs));
+          reject(new RequestTimeoutError(attemptTimeout));
           attemptController.abort();
-        }, settings.timeoutMs);
+        }, attemptTimeout);
       });
       return await Promise.race([fn(attemptController.signal), timeoutPromise]);
     } catch (value) {
@@ -108,10 +113,12 @@ export async function withRetry<T>(
       if (settings.signal?.aborted) throw abortError();
       if (attempt >= settings.maxRetries || !isRetryableRequestError(lastError)) throw lastError;
 
-      options.onRetry?.(attempt + 1, lastError);
       const exponential = Math.min(settings.baseDelayMs * (2 ** attempt), 8000);
       const jitter = exponential * settings.jitterRatio * ((Math.random() * 2) - 1);
-      await sleep(Math.max(retryAfterMsOf(lastError), exponential + jitter, 0), settings.signal);
+      const delay = Math.max(retryAfterMsOf(lastError), exponential + jitter, 0);
+      if (delay >= deadline - Date.now()) throw lastError;
+      await sleep(delay, settings.signal);
+      options.onRetry?.(attempt + 1, lastError);
     } finally {
       if (timer) clearTimeout(timer);
       unlink();
