@@ -26,61 +26,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.race-analysis-brief {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  overflow: hidden;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  background:
-    radial-gradient(circle at 10% 0%, rgba(232, 0, 45, 0.2), transparent 30%),
-    linear-gradient(135deg, #15171c 0%, #0b0c0f 100%);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
-}
-
-.race-analysis-brief article {
-  position: relative;
-  min-height: 138px;
-  padding: var(--space-5);
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), transparent 62%);
-}
-
-.race-analysis-brief article:first-child::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--f1-red);
-}
-
-.race-analysis-brief article:last-child { border-right: 0; }
-
-.race-analysis-brief span {
-  display: block;
-  color: #9ca3af;
-  font-family: var(--race-display);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-}
-
-.race-analysis-brief strong {
-  display: block;
-  margin-top: var(--space-3);
-  color: #fff;
-  font-family: var(--race-display);
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 1;
-}
-
-.race-analysis-brief p {
-  margin: var(--space-2) 0 0;
-  color: #9ca3af;
-  font-size: var(--text-xs);
-}
-
 .analysis-section-nav-label {
   display: inline-flex;
   align-items: center;
