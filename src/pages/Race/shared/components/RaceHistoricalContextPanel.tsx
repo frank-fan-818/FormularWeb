@@ -10,6 +10,7 @@ import type {
 } from '@/types';
 import ViewportTable from '@/pages/Race/shared/components/ViewportTable';
 import { formatProbability, formatShortDate } from '@/utils/raceDetailFormatters';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 
 interface RaceHistoricalContextPanelProps {
   summary: RacePreviewSummary | null;
@@ -70,7 +71,7 @@ export function RaceHistoricalContextPanel({
         <span id="race-context-heading">{t('recentWinners')}</span><small>{t('historyBriefDescription')}</small>
       </div>
       <div className="race-info-secondary-grid">
-        {loading ? <Card loading className="history-loading" /> : error ? (
+        {loading ? <Card className="history-loading"><TimingBeacon variant="inline" label={`正在加载${t('recentWinners')}`} /></Card> : error ? (
           <div className="race-weekend-empty" role="alert">
             <span>{error.message}</span><Button onClick={onRetry}>{t('retryHistory')}</Button>
           </div>

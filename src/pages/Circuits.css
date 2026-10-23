@@ -180,23 +180,6 @@
 
 @media (max-width: 1080px) { .circuit-atlas-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-.stat-value {
-  display: block;
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  line-height: 1;
-  font-family: var(--font-family);
-  color: var(--bg-card);
-}
-
-.stat-label {
-  display: block;
-  font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: var(--font-medium);
-  margin-top: var(--space-1);
-}
-
 @keyframes slideUp {
   from {
     opacity: 0;

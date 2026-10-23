@@ -15,10 +15,13 @@ describe('TimingBeacon', () => {
     expect(markup).toContain('Preparing the next data view');
   });
 
-  it('keeps the inline variant compact by omitting the stage legend', () => {
+  it('uses one decorative indicator without a fake progress or stage legend', () => {
     const markup = renderToStaticMarkup(<TimingBeacon variant="inline" />);
 
     expect(markup).toContain('timing-beacon--inline');
     expect(markup).not.toContain('REQUEST');
+    expect(markup).not.toContain('LIVE DATA LINK');
+    expect(markup).toContain('class="loading-indicator" aria-hidden="true"');
+    expect(markup).not.toContain('role="progressbar"');
   });
 });

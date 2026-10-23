@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { Button, Card, Segmented } from 'antd';
 import { TEXT } from '../constants';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 
 export type DataViewMode = 'chart' | 'table';
 
@@ -33,7 +34,6 @@ function DataViewPanel({
   return (
     <Card
       className={`race-weekend-card data-view-card ${className}`}
-      loading={loading}
       title={(
         <div className="data-view-title">
           <span>{title}</span>
@@ -58,7 +58,8 @@ function DataViewPanel({
         </div>
       )}
     >
-      {collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{mode === 'chart' ? chart : table}</div>}
+      {loading ? <div id={bodyId}><TimingBeacon variant="inline" label={`正在加载${title}`} /></div>
+        : collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{mode === 'chart' ? chart : table}</div>}
     </Card>
   );
 }
@@ -86,7 +87,6 @@ function TableOnlyPanel({
   return (
     <Card
       className={`race-weekend-card data-view-card ${className}`}
-      loading={loading}
       title={(
         <div className="data-view-title">
           <span>{title}</span>
@@ -99,7 +99,8 @@ function TableOnlyPanel({
         </Button>
       )}
     >
-      {collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{children}</div>}
+      {loading ? <div id={bodyId}><TimingBeacon variant="inline" label={`正在加载${title}`} /></div>
+        : collapsed ? <div id={bodyId} hidden /> : <div id={bodyId}>{children}</div>}
     </Card>
   );
 }

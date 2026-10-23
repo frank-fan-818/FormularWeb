@@ -5,6 +5,7 @@ import { useSeasonData } from '@/hooks';
 import { useAppStore } from '@/store';
 import { getTeamColor, getTeamDarkColor } from '@/utils/teamColors';
 import ProductMasthead from '@/components/product/ProductMasthead';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 import { buildSeasonSummary } from '@/utils/seasonSummary';
 import { formatLocalDateTime } from '@/utils/dateTime';
 import './Seasons.css';
@@ -66,9 +67,7 @@ const Seasons = () => {
             <span>{TEXT.points}</span>
           </div>
           {resources.drivers.loading && driverStandings.length === 0 ? (
-            <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
-              {Array.from({ length: 5 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
-            </div>
+            <TimingBeacon label={TEXT.loading} />
           ) : resources.drivers.error && driverStandings.length === 0 ? (
             <div className="season-resource-error" role="alert">
               <span>{TEXT.unavailable}</span>
@@ -134,9 +133,7 @@ const Seasons = () => {
             <span>{TEXT.points}</span>
           </div>
           {resources.constructors.loading && constructorStandings.length === 0 ? (
-            <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
-              {Array.from({ length: 5 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
-            </div>
+            <TimingBeacon label={TEXT.loading} />
           ) : resources.constructors.error && constructorStandings.length === 0 ? (
             <div className="season-resource-error" role="alert">
               <span>{TEXT.unavailable}</span>
@@ -223,9 +220,7 @@ const Seasons = () => {
       ) : null}
 
       {loading ? (
-        <div className="season-table-skeleton" role="status" aria-label={TEXT.loading}>
-          {Array.from({ length: 6 }, (_, index) => <div key={index} className="season-skeleton-row" />)}
-        </div>
+        <TimingBeacon label={TEXT.loading} />
       ) : driverStandings.length === 0 && constructorStandings.length === 0 ? (
         <div className="season-empty-state" role="alert">
           <p>{TEXT.unavailable}</p>

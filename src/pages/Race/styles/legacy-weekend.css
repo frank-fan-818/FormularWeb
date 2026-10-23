@@ -452,21 +452,7 @@
 .race-subpage-tabs .ant-tabs-tab:focus-visible {
   outline: 2px solid var(--f1-red); outline-offset: -3px;
 }
-.race-route-skeleton { display: grid; gap: var(--space-3); min-height: 360px; }
-.race-route-skeleton span {
-  display: block; border-radius: var(--radius-panel); background: var(--bg-tertiary);
-}
-.race-route-skeleton span:first-child { height: 72px; }
-.race-route-skeleton span:nth-child(2) { height: 180px; }
-.race-route-skeleton span:last-child { height: 96px; }
 .viewport-table-anchor { min-height: 120px; }
-.viewport-table-skeleton {
-  min-height: 120px;
-  border-radius: var(--radius-control);
-  background: linear-gradient(90deg, var(--bg-tertiary), var(--bg-secondary), var(--bg-tertiary));
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.4s ease-in-out infinite;
-}
 
 .race-preview-grid {
   align-items: start;

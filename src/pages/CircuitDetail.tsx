@@ -131,42 +131,23 @@ const CircuitDetail = () => {
 
       <ProductMasthead
         title={circuit.circuitName}
-        accent="var(--race-control-apex)"
-        aside={(
-          <div className="circuit-command-map">
-            <CircuitImage alt={circuit.circuitName} circuitId={circuit.circuitId} className="circuit-image" showSectors />
-            <div className="sector-legend" aria-label="Sector">
-              <span><i className="sector-dot sector-dot-1" />S1</span>
-              <span><i className="sector-dot sector-dot-2" />S2</span>
-              <span><i className="sector-dot sector-dot-3" />S3</span>
-            </div>
-          </div>
-        )}
-        metrics={[
-          { label: TEXT.length, value: formatStatValue(circuitDetails?.length, ' km', waitingForDetails), accent: 'var(--race-control-apex)' },
-          { label: TEXT.turns, value: formatStatValue(circuitDetails?.turns, '', waitingForDetails) },
-          { label: TEXT.direction, value: direction },
-          { label: TEXT.raceCount, value: formatStatValue(circuitDetails?.total_races, '', waitingForDetails), detail: `${TEXT.firstRace} ${formatStatValue(circuitDetails?.first_race, '', waitingForDetails)}` },
-        ]}
+        className="circuit-profile-heading"
+        description={[circuit.Location.locality, circuit.Location.country].filter(Boolean).join(' · ')}
       />
 
-      <ProductSectionHeader title="赛道参数" />
+      <ProductSectionHeader title="赛道布局与参数" />
       <div className="content-grid">
-        <Card className="circuit-image-card">
-          <div className="circuit-image-wrapper">
+        <figure className="circuit-layout-panel" aria-label="赛道布局">
+          <div className="circuit-layout-heading"><h2>赛道布局</h2><span>GRAND PRIX CIRCUIT</span></div>
+          <div className="circuit-layout-canvas">
             <CircuitImage
               alt={circuit.circuitName}
               circuitId={circuit.circuitId}
               className="circuit-image"
-              showSectors
+              variant="technical"
             />
-            <div className="sector-legend" aria-label="Sector">
-              <span><i className="sector-dot sector-dot-1" />S1</span>
-              <span><i className="sector-dot sector-dot-2" />S2</span>
-              <span><i className="sector-dot sector-dot-3" />S3</span>
-            </div>
           </div>
-        </Card>
+        </figure>
 
         <div className="stats-grid">
           <Card className="stat-card">

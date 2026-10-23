@@ -46,7 +46,7 @@ export default function News() {
     <div className="news-page">
       <DocumentHead title={`${t('newsTitle')} — F1 Dashboard`} description={t('newsDescription')} />
       <ProductMasthead
-        title={t('newsTitle')}
+        title="PADDOCK JOURNAL"
         description={t('newsDescription')}
         className="news-masthead"
         actions={(
@@ -91,19 +91,6 @@ export default function News() {
               {t('newsPartial', { sources: unavailableSources.map(state => NEWS_SOURCES.find(source => source.id === state.sourceId)!.name).join(' / ') })}
             </div>
           ) : null}
-
-          <div className="news-source-times" role="status" aria-label={t('newsSources')}>
-            {relevantSources.map(state => (
-              <span key={state.sourceId}>
-                <strong>{NEWS_SOURCES.find(source => source.id === state.sourceId)!.name}</strong>
-                {state.updatedAt ? <>{' · '}{t('newsUpdated')}{' '}
-                  <time dateTime={state.updatedAt}>{formatNewsTimestamp(state.updatedAt, offset)} {formatUtcOffset(offset)}</time>
-                </> : null}
-                {' · '}{t(state.refreshing || state.status === 'loading' ? 'newsRefreshing'
-                  : state.status === 'stale' ? 'newsSourceStale' : state.status === 'error' ? 'newsSourceError' : 'newsSourceReady')}
-              </span>
-            ))}
-          </div>
 
           <div className={`news-result-heading${kind === 'social' ? ' news-result-heading--social' : ''}`}>
             {kind !== 'social' ? <>

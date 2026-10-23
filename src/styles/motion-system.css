@@ -38,10 +38,6 @@
   50% { box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
 }
 
-@keyframes motion-skeleton-scan {
-  from { background-position: 180% 0; }
-  to { background-position: -180% 0; }
-}
 
 .motion-route-shell {
   min-width: 0;
@@ -212,12 +208,6 @@
   animation: motion-status-ring var(--motion-duration-ambient) var(--motion-ease-standard) infinite;
 }
 
-.skeleton-card,
-.skeleton-line,
-.season-skeleton-row,
-.race-weekend-skeleton-row {
-  animation: motion-skeleton-scan var(--motion-duration-ambient) linear infinite;
-}
 
 .route-loading-surface {
   display: grid;
@@ -226,32 +216,9 @@
   place-items: center;
 }
 
-.route-loading-signal {
-  display: grid;
-  width: min(480px, 84vw);
-  gap: var(--space-3);
-  padding: var(--space-5);
-  font-family: var(--font-mono-fallback);
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-}
 
-.route-loading-signal span {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--f1-red-text);
-}
 
-.route-loading-signal strong {
-  font-family: var(--font-display-fallback);
-  font-size: var(--text-xl);
-}
 
-.route-loading-signal i {
-  height: 2px;
-  background: linear-gradient(90deg, var(--f1-red) 0 34%, var(--race-control-track) 34%);
-  animation: motion-timing-line var(--motion-duration-data) var(--motion-ease-enter) infinite alternate;
-}
 
 @media (max-width: 768px) {
   .motion-route-shell {
@@ -266,8 +233,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .motion-route-shell,
-  /* Chart tooltip transforms position data next to the pointer, rather than animate it. */
-  .motion-route-shell *:not(.points-comparison-tooltip),
+  /* Tooltip positioning and SVG geometry transforms are static, not animation. */
+  .motion-route-shell *:not(.points-comparison-tooltip):not(svg *),
   .motion-route-shell *::before,
   .motion-route-shell *::after,
   .sidebar-nav-button::before,
@@ -283,3 +250,6 @@
     transform: none !important;
   }
 }
+
+.route-loading-signal { display: flex; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-5); color: var(--text-primary); }
+.route-loading-signal strong { font: 500 var(--text-sm)/1.6 var(--font-family); }

@@ -7,6 +7,7 @@ import {
   formatWindSpeed,
 } from '@/utils/raceDetailFormatters';
 import { RACE_INFO_TEXT } from '@/pages/Race/shared/raceInfoConstants';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 
 interface RaceWeatherOverviewProps {
   summary: FastF1WeatherSummary | null;
@@ -49,9 +50,7 @@ export function RaceWeatherOverview({ summary, loading, error, onRetry }: RaceWe
           <div className="race-weekend-empty">{RACE_INFO_TEXT.noWeatherData}</div>
         </div>
       ) : (
-        <div className="race-info-inline-state" role="status">
-          {t('loading')} {RACE_INFO_TEXT.weatherOverview}…
-        </div>
+        <TimingBeacon variant="inline" label={`正在加载${RACE_INFO_TEXT.weatherOverview}`} />
       )}
     </section>
   );

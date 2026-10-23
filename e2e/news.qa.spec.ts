@@ -43,9 +43,10 @@ test('news supports guest reading, filtering, original links and responsive layo
   });
   page.on('requestfailed', request => { if (request.failure()?.errorText !== 'net::ERR_ABORTED') failures.push(request.url()); });
   await page.goto('/news');
-  await expect(page.getByRole('heading', { name: '围场动态', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'PADDOCK JOURNAL', exact: true })).toBeVisible();
   await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
   await expect(page.locator('.news-entry')).toHaveCount(15);
+  await expect(page.locator('.news-source-times')).toHaveCount(0);
   await expect(page.locator('.news-sidebar, .news-masthead .product-metric-rail')).toHaveCount(0);
   await expect(page.locator('.news-entry').first()).toContainText('17:00');
   await expect(page.locator('.news-entry').first().getByRole('link', { name: '查看原文' })).toHaveAttribute('href', 'https://www.motorsport.com/f1/news/engineering/');
@@ -75,7 +76,7 @@ test('news supports guest reading, filtering, original links and responsive layo
   // The existing shell exposes its header language selector on desktop.
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator('.lang-switcher select').selectOption('en');
-  await expect(page.getByRole('heading', { name: 'Paddock Journal', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'PADDOCK JOURNAL', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Refresh news', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
   expect(failures).toEqual([]);
@@ -125,7 +126,7 @@ test('news paints fast sources while a slow source and its filtered view remain 
     await page.goto('/news');
     await expect(page.getByText('68 条消息', { exact: true })).toBeVisible();
     await expect(page.locator('.news-entry')).toHaveCount(15);
-    await expect(page.locator('.news-source-times')).toContainText('正在更新');
+    await expect(page.getByRole('button', { name: '正在更新', exact: true })).toBeDisabled();
     await page.screenshot({ path: `artifacts/browser-qa/screenshots/news-progressive-${info.project.name}.png`, animations: 'disabled' });
     await page.getByRole('button', { name: '官方公告', exact: true }).click();
     await expect(page.getByText('正在获取围场动态', { exact: true })).toBeVisible();
@@ -143,8 +144,10 @@ test('news restores all source caches on reload before background updates and pr
   await page.goto('/news');
   await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '刷新动态', exact: true })).toBeEnabled();
-  const timestamps = await page.locator('.news-source-times time').evaluateAll(times => times.map(time => time.getAttribute('datetime')));
-  expect(timestamps).toHaveLength(3);
+  const readCachedFeeds = () => page.evaluate(() =>
+    ['f1-news-feed-motorsport-v1', 'f1-news-feed-fia-v1', 'f1-reddit-feed-v1'].map(key => localStorage.getItem(key)));
+  const cachedFeeds = await readCachedFeeds();
+  expect(cachedFeeds.every(Boolean)).toBe(true);
   let release!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });
   await page.route('**/news-feed/*', async route => {
@@ -161,8 +164,8 @@ test('news restores all source caches on reload before background updates and pr
     await page.screenshot({ path: `artifacts/browser-qa/screenshots/news-cached-${info.project.name}.png`, animations: 'disabled' });
     release();
     await expect(page.locator('.news-notice')).toContainText('Motorsport.com');
-    await expect(page.locator('.news-source-times')).toContainText('保留上次内容');
-    expect(await page.locator('.news-source-times time').evaluateAll(times => times.map(time => time.getAttribute('datetime')))).toEqual(timestamps);
+    await expect(page.getByRole('button', { name: '刷新动态', exact: true })).toBeEnabled();
+    expect(await readCachedFeeds()).toEqual(cachedFeeds);
     await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
   } finally {
     release();

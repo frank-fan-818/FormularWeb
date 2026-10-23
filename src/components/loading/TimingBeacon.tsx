@@ -9,12 +9,10 @@ interface TimingBeaconProps {
   className?: string;
 }
 
-const STAGES = ['REQUEST', 'VALIDATE', 'RENDER'];
-
 export function TimingBeacon({
   variant = 'panel',
-  label = 'Synchronising race data',
-  detail = 'Timing · strategy · conditions',
+  label = '正在加载数据',
+  detail = '',
   className = '',
 }: TimingBeaconProps) {
   const classes = ['timing-beacon', `timing-beacon--${variant}`, className]
@@ -26,49 +24,24 @@ export function TimingBeacon({
       className={classes}
       role="status"
       aria-live="polite"
-      aria-label={`${label}. ${detail}`}
+      aria-label={[label, detail].filter(Boolean).join('. ')}
+      aria-busy="true"
       data-loading-variant={variant}
     >
-      <div className="timing-beacon__topline" aria-hidden="true">
-        <span>LIVE DATA LINK</span>
-        <span className="timing-beacon__sync"><i />SYNCING</span>
-      </div>
-
-      <div className="timing-beacon__track" aria-hidden="true">
-        <span className="timing-beacon__rail" />
-        <span className="timing-beacon__scan" />
-        <span className="timing-beacon__marker" />
-        {[0, 1, 2, 3].map((node) => (
-          <i key={node} className="timing-beacon__node" />
-        ))}
-      </div>
-
+      <span className="loading-indicator" aria-hidden="true" />
       <div className="timing-beacon__copy">
         <strong>{label}</strong>
-        <span>{detail}</span>
-      </div>
-
-      {variant !== 'inline' ? (
-        <div className="timing-beacon__stages" aria-hidden="true">
-          {STAGES.map((stage, index) => (
-            <span key={stage}><i>{String(index + 1).padStart(2, '0')}</i>{stage}</span>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="timing-beacon__segments" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((segment) => <i key={segment} />)}
+        {detail ? <span>{detail}</span> : null}
       </div>
     </div>
   );
 }
 
-export function ChartLoadingBeacon({ label = 'Rendering telemetry' }: { label?: string }) {
+export function ChartLoadingBeacon({ label = '正在加载图表' }: { label?: string }) {
   return (
     <TimingBeacon
       variant="inline"
       label={label}
-      detail="Preparing the interactive data view"
     />
   );
 }

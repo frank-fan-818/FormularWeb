@@ -5,6 +5,7 @@ import { useTranslation } from '@/i18n';
 import type { FiaRaceUpgradeSummary, FiaRaceUpgradeTeamSummary } from '@/api/fiaCarUpgrades';
 import { UPGRADE_REASON_LABELS } from '@/pages/Race/shared/constants';
 import ViewportTable from '@/pages/Race/shared/components/ViewportTable';
+import { TimingBeacon } from '@/components/loading/TimingBeacon';
 
 interface RaceUpgradeSummaryPanelProps {
   summary: FiaRaceUpgradeSummary | null;
@@ -70,7 +71,8 @@ export function RaceUpgradeSummaryPanel({ summary, loading, error, onRetry }: Ra
         <span id="race-upgrades-heading">{t('carUpgrades')}</span>
         <small>{t('carUpgradesDescription')}</small>
       </div>
-      <Card className="race-weekend-card upgrade-summary-card" loading={loading}>
+      <Card className="race-weekend-card upgrade-summary-card">
+        {loading ? <TimingBeacon variant="inline" label={`正在加载${t('carUpgrades')}`} /> : <>
         <div className="race-weekend-metric-grid upgrade-metric-grid">
           {metrics.map((item) => (
             <span key={item.label} className="race-weekend-metric">
@@ -107,6 +109,7 @@ export function RaceUpgradeSummaryPanel({ summary, loading, error, onRetry }: Ra
         ) : (
           <div className="race-weekend-empty">{t('noCarUpgrades')}</div>
         )}
+        </>}
       </Card>
     </section>
   );

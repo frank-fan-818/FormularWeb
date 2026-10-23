@@ -40,8 +40,7 @@ export function AnalysisModuleState({
       {state === 'loading' ? (
         <TimingBeacon
           variant="inline"
-          label={`Synchronising ${label.toLowerCase()}`}
-          detail="FastF1 data · validation · chart model"
+          label={`正在加载${title}`}
         />
       ) : (
         <div className="analysis-module-message" role={state === 'error' ? 'alert' : 'status'}>

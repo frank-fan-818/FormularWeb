@@ -56,9 +56,8 @@ function withSuspense(element: JSX.Element) {
       fallback={(
         <div className="route-loading-surface">
           <div className="route-loading-signal" role="status" aria-live="polite">
-            <span>LIVE DATA LINK</span>
-            <strong>Loading race control</strong>
-            <i aria-hidden="true" />
+            <span className="loading-indicator" aria-hidden="true" />
+            <strong>正在加载页面</strong>
           </div>
         </div>
       )}

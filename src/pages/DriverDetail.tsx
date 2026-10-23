@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Empty, Row, Tag } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
+import { TimingBeacon, ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import { formatDateOnly } from '@/utils/dateTime';
 import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { driverApi, seasonApi } from '@/api/ergast';
@@ -657,7 +658,7 @@ const DriverDetail = () => {
       </Button>
 
       {!profileDriver && (seasonLoading || loading || historyLoading) ? (
-        <Card loading className="driver-profile-loading-card" />
+        <Card className="driver-profile-loading-card"><TimingBeacon label="正在加载车手资料" /></Card>
       ) : (
       <div className="driver-profile-shell">
         {profileDriver ? <DriverProfileHero
@@ -736,9 +737,7 @@ const DriverDetail = () => {
                 {chartEnabled ? (
                   <Suspense
                     fallback={(
-                      <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                        {TEXT.chartLoading}
-                      </div>
+                      <ChartLoadingBeacon label={TEXT.chartLoading} />
                     )}
                   >
                     <LazyEChartsPanel
@@ -749,16 +748,12 @@ const DriverDetail = () => {
                     />
                   </Suspense>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                    {TEXT.chartLoading}
-                  </div>
+                  <ChartLoadingBeacon label={TEXT.chartLoading} />
                 )}
               </div>
             </div>
           ) : seasonResultsLoading ? (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-              {TEXT.chartLoading}
-            </div>
+            <ChartLoadingBeacon label={TEXT.chartLoading} />
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>
           )}
@@ -777,7 +772,7 @@ const DriverDetail = () => {
               </div>
             </div>
             {historyLoading ? (
-              <Card loading className="driver-history-loading-card" />
+              <Card className="driver-history-loading-card"><TimingBeacon label="正在加载历史统计" /></Card>
             ) : driverHistory ? (
               <Row gutter={[16, 16]} className="driver-career-stat-grid">
               <Col xs={24} sm={8}>

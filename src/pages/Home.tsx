@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { lazy, Suspense, type CSSProperties } from 'react';
 import DocumentHead from '@/components/DocumentHead';
+import '@/components/loading/TimingBeacon.css';
 import { useSeasonDataCached } from '@/hooks/useSeasonDataCached';
 import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
@@ -80,15 +81,9 @@ const Home = () => {
     return (
       <div className="page-container">
         <DocumentHead title="F1 Dashboard — 季节总览" description="Formula 1 data dashboard with race analytics, telemetry, and predictions" />
-        <div className="home-skeleton" role="status" aria-label={TEXT.loading}>
-          <div className="skeleton-card skeleton-card-pulse" />
-          <div className="skeleton-line skeleton-line-short" />
-          <div className="skeleton-card skeleton-card-hero" />
-          <div className="skeleton-line skeleton-line-short" />
-          <div className="skeleton-grid">
-            <div className="skeleton-card" />
-            <div className="skeleton-card" />
-          </div>
+        <div className="timing-beacon timing-beacon--page" role="status" aria-live="polite" aria-busy="true" aria-label={TEXT.loading} data-loading-variant="page">
+          <span className="loading-indicator" aria-hidden="true" />
+          <strong className="timing-beacon__label">{TEXT.loading}</strong>
         </div>
       </div>
     );

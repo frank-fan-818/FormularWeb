@@ -238,9 +238,10 @@ test('page mastheads follow the active theme and use consistent typography', asy
         height: title.getBoundingClientRect().height,
         lineHeight: parseFloat(getComputedStyle(title).lineHeight),
       }));
-      await expect(header.locator('h1')).toHaveCSS('white-space', 'nowrap');
+      const wrapsCircuitName = await header.evaluate(element => element.matches('.circuit-profile-heading'));
+      await expect(header.locator('h1')).toHaveCSS('white-space', wrapsCircuitName ? 'normal' : 'nowrap');
       // Inline first/last-name fonts can expand a single line's baseline box.
-      expect(titleLine.height).toBeLessThan(titleLine.lineHeight * 1.5);
+      expect(titleLine.height).toBeLessThan(titleLine.lineHeight * (wrapsCircuitName ? 3 : 1.5));
       if (selector === '.product-masthead') {
         await expect(header.locator('.product-masthead__eyebrow, .product-masthead__index')).toHaveCount(0);
         const spacing = await header.evaluate(element => ({
@@ -251,7 +252,7 @@ test('page mastheads follow the active theme and use consistent typography', asy
         }));
         expect(spacing.padding).toBeLessThanOrEqual(12);
         expect(spacing.titleSize).toBeLessThanOrEqual(32);
-        expect(spacing.titleHeight).toBeLessThanOrEqual(spacing.titleLineHeight + 1);
+        expect(spacing.titleHeight).toBeLessThanOrEqual(spacing.titleLineHeight * (wrapsCircuitName ? 3 : 1) + 1);
         await expect(header.locator('h1 br')).toHaveCount(0);
         if (['/seasons', '/races', '/drivers', '/constructors', '/circuits', '/settings'].includes(path)) {
           expect(await header.locator('h1').evaluate(title => title.scrollWidth - title.clientWidth)).toBeLessThanOrEqual(1);

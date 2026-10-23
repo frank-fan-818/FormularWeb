@@ -70,13 +70,15 @@ From Andrej Karpathy's observations on LLM coding pitfalls:
 - Review `git diff` before commit
 - Prefer feature branches over direct `main` edits
 
-### Complete Release Is One Workflow
+### Explicit Submission Before Release
 
-- "Deploy", "release", "ship" and "全部部署" include validation, version preparation, security scanning, commit, GitHub push, PR merge under existing repository policy, production deployment from that committed revision, and post-deployment verification.
-- Commit all task-related application, configuration, test, documentation and requested rule changes together in the release workflow. Preserve unrelated user work and exclude secrets, generated artifacts and private exports.
-- GitHub and production must contain the same release changes. A dirty local Vercel upload or a feature-branch-only push does not complete a release. Record the deployed commit SHA/version/build, and synchronize the existing health-check expected version.
-- Do not bypass branch protection, checks or reviews. Continue authorized steps without asking for repeat permission. If a step cannot finish, identify the blocker and pending step; report partial completion accurately.
-- Honor explicit source-only requests or explicit instructions to defer a release step; otherwise do not silently omit commit, push, merge or deployment.
+- Default to local modifications and verification, accumulating related changes until the user explicitly says "提交", "提交到 GitHub", "commit", or equivalent for the current batch. Do not automatically commit, push, open a PR, merge or deploy after a small change.
+- Prior submission/release authorization applies only to its batch, not future edits. Routine UI/code/rule requests do not authorize submission. Wait for the user's signal without repeatedly asking to commit.
+- Deployment/release wording does not override the explicit commit gate. If deployment requires uncommitted changes, report that submission is awaiting the user's instruction instead of automatically committing.
+- Once submission is authorized, include all related application, configuration, test, documentation and requested rule changes in the batch. Preserve unrelated user work and exclude secrets, generated artifacts and private exports.
+- Submission alone does not authorize production deployment. When both submission and release are explicitly authorized, finish validation, version preparation, security scanning, commit/push, PR merge under repository policy, production deployment and verification as one workflow.
+- For an authorized release, align GitHub and production; record the deployed SHA/version/build and synchronize the health-check expected version. A dirty upload or feature-branch-only push does not complete the release.
+- Never bypass branch protection, checks or reviews. Report partial completion and pending steps accurately; do not ask again for steps already authorized for the current batch.
 
 ### Recommended Flow
 ```bash

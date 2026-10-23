@@ -28,7 +28,7 @@ import { formatCompoundWithCode } from '@/utils/tyreCompounds';
 import { formatSeconds } from '@/utils/raceDetailFormatters';
 import type { QualifyingResult, Result } from '@/types';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
-import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
+import { TimingBeacon, ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import {
   getSessionDataPhase,
   getSessionUnavailableCopy,
@@ -347,7 +347,7 @@ const RaceSprint = () => {
       );
     }
     if (loadingSessionTabs.includes(sessionKey)) {
-      return <Card loading className="race-empty-command-card" />;
+      return <Card className="race-empty-command-card"><TimingBeacon variant="inline" label={sessionKey === 'sprintQualifying' ? '正在加载冲刺排位成绩' : '正在加载冲刺赛成绩'} /></Card>;
     }
     if (loadedSessionTabs.includes(sessionKey)) {
       const isSprintQualifying = sessionKey === 'sprintQualifying';

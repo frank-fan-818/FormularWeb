@@ -467,27 +467,7 @@
   cursor: pointer;
 }
 
-.season-table-skeleton {
-  display: grid;
-  gap: var(--space-3);
-}
 
-.season-skeleton-row {
-  min-height: 88px;
-  border-radius: var(--radius-panel);
-  background: linear-gradient(90deg, var(--bg-tertiary) 20%, var(--bg-secondary) 50%, var(--bg-tertiary) 80%);
-  background-size: 200% 100%;
-  animation: seasonSkeletonShift 1.2s ease-in-out infinite;
-}
-
-@keyframes seasonSkeletonShift {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .season-skeleton-row { animation: none; }
-}
 .official-season-row:focus-visible,
 .official-name-button:focus-visible,
 .official-team-link:focus-visible {

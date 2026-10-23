@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Col, Row } from 'antd';
 import { ArrowLeftOutlined, FlagOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
+import { TimingBeacon, ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import type { TooltipComponentFormatterCallbackParams } from 'echarts';
 import { constructorApi, seasonApi } from '@/api/ergast';
 import { historyProfilesApi } from '@/api/historyProfiles';
@@ -532,7 +533,7 @@ const ConstructorDetail = () => {
       </Button>
 
       {!constructor && (seasonLoading || loading) ? (
-        <Card loading className="constructor-profile-loading-card" />
+        <Card className="constructor-profile-loading-card"><TimingBeacon label="正在加载车队资料" /></Card>
       ) : (
       <div className="constructor-profile-shell">
         {constructor ? <ConstructorProfileHero key={constructor.constructorId}
@@ -605,9 +606,7 @@ const ConstructorDetail = () => {
                 {chartEnabled ? (
                   <Suspense
                     fallback={(
-                      <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                        {TEXT.chartLoading}
-                      </div>
+                      <ChartLoadingBeacon label={TEXT.chartLoading} />
                     )}
                   >
                     <LazyEChartsPanel
@@ -618,16 +617,12 @@ const ConstructorDetail = () => {
                     />
                   </Suspense>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                    {TEXT.chartLoading}
-                  </div>
+                  <ChartLoadingBeacon label={TEXT.chartLoading} />
                 )}
               </div>
             </div>
           ) : seasonResultsLoading ? (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-              {TEXT.chartLoading}
-            </div>
+            <ChartLoadingBeacon label={TEXT.chartLoading} />
           ) : (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>{TEXT.noTrendData}</div>
           )}
