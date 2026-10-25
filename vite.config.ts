@@ -5,6 +5,17 @@ import path from 'path'
 import { createHash } from 'node:crypto'
 import { Agent as HttpsAgent } from 'node:https'
 import { existsSync, readFileSync } from 'node:fs'
+import pitStopsHandler from './api/pit-stops.mjs'
+
+function pitStopsApi(): Plugin {
+  const configure = (server: Pick<ViteDevServer, 'middlewares'>) => {
+    server.middlewares.use((req, res, next) => {
+      if ((req.url || '').split('?')[0] !== '/api/pit-stops') return next();
+      void pitStopsHandler(req, res);
+    });
+  };
+  return { name: 'pit-stops-api', configureServer: configure, configurePreviewServer: configure };
+}
 
 const newsFeedUpstreams: Record<string, string> = JSON.parse(readFileSync(path.resolve(__dirname, 'config/news-feeds.json'), 'utf8'));
 const newsFeedAgent = new HttpsAgent({ keepAlive: true, proxyEnv: process.env });
@@ -324,6 +335,7 @@ function createReleaseIdentityPlugin(): Plugin {
 export default defineConfig({
   plugins: [
     react(),
+    pitStopsApi(),
     privateDataGuard(),
     newsFeedGuard(),
     createCriticalCssPlugin(),

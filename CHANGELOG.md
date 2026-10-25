@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-25
+
+### Added
+
+- Add DHL Fastest Pit Stop Award season standings and race leaderboards with official positions and points.
+- Add race pit-stop records with separate stationary and pit-lane timing, driver/team filters, and independent sorting.
+- Add public same-origin data adapters with source validation, bounded caches, cancellation, and responsive loading/error states.
+
+### Changed
+
+- Keep pit-stop pages focused on timing tables, without record-count cards or permanent explanatory copy.
+- Load feature translations separately to retain the existing homepage performance budget.
+
 ## [0.18.0] - 2026-09-04
 
 ### Added

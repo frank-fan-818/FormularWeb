@@ -26,6 +26,7 @@ export function getRoutePreloadKeys(pathname: string): RouteModuleKey[] {
   const normalizedPath = pathname.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
   if (normalizedPath === '/') return [];
   if (normalizedPath === '/news') return ['news'];
+  if (normalizedPath === '/pit-stops') return [];
   if (normalizedPath === '/seasons') return ['seasons'];
   if (normalizedPath === '/races') return ['races'];
 
@@ -52,6 +53,10 @@ export function getRoutePreloadKeys(pathname: string): RouteModuleKey[] {
 
 export function preloadRoute(pathname: string): void {
   if (!canPrefetch()) return;
+  if (pathname.split(/[?#]/, 1)[0].replace(/\/+$/, '') === '/pit-stops') {
+    void import('@/pages/PitStops').catch(() => undefined);
+    return;
+  }
   const requests = getRoutePreloadKeys(pathname).map((key) => routeModules[key]());
   void Promise.all(requests).catch(() => {
     // Navigation remains the source of truth when speculative loading fails.

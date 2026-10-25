@@ -159,6 +159,7 @@ test('news restores all source caches on reload before background updates and pr
     await expect(page.getByText('69 条消息', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: '正在更新', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '官方公告', exact: true }).click();
+    await expect(page.locator('.news-entry')).toHaveCount(1);
     await expect(page.locator('.news-entry')).toContainText('FIA confirms');
     await page.getByRole('button', { name: '全部', exact: true }).click();
     await page.screenshot({ path: `artifacts/browser-qa/screenshots/news-cached-${info.project.name}.png`, animations: 'disabled' });

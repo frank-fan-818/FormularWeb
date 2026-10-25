@@ -25,6 +25,7 @@ if (['/', '/login'].includes(window.location.pathname)) {
 
 const Home = lazy(routeModules.home);
 const News = lazy(routeModules.news);
+const PitStops = lazy(() => import('@/pages/PitStops'));
 const Layout = lazy(() => import('@/components/Layout'));
 const Seasons = lazy(routeModules.seasons);
 const Races = lazy(routeModules.races);
@@ -86,6 +87,7 @@ const AppRoutes = () => (
     <Route path="/" element={withSuspense(<ErrorBoundary><Layout /></ErrorBoundary>)}>
       <Route index element={withSuspense(<Home />)} />
       <Route path="news" element={withSuspense(<News />)} />
+      <Route path="pit-stops" element={withSuspense(<PitStops />)} />
       <Route path="seasons" element={withSuspense(<Seasons />)} />
       <Route path="races" element={withSuspense(<Races />)} />
       <Route path="races/:round" element={withSuspense(<RaceLayout />)}>
