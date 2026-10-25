@@ -1,6 +1,61 @@
-.circuit-image-loading {
+/* Official diagrams retain a white paper surface in either application theme. */
+.circuit-detailed-map,
+.circuit-map-unavailable {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  background: var(--surface-dark-text);
+  color: var(--surface-dark);
+}
+.circuit-detailed-map__open {
+  position: relative;
+  display: block;
+  padding: var(--space-3);
+  width: 100%;
+  border: 0;
+  text-align: left;
+  background: var(--surface-dark-text);
+  cursor: zoom-in;
+}
+.circuit-detailed-map img { display: block; width: 100%; height: auto; }
+.circuit-detailed-map__open > img { max-height: 520px; object-fit: contain; }
+.circuit-map-image--pending { opacity: 0; }
+.circuit-detailed-map .circuit-image-loading {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  width: 100%;
-  min-height: 180px;
+  min-height: 0;
+  background: var(--surface-dark-text);
 }
+.circuit-detailed-map__zoom {
+  display: block;
+  width: max-content;
+  margin: var(--space-2) 0 0 auto;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--surface-dark);
+  background: var(--surface-dark-text);
+  font-size: var(--text-xs);
+}
+.circuit-detailed-map__open:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 3px; }
+.circuit-map-zoom {
+  width: min(1320px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: var(--space-4);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-dark-text);
+  color: var(--surface-dark);
+}
+.circuit-map-zoom::backdrop { background: color-mix(in srgb, var(--surface-dark) 45%, transparent); }
+.circuit-map-zoom__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.circuit-map-zoom__header strong { min-width: 0; font-size: var(--text-sm); }
+.circuit-map-zoom__header button { flex-shrink: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-primary); border-radius: var(--radius-sm); background: var(--surface-dark-text); color: var(--surface-dark); cursor: pointer; }
+.circuit-map-zoom__header button:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 2px; }
+.circuit-map-zoom__canvas { max-height: calc(100dvh - 140px); overflow: auto; background: var(--surface-dark-text); }
+.circuit-map-zoom .circuit-map-zoom__image { width: auto; max-width: none; height: auto; }
+.circuit-detailed-map--preview { display: grid; min-height: 180px; padding: var(--space-4); place-items: center; }
+.circuit-map-unavailable { display: grid; min-height: 180px; padding: var(--space-4); place-items: center; font-size: var(--text-sm); }

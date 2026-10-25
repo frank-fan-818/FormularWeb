@@ -1,0 +1,824 @@
+{
+  "checkedAt": "2026-10-24",
+  "catalogue": "Repository F1DB circuit catalogue (78 circuit identities)",
+  "standard": "Official publisher, identified layout/year, legible annotations, local asset, white presentation; historical layouts are not inferred from current maps.",
+  "circuits": [
+    {
+      "id": "adelaide",
+      "name": "Adelaide Street Circuit",
+      "status": "unavailable",
+      "reason": "找到的现行官方图是缩短后的 Supercars 路线，不能替代 1985–1995 F1 布局。",
+      "sources": [
+        "https://adelaidegrandfinal.com.au/about-us/history",
+        "https://assets.adelaide500.com.au/app/uploads/2025/11/25172610/3377-BP-Grand-Final-Map-Update-%C6%92-1.pdf"
+      ]
+    },
+    {
+      "id": "aida",
+      "name": "Okayama International Circuit",
+      "status": "covered",
+      "reason": "Okayama 3.703 km main circuit; official 2025 regulations page 64",
+      "sources": [
+        "https://www.okayama-international-circuit.jp/php/public_info_pdf/1742177806.pdf"
+      ]
+    },
+    {
+      "id": "ain_diab",
+      "name": "Ain-Diab Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.fia.com/documents/circuit-maps",
+        "https://www.grandprix.com.au/event/map",
+        "https://app.myracingcareer.com/en/track/adb/",
+        "https://www.lapledger.org/circuits/ain-diab"
+      ]
+    },
+    {
+      "id": "aintree",
+      "name": "Aintree Motor Racing Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.thejockeyclub.co.uk/aintree/plan-your-day/racecourse-map/",
+        "https://www.thejockeyclub.co.uk/globalassets/racecourses/aintree/owners-and-trainers-brochure-2026.pdf",
+        "https://www.thejockeyclub.co.uk/aintree/plan-your-day/",
+        "https://app.myracingcareer.com/en/track/aic/"
+      ]
+    },
+    {
+      "id": "anderstorp",
+      "name": "Anderstorp Raceway",
+      "status": "covered",
+      "reason": "2018 official 4.025 km course map with named corners and start/finish; not the pre-1978 configuration",
+      "sources": [
+        "https://www.scandinavianraceway.se/en/the-circuit/",
+        "https://www.scandinavianraceway.se/media/1304/anderstorp-banskiss-2018.jpg"
+      ]
+    },
+    {
+      "id": "austin",
+      "name": "Circuit of the Americas",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/united-states",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackaustindetailed.webp"
+      ]
+    },
+    {
+      "id": "avus",
+      "name": "AVUS",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.berlin.museum/en/article/the-avus",
+        "https://lapledger.org/circuits/avus",
+        "https://www.berlin.de/en/attractions-and-sights/5317411-3104052-avus.en.html",
+        "https://www.racingcircuits.info/europe/germany/avus.html"
+      ]
+    },
+    {
+      "id": "bahrain",
+      "name": "Bahrain International Circuit",
+      "status": "covered",
+      "reason": "2025 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2025/bahrain",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Bahrain_Circuit.webp"
+      ]
+    },
+    {
+      "id": "baku",
+      "name": "Baku City Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/azerbaijan",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackbakudetailed.webp"
+      ]
+    },
+    {
+      "id": "brands_hatch",
+      "name": "Brands Hatch",
+      "status": "covered",
+      "reason": "Grand Prix loop (2.433 miles), not the shorter Indy circuit",
+      "sources": [
+        "https://www.brandshatch.co.uk/about/circuit-layouts",
+        "https://msvstatic.com/documents/british-gt-f3-bh-29-30-august-Map.pdf"
+      ]
+    },
+    {
+      "id": "bremgarten",
+      "name": "Circuit Bremgarten",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.fia.com/documents/circuit-maps",
+        "https://radamring.de/de/service/lageplan",
+        "https://www.lapledger.org/circuits/bremgarten",
+        "https://www.statsf1.com/fr/circuit-bremgarten.aspx"
+      ]
+    },
+    {
+      "id": "buddh",
+      "name": "Buddh International Circuit",
+      "status": "covered",
+      "reason": "2013 Indian Grand Prix; sector timing, turns and DRS",
+      "sources": [
+        "https://api.fia.com/events/fia-formula-one-world-championship/season-2013/2013-indian-grand-prix-circuit-map",
+        "https://api.fia.com/sites/default/files/external_archive/node3786/16-india-circuit-print.pdf"
+      ]
+    },
+    {
+      "id": "buenos_aires",
+      "name": "Autódromo Juan y Oscar Gálvez",
+      "status": "unavailable",
+      "reason": "官网场地图展示多条支线，缺少明确的弯道与布局编号，不采用。",
+      "sources": [
+        "https://www.ciudadautodromo.com/autodromo",
+        "https://formulanacional.com.ar/archivos/204-kit-de-prensa-5-fecha-top-race-bs-as.pdf",
+        "https://www.toprace.com.ar/upload/material_previo/348/Kit_de_prensa_5%C2%B0_fecha_Top_Race_BS_AS.pdf",
+        "https://nuevaescocia.com/track/autodromo-galvez-apvs/"
+      ]
+    },
+    {
+      "id": "bugatti",
+      "name": "Bugatti Circuit",
+      "status": "covered",
+      "reason": "2024 modern Bugatti 4.185 km layout; not the 1967 F1 configuration",
+      "sources": [
+        "https://www.fim-moto.com/fileadmin/user_upload/Documents/2024/2024_24HMotos_-_Reglt_Particulier-S.Regulations___V04.03_2024.pdf?t=1764917609"
+      ]
+    },
+    {
+      "id": "caesars_palace",
+      "name": "Caesars Palace",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://app.myracingcareer.com/en/track/cae/",
+        "https://ticketing.formula1.com/las-vegas/",
+        "https://www.fia.com/sites/default/files/2025-officialmediakit_booklet-digital-final_11.14.25.pdf",
+        "https://www.fia.com/sites/default/files/2024-officialmediakit_booklet-digital-11.15.24.pdf"
+      ]
+    },
+    {
+      "id": "catalunya",
+      "name": "Circuit de Barcelona-Catalunya",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/barcelona-catalunya",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackcatalunyadetailed.webp"
+      ]
+    },
+    {
+      "id": "clermont_ferrand",
+      "name": "Charade Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.inauvergnerhonealpes.com/en/files/circuit-de-charade/",
+        "https://leblog.ffve.org/patrimoine-la-renaissance-du-grand-circuit-de-charade/",
+        "https://www.funcup.be/charade-2026/",
+        "https://www.funcup.be/charade/"
+      ]
+    },
+    {
+      "id": "dallas",
+      "name": "Fair Park",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.fairparkdallas.com/visit/map",
+        "https://www.fairparkdallas.com/parking?vendor=here",
+        "https://www.fairparkdallas.com/visit/a-z-guide",
+        "https://www.fairparkdallas.com/visit"
+      ]
+    },
+    {
+      "id": "detroit",
+      "name": "Detroit Street Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.detroitgp.com/event-info/track-map",
+        "https://www.detroitgp.com/-/media/DETROIT/pdf/2026/26tracknew.pdf",
+        "https://www.detroithistorical.org/learn/online-research/encyclopedia-of-detroit/detroit-grand-prix",
+        "https://www.detroitgp.com/event-info/race-history"
+      ]
+    },
+    {
+      "id": "dijon",
+      "name": "Dijon-Prenois",
+      "status": "covered",
+      "reason": "2026 3.801 km course including Parabolique; corners T1–T9, not the shorter 1974 layout",
+      "sources": [
+        "https://www.circuit-dijon-prenois.com/contact-acces/",
+        "https://www.circuit-dijon-prenois.com/wp-content/uploads/2026/05/plan-circuit-2026-avec-VS.png"
+      ]
+    },
+    {
+      "id": "donington",
+      "name": "Donington Park",
+      "status": "covered",
+      "reason": "Grand Prix circuit including Melbourne Hairpin; official programme page 15",
+      "sources": [
+        "https://www.donington-park.co.uk/about/circuit-layouts",
+        "https://docs.msv.com/2025-Race-Programme-Donington-GP.pdf"
+      ]
+    },
+    {
+      "id": "east_london",
+      "name": "Prince George Circuit",
+      "status": "unavailable",
+      "reason": "已下载 MSA 2026 赛事补充规则，文件内没有可用的技术布局图。",
+      "sources": [
+        "https://www.motorsport.co.za/wp-content/uploads/2026/03/BMSC-Main-Circuit-SRs-25-April-2026.pdf",
+        "https://www.motorsport.co.za/wp-content/uploads/2025/10/BMSC-Main-Circuit-SRs-8-November-2025.pdf",
+        "https://www.motorsport.co.za/wp-content/uploads/2025/05/BMSC-Main-Circuit-SRs-24-May-2025.pdf",
+        "https://www.donington-park.co.uk/about/circuit-layouts"
+      ]
+    },
+    {
+      "id": "estoril",
+      "name": "Autódromo do Estoril",
+      "status": "covered",
+      "reason": "2025 WorldSBK 4.182 km layout including Gancho; not the pre-1994 F1 configuration",
+      "sources": [
+        "https://resources.worldsbk.com/files/results/2025/EST/SBK/L1A/MAP/Track.pdf?version=c86616926f558f6f14f48d5dae89b9d7"
+      ]
+    },
+    {
+      "id": "fuji",
+      "name": "Fuji Speedway",
+      "status": "covered",
+      "reason": "2022 WEC modern Fuji course; named corners and sector boundaries, not the 1976–1977 layout",
+      "sources": [
+        "https://storage.googleapis.com/fiawec-prod/assets/fileuploads/63/0c/630c76c9a4b6c.pdf"
+      ]
+    },
+    {
+      "id": "hockenheimring",
+      "name": "Hockenheimring",
+      "status": "covered",
+      "reason": "2019 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2019/germany",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Germany_Circuit_Hockenheim.webp"
+      ]
+    },
+    {
+      "id": "hungaroring",
+      "name": "Hungaroring",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/hungary",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackhungaroringdetailed.webp"
+      ]
+    },
+    {
+      "id": "imola",
+      "name": "Autodromo Internazionale Enzo e Dino Ferrari",
+      "status": "covered",
+      "reason": "2025 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2025/emiliaromagna",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Emilia_Romagna_Circuit.webp"
+      ]
+    },
+    {
+      "id": "indianapolis",
+      "name": "Indianapolis Motor Speedway",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.indymotorspeedway.com/500maps.html",
+        "https://www.indianapolismotorspeedway.com/history/formula-one"
+      ]
+    },
+    {
+      "id": "interlagos",
+      "name": "Autódromo José Carlos Pace",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/brazil",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackinterlagosdetailed.webp"
+      ]
+    },
+    {
+      "id": "istanbul",
+      "name": "Istanbul Park",
+      "status": "covered",
+      "reason": "2021 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2021/turkey",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Turkey_Circuit.webp"
+      ]
+    },
+    {
+      "id": "jacarepagua",
+      "name": "Autódromo Internacional Nelson Piquet",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://m1gp.com.br/wp-content/uploads/2025/05/interlagos_mapa_pista.pdf",
+        "https://www.chronon.com.br/wp-content/uploads/2025/11/Brasiliapista.pdf",
+        "https://app.myracingcareer.com/en/track/jpg/",
+        "https://51gt3.com/en/track/jacarepagua"
+      ]
+    },
+    {
+      "id": "jarama",
+      "name": "Circuito del Jarama",
+      "status": "unavailable",
+      "reason": "官方 PDF 已定位，但多次请求超时，未能下载核验。",
+      "sources": [
+        "https://www.jarama.org/jarama/wp-content/uploads/2019/11/Plano-Asistencia-2019_.pdf",
+        "https://www.race.es/conocenos/circuito-del-jarama",
+        "https://www.esmadrid.com/deporte/circuito-madrid-jarama-race",
+        "https://www.jarama.org/jarama/wp-content/uploads/2021/03/booklet_uv_13_03_2021REDUC.pdf"
+      ]
+    },
+    {
+      "id": "jeddah",
+      "name": "Jeddah Corniche Circuit",
+      "status": "covered",
+      "reason": "2025 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2025/saudi-arabia",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Saudi_Arabia_Circuit.webp"
+      ]
+    },
+    {
+      "id": "jerez",
+      "name": "Circuito de Jerez",
+      "status": "covered",
+      "reason": "2023 official venue plan; motorcycle route and alternative F1 chicane shown",
+      "sources": [
+        "https://circuitodejerez.com/circuito/",
+        "https://circuitodejerez.com/wp-content/uploads/2023/09/plano-web-circuito-2023.jpg"
+      ]
+    },
+    {
+      "id": "kyalami",
+      "name": "Kyalami Racing Circuit",
+      "status": "covered",
+      "reason": "Modern 16-turn Kyalami layout; not the 1961–1985 or 1992–1993 F1 configuration",
+      "sources": [
+        "https://www.kyalamigrandprixcircuit.com/about-kyalami/",
+        "https://www.kyalamigrandprixcircuit.com/wp-content/uploads/2025/08/Kyalami-web-elements-800-x-800-px-4.webp"
+      ]
+    },
+    {
+      "id": "las_vegas",
+      "name": "Las Vegas Street Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/las-vegas",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklasvegasdetailed.webp"
+      ]
+    },
+    {
+      "id": "long_beach",
+      "name": "Long Beach",
+      "status": "unavailable",
+      "reason": "官方 2024 媒体指南有现行 IndyCar 图和历史小图，但未找到符合清晰度与标注标准的 F1 年代独立图。",
+      "sources": [
+        "https://gplb.com/circuit-map",
+        "https://imsa.results.alkamelcloud.com/Results_NoticeBoard/26-2026/07_Long%20Beach%20Street%20Circuit/09_Briefing%20Photos/01_IWSC%20DRIVER%20BRIEFING.pdf",
+        "https://www.corvetteflorida.com/forums/threads/long-beach-race-info.128026/",
+        "https://www.indycar.com/Schedule/2026/Long-Beach"
+      ]
+    },
+    {
+      "id": "lusail",
+      "name": "Lusail International Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/qatar",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklusaildetailed.webp"
+      ]
+    },
+    {
+      "id": "madring",
+      "name": "Circuito de Madring",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/spain",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.webp"
+      ]
+    },
+    {
+      "id": "magny_cours",
+      "name": "Circuit de Nevers Magny-Cours",
+      "status": "covered",
+      "reason": "Piste Grand Prix; named corners and start/finish",
+      "sources": [
+        "https://www.circuitmagnycours.com/en/documents-officiels/"
+      ]
+    },
+    {
+      "id": "marina_bay",
+      "name": "Marina Bay Street Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/singapore",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksingaporedetailed.webp"
+      ]
+    },
+    {
+      "id": "melbourne",
+      "name": "Melbourne Grand Prix Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/australia",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmelbournedetailed.webp"
+      ]
+    },
+    {
+      "id": "mexico_city",
+      "name": "Autódromo Hermanos Rodríguez",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/mexico",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmexicocitydetailed.webp"
+      ]
+    },
+    {
+      "id": "miami",
+      "name": "Miami International Autodrome",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/miami",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmiamidetailed.webp"
+      ]
+    },
+    {
+      "id": "monaco",
+      "name": "Circuit de Monaco",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/monaco",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontecarlodetailed.webp"
+      ]
+    },
+    {
+      "id": "monsanto",
+      "name": "Circuito de Monsanto",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://f1-circuits-svg.alwaysdata.net/",
+        "https://www.racingcircuits.info/europe/portugal/monsanto-park.html",
+        "https://www.fia.com/documents/circuit-maps",
+        "https://en.mclarenf-1.com/circuits/19/monsanto-park"
+      ]
+    },
+    {
+      "id": "mont_tremblant",
+      "name": "Circuit Mont-Tremblant",
+      "status": "unavailable",
+      "reason": "官网原图已定位并下载，只有无标注的轮廓线，不符合本次图库标准。",
+      "sources": [
+        "https://www.pistemonttremblant.com/en/infos/caracteristique-techniques-circuit/",
+        "https://tadvantagegroupprod-com.cdn-convertus.com/uploads/sites/342/2022/12/track-graphic.svg"
+      ]
+    },
+    {
+      "id": "montjuic",
+      "name": "Circuito de Montjuïc",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.fia.com/system/files/decision-document/2026_barcelona_event_-_circuit_map_-_barcelona_2026.pdf",
+        "https://www.formula1.com/en/latest/article/the-official-formula-1-race-guide-app-the-ultimate-companion-to-your-race-weekend.3dyo4EJGM0Y6QOoS8ks42e.3dyo4EJGM0Y6QOoS8ks42e",
+        "https://espiritudemontjuic.com/en/how-to-get-here/",
+        "https://www.racingcircuits.info/europe/spain/montjuic.html"
+      ]
+    },
+    {
+      "id": "montreal",
+      "name": "Circuit Gilles Villeneuve",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/canada",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontrealdetailed.webp"
+      ]
+    },
+    {
+      "id": "monza",
+      "name": "Autodromo Nazionale Monza",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/italy",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmonzadetailed.webp"
+      ]
+    },
+    {
+      "id": "mosport",
+      "name": "Canadian Tire Motorsport Park",
+      "status": "covered",
+      "reason": "2025 Canadian Tire Motorsport Park Grand Prix course; turns and start/finish",
+      "sources": [
+        "https://www.mx-5cup.com/docs/default-source/default-document-library/ctmp_2025_v1_track_map.pdf?sfvrsn=385955e5_1"
+      ]
+    },
+    {
+      "id": "mugello",
+      "name": "Autodromo Internazionale del Mugello",
+      "status": "covered",
+      "reason": "2020 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2020/tuscany",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Tuscany_Circuit.webp"
+      ]
+    },
+    {
+      "id": "nivelles",
+      "name": "Nivelles-Baulers",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.lapledger.org/circuits/nivelles",
+        "https://www.racingcircuits.info/europe/belgium/nivelles-baulers.html",
+        "https://lapledger.org/circuits/nivelles",
+        "https://perencz.hu/f1/circuit/nivelles/info/"
+      ]
+    },
+    {
+      "id": "nurburgring",
+      "name": "Nürburgring",
+      "status": "covered",
+      "reason": "2020 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2020/germany",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Germany_Circuit.webp"
+      ]
+    },
+    {
+      "id": "paul_ricard",
+      "name": "Circuit Paul Ricard",
+      "status": "covered",
+      "reason": "2022 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2022/france",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/France_Circuit.webp"
+      ]
+    },
+    {
+      "id": "pedralbes",
+      "name": "Pedralbes Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.formula1.com/en/latest/article/from-pedralbes-to-catalunya-a-short-history-of-the-5-venues-to-have-hosted.3VMs6iFXohT6vY7cLAGfgF",
+        "https://perencz.hu/f1/circuit/pedralbes/info/",
+        "https://lapledger.org/circuits/pedralbes",
+        "https://www.formula1.com/en/results/1954/races/134/spain/race-result"
+      ]
+    },
+    {
+      "id": "pescara",
+      "name": "Pescara Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://www.lapledger.org/circuits/pescara",
+        "https://www.fia.com/documents/circuit-maps",
+        "https://autoaction.com.au/wp-content/uploads/2026/04/1917-Premium-Print_small.pdf",
+        "https://commons.wikimedia.org/wiki/File%3APescara_track.jpg"
+      ]
+    },
+    {
+      "id": "phoenix",
+      "name": "Phoenix Street Circuit",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File%3APhoenix_Grand_Prix_Route_-_1991.svg",
+        "https://www.racingcircuits.info/north-america/usa/phoenix-street-circuit.html",
+        "https://www.phoenixraceway.com/maps/",
+        "https://f1-circuits-svg.alwaysdata.net/"
+      ]
+    },
+    {
+      "id": "portimao",
+      "name": "Algarve International Circuit",
+      "status": "covered",
+      "reason": "2021 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2021/portugal",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Portugal_Circuit.webp"
+      ]
+    },
+    {
+      "id": "porto",
+      "name": "Circuito da Boavista",
+      "status": "covered",
+      "reason": "1958 Circuito do Porto (Boavista); original archival scan, street labels and elevation profile; original paper colour retained",
+      "sources": [
+        "https://portalmedia.acp.pt/m/466403bd6546e17e/original/1958_Grande_Premio_Portugal.pdf"
+      ]
+    },
+    {
+      "id": "reims",
+      "name": "Reims-Gueux",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://tourisme-en-champagne.com/activite/circuit-automobile-de-reims-gueux/",
+        "https://www.grandreims.fr/fileadmin/grandreims/MEDIA/Les_competences/Urbanisme/Gueux/Gueux_Revision/DOSSIER_APPRO_GUEUX/Gueux___1__Rapport_de_presentation.pdf",
+        "https://www.racingcircuits.info/europe/france/reims.html",
+        "https://tourisme-en-champagne.com/en/activite/circuit-automobile-de-reims-gueux/"
+      ]
+    },
+    {
+      "id": "riverside",
+      "name": "Riverside International Raceway",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://bringatrailer.com/2021/09/28/riverside-at-the-headwaters/?switch_language=1",
+        "https://www.riversidespeedway.ca/wp-content/uploads/2013/10/140806_seats.pdf",
+        "https://commons.wikimedia.org/wiki/Category%3ARiverside_International_Raceway_circuit_maps",
+        "https://www.riversidespeedway.ca/event/site-map/"
+      ]
+    },
+    {
+      "id": "rouen",
+      "name": "Rouen-Les-Essarts",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://lapledger.org/circuits/rouen",
+        "https://lelabracing.com/fr/circuit/essarts/",
+        "https://www.forix.com/8w/rouen-facts.html",
+        "https://fr.wikipedia.org/wiki/Circuit_de_Rouen-les-Essarts"
+      ]
+    },
+    {
+      "id": "sebring",
+      "name": "Sebring International Raceway",
+      "status": "covered",
+      "reason": "2026 modern 17-turn course; not the original 1959 F1 layout",
+      "sources": [
+        "https://imsa.results.alkamelcloud.com/Results_NoticeBoard/26-2026/06_Sebring%20International%20Raceway/",
+        "https://imsa.results.alkamelcloud.com/Results_NoticeBoard/26-2026/06_Sebring%20International%20Raceway/04_Track%20Map.pdf"
+      ]
+    },
+    {
+      "id": "sepang",
+      "name": "Sepang International Circuit",
+      "status": "covered",
+      "reason": "2026 Sepang Kuala Lumpur detailed circuit map; not Bahrain Sakhir",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/bahrain",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackkualalumpurdetailed.webp"
+      ]
+    },
+    {
+      "id": "shanghai",
+      "name": "Shanghai International Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/china",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackshanghaidetailed.webp"
+      ]
+    },
+    {
+      "id": "silverstone",
+      "name": "Silverstone Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/great-britain",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksilverstonedetailed.webp"
+      ]
+    },
+    {
+      "id": "sochi",
+      "name": "Sochi Autodrom",
+      "status": "covered",
+      "reason": "2021 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2021/russia",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Russia_Circuit.webp"
+      ]
+    },
+    {
+      "id": "spa_francorchamps",
+      "name": "Circuit de Spa-Francorchamps",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/belgium",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspafrancorchampsdetailed.webp"
+      ]
+    },
+    {
+      "id": "spielberg",
+      "name": "Red Bull Ring",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/austria",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspielbergdetailed.webp"
+      ]
+    },
+    {
+      "id": "suzuka",
+      "name": "Suzuka Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/japan",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksuzukadetailed.webp"
+      ]
+    },
+    {
+      "id": "valencia",
+      "name": "Valencia Street Circuit",
+      "status": "unavailable",
+      "reason": "未找到可下载并核验的官方街道赛技术图；永久赛道 Ricardo Tormo 不是此赛道。",
+      "sources": [
+        "https://www.pitpass.com/46587/FIA-confirms-single-Valencia-DRS-zone"
+      ]
+    },
+    {
+      "id": "watkins_glen",
+      "name": "Watkins Glen International",
+      "status": "covered",
+      "reason": "2026 full course with Boot and Inner Loop; not the pre-1992 F1 configuration",
+      "sources": [
+        "https://imsa.results.alkamelcloud.com/Results_NoticeBoard/26-2026/14_Watkins%20Glen%20International/",
+        "https://imsa.results.alkamelcloud.com/Results_NoticeBoard/26-2026/14_Watkins%20Glen%20International/04_Track%20Map.pdf"
+      ]
+    },
+    {
+      "id": "yas_marina",
+      "name": "Yas Marina Circuit",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/united-arab-emirates",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackyasmarinacircuitdetailed.webp"
+      ]
+    },
+    {
+      "id": "yeongam",
+      "name": "Korea International Circuit",
+      "status": "covered",
+      "reason": "2013 Korean Grand Prix; full GP layout, sectors and DRS",
+      "sources": [
+        "https://api.fia.com/events/fia-formula-one-world-championship/season-2013/2013-korean-grand-prix-circuit-map",
+        "https://api.fia.com/sites/default/files/external_archive/node3784/14-korea-circuit-print.pdf"
+      ]
+    },
+    {
+      "id": "zandvoort",
+      "name": "Circuit Park Zandvoort",
+      "status": "covered",
+      "reason": "2026 Formula 1 official circuit map",
+      "sources": [
+        "https://www.formula1.com/en/racing/2026/netherlands",
+        "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackzandvoortdetailed.webp"
+      ]
+    },
+    {
+      "id": "zeltweg",
+      "name": "Zeltweg",
+      "status": "unavailable",
+      "reason": "已检索，未找到可下载、可核验、带清晰标注的官方布局图；不采用第三方重绘图。",
+      "sources": [
+        "https://perencz.hu/f1/circuit/zeltweg/info/",
+        "https://c1940652.r52.cf0.rackcdn.com/530cb9e0b8d39a0f0800009c/streckendetails_oesterreich.pdf",
+        "https://zeltweg.at/de/zeltweg/Geschichte_Zeltwegs.asp?vt=1",
+        "https://commons.wikimedia.org/wiki/File%3ACircuit_Zeltweg.svg"
+      ]
+    },
+    {
+      "id": "zolder",
+      "name": "Circuit Zolder",
+      "status": "unavailable",
+      "reason": "官方 2019 活动场地图已定位，下载连接反复中断，未能验证原文件；暂不入库。",
+      "sources": [
+        "https://www.circuit-zolder.be/wp-content/uploads/2019/08/General-map-ES24HoZ-venue.pdf"
+      ]
+    }
+  ]
+}

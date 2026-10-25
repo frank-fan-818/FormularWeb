@@ -1,0 +1,19 @@
+# Official circuit library expansion QA
+
+- Date: 2026-10-23 to 2026-10-24.
+- Branch: codex/ui-loading-polish-release; local changes after release 1.2.5.
+- Build URL: production bundle served temporarily at http://127.0.0.1:4173.
+- Scope: all 78 repository circuit identities audited; 18 verified official maps added to the previous 32. Final coverage is 50 maps and 28 documented gaps. Sources and decisions: `docs/official-circuit-map-library.md`, `scripts/data/circuit-map-coverage.json` and `src/data/circuit-detailed-maps.json`.
+- Sources: original F1/FIA/circuit/promoter/series images or selected official PDF pages. Every asset records publisher, layout/year, source URL, dimensions, byte count and SHA-256. PDF entries also record original file size/hash, page and rendering parameters. No invented corner labels or third-party silhouettes were added.
+- Layout limitations: some historical venues have current official layouts; their source year and historical differences are recorded. The 1958 Porto archive scan retains its original paper colour inside the white viewer. Specification cards were not recalculated from those different-year maps.
+- UI: white viewer/loading/unavailable/dialog surfaces in either theme, bounded portrait previews, mixed JPEG/PNG/WebP support and intrinsic-width scrolling in the zoom dialog. Zoom labels now occupy their own row so they cannot cover corner labels or legends.
+- Routes: `/circuits`; Shanghai, Monaco, Jeddah, Adelaide, Buddh, Jerez, Dijon, Kyalami, Porto and Anderstorp profiles; required smoke routes `/`, `/races`, `/races/1`, `/drivers/max_verstappen`, `/constructors/red_bull`, `/circuits/monaco`.
+- Viewports: desktop 1440×900, tablet 768×1024, mobile 375×812; light/dark themes and reduced motion.
+- Unit/data verification: 678 Vitest tests across 108 files passed, including 70 coverage/alias/integrity checks. Four Node importer tests passed: rejected IDs/paths/provenance, repeated import, refusal to replace reviewed records, duplicate IDs and corrupt/dimension-mismatched bytes. Full library check passed at 50/78.
+- Build/static verification: strict lint, TypeScript, UTF-8 encoding (495 source files), font verification (716 UI codepoints), production build and performance budgets passed. Existing mixed static/dynamic logger import warning remains unrelated to this change.
+- Browser verification: final production-build run passed all 12 circuit cases across desktop/tablet/mobile, plus all six required desktop route smoke cases. Successful map flows had no unexpected console errors or failed requests; the intentional delayed/404 asset case retained its explicit error state. Both themes, native-size zoom, Escape/focus return, no horizontal page overflow, lazy atlas navigation and non-overlapping zoom labels passed.
+- Visual finding resolved: the original floating zoom badge covered the Anderstorp legend on mobile. A new geometric assertion first reproduced the overlap; the badge now follows the image in normal layout. Updated representative screenshots were inspected directly.
+- Performance: initial JavaScript 80.4 KiB gzip; Home path 91.9 KiB gzip. Fifty map files total 7,509,781 bytes; largest single map is 674,448 bytes. Assets load only in the circuit flow, and atlas previews retain native lazy loading.
+- Evidence: ignored `artifacts/circuit-reference/{unit-expanded,build-expanded,browser-expanded,smoke-expanded}.log`; screenshots under `artifacts/browser-qa/screenshots/library-{circuitId}-{theme}-{project}.png`, plus existing white atlas/detail/dialog evidence. Delayed/error images and unsupported circuits have dedicated browser cases.
+- Blocking: none found in the completed checks. The 28 source gaps are coverage limitations rather than silent substitutes; the UI retains its explicit unavailable state.
+- No commit, push, PR, merge or deployment performed for this batch.
