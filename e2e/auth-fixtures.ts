@@ -13,6 +13,7 @@ export const testSession = {
 
 export async function enterAsGuest(page: Page) {
   await page.addInitScript(() => sessionStorage.setItem('f1-guest-access', '1'));
+  await mockPitStopData(page);
 }
 
 export async function enterAsMember(page: Page) {
@@ -21,9 +22,23 @@ export async function enterAsMember(page: Page) {
 }
 
 export async function mockAuth(page: Page) {
+  await mockPitStopData(page);
   await mockTurnstile(page);
   await page.route('**/auth/v1/**', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify(route.request().url().includes('/user') ? testSession.user : testSession),
   }));
+}
+
+// Existing route fixtures must not start live timing-provider requests.
+// Pit-stop-specific tests register their populated/error fixtures afterward.
+async function mockPitStopData(page: Page) {
+  await page.route('**/api/pit-stops?**', route => {
+    const query = new URL(route.request().url()).searchParams;
+    const season = query.get('season') || '2026';
+    const base = { season, updatedAt: new Date().toISOString(), stale: false };
+    return route.fulfill({ json: query.get('kind') === 'race'
+      ? { ...base, records: [] }
+      : { ...base, seasons: [Number(season)], source: 'https://inmotion.dhl/en/formula-1/fastest-pit-stop-award', standings: [], stops: [] } });
+  });
 }

@@ -19,6 +19,7 @@ This batch was explicitly approved for push and production deployment. The curre
 - Data-source discovery, pagination, official positions, upstream validation and invalid-request tests are included in `deployment:verify` for CI.
 - Responsive, live-source and route evidence is recorded in [pit stop QA](browser-qa-pit-stops-2026-10-25.md).
 - Credentials, browser traces, screenshots, dependency directories and private exports are excluded from Git and deployment uploads.
+- Existing browser fixtures return empty timing data by default so unrelated race tests never contact live providers. Feature tests override them with explicit populated/error cases; live-source verification remains separate. The news-cache test waits for its filtered row count before applying a single-element text assertion.
 
 ## Production verification record
 
