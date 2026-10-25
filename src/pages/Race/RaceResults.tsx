@@ -9,6 +9,7 @@ import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { SessionDriverCell } from '@/pages/Race/shared/components/SessionDriverCell';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { useRaceData } from './RaceContext';
+import RacePitStops from '@/components/pitStops/RacePitStops';
 
 interface TabItem {
   key: RaceClassificationSessionKey;
@@ -30,6 +31,8 @@ const SESSION_CODES: Record<RaceClassificationSessionKey, string> = {
 const RaceResults = () => {
   const { t } = useTranslation();
   const {
+    season,
+    round,
     raceResults,
     qualifyingResults,
     sprintResults,
@@ -328,6 +331,7 @@ const RaceResults = () => {
           }))}
         />
       </section>
+      <RacePitStops key={`${season}:${round}`} season={season} round={round} pending={!raceResults.length && Boolean(raceInfo && Date.parse(`${raceInfo.date}T${raceInfo.time || '00:00:00Z'}`) > Date.now())} />
     </div>
   );
 };

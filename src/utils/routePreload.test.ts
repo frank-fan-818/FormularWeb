@@ -5,6 +5,7 @@ describe('route preload policy', () => {
   it('maps direct and nested routes to the smallest useful module set', () => {
     expect(getRoutePreloadKeys('/seasons')).toEqual(['seasons']);
     expect(getRoutePreloadKeys('/news')).toEqual(['news']);
+    expect(getRoutePreloadKeys('/pit-stops')).toEqual([]);
     expect(getRoutePreloadKeys('/drivers/max_verstappen')).toEqual(['driverDetail']);
     expect(getRoutePreloadKeys('/races/7')).toEqual(['raceLayout', 'raceResults']);
     expect(getRoutePreloadKeys('/races/7/info')).toEqual(['raceLayout', 'raceInfo']);

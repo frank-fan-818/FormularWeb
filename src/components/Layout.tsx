@@ -189,6 +189,7 @@ const resolveActiveNavKey = (pathname: string) => {
   }
 
   if (pathname === '/news' || pathname.startsWith('/news/')) return '/news';
+  if (pathname === '/pit-stops') return '/pit-stops';
 
   return '';
 };
@@ -218,6 +219,7 @@ const LayoutComponent = () => {
     { key: '/news', icon: NewsIcon, label: t('newsTitle') },
     { key: '/seasons', icon: SeasonIcon, label: t('seasonStandings') },
     { key: '/races', icon: RaceIcon, label: t('races') },
+    { key: '/pit-stops', icon: ConstructorIcon, label: i18n.language === 'en' ? 'Pit stops' : '进站榜' },
     { key: '/drivers', icon: DriverIcon, label: t('drivers') },
     { key: '/constructors', icon: ConstructorIcon, label: t('constructors') },
     { key: '/circuits', icon: CircuitIcon, label: t('circuits') },
