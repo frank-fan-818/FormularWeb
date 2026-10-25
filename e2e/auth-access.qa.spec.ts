@@ -67,6 +67,8 @@ test('first-visit cleanup leaves IndexedDB initialization to the cache adapter',
 test('first visit shows a standalone login; guest choice survives refresh', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  const homeResponses = ['/2026/driverStandings.json', '/2026/constructorStandings.json', '/2026.json', '/seasons.json']
+    .map(path => page.waitForResponse(response => new URL(response.url()).pathname === `/f1-api${path}`));
   await page.goto('/');
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
@@ -76,10 +78,12 @@ test('first visit shows a standalone login; guest choice survives refresh', asyn
   await page.getByRole('button', { name: '以游客身份浏览' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
-  // Firefox can still be completing the original document load after the SPA
-  // switches routes. Reload the settled document, not that in-flight load.
+  // Guest controls render before the home document and its mocked data settle.
+  // Verify persistence after a completed visit, without aborting initial requests.
+  await Promise.all(homeResponses.map(async response => (await response).finished()));
+  await expect(page.locator('.home-command-surface')).toBeVisible();
   await page.waitForLoadState('load');
-  await page.reload();
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: '游客 · 登录' })).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -3,6 +3,7 @@ import { Button, Card, Tag } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, CarOutlined, FlagOutlined, TrophyOutlined } from '@ant-design/icons';
 import DocumentHead from '@/components/DocumentHead';
 import CircuitImage from '@/components/circuits/CircuitImage';
+import { getCircuitDetailedMap } from '@/data/circuitDetailedMaps';
 import { useCircuitDetailData } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { Circuit, CircuitRouteState, Race } from '@/types';
@@ -105,6 +106,7 @@ const CircuitDetail = () => {
   }
 
   const enhancement = getCircuitEnhancement(circuit.circuitId);
+  const detailedMap = getCircuitDetailedMap(circuit.circuitId);
   const leftRightTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
     ? `${enhancement.leftTurns}L / ${enhancement.rightTurns}R`
     : TEXT.pendingData;
@@ -138,7 +140,7 @@ const CircuitDetail = () => {
       <ProductSectionHeader title="赛道布局与参数" />
       <div className="content-grid">
         <figure className="circuit-layout-panel" aria-label="赛道布局">
-          <div className="circuit-layout-heading"><h2>赛道布局</h2><span>GRAND PRIX CIRCUIT</span></div>
+          <div className="circuit-layout-heading"><h2>赛道布局</h2><span>{detailedMap?.year ? `${detailedMap.year} CIRCUIT MAP` : 'CIRCUIT MAP'}</span></div>
           <div className="circuit-layout-canvas">
             <CircuitImage
               alt={circuit.circuitName}

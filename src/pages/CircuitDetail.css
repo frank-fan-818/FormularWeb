@@ -79,20 +79,8 @@
   flex: 1;
   min-height: 320px;
   padding: var(--space-5);
-  background-image: linear-gradient(var(--race-control-grid) 1px, transparent 1px), linear-gradient(90deg, var(--race-control-grid) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background: var(--surface-dark-text);
 }
-.circuit-technical-map { width: 100%; max-width: 680px; }
-.circuit-technical-map svg { display: block; width: 100%; height: auto; max-height: 380px; overflow: visible; filter: none; }
-.circuit-track-edge,
-.circuit-track-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.circuit-track-edge { stroke: var(--race-control-track); stroke-width: 12; }
-.circuit-track-line { stroke: var(--text-primary); stroke-width: 5; }
-.circuit-turn-label circle { fill: var(--bg-card); stroke: var(--border-primary); stroke-width: 1; }
-.circuit-turn-label text { fill: var(--text-primary); font: 600 13px var(--font-mono); }
-.circuit-travel-arrow { fill: none; stroke: var(--f1-red); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.circuit-finish-label { fill: var(--text-primary); font: 700 12px var(--font-mono); }
-.circuit-image-loading { width: 100%; min-height: 240px; background: var(--bg-tertiary); border-radius: var(--radius-md); }
 
 .circuit-engineering-page .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--border-secondary); border: 1px solid var(--border-secondary); }
 .circuit-engineering-page .stat-card { border: 0; border-radius: 0; box-shadow: none; }

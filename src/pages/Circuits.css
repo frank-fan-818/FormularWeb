@@ -151,17 +151,12 @@
   min-height: 210px;
   place-items: center;
   overflow: hidden;
-  background:
-    linear-gradient(var(--race-control-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--race-control-grid) 1px, transparent 1px),
-    var(--race-control-panel);
-  background-size: 22px 22px;
+  background: var(--surface-dark-text);
   border-bottom: 1px solid var(--border-secondary);
 }
 
 .circuit-atlas-map > div { width: 100%; min-height: 180px !important; }
-.circuit-atlas-image { width: 78%; max-width: 280px; height: 160px; object-fit: contain; filter: contrast(1.2); transition: transform 350ms var(--ease-out-expo); }
-.circuit-atlas-card:hover .circuit-atlas-image { transform: scale(1.06) rotate(-1deg); }
+.circuit-detailed-map--preview .circuit-atlas-image { width: 100%; max-width: none; height: 180px; object-fit: contain; }
 .circuit-atlas-index { position: absolute; top: 14px; left: 14px; color: var(--race-control-apex); font: 800 11px/1 var(--font-mono); letter-spacing: 0.08em; }
 
 .circuit-atlas-copy { padding: 20px 20px 14px; }
@@ -204,7 +199,7 @@
   .circuit-atlas-grid { grid-template-columns: 1fr; }
   .circuit-atlas-map { min-height: 170px; }
   .circuit-atlas-map > div { min-height: 150px !important; }
-  .circuit-atlas-image { height: 130px; }
+  .circuit-detailed-map--preview .circuit-atlas-image { height: 150px; }
   .circuit-atlas-copy h2 { min-height: 0; font-size: 22px; }
   .list-page-container {
     padding: var(--space-2);
