@@ -14,12 +14,13 @@ it('cancels the old season request and never applies its late response', async (
   act(() => { view = create(<Probe season="2024" />); });
   act(() => view!.update(<Probe season="2025" />));
   expect(pending[0].signal.aborted).toBe(true);
-  const data: AwardData = { season: '2025', seasons: [2025], standings: [{team:'A',rank:1,points:1}], stops: [], source:'https://inmotion.dhl', updatedAt: '2026-10-25T00:00:00Z', stale: false };
+  const data: AwardData = { season: '2025', seasons: [2025], standings: [{team:'A',rank:1,points:1}], stops: [], seasonFastest: [{ id:'fastest', rank:1, driver:'Oscar Piastri', team:'McLaren', event:'Monza', eventAbbreviation:'ITA', duration:'1.91' }], source:'https://inmotion.dhl', updatedAt: '2026-10-25T00:00:00Z', stale: false };
   await act(async () => pending[1].resolve(data));
   await act(async () => pending[0].resolve({ ...data, season:'2024' }));
   expect(state.data?.season).toBe('2025');
   vi.mocked(getAwardData).mockRejectedValueOnce(Error('offline'));
   await act(async () => state.retry());
   expect(state.data?.standings).toHaveLength(1);
+  expect(state.data?.seasonFastest[0].duration).toBe('1.91');
   expect(state.data?.stale).toBe(true);
 });

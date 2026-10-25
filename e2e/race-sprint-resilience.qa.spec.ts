@@ -250,6 +250,11 @@ test('Sprint classifications load without Supabase session discovery', async ({ 
 
   await expect(page.getByRole('tab', { name: /冲刺排位赛/ })).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByText('1:30.789', { exact: true })).toBeVisible();
+  const qualifyingPanel = page.getByRole('tabpanel', { name: '冲刺排位赛', exact: true });
+  await expect(qualifyingPanel.getByRole('columnheader', { name: 'S1', exact: true })).toBeVisible();
+  await expect(qualifyingPanel.getByRole('heading', { name: '圈速走势', exact: true })).toHaveCount(0);
+  await expect(qualifyingPanel.locator('.chart-panel')).toHaveCount(0);
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/sprint-qualifying-compact-${testInfo.project.name}.png`, fullPage: true });
   await page.getByRole('tab', { name: /^冲刺赛/ }).click();
   await expect(page.getByText('30:39.965', { exact: true })).toBeVisible();
   await expect(page.getByRole('cell', { name: '19', exact: true })).toBeVisible();

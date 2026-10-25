@@ -10,7 +10,6 @@ import {
 } from '@/pages/Race/shared/constants';
 import { buildLapPaceOption } from '@/pages/Race/shared/charts/lapPace';
 import { buildTyreStrategyOption } from '@/pages/Race/shared/charts/tyreStrategy';
-import { buildRankingBarOption } from '@/pages/Race/shared/charts/rankingBar';
 import { getCompoundColor, formatSessionSeconds } from '@/pages/Race/shared/charts/helpers';
 import {
   buildFastF1Summary,
@@ -120,28 +119,11 @@ const RaceSprint = () => {
     [activeSprintQualifyingAnalytics],
   );
 
-  // ---- Sprint qualifying ranking bar (use buildPracticeRanking as sector time ranking) ----
+  // ---- Sprint qualifying sector time ranking ----
   const sprintQualifyingRanking = useMemo(
     () => buildPracticeRanking(activeSprintQualifyingAnalytics),
     [activeSprintQualifyingAnalytics],
   );
-
-  const sprintQualifyingRankingBarOption = useMemo(() => {
-    if (!sprintQualifyingRanking.length) {
-      return null;
-    }
-    return buildRankingBarOption(
-      t('sprintQualifying'),
-      t('lapTime'),
-      sprintQualifyingRanking.map((item, _idx) => ({
-        label: item.driver,
-        value: item.bestTimeSeconds,
-        displayValue: item.bestTime,
-        color: getTeamColor(item.constructorId),
-      })),
-      (value: number) => formatSessionSeconds(value),
-    );
-  }, [sprintQualifyingRanking, t]);
 
   // ---- Sprint race charts ----
   const hasFastF1Sprint = Boolean(fastF1SprintAnalytics?.lapTimeSeries?.length);
@@ -377,7 +359,7 @@ const RaceSprint = () => {
         <div className="fastf1-analysis-stack">
           {renderDeferredSessionState(
             'sprintQualifying',
-            sprintQualifyingTableData.length > 0 || Boolean(sprintQualifyingRankingBarOption),
+            sprintQualifyingTableData.length > 0 || sprintQualifyingRanking.length > 0,
           )}
           {/* Qualifying results table */}
           {sprintQualifyingTableData.length > 0 && (
@@ -399,30 +381,6 @@ const RaceSprint = () => {
                 size="small"
                 scroll={{ x: 'max-content' }}
               />
-            </Card>
-          )}
-
-          {/* Best sector times / ranking bar chart */}
-          {sprintQualifyingRankingBarOption && (
-            <Card
-              className="fastf1-chart-card"
-              title={
-                <div className="fastf1-chart-header">
-                  <div>
-                    <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
-                    <p>{t('lapPaceDescription')}</p>
-                  </div>
-                </div>
-              }
-            >
-              <Suspense fallback={<ChartLoadingBeacon label="Rendering sprint pace" />}>
-                <LazyEChartsPanel
-                  chartKey={`sprint-qualifying-ranking-${season}-${round}`}
-                  height={isMobile ? 340 : 440}
-                  option={sprintQualifyingRankingBarOption}
-                  ariaLabel="车手冲刺排位最快圈成绩与差距排名图。"
-                />
-              </Suspense>
             </Card>
           )}
 

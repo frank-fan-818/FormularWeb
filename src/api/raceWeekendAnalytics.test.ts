@@ -55,10 +55,47 @@ describe('race weekend analytics', () => {
     ]);
     expect(summary.poleWinConversionPct).toBe(50);
     expect(summary.interruptionProbabilities.find((item) => item.type === 'SC')).toMatchObject({
-      sampleSize: 2,
-      triggeredCount: 1,
+      sampleSize: 1,
+      triggeredCount: 0,
     });
-    expect(summary.interruptionSamples.map((sample) => sample.season)).toEqual([2026, 2025]);
+    expect(summary.interruptionSamples.map((sample) => sample.season)).toEqual([2025]);
+  });
+
+  it('selects five prior-season winners and skips current/future seasons and missing results', () => {
+    const races = [2027, 2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019].map(season => ({
+      id: season, season, round: 1, race_name: 'Grand Prix', circuit_id: 'monza', date: `${season}-09-01`,
+    }));
+    const raceResults = races.filter(race => race.season !== 2024).map(race => ({
+      race_id: race.id, driver_id: 'winner', constructor_id: 'team', position: 1,
+    }));
+    const summary = buildRacePreviewSummary({ season: 2026, round: 20, circuitId: 'monza', races, raceResults,
+      qualifyingResults: raceResults, analyticsRows: [] });
+    expect(summary.recentResults.map(race => race.season)).toEqual([2025, 2023, 2022, 2021, 2020]);
+    expect(summary.sampleSize).toBe(5);
+    expect(summary.poleWinConversionPct).toBe(100);
+  });
+
+  it('uses 2021 through 2025 when all five previous seasons have winners', () => {
+    const races = [2026, 2025, 2024, 2023, 2022, 2021].map(season => ({
+      id: season, season, round: 1, race_name: 'Grand Prix', circuit_id: 'monza', date: `${season}-09-01`,
+    }));
+    const raceResults = races.map(race => ({ race_id: race.id, driver_id: 'winner', constructor_id: 'team', position: '1' }));
+    const summary = buildRacePreviewSummary({ season: 2026, round: 20, circuitId: 'monza', races, raceResults, qualifyingResults: [] });
+    expect(summary.recentResults.map(race => race.season)).toEqual([2025, 2024, 2023, 2022, 2021]);
+  });
+
+  it('skips cancelled Singapore editions and follows the selected historical season', () => {
+    const races = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017].map(season => ({
+      id: season, season, round: 18, race_name: 'Singapore Grand Prix', circuit_id: 'marina_bay', date: `${season}-09-20`,
+    }));
+    const raceResults = races.filter(race => ![2020, 2021].includes(race.season)).map(race => ({
+      race_id: race.id, driver_id: 'winner', constructor_id: 'team', position: 1,
+    }));
+    const input = { round: 18, circuitId: 'marina_bay', races, raceResults, qualifyingResults: [] };
+    expect(buildRacePreviewSummary({ ...input, season: 2026 }).recentResults.map(race => race.season))
+      .toEqual([2025, 2024, 2023, 2022, 2019]);
+    expect(buildRacePreviewSummary({ ...input, season: 2024 }).recentResults.map(race => race.season))
+      .toEqual([2023, 2022, 2019, 2018, 2017]);
   });
 
   it('marks interruption probabilities as insufficient when FastF1 samples are missing', () => {

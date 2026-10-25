@@ -7,6 +7,7 @@ const base = { season: z.string(), updatedAt: z.iso.datetime(), stale: z.boolean
 const awardSchema = z.object({
   ...base, seasons: z.array(z.number().int()), source: z.url(), unavailable: z.boolean().optional(), event: z.string().optional(),
   standings: z.array(z.object({ rank, team: z.string(), points: z.number().nonnegative() })),
+  seasonFastest: z.array(z.object({ id: z.string(), rank, driver: z.string().min(1), team: z.string().min(1), event: z.string().min(1), eventAbbreviation: z.string().min(1), duration: seconds })).default([]),
   stops: z.array(z.object({ id: z.string(), rank, driver: z.string(), code: z.string(), team: z.string(), lap: rank.nullable(), duration: seconds, points: z.number().nonnegative(), irregular: z.boolean(), notes: z.string() })),
 });
 const raceSchema = z.object({

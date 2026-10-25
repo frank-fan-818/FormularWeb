@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { discoverDhl, parseStandings, parseAwardStops, matchEvent, mergeStops, getPitRecords, matchOpenSession } from '../api/_lib/pit-stops.mjs';
+import { discoverDhl, parseStandings, parseAwardStops, parseSeasonFastest, matchEvent, mergeStops, getPitRecords, matchOpenSession } from '../api/_lib/pit-stops.mjs';
 import handler from '../api/pit-stops.mjs';
 
 test('DHL component discovery follows season headings and validates paths', () => {
@@ -26,6 +26,34 @@ test('venue matching is explicit and rejects ambiguity', () => {
   assert.equal(matchEvent([{id:'800',label:'Albert Park Grand Prix Circuit'}],race).id,'800');
   assert.equal(matchEvent([{id:'1',label:'Unknown'}],race),null);
   assert.equal(matchEvent([{id:'1',label:'Albert Park Grand Prix Circuit'},{id:'2',label:'Albert Park Grand Prix Circuit'}],race),null);
+});
+
+test('season fastest retains official positions, event identity and published time precision', () => {
+  const input = [
+    { team: 'Ferrari', firstName: 'Charles', lastName: 'Leclerc', duration: 2, shortTitle: 'Circuit de Monaco', abbreviation: 'MON' },
+    { team: 'Ferrari', firstName: 'Charles', lastName: 'Leclerc', duration: 2, shortTitle: 'Jeddah Corniche Circuit', abbreviation: 'SAU' },
+  ];
+  const table = '<table data-type="season_fastest"><tr><td>7</td><td>Ferrari</td><td>Leclerc</td><td>MON</td><td>2.00</td></tr><tr><td>8</td><td>Ferrari</td><td>Leclerc</td><td>SAU</td><td>2.00</td></tr></table>';
+  const rows = parseSeasonFastest(input, table);
+  assert.deepEqual(rows.map(row => row.rank), [7, 8]);
+  assert.deepEqual(rows.map(row => row.duration), ['2.00', '2.00']);
+  assert.equal(rows[0].driver, 'Charles Leclerc');
+  assert.equal(rows[0].event, 'Circuit de Monaco');
+  assert.equal(rows[1].eventAbbreviation, 'SAU');
+  assert.notEqual(rows[0].id, rows[1].id);
+});
+
+test('season fastest rejects mismatched official events/times and malformed upstream data', () => {
+  const input = [{ team: 'McLaren', firstName: 'Oscar', lastName: 'Piastri', duration: 1.91, shortTitle: 'Monza', abbreviation: 'ITA' }];
+  const table = '<table><tr><td>1</td><td>McLaren</td><td>Piastri</td><td>ITA</td><td>1.91</td></tr></table>';
+  assert.throws(() => parseSeasonFastest(input, table.replace('ITA', 'HUN')));
+  assert.throws(() => parseSeasonFastest(input, table.replace('1.91', '1.90')));
+  assert.throws(() => parseSeasonFastest([{ ...input[0], duration: 0 }], table));
+  assert.throws(() => parseSeasonFastest([{ ...input[0], shortTitle: '' }], table));
+  assert.throws(() => parseSeasonFastest(input, '<table></table>'));
+  assert.throws(() => parseSeasonFastest({}, table));
+  assert.deepEqual(parseSeasonFastest(undefined, ''), []);
+  assert.deepEqual(parseSeasonFastest([], ''), []);
 });
 test('published positions take precedence over equal displayed times', () => {
   const rows = [{id:1,team:'A',tla:'AAA',firstName:'A',lastName:'One',duration:2.2,lap:3,points:4},{id:2,team:'B',firstName:'B',lastName:'Two',duration:2.2,lap:4,points:2}];

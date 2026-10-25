@@ -248,12 +248,13 @@ export function buildRacePreviewSummary(params: {
   analyticsRows?: InterruptionAnalyticsRow[];
 }): RacePreviewSummary {
   const recentResults = buildRecentGrandPrixResults(
-    params.races,
+    params.races.filter((race) => race.season < params.season),
     params.raceResults,
     params.qualifyingResults,
     params.drivers,
     params.constructors,
-  );
+  ).filter((race) => Boolean(race.winnerDriverId)).slice(0, RECENT_RESULTS_HISTORY_LIMIT);
+  const historicalAnalytics = (params.analyticsRows || []).filter((row) => row.season < params.season);
   const poleWinCount = recentResults.filter((race) =>
     race.winnerDriverId && race.poleDriverId && race.winnerDriverId === race.poleDriverId,
   ).length;
@@ -264,8 +265,8 @@ export function buildRacePreviewSummary(params: {
     round: params.round,
     circuitId: params.circuitId,
     recentResults,
-    interruptionProbabilities: buildInterruptionProbabilities(params.analyticsRows || []),
-    interruptionSamples: buildInterruptionSamples(params.analyticsRows || []),
+    interruptionProbabilities: buildInterruptionProbabilities(historicalAnalytics),
+    interruptionSamples: buildInterruptionSamples(historicalAnalytics),
     poleWinConversionPct: percentage(poleWinCount, poleSamples),
     sampleSize: recentResults.length,
   };
@@ -390,15 +391,15 @@ async function getFastF1RowsForRaces(races: RaceSummaryRow[]) {
 async function getCircuitHistoryRaces(params: {
   circuitIdCandidates: string[];
   seasonNumber: number;
-  roundNumber: number;
   limit: number;
   minSeason?: number;
+  offset?: number;
 }) {
   let query = supabase
     .from('races')
     .select('id, season, round, race_name, circuit_id, date')
     .in('circuit_id', params.circuitIdCandidates)
-    .or(`season.lt.${params.seasonNumber},and(season.eq.${params.seasonNumber},round.lt.${params.roundNumber})`);
+    .lt('season', params.seasonNumber);
 
   if (typeof params.minSeason === 'number') {
     query = query.gte('season', params.minSeason);
@@ -408,6 +409,9 @@ async function getCircuitHistoryRaces(params: {
     .order('season', { ascending: false })
     .order('round', { ascending: false })
     .limit(params.limit);
+  if (typeof params.offset === 'number') {
+    query = query.range(params.offset, params.offset + params.limit - 1);
+  }
 
   const { data, error } = await measureRequest('supabase', 'races.getRacePreviewHistory', async () => query);
 
@@ -415,7 +419,28 @@ async function getCircuitHistoryRaces(params: {
     throw error;
   }
 
-  return (data || []) as RaceSummaryRow[];
+  return ((data || []) as RaceSummaryRow[]).filter((race) => race.season < params.seasonNumber);
+}
+
+async function getCompletedCircuitHistoryRaces(params: { circuitIdCandidates: string[]; seasonNumber: number }) {
+  const races: RaceSummaryRow[] = [];
+  const raceResults: RaceResultSummaryRow[] = [];
+  const seen = new Set<number>();
+  let offset = 0;
+  while (races.length < RECENT_RESULTS_HISTORY_LIMIT) {
+    const page = await getCircuitHistoryRaces({ ...params, offset, limit: RECENT_RESULTS_HISTORY_LIMIT });
+    const candidates = page.filter((race) => !seen.has(race.id));
+    if (!candidates.length) break;
+    candidates.forEach((race) => seen.add(race.id));
+    const results = await getRowsByIds<RaceResultSummaryRow>('race_results', candidates.map((race) => race.id));
+    const completedIds = new Set(results.filter((result) => toPositionNumber(result.position) === 1 && result.driver_id).map((result) => result.race_id));
+    races.push(...candidates.filter((race) => completedIds.has(race.id)).slice(0, RECENT_RESULTS_HISTORY_LIMIT - races.length));
+    raceResults.push(...results);
+    if (page.length < RECENT_RESULTS_HISTORY_LIMIT) break;
+    offset += RECENT_RESULTS_HISTORY_LIMIT;
+  }
+  const selectedIds = new Set(races.map((race) => race.id));
+  return { races, raceResults: raceResults.filter((result) => selectedIds.has(result.race_id)) };
 }
 
 export const raceWeekendAnalyticsApi = {
@@ -432,27 +457,23 @@ export const raceWeekendAnalyticsApi = {
     }
 
     const circuitIdCandidates = getCircuitIdCandidates(circuitId);
-    const [races, interruptionRaces] = await Promise.all([
-      getCircuitHistoryRaces({
+    const [recentHistory, interruptionRaces] = await Promise.all([
+      getCompletedCircuitHistoryRaces({
         circuitIdCandidates,
         seasonNumber,
-        roundNumber,
-        limit: RECENT_RESULTS_HISTORY_LIMIT,
       }),
       getCircuitHistoryRaces({
         circuitIdCandidates,
         seasonNumber,
-        roundNumber,
         limit: INTERRUPTION_HISTORY_LIMIT,
         minSeason: seasonNumber - INTERRUPTION_LOOKBACK_SEASONS,
       }),
     ]);
+    const { races, raceResults } = recentHistory;
     const raceIds = races.map((race) => race.id);
-    const [raceResults, qualifyingResults, fastF1Rows, currentFastF1Row] = await Promise.all([
-      getRowsByIds<RaceResultSummaryRow>('race_results', raceIds),
+    const [qualifyingResults, fastF1Rows] = await Promise.all([
       getRowsByIds<QualifyingResultSummaryRow>('qualifying_results', raceIds),
       getFastF1RowsForRaces(interruptionRaces),
-      getStaticFastF1Row(seasonNumber, roundNumber),
     ]);
     const driverIds = [
       ...raceResults.map((result) => result.driver_id),
@@ -475,7 +496,7 @@ export const raceWeekendAnalyticsApi = {
       qualifyingResults,
       drivers,
       constructors,
-      analyticsRows: currentFastF1Row ? [currentFastF1Row, ...fastF1Rows] : fastF1Rows,
+      analyticsRows: fastF1Rows,
     });
   },
 };

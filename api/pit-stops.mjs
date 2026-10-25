@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   try {
     if (!pending.has(key)) pending.set(key, loadPitData(kind, season, round).finally(() => pending.delete(key)));
     const result = await pending.get(key);
-    const hasData = result.records?.length || result.standings?.length || result.stops?.length;
+    const hasData = result.records?.length || result.standings?.length || result.stops?.length || result.seasonFastest?.length;
     if (!hasData && saved) throw Error('Empty update');
     if (snapshots.size > 100) snapshots.delete(snapshots.keys().next().value);
     if (hasData) snapshots.set(key, { value: result, at: Date.now() });

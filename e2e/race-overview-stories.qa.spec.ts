@@ -1,13 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { enterAsMember } from './auth-fixtures';
 
-test('race overview shows readable names, the complete retirement list and working driver links', async ({ page }, testInfo) => {
+test('keyboard users can toggle retirements and all drivers remain reachable', async ({ page }, testInfo) => {
   await enterAsMember(page);
   const errors: string[] = [];
   const failures: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => {
     if (message.text() === 'Service Worker registration blocked by Playwright') return;
+    // WebKit reports unused Vite auth preloads during this member-only fixture.
+    if (message.type() === 'warning' && /^The resource http:\/\/127\.0\.0\.1:4173\/assets\/(?:AuthShell|Login)-[\w-]+\.js was preloaded using link preload but not used within a few seconds/.test(message.text())) return;
     if (message.type() === 'error' || message.type() === 'warning') errors.push(message.text());
   });
   page.on('requestfailed', request => {
@@ -58,7 +60,18 @@ test('race overview shows readable names, the complete retirement list and worki
   await expect(stories.locator('.race-story-card')).toHaveCount(4);
   const retired = stories.locator('.tone-neutral');
   await expect(retired.locator('strong')).toHaveText('4');
+  const disclosure = retired.locator('details');
+  const toggle = disclosure.locator('summary');
+  await expect(disclosure).not.toHaveAttribute('open');
+  await expect(retired.getByRole('link')).toHaveCount(0);
+  await stories.scrollIntoViewIfNeeded();
+  await stories.screenshot({ path: `artifacts/browser-qa/screenshots/race-stories-collapsed-${testInfo.project.name}.png`,
+    style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }' });
+  const closedHeight = await retired.evaluate(element => element.getBoundingClientRect().height);
+  await toggle.click();
+  await expect(disclosure).toHaveAttribute('open', '');
   await expect(retired.getByRole('link')).toHaveText(['Carlos Sainz', 'Sergio Pérez', 'Lance Stroll', 'Lewis Hamilton']);
+  expect(await retired.evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThan(closedHeight);
   await expect(stories.locator('.tone-positive')).toContainText('发车 P22 → 赛后 P16');
   await expect(stories.locator('.tone-fastest')).toContainText('第 49 圈');
   for (const element of await stories.locator('.race-story-card, .race-story-driver').all()) {
@@ -75,11 +88,22 @@ test('race overview shows readable names, the complete retirement list and worki
     path: `artifacts/browser-qa/screenshots/race-debrief-${testInfo.project.name}.png`,
     style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }',
   });
-  const lastDriver = retired.getByRole('link', { name: 'Lewis Hamilton' });
-  await lastDriver.focus();
-  await expect(lastDriver).toBeFocused();
-  await expect(lastDriver).toHaveCSS('outline-style', 'solid');
+  await toggle.focus();
+  await page.keyboard.press('Space');
+  await expect(disclosure).not.toHaveAttribute('open');
+  await expect(retired.getByRole('link')).toHaveCount(0);
   await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+  const lastDriver = retired.getByRole('link', { name: 'Lewis Hamilton' });
+  await expect(toggle).toBeFocused();
+  if (testInfo.project.use.isMobile) {
+    await lastDriver.tap();
+  } else {
+    for (let index = 0; index < 4; index++) await page.keyboard.press('Tab');
+    await expect(lastDriver).toBeFocused();
+    await expect(lastDriver).toHaveCSS('outline-style', 'solid');
+    await page.keyboard.press('Enter');
+  }
   await expect(page).toHaveURL(/\/drivers\/hamilton$/);
   expect(errors).toEqual([]);
   expect(failures).toEqual([]);

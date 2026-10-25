@@ -123,12 +123,12 @@ export function RaceOverviewPanel({ insights, loading = false }: RaceOverviewPan
       </div>
 
       <div className="race-story-grid">
-        {storyItems.map((item) => (
-          <article key={item.key} className={`race-story-card tone-${item.tone}`}>
-            <span className="race-story-icon">{item.icon}</span>
+        {storyItems.map((item) => {
+          const heading = <>
             <span className="race-story-label">{item.label}</span>
             <strong>{item.value}</strong>
-            <div className="race-story-drivers">
+          </>;
+          const drivers = <div className="race-story-drivers">
               {item.drivers.map((result) => (
                 <Link
                   key={result.Driver.driverId}
@@ -141,10 +141,20 @@ export function RaceOverviewPanel({ insights, loading = false }: RaceOverviewPan
               {item.key === 'retirements' && !item.drivers.length && (
                 <span className="race-story-empty">全员完赛</span>
               )}
-            </div>
-            {item.detail && <small>{item.detail}</small>}
-          </article>
-        ))}
+          </div>;
+          return (
+            <article key={item.key} className={`race-story-card tone-${item.tone}`}>
+              <span className="race-story-icon">{item.icon}</span>
+              {item.key === 'retirements' && item.drivers.length ? (
+                <details className="race-story-retirements">
+                  <summary>{heading}</summary>
+                  {drivers}
+                </details>
+              ) : <>{heading}{drivers}</>}
+              {item.detail && <small>{item.detail}</small>}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

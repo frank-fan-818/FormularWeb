@@ -92,6 +92,27 @@ test('populated standings keep compact aligned rows', async ({ page }, info) => 
   await section.screenshot({ path: `artifacts/browser-qa/screenshots/fixed-standings-${info.project.name}.png` });
 });
 
+test('qualifying keeps official and sector tables without the redundant pace chart', async ({ page }, info) => {
+  await installFixtures(page, true);
+  const errors: string[] = [];
+  const failures: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => {
+    if (message.type() === 'error' && message.text() !== 'Service Worker registration blocked by Playwright') errors.push(message.text());
+  });
+  page.on('requestfailed', request => {
+    if (request.failure()?.errorText !== 'net::ERR_ABORTED') failures.push(request.url());
+  });
+  await page.goto('/races/1/qualifying?season=2026');
+  await expect(page.getByRole('region', { name: 'Official qualifying classification' })).toContainText('Andrea Kimi Antonelli');
+  await expect(page.locator('.race-weekend-post-card .ant-table-tbody tr[data-row-key]')).toHaveCount(3);
+  await expect(page.getByRole('heading', { name: '圈速走势', exact: true })).toHaveCount(0);
+  await expect(page.locator('.echarts-panel, .chart-data-table, .fastf1-chart-card')).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/qualifying-compact-${info.project.name}.png`, fullPage: true });
+  expect(errors).toEqual([]); expect(failures).toEqual([]);
+});
+
 test('roster cards remove driver tags and give season points clear hierarchy', async ({ page }, info) => {
   await installFixtures(page, false, [...constructors, {
     constructorId: 'aston_martin', name: 'Aston Martin Aramco Formula One Team', nationality: 'British', url: '#',

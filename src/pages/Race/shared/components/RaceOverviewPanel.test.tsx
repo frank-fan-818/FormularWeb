@@ -31,11 +31,13 @@ const retirements = [
 ];
 
 describe('race overview stories', () => {
-  it('shows every retired driver with a full name and a profile link, including the fourth driver', () => {
+  it('keeps all retired drivers in an initially collapsed disclosure with full names and profile links', () => {
     const insights = buildRaceOverviewInsights([winner, ...retirements], [], null);
     const view = create(<MemoryRouter><RaceOverviewPanel insights={insights} /></MemoryRouter>);
     const card = view.root.findByProps({ className: 'race-story-card tone-neutral' });
     expect(card.findByType('strong').children).toEqual(['4']);
+    expect(card.findByType('details').props.open).toBeUndefined();
+    expect(card.findByType('summary').findByType('strong').children).toEqual(['4']);
     expect(card.findAllByType('a').map(link => ({ text: link.children.join(''), href: link.props.href })))
       .toEqual(retirements.map(({ Driver }) => ({
         text: `${Driver.givenName} ${Driver.familyName}`, href: `/drivers/${Driver.driverId}`,
@@ -52,6 +54,7 @@ describe('race overview stories', () => {
     const card = view.root.findByProps({ className: 'race-story-card tone-neutral' });
     expect(card.findByType('strong').children).toEqual(['0']);
     expect(card.findAllByType('a')).toHaveLength(0);
+    expect(card.findAllByType('details')).toHaveLength(0);
     expect(card.findAllByType('span').some(span => span.children.join('') === '全员完赛')).toBe(true);
     expect(card.findAllByType('small')).toHaveLength(0);
     view.unmount();

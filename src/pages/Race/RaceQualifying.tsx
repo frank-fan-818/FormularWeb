@@ -1,16 +1,12 @@
 import { MemberAccess } from '@/components/auth/AccessGate';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { lazy, Suspense, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import { Card, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRaceData } from './RaceContext';
-import {
-  LIGHT_TAG_COLORS,
-  DRIVER_COLORS,
-} from '@/pages/Race/shared/constants';
-import { buildRankingBarOption } from '@/pages/Race/shared/charts/rankingBar';
-import { type RankingChartRow, formatSessionSeconds } from '@/pages/Race/shared/charts/helpers';
+import { LIGHT_TAG_COLORS } from '@/pages/Race/shared/constants';
+import { formatSessionSeconds } from '@/pages/Race/shared/charts/helpers';
 import {
   buildFastF1QualifyingRows,
   buildDriverLookup,
@@ -28,13 +24,10 @@ import type {
   FastF1TeamMateComparison,
   QualifyingResult,
 } from '@/types';
-import { ChartLoadingBeacon } from '@/components/loading/TimingBeacon';
 import {
   getSessionDataPhase,
   getSessionUnavailableCopy,
 } from '@/utils/race/sessionDataAvailability';
-
-const LazyEChartsPanel = lazy(() => import('@/components/charts/EChartsPanel'));
 
 // ---- Local Types ----
 
@@ -91,33 +84,6 @@ function buildSectorTimeRows(bestLaps: FastF1QualifyingBestLap[]): SectorTimeRow
     gap: lap.lapTimeSeconds - bestTime,
     isDeleted: lap.isDeleted,
   }));
-}
-
-function buildPaceChartOption(
-  bestLaps: FastF1QualifyingBestLap[],
-  t: (key: string) => string,
-): Record<string, unknown> | null {
-  const sorted = [...bestLaps]
-    .filter((lap) => Number.isFinite(lap.lapTimeSeconds))
-    .sort((a, b) => a.lapTimeSeconds - b.lapTimeSeconds);
-
-  if (!sorted.length) {
-    return null;
-  }
-
-  const rows: RankingChartRow[] = sorted.map((lap, index) => ({
-    label: lap.driver,
-    value: lap.lapTimeSeconds,
-    displayValue: formatSessionSeconds(lap.lapTimeSeconds),
-    color: DRIVER_COLORS[index % DRIVER_COLORS.length],
-  }));
-
-  return buildRankingBarOption(
-    t('lapPace'),
-    t('time'),
-    rows,
-    formatSessionSeconds,
-  );
 }
 
 function buildTeamMateRows(
@@ -284,7 +250,6 @@ const RaceQualifying = () => {
   const { t } = useTranslation();
   const {
     season,
-    round,
     fastF1QualifyingAnalytics,
     fastF1SprintQualifyingAnalytics,
     fastF1SprintShootoutAnalytics,
@@ -305,11 +270,6 @@ const RaceQualifying = () => {
   const qSectorRows = useMemo(
     () => buildSectorTimeRows(qBestLaps),
     [qBestLaps],
-  );
-
-  const qPaceOption = useMemo(
-    () => buildPaceChartOption(qBestLaps, t),
-    [qBestLaps, t],
   );
 
   const qTeamMateRows = useMemo(
@@ -363,11 +323,6 @@ const RaceQualifying = () => {
     [sqBestLaps],
   );
 
-  const sqPaceOption = useMemo(
-    () => buildPaceChartOption(sqBestLaps, t),
-    [sqBestLaps, t],
-  );
-
   const sqTeamMateRows = useMemo(
     () => buildTeamMateRows(activeSprintQualifyingAnalytics?.qualifyingAnalysis?.teamMateComparisons),
     [activeSprintQualifyingAnalytics],
@@ -398,7 +353,6 @@ const RaceQualifying = () => {
     officialTitle: string,
     officialAriaLabel: string,
     sectorRows: SectorTimeRow[],
-    paceOption: Record<string, unknown> | null,
     teamMateRows: TeamMateRow[],
   ) => (
     <div className="fastf1-analysis-stack">
@@ -426,29 +380,6 @@ const RaceQualifying = () => {
             size="small"
             scroll={{ x: 'max-content' }}
           />
-        </Card>
-      ) : null}
-
-      {/* Qualifying Pace Ranking */}
-      {paceOption ? (
-        <Card
-          className="fastf1-chart-card"
-          title={
-            <div className="fastf1-chart-header">
-              <div>
-                <h3 className="fastf1-chart-title">{t('lapPace')}</h3>
-              </div>
-            </div>
-          }
-        >
-          <Suspense fallback={<ChartLoadingBeacon label="Rendering qualifying order" />}>
-            <LazyEChartsPanel
-              chartKey={`qualifying-pace-${season}-${round}`}
-              height={420}
-              option={paceOption}
-              ariaLabel="车手排位赛最快圈成绩与差距排名图。"
-            />
-          </Suspense>
         </Card>
       ) : null}
 
@@ -509,7 +440,6 @@ const RaceQualifying = () => {
               '官方排位成绩',
               'Official qualifying classification',
               qSectorRows,
-              qPaceOption,
               qTeamMateRows,
             ),
           },
@@ -523,7 +453,6 @@ const RaceQualifying = () => {
                     '官方冲刺排位成绩',
                     'Official sprint qualifying classification',
                     sqSectorRows,
-                    sqPaceOption,
                     sqTeamMateRows,
                   ),
                 },
