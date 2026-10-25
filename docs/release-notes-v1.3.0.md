@@ -8,6 +8,8 @@ Official historical scans retain their original colours. Modern venue maps are i
 
 The importer rejects unknown identities, unapproved sources, invalid paths, duplicate IDs and inconsistent asset format/size/hash metadata. `npm run circuits:check` now runs in CI and the complete local quality gate.
 
+Guest-refresh browser QA waits for the initial home responses and rendered home content before refreshing. This keeps the session-persistence check separate from cancellation of an unfinished first visit, while retaining strict browser-error assertions.
+
 Release checks also identified [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) in Zod and [GHSA-xp26-3454-mjgp](https://github.com/advisories/GHSA-xp26-3454-mjgp) in Vitest's test tooling. The Zod minimum is now 4.6.7, Vitest and coverage tooling are updated within version 4, and Lighthouse's Puppeteer dependency chain is updated within its existing compatible range. A fresh dependency audit after those updates reports no known vulnerabilities.
 
 Release target: `formular-web` / `frankpitwall.com`, from the protected main-branch merge after required checks pass. Previous known-good production is version `1.2.5`, commit `dd366b70040dbca110f8a6df331a512386d204ca`, deployment `dpl_EaHBrHDpp9LrESrx2aEcAqdB68fW`. No database migrations or production configuration changes are required. Final commit/deployment identity and live verification are recorded in the GitHub release after publication; these source notes alone do not confirm deployment.
