@@ -3,7 +3,12 @@ import { enterAsGuest } from './auth-fixtures';
 
 const race = { season: '2025', round: '4', raceName: 'Bahrain Grand Prix', date: '2025-04-13', time: '15:00:00Z', Circuit: { circuitId: 'bahrain', circuitName: 'Bahrain International Circuit', Location: { locality: 'Sakhir', country: 'Bahrain', lat: '26', long: '50' } } };
 const base = { season: '2025', updatedAt: '2026-10-25T07:00:00.000Z', stale: false };
-const award = { ...base, seasons: [2026, 2025, 2024], source: 'https://inmotion.dhl/en/formula-1/fastest-pit-stop-award', standings: [{ rank: 1, team: 'Ferrari', points: 559 }, { rank: 2, team: 'McLaren', points: 410 }], stops: [] };
+const seasonFastest = [
+  { id: '1', rank: 1, driver: 'Oscar Piastri', team: 'McLaren', event: 'Autodromo Nazionale Monza', eventAbbreviation: 'ITA', duration: '1.91' },
+  { id: '2', rank: 2, driver: 'Charles Leclerc', team: 'Ferrari', event: 'Circuit de Monaco', eventAbbreviation: 'MON', duration: '2.00' },
+  { id: '3', rank: 3, driver: 'Charles Leclerc', team: 'Ferrari', event: 'Jeddah Corniche Circuit', eventAbbreviation: 'SAU', duration: '2.00' },
+];
+const award = { ...base, seasons: [2026, 2025, 2024], source: 'https://inmotion.dhl/en/formula-1/fastest-pit-stop-award', standings: [{ rank: 1, team: 'Ferrari', points: 559 }, { rank: 2, team: 'McLaren', points: 410 }], stops: [], seasonFastest };
 const event = { ...award, standings: [], stops: [{ id: '7362', rank: 1, driver: 'Lewis Hamilton', code: 'HAM', team: 'Ferrari', duration: '2.16', lap: 32, points: 25, irregular: false, notes: '' }] };
 const records = [{ driverId: 'hamilton', driver: 'Lewis Hamilton', code: 'HAM', team: 'Ferrari', constructorId: 'ferrari', lap: 32, stop: 1, laneDuration: '24.229', stopDuration: '2.16', laneSource: 'Jolpica', stopSource: 'OpenF1' }, { driverId: 'norris', driver: 'Lando Norris', code: 'NOR', team: 'McLaren', constructorId: 'mclaren', lap: 34, stop: 1, laneDuration: '25.265', stopDuration: null, laneSource: 'Jolpica', stopSource: null }];
 
@@ -33,7 +38,20 @@ test('pit stops support guest standings, deep links, precise timing and compact 
   await expect(page.getByRole('heading', { name: 'DHL Pit Stop Award' })).toBeVisible();
   await expect(page.locator('.pit-table tbody tr')).toHaveCount(2);
   await expect(page.locator('.pit-table tbody tr').first()).toContainText('559');
+  await expect(page.getByRole('button', { name: '赛季换胎积分', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-season-${info.project.name}.png`, fullPage: true });
+  await page.getByRole('button', { name: '赛季最快换胎', exact: true }).click();
+  await expect(page).toHaveURL(/view=fastest/);
+  await expect(page.locator('.pit-fastest-table tbody tr')).toHaveCount(3);
+  await expect(page.locator('.pit-fastest-table tbody tr').first()).toContainText('Oscar Piastri');
+  await expect(page.locator('.pit-fastest-table tbody tr').first()).toContainText('1.91 s');
+  await expect(page.locator('.pit-fastest-table tbody tr').nth(1)).toContainText('2.00 s');
+  await expect(page.locator('.pit-fastest-table tbody tr').nth(2).locator('td').first()).toHaveText('3');
+  await expect(page.getByRole('combobox', { name: '分站赛事', exact: true })).toHaveCount(0);
+  const tabTops = await page.locator('.pit-view-tabs button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().top));
+  expect(Math.max(...tabTops) - Math.min(...tabTops)).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-fastest-${info.project.name}.png`, fullPage: true, animations: 'disabled' });
   await page.getByRole('button', { name: '单站最快进站' }).click();
   await expect(page.locator('.pit-award-table')).toContainText('2.16 s');
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-event-${info.project.name}.png`, fullPage: true });
@@ -56,6 +74,25 @@ test('pit stops support guest standings, deep links, precise timing and compact 
   await expect(page).toHaveURL(/view=event/);
   await expect(page.locator('.pit-award-table')).toContainText('2.16 s');
   expect(errors).toEqual([]); expect(failures).toEqual([]);
+});
+
+test('season fastest supports direct links, season changes and an independent empty state', async ({ page }) => {
+  const requestedRounds: boolean[] = [];
+  await page.route('**/api/pit-stops?**', route => {
+    const query = new URL(route.request().url()).searchParams;
+    requestedRounds.push(query.has('round'));
+    return route.fulfill({ json: { ...award, season: query.get('season'), seasonFastest: query.get('season') === '2024' ? [] : seasonFastest } });
+  });
+  await page.goto('/pit-stops?season=2025&view=fastest&round=4');
+  await expect(page.getByRole('button', { name: '赛季最快换胎', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.pit-fastest-table')).toContainText('1.91 s');
+  expect(requestedRounds[0]).toBe(false);
+  await page.getByRole('combobox', { name: '赛季', exact: true }).selectOption('2024');
+  await expect(page).toHaveURL(/season=2024&view=fastest$/);
+  await expect(page.getByText('暂无已发布数据', { exact: true })).toBeVisible();
+  await expect(page.locator('.pit-fastest-table')).toHaveCount(0);
+  await page.getByRole('button', { name: '赛季换胎积分', exact: true }).click();
+  await expect(page.locator('.pit-table')).toContainText('559');
 });
 
 test('pit stops distinguish loading, empty data, and errors with retry', async ({ page }) => {

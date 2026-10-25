@@ -290,7 +290,8 @@
   font-weight: var(--font-semibold);
 }
 
-.race-story-card > strong {
+.race-story-card > strong,
+.race-story-retirements summary > strong {
   color: var(--text-primary);
   font-family: var(--race-display);
   font-size: 28px;
@@ -303,6 +304,38 @@
   gap: var(--space-1) var(--space-3);
   min-width: 0;
   width: 100%;
+}
+
+.race-story-retirements { width: 100%; }
+.race-story-retirements summary {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding-right: var(--space-5);
+  list-style: none;
+  cursor: pointer;
+}
+.race-story-retirements summary::-webkit-details-marker { display: none; }
+.race-story-retirements summary::after {
+  content: '';
+  position: absolute;
+  right: var(--space-1);
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  color: var(--text-secondary);
+  transform: translateY(-50%) rotate(45deg);
+}
+.race-story-retirements[open] summary::after { transform: translateY(-50%) rotate(225deg); }
+.race-story-retirements[open] .race-story-drivers { margin-top: var(--space-3); }
+.race-story-retirements summary:focus-visible {
+  outline: 2px solid var(--f1-red);
+  outline-offset: var(--space-1);
+  border-radius: var(--radius-sm);
 }
 
 .race-story-driver,

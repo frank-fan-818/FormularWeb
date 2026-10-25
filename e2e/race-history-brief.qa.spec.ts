@@ -138,6 +138,49 @@ test('history brief explains missing results and unknown status frequencies', as
   await expect(panel.locator('.history-samples .race-weekend-empty')).toBeVisible();
 });
 
+test('history winners exclude the selected season and backfill missing results from older races', async ({ page }, testInfo) => {
+  await installHistoryFixtures(page);
+  const candidates = [2027, 2026, 2025, 2024, 2023, 2022, 2021, 2020].map(season => ({
+    id: season, season, round: 1, race_name: 'Italian Grand Prix', circuit_id: 'monza', date: `${season}-09-07`,
+  }));
+  const completed = candidates.filter(row => row.season !== 2024);
+  const pages: number[] = [];
+  await page.route('**/rest/v1/**', route => {
+    const url = new URL(route.request().url());
+    const table = url.pathname.split('/').pop() || '';
+    let rows: unknown[] = historyRows[table] || [];
+    if (table === 'races') {
+      if (url.searchParams.get('select') === 'id,season,round,race_name,circuit_id,date') {
+        expect(url.searchParams.get('season')).toBe('lt.2026');
+        const offset = Number(url.searchParams.get('offset') || 0);
+        const limit = Number(url.searchParams.get('limit'));
+        if (limit === 5) pages.push(offset);
+        rows = candidates.filter(row => row.season < 2026).slice(offset, offset + limit);
+      } else rows = [];
+    } else if (table === 'race_results' || table === 'qualifying_results') {
+      const raceIds = url.searchParams.get('race_id')?.match(/\d+/g)?.map(Number);
+      rows = completed.filter(row => !raceIds || raceIds.includes(row.id))
+        .map(row => ({ race_id: row.id, driver_id: 'norris', constructor_id: 'mclaren', position: 1 }));
+    } else if (table === 'fastf1_session_analytics') {
+      rows = candidates.map(row => ({ season: row.season, round: 1, payload: { eventName: row.race_name, trackStatusPeriods: [] } }));
+    }
+    return route.fulfill({ json: rows });
+  });
+  await page.goto('/races/13/info?season=2026');
+  const panel = page.locator('.race-history-brief');
+  await panel.scrollIntoViewIfNeeded();
+  await expect(panel.locator('.race-history-time-cell strong')).toHaveText(['2025', '2023', '2022', '2021', '2020']);
+  await expect(panel.locator('.history-cell-winner')).toHaveText(Array(5).fill('Lando Norris'));
+  await expect(panel.locator('.history-podium-driver')).toHaveCount(5);
+  await expect(panel.locator('.history-stats strong').first()).toHaveText('5');
+  expect(pages).toEqual([0, 5]);
+  await panel.locator('.history-samples summary').click();
+  const years = await panel.locator('.history-sample > strong').allTextContents();
+  expect(years.some(year => year.startsWith('2026') || year.startsWith('2027'))).toBe(false);
+  await panel.screenshot({ path: `artifacts/browser-qa/screenshots/history-prior-seasons-${testInfo.project.name}.png`,
+    style: '.header, .race-subpage-tabs, .race-subpage-tabs * { visibility: hidden !important; }' });
+});
+
 test('weekend schedule uses one surface with readable circuit facts', async ({ page }, testInfo) => {
   await installHistoryFixtures(page);
   const errors: string[] = [];

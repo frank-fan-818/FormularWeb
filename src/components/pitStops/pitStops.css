@@ -30,12 +30,20 @@
 .pit-source a { color: var(--f1-red-text); }
 .pit-source-link { display: inline-block; margin-top: var(--space-5); font-size: var(--text-xs); }
 .pit-row-details { display: none; }
+.pit-mobile { display: none; }
 @media (max-width: 600px) {
+  .pit-view-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); }
+  .pit-view-tabs button { padding-inline: var(--space-1); }
   .pit-module { padding: var(--space-4); }
   .pit-heading h1 { font-size: 26px; }
   .pit-table .pit-rank { width: 40px; }
   .pit-table th, .pit-table td { padding-left: var(--space-1); padding-right: var(--space-1); }
   .pit-desktop { display: none; }
+  .pit-mobile { display: inline; }
+  .pit-fastest-table th:nth-child(2) { width: 44%; }
+  .pit-fastest-table th:nth-child(3) { width: 17%; }
+  .pit-fastest-table .pit-number { white-space: nowrap; }
+  .pit-fastest-table th.pit-number { white-space: normal; }
   .pit-row-details { display: block; margin-top: var(--space-2); color: var(--text-secondary); font-size: var(--text-xs); }
   .pit-row-details span { display: block; margin-top: var(--space-2); }
   .pit-toolbar select { flex: 1 1 130px; font-size: 16px; }

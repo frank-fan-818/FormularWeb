@@ -194,7 +194,8 @@
   .race-page-pulse { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .race-podium { padding-right: var(--space-2); padding-left: var(--space-2); }
   .race-podium-driver > strong { font-size: 16px; }
-  .race-story-card > strong { font-size: 24px; }
+  .race-story-card > strong,
+  .race-story-retirements summary > strong { font-size: 24px; }
   .race-session-tab-label span { font-size: 12px; }
 }
 

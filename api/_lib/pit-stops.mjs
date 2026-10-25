@@ -100,6 +100,26 @@ export function parseAwardStops(input, officialTable) {
   });
 }
 
+export function parseSeasonFastest(input, officialTable) {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) throw Error('Invalid season fastest records');
+  const published = tableRows(officialTable);
+  const seen = new Set();
+  return input.map(row => {
+    const duration = seconds(row.duration);
+    if (!duration || typeof row.team !== 'string' || !row.team.trim() || typeof row.lastName !== 'string' || !row.lastName.trim()
+      || typeof row.shortTitle !== 'string' || !row.shortTitle.trim() || typeof row.abbreviation !== 'string' || !row.abbreviation.trim()) throw Error('Invalid season fastest record');
+    const driver = `${row.firstName || ''} ${row.lastName}`.trim();
+    const matches = published.filter(cells => cells.length === 5 && normalize(cells[1]) === normalize(row.team)
+      && normalize(driver).endsWith(normalize(cells[2])) && normalize(cells[3]) === normalize(row.abbreviation) && Number(cells[4]) === Number(duration));
+    if (matches.length !== 1 || !positiveInt(matches[0][0]) || !seconds(matches[0][4])) throw Error('Official season fastest mismatch');
+    const rank = Number(matches[0][0]);
+    if (seen.has(rank)) throw Error('Duplicate season fastest position');
+    seen.add(rank);
+    return { id: `${rank}-${normalize(row.team)}-${normalize(driver)}-${normalize(row.abbreviation)}`, rank, driver, team: row.team, event: row.shortTitle, eventAbbreviation: row.abbreviation, duration: matches[0][4] };
+  }).sort((a, b) => a.rank - b.rank);
+}
+
 const VENUES = {
   albert_park: ['Albert Park Grand Prix Circuit'], shanghai: ['Shanghai International Circuit'], suzuka: ['Suzuka Circuit'],
   bahrain: ['Bahrain International Circuit'], jeddah: ['Jeddah Corniche Circuit'], miami: ['Miami International Autodrome'],
@@ -184,11 +204,11 @@ export async function loadPitData(kind, season, round) {
     const all = await catalog();
     const seasons = Object.keys(all).map(Number).sort((a,b) => b-a);
     const entry = all[season];
-    const base = { season, seasons, source: DHL_SOURCE, updatedAt, stale: false };
+    const base = { season, seasons, source: DHL_SOURCE, updatedAt, stale: false, seasonFastest: [] };
     if (!entry) return { ...base, standings: [], stops: [], unavailable: true };
     if (!round) {
       const raw = await readRemote(`${DHL}${entry.overview}`);
-      return { ...base, standings: parseStandings(raw.data?.chart?.standings, raw.htmlList?.table), stops: [] };
+      return { ...base, standings: parseStandings(raw.data?.chart?.standings, raw.htmlList?.table), stops: [], seasonFastest: parseSeasonFastest(raw.data?.chart?.season_fastest, raw.htmlList?.table) };
     }
     const race = await raceDetails(season, round);
     const event = race && matchEvent(entry.events, race);
