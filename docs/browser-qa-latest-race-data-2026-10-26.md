@@ -67,3 +67,7 @@
 - 最终全量 Vitest：937 项通过；接口/部署检查 30 项通过；最终生产构建的进站与通用路由浏览器验证 43 项通过、8 项按既有规则跳过。桌面、手机、平板均覆盖。构建、严格 lint、UTF-8 和性能预算通过。
 
 这里保证的是自动检查与更新机制已经实现并验证，不保证 DHL 在比赛结束后立即发布数据，也不保证外部接口永不变化。页面无人访问时无需后台任务；下次进入会读取来源。用户固定选择的历史赛季或轮次不会被自动改成另一场。新机制尚未部署，线上版本不会因本地修改而自动改变。
+# Release regression follow-up
+
+The complete release matrix caught a loss of the existing left/right corner split in the shared weekend panel. The panel now shows the total and preserves a known split (`20 · 11L / 9R` at COTA; `11 · 4L / 7R` at Monza), with a total-only fallback when no reliable split exists. The unchanged Monza regression and strengthened COTA assertion passed together with weather/history checks: 27 tests across desktop, mobile and tablet Chromium. Strict lint, type checking, production build and unchanged performance budgets passed after the repair. Final protected CI evidence is attached to release PR #91.
+

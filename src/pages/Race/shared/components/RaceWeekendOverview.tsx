@@ -22,6 +22,10 @@ export function RaceWeekendOverview({
   const { t } = useTranslation();
   const { timeZoneLabel, formatSessionDateLabel } = useRaceSchedule();
   const sessions = scheduleGroups.flatMap((group) => group.sessions);
+  const { turns, leftTurns, rightTurns } = circuitEnhancement;
+  const cornerLabel = leftTurns !== undefined && rightTurns !== undefined
+    ? `${turns ?? leftTurns + rightTurns} · ${leftTurns}L / ${rightTurns}R`
+    : turns ?? '-';
   return (
     <section className="weekend-brief" aria-label={t('weekendSchedule')}>
         {sessions.length ? (
@@ -64,7 +68,7 @@ export function RaceWeekendOverview({
         <span className="weekend-circuit-label">赛道特性</span>
         <dl>
           <div><dt>{RACE_INFO_TEXT.direction}</dt><dd>{circuitEnhancement.direction ? formatCircuitDirection(circuitEnhancement.direction) : '-'}</dd></div>
-          <div><dt>{RACE_INFO_TEXT.turns}</dt><dd>{circuitEnhancement.turns ?? '-'}</dd></div>
+          <div><dt>{RACE_INFO_TEXT.turns}</dt><dd>{cornerLabel}</dd></div>
         </dl>
         {isSprintWeekend ? <Tag color="red">{t('sprintWeekend')}</Tag> : null}
       </div>

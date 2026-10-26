@@ -53,7 +53,7 @@ test('latest US GP fills circuit parameters and measured weather after an empty 
   });
   await page.goto('/races/18/info?season=2026');
   await expect(page.locator('.weekend-circuit-strip')).toContainText('逆时针');
-  await expect(page.locator('.weekend-circuit-strip dd').nth(1)).toHaveText('20');
+  await expect(page.locator('.weekend-circuit-strip dd').nth(1)).toHaveText('20 · 11L / 9R');
   const panel = page.locator('.weather-brief');
   await expect(panel).toContainText('OpenF1 · 正赛实测');
   await expect(panel).toContainText('34.1℃');
