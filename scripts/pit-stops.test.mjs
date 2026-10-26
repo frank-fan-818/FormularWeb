@@ -1,7 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { discoverDhl, parseStandings, parseAwardStops, parseSeasonFastest, matchEvent, mergeStops, getPitRecords, matchOpenSession } from '../api/_lib/pit-stops.mjs';
-import handler from '../api/pit-stops.mjs';
+import handler, { createPitStopsHandler } from '../api/pit-stops.mjs';
+import { readFileSync } from 'node:fs';
+import { loadPitData } from '../api/_lib/pit-stops.mjs';
+
+test('current DHL event response without event_id loads the selected Austin event', async () => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/dhl-event-2026-austin.json', import.meta.url), 'utf8'));
+  const html = '<h2>2026 Season</h2><section data-type="pit_stop" data-statistic="event_info" data-url="/api/f1-award-element-data/7373"><input value="1185"><label>Circuit of The Americas</label></section><section data-type="pit_stop" data-statistic="season_overview" data-url="/api/f1-award-element-data/7374"></section>';
+  const read = async (url, json = true) => !json ? html : url.includes('api.jolpi.ca')
+    ? { MRData: { RaceTable: { Races: [{ season: '2026', round: '18', date: '2026-10-25', Circuit: { circuitId: 'americas', circuitName: 'Circuit of the Americas' } }] } } }
+    : fixture;
+  const data = await loadPitData('award', '2026', '18', read);
+  assert.equal(data.event, 'Circuit of The Americas');
+  assert.equal(data.stops[0].driver, 'Oscar Piastri');
+  assert.equal(data.stops[0].duration, '2.11');
+  assert.equal(data.stops.find(row => row.code === 'LEC')?.duration, '2.30');
+  await assert.rejects(() => loadPitData('award', '2026', '18', async (...args) => {
+    const value = await read(...args);
+    return value === fixture ? { ...fixture, data: { ...fixture.data, event_id: '1172' } } : value;
+  }), /event mismatch/);
+  await assert.rejects(() => loadPitData('award', '2026', '18', async (...args) => {
+    const value = await read(...args);
+    return value === fixture ? { ...fixture, data: { ...fixture.data, chart: fixture.data.chart.map(row => ({ ...row, startTime: { date: '2026-05-03 15:00:00' } })) } } : value;
+  }), /event mismatch/);
+});
 
 test('DHL component discovery follows season headings and validates paths', () => {
   const html = '<h2>2025</h2><section data-type="pit_stop" data-statistic="event_info" data-url="/api/f1-award-element-data/99"><h1>Grand Prix 2025</h1><input value="800"><label><span>Albert Park Grand Prix Circuit</span></label></section><section data-url="/api/f1-award-element-data/100" data-statistic="season_overview" data-type="pit_stop"></section><h2>2024</h2><section data-type="pit_stop" data-statistic="season_overview" data-url="https://evil.test/x"></section>';
@@ -90,4 +113,33 @@ test('public handler rejects invalid methods and parameters without requesting u
     assert.equal(actual,status);
     if(method==='HEAD') assert.equal(body,undefined); else assert.equal(typeof JSON.parse(body).code,'string');
   }
+});
+
+test('published updates replace the short server cache and failures remain retryable', async () => {
+  let time = Date.parse('2026-10-26T06:00:00Z'); let calls = 0; let failed = false;
+  const serve = createPitStopsHandler({ now: () => time, load: async () => {
+    calls++;
+    if (failed) throw Error('source unavailable');
+    return { season: '2026', standings: [{ team: 'McLaren', rank: 1, points: calls * 25 }], stops: [] };
+  } });
+  const request = async () => {
+    const headers = {}; let status; let body;
+    await serve({ method: 'GET', url: '/api/pit-stops?season=2026', headers: {} }, {
+      setHeader(key, value) { headers[key] = value; }, writeHead(value) { status = value; }, end(value) { body = JSON.parse(value); },
+    });
+    assert.equal(status, 200);
+    assert.equal(headers['Cache-Control'], 'no-store');
+    assert.equal(headers['Vercel-CDN-Cache-Control'], 'no-store');
+    return body;
+  };
+  assert.equal((await request()).standings[0].points, 25);
+  time += 59_000;
+  assert.equal((await request()).standings[0].points, 25);
+  assert.equal(calls, 1);
+  time += 2_000;
+  assert.equal((await request()).standings[0].points, 50);
+  failed = true; time += 61_000;
+  assert.equal((await request()).stale, true);
+  failed = false;
+  assert.equal((await request()).standings[0].points, 100);
 });

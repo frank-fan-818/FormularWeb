@@ -95,6 +95,36 @@ test('season fastest supports direct links, season changes and an independent em
   await expect(page.locator('.pit-table')).toContainText('559');
 });
 
+test('DHL standings, season fastest and event stops update while the page stays open', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-26T06:00:00Z') });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  let overviewCalls = 0; let eventCalls = 0;
+  await page.route('**/api/pit-stops?**', route => {
+    const eventView = new URL(route.request().url()).searchParams.has('round');
+    if (eventView) {
+      eventCalls++;
+      return route.fulfill({ json: { ...event, stops: event.stops.map(row => ({ ...row, duration: eventCalls > 1 ? '2.10' : '2.16' })) } });
+    }
+    overviewCalls++;
+    return route.fulfill({ json: { ...award, standings: [{ rank: 1, team: 'Ferrari', points: 559 + (overviewCalls - 1) * 25 }],
+      seasonFastest: seasonFastest.map((row, i) => i === 0 ? { ...row, duration: overviewCalls > 2 ? '1.88' : overviewCalls > 1 ? '1.89' : '1.91' } : row) } });
+  });
+  await page.goto('/pit-stops?season=2025');
+  await expect(page.locator('.pit-table')).toContainText('559');
+  await page.clock.runFor(300_000);
+  await expect(page.locator('.pit-table')).toContainText('584');
+  await page.getByRole('button', { name: '赛季最快换胎', exact: true }).click();
+  await expect(page.locator('.pit-fastest-table')).toContainText('1.89 s');
+  await page.clock.runFor(300_000);
+  await expect(page.locator('.pit-fastest-table')).toContainText('1.88 s');
+  await page.getByRole('button', { name: '单站最快进站', exact: true }).click();
+  await expect(page.locator('.pit-award-table')).toContainText('2.16 s');
+  await page.clock.runFor(300_000);
+  await expect(page.locator('.pit-award-table')).toContainText('2.10 s');
+  expect(overviewCalls).toBe(3);
+  expect(eventCalls).toBe(2);
+});
+
 test('pit stops distinguish loading, empty data, and errors with retry', async ({ page }) => {
   let calls = 0;
   await page.route('**/api/pit-stops?**', async route => {

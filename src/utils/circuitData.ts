@@ -1,4 +1,7 @@
-// 从f1db获取赛道详细信息（静态集成，无外部依赖）
+import profiles from '@/data/circuit-profiles.json';
+import { getCircuitIdCandidates } from './circuitIds';
+
+// Bundled F1DB reference plus reviewed official additions; see docs/circuit-profile-data.md.
 export interface StaticCircuitDetails {
   length: string;
   firstRace: number;
@@ -8,6 +11,13 @@ export interface StaticCircuitDetails {
   totalRaces: number;
   raceLaps: number;
   totalDistance: string;
+  turns?: number;
+  direction?: string;
+  name?: string;
+  locality?: string;
+  country?: string;
+  lat?: number;
+  long?: number;
 }
 
 type StaticCircuitRecord = Omit<StaticCircuitDetails, 'length'>;
@@ -400,13 +410,18 @@ export function getCircuitDetailsSync(circuitId: string): StaticCircuitDetails |
     rodriguez: 'mexico_city',
     autodromo_hermanos_rodriguez: 'mexico_city',
   };
-  const lookupId = circuitAliases[normalizedCircuitId] || normalizedCircuitId;
-  const circuit = CIRCUIT_DATA[lookupId];
-  if (!circuit) return null;
+  const candidates = getCircuitIdCandidates(circuitAliases[normalizedCircuitId] || normalizedCircuitId);
+  const reference = candidates.map(id => (profiles as Record<string, typeof profiles.melbourne>)[id]).find(Boolean);
+  const circuit = candidates.map(id => CIRCUIT_DATA[id]).find(Boolean);
+  if (!reference) return null;
 
   return {
     ...circuit,
-    length: (Number.parseFloat(circuit.totalDistance) / circuit.raceLaps).toFixed(3),
+    ...reference,
+    // Preserve the legacy record fields until a layout-specific record is reviewed.
+    lapRecord: circuit?.lapRecord || '',
+    lapRecordDriver: circuit?.lapRecordDriver || '',
+    lapRecordYear: circuit?.lapRecordYear || 0,
   };
 }
 

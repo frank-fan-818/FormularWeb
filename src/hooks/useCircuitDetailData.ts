@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabaseApi } from '@/api/supabase';
 import { useSeasonRacesCached } from './useSeasonDataCached';
 import type { Circuit, Race } from '@/types';
-import { getCircuitDetails } from '@/utils/circuitData';
+import { getCircuitDetails, getCircuitDetailsSync } from '@/utils/circuitData';
 import { areCircuitIdsEquivalent, getSupabaseCircuitId } from '@/utils/circuitIds';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
+import { hasCircuitValue as hasKnownValue, firstCircuitValue as firstKnownValue } from '@/utils/circuitValues';
 
 interface CircuitRouteState {
   circuit?: Circuit;
@@ -51,20 +52,6 @@ interface UseCircuitDetailDataReturn {
 const circuitDetailsCache = new Map<string, CircuitDetails | null>();
 const circuitDetailsInFlight = new Map<string, Promise<CircuitDetails | null>>();
 
-function hasKnownValue(value: unknown): boolean {
-  const text = String(value ?? '').trim().toLowerCase();
-  return Boolean(text)
-    && text !== '-'
-    && text !== 'n/a'
-    && text !== 'unknown'
-    && text !== '\u672a\u77e5'
-    && text !== '\u8d44\u6599\u5f85\u8865';
-}
-
-function firstKnownValue<T = unknown>(...values: T[]): T | undefined {
-  return values.find((value) => hasKnownValue(value));
-}
-
 function mapSupabaseCircuitToCircuit(circuit: CircuitDetails, fallbackId: string): Circuit {
   return {
     circuitId: circuit.circuit_id || fallbackId,
@@ -77,22 +64,6 @@ function mapSupabaseCircuitToCircuit(circuit: CircuitDetails, fallbackId: string
       long: String(circuit.long || circuit.lng || ''),
     },
   };
-}
-
-function deriveCircuitLength(details: CircuitDetails): string | undefined {
-  if (hasKnownValue(details.length)) {
-    return String(details.length);
-  }
-
-  const totalDistanceText = String(details.total_distance || details.totalDistance || '');
-  const totalDistance = Number(totalDistanceText.replace(/[^\d.]/g, ''));
-  const raceLaps = Number(details.race_laps || details.raceLaps);
-
-  if (!Number.isFinite(totalDistance) || !Number.isFinite(raceLaps) || raceLaps <= 0) {
-    return undefined;
-  }
-
-  return (totalDistance / raceLaps).toFixed(3);
 }
 
 function normalizeLocalCircuitDetails(
@@ -110,14 +81,15 @@ function normalizeLocalCircuitDetails(
 
   return {
     ...details,
-    length: deriveCircuitLength(details),
-    total_distance: details.total_distance || details.totalDistance,
-    total_races: details.total_races || details.totalRaces,
-    first_race: details.first_race || details.firstRace,
-    lap_record: details.lap_record || details.lapRecord,
-    lap_record_driver: details.lap_record_driver || details.lapRecordDriver,
-    lap_record_year: details.lap_record_year || details.lapRecordYear,
-    race_laps: details.race_laps || details.raceLaps,
+    // Start/finish offsets and shortened races make distance / laps unreliable.
+    length: hasKnownValue(details.length) ? String(details.length) : undefined,
+    total_distance: firstKnownValue(details.total_distance, details.totalDistance),
+    total_races: firstKnownValue(details.total_races, details.totalRaces),
+    first_race: firstKnownValue(details.first_race, details.firstRace),
+    lap_record: firstKnownValue(details.lap_record, details.lapRecord),
+    lap_record_driver: firstKnownValue(details.lap_record_driver, details.lapRecordDriver),
+    lap_record_year: firstKnownValue(details.lap_record_year, details.lapRecordYear),
+    race_laps: firstKnownValue(details.race_laps, details.raceLaps),
     turns: firstKnownValue(details.turns, details.turnCount, derivedTurns),
     direction: firstKnownValue(details.direction, enhancement.direction),
   };
@@ -174,7 +146,7 @@ function getCircuitDetail(supabaseId: string): Promise<CircuitDetails | null> {
     getLocalCircuitDetail(supabaseId),
   ])
     .then(([databaseDetails, localDetails]) => {
-      const result = mergeCircuitDetails(databaseDetails, localDetails);
+      const result = mergeCircuitDetails(normalizeLocalCircuitDetails(databaseDetails, supabaseId), localDetails);
       circuitDetailsCache.set(supabaseId, result || null);
       return result || null;
     })
@@ -192,7 +164,9 @@ export function useCircuitDetailData(
   routeState: CircuitRouteState | null,
 ): UseCircuitDetailDataReturn {
   const { races, loading: seasonLoading } = useSeasonRacesCached(season);
-  const [circuitDetails, setCircuitDetails] = useState<CircuitDetails | null>(null);
+  const [circuitDetails, setCircuitDetails] = useState<CircuitDetails | null>(() => (
+    circuitId ? normalizeLocalCircuitDetails(getCircuitDetailsSync(circuitId), circuitId) : null
+  ));
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [fallbackCircuit, setFallbackCircuit] = useState<Circuit | null>(null);
 
@@ -223,22 +197,11 @@ export function useCircuitDetailData(
       }
       setDetailsLoading(false);
     } else {
-      setCircuitDetails(null);
-      setDetailsLoading(true);
+      const localDetails = normalizeLocalCircuitDetails(getCircuitDetailsSync(supabaseId), supabaseId);
+      setCircuitDetails(localDetails);
+      setFallbackCircuit(!matchedRace && localDetails ? mapSupabaseCircuitToCircuit(localDetails, supabaseId) : null);
+      setDetailsLoading(!localDetails);
     }
-
-    void getLocalCircuitDetail(supabaseId)
-      .then((localDetails) => {
-        if (cancelled || !localDetails) {
-          return;
-        }
-
-        setCircuitDetails((currentDetails) => mergeCircuitDetails(currentDetails, localDetails));
-        setFallbackCircuit((currentFallback) => (
-          !matchedRace ? mapSupabaseCircuitToCircuit(localDetails, supabaseId) : currentFallback
-        ));
-        setDetailsLoading(false);
-      });
 
     void getCircuitDetail(supabaseId)
       .then((details) => {

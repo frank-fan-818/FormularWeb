@@ -84,7 +84,10 @@ test('circuit profile presents one set of specs and an accessible flat layout', 
     await expect(page.getByRole('heading', { name: circuit.circuitName, exact: true })).toBeVisible();
     const detailed = circuit.circuitId !== 'adelaide';
     await expect(page.locator('.circuit-profile-heading .product-metric-rail, .sector-legend')).toHaveCount(0);
-    await expect(page.locator('.stats-grid .stat-card')).toHaveCount(8);
+    // Historical venues show the six sourced basics when the optional engineering
+    // measurements are unavailable, instead of two permanent pending cards.
+    await expect(page.locator('.stats-grid .stat-card')).toHaveCount(circuit.circuitId === 'adelaide' ? 6 : 8);
+    await expect(page.locator('.stats-grid')).not.toContainText('资料待补');
     await expect(page.getByText('赛道长度', { exact: true })).toHaveCount(1);
     if (detailed) {
       await expect(page.locator('.circuit-detailed-map')).toHaveAttribute('aria-busy', 'false');

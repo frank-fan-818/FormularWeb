@@ -10,6 +10,7 @@ import { useAppStore } from '@/store';
 import { getSupabaseCircuitId } from '@/utils/circuitIds';
 import { getCircuitDetailsSync } from '@/utils/circuitData';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
+import { firstCircuitValue } from '@/utils/circuitValues';
 import type { Circuit } from '@/types';
 import CircuitImage from '@/components/circuits/CircuitImage';
 import ProductMasthead from '@/components/product/ProductMasthead';
@@ -62,21 +63,21 @@ const Circuits = () => {
       const dbCircuit = circuitMap.get(supabaseId);
       const localCircuit = getCircuitDetailsSync(supabaseId) || getCircuitDetailsSync(ergastId);
       const enhancement = getCircuitEnhancement(ergastId);
-      const localTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
+      const localTurns = localCircuit?.turns ?? (enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
         ? enhancement.leftTurns + enhancement.rightTurns
-        : null;
+        : null);
 
       return {
         ...race.Circuit,
-        length: dbCircuit?.length || localCircuit?.length || null,
-        turns: dbCircuit?.turns || localTurns,
-        first_race: dbCircuit?.first_race || localCircuit?.firstRace || null,
-        total_races: dbCircuit?.total_races || localCircuit?.totalRaces || null,
-        race_laps: dbCircuit?.race_laps || localCircuit?.raceLaps || null,
-        total_distance: dbCircuit?.total_distance || localCircuit?.totalDistance || null,
-        lap_record: dbCircuit?.lap_record || localCircuit?.lapRecord || null,
-        lap_record_driver: dbCircuit?.lap_record_driver || localCircuit?.lapRecordDriver || null,
-        lap_record_year: dbCircuit?.lap_record_year || localCircuit?.lapRecordYear || null,
+        length: firstCircuitValue(dbCircuit?.length, localCircuit?.length) ?? null,
+        turns: firstCircuitValue(dbCircuit?.turns, localTurns) ?? null,
+        first_race: firstCircuitValue(dbCircuit?.first_race, localCircuit?.firstRace) ?? null,
+        total_races: firstCircuitValue(dbCircuit?.total_races, localCircuit?.totalRaces) ?? null,
+        race_laps: firstCircuitValue(dbCircuit?.race_laps, localCircuit?.raceLaps) ?? null,
+        total_distance: firstCircuitValue(dbCircuit?.total_distance, localCircuit?.totalDistance) ?? null,
+        lap_record: firstCircuitValue(dbCircuit?.lap_record, localCircuit?.lapRecord) ?? null,
+        lap_record_driver: firstCircuitValue(dbCircuit?.lap_record_driver, localCircuit?.lapRecordDriver) ?? null,
+        lap_record_year: firstCircuitValue(dbCircuit?.lap_record_year, localCircuit?.lapRecordYear) ?? null,
         _supabaseId: supabaseId,
         index,
       };

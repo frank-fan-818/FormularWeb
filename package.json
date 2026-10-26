@@ -1,7 +1,7 @@
 {
   "name": "formular-one-dashboard",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.5.1",
   "packageManager": "npm@11.12.0",
   "type": "module",
   "engines": {
@@ -28,7 +28,7 @@
     "lint": "eslint . --report-unused-disable-directives",
     "lint:strict": "eslint . --report-unused-disable-directives --max-warnings 0",
     "encoding:check": "node ./scripts/check-text-encoding.mjs",
-    "deployment:verify": "node ./scripts/verify-deployment-config.mjs && node --test ./scripts/verify-production.test.mjs ./scripts/news-feed-routing.test.mjs ./scripts/news-proxy.test.mjs ./scripts/pit-stops.test.mjs",
+    "deployment:verify": "node ./scripts/verify-deployment-config.mjs && node --test ./scripts/verify-production.test.mjs ./scripts/news-feed-routing.test.mjs ./scripts/news-proxy.test.mjs ./scripts/pit-stops.test.mjs ./scripts/race-weather.test.mjs",
     "deployment:verify:live": "node ./scripts/verify-production.mjs",
     "fonts:sync": "node ./scripts/sync-ui-fonts.mjs",
     "fonts:test:integration": "node --test ./scripts/ui-fonts.integration.test.mjs",

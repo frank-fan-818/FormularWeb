@@ -10,7 +10,7 @@ export async function readRemote(url, json = true) {
   const parsed = new URL(url);
   if (!['inmotion.dhl', 'api.jolpi.ca', 'api.openf1.org'].includes(parsed.hostname) || parsed.protocol !== 'https:') throw Error('Invalid upstream');
   const saved = remoteCache.get(url);
-  if (saved && Date.now() - saved.at < 600_000) return saved.value;
+  if (saved && Date.now() - saved.at < 60_000) return saved.value;
   const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(8000), headers: { Accept: json ? 'application/json' : 'text/html', 'User-Agent': 'FormularOneWeb (F1 pit stop statistics)' } });
   if (!response.ok) throw Error(`Upstream ${response.status}`);
   if (!(response.headers.get('content-type') || '').includes(json ? 'json' : 'text/html')) throw Error('Unexpected upstream response');
@@ -96,7 +96,7 @@ export function parseAwardStops(input, officialTable) {
   return rows.map(row => {
     const matches = published.filter(cells => cells.length === 6 && normalize(cells[1]) === normalize(row.team) && normalize(row.driver).endsWith(normalize(cells[2])) && Number(cells[3]) === Number(row.duration) && Number(cells[5]) === row.points);
     if (officialTable && (matches.length !== 1 || !positiveInt(matches[0][0]))) throw Error('Official stop mismatch');
-    return { ...row, rank: matches.length === 1 ? Number(matches[0][0]) : 1 + rows.filter(other => Number(other.duration) < Number(row.duration)).length };
+    return { ...row, duration: matches.length === 1 ? matches[0][3] : row.duration, rank: matches.length === 1 ? Number(matches[0][0]) : 1 + rows.filter(other => Number(other.duration) < Number(row.duration)).length };
   });
 }
 
@@ -178,60 +178,66 @@ export function matchOpenSession(sessions, race, season) {
 }
 
 let catalogCache;
-async function catalog() {
-  if (catalogCache && Date.now() - catalogCache.at < 3_600_000) return catalogCache.value;
-  const current = await readRemote(DHL_SOURCE, false);
+async function catalog(read = readRemote) {
+  if (read === readRemote && catalogCache && Date.now() - catalogCache.at < 60_000) return catalogCache.value;
+  const current = await read(DHL_SOURCE, false);
   const year = Number(text(current.match(/<h2[^>]*>\s*20\d{2} Season\s*<\/h2>/)?.[0]).match(/20\d{2}/)?.[0]);
   if (!year) throw Error('Missing DHL season');
-  const historical = await readRemote(ARCHIVE, false);
+  const historical = await read(ARCHIVE, false);
   const all = { ...discoverDhl(historical), ...discoverDhl(current, year) };
   const value = Object.fromEntries(Object.entries(all).filter(([, entry]) => entry.overview && entry.event));
   if (!Object.keys(value).length) throw Error('Missing DHL components');
-  catalogCache = { at: Date.now(), value };
+  if (read === readRemote) catalogCache = { at: Date.now(), value };
   return value;
 }
 
-async function raceDetails(season, round) {
-  const data = await readRemote(`https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json?limit=100`);
+async function raceDetails(season, round, read = readRemote) {
+  const data = await read(`https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json?limit=100`);
   const race = data.MRData?.RaceTable?.Races?.[0];
   if (!race || String(race.season) !== season || String(race.round) !== round) return null;
   return race;
 }
 
-export async function loadPitData(kind, season, round) {
+export async function loadPitData(kind, season, round, read = readRemote) {
   const updatedAt = new Date().toISOString();
   if (kind === 'award') {
-    const all = await catalog();
+    const all = await catalog(read);
     const seasons = Object.keys(all).map(Number).sort((a,b) => b-a);
     const entry = all[season];
     const base = { season, seasons, source: DHL_SOURCE, updatedAt, stale: false, seasonFastest: [] };
     if (!entry) return { ...base, standings: [], stops: [], unavailable: true };
     if (!round) {
-      const raw = await readRemote(`${DHL}${entry.overview}`);
+      const raw = await read(`${DHL}${entry.overview}`);
       return { ...base, standings: parseStandings(raw.data?.chart?.standings, raw.htmlList?.table), stops: [], seasonFastest: parseSeasonFastest(raw.data?.chart?.season_fastest, raw.htmlList?.table) };
     }
-    const race = await raceDetails(season, round);
+    const race = await raceDetails(season, round, read);
     const event = race && matchEvent(entry.events, race);
     if (!event) return { ...base, standings: [], stops: [], unavailable: true };
-    const raw = await readRemote(`${DHL}${entry.event}?event=${event.id}`);
-    if (String(raw.data?.event_id) !== event.id) throw Error('DHL event mismatch');
+    const raw = await read(`${DHL}${entry.event}?event=${event.id}`);
+    // Current responses omit event_id. The venue was matched in the official
+    // catalogue; additionally corroborate every returned stop's event date.
+    if (raw.data?.event_id != null && String(raw.data.event_id) !== event.id) throw Error('DHL event mismatch');
+    if (raw.data?.event_id == null && Array.isArray(raw.data?.chart) && raw.data.chart.some(row => {
+      const day = row.startTime?.date?.slice(0, 10);
+      return !day || !Number.isFinite(Date.parse(day)) || Math.abs(Date.parse(day) - Date.parse(race.date)) > 86_400_000;
+    })) throw Error('DHL event mismatch');
     return { ...base, standings: [], stops: parseAwardStops(raw.data?.chart, raw.htmlList?.table), event: event.label };
   }
-  const race = await raceDetails(season, round);
+  const race = await raceDetails(season, round, read);
   if (!race) return { season, records: [], updatedAt, stale: false };
   const drivers = race.Results || [];
-  const lane = (await getPitRecords(season, round)).map(row => {
+  const lane = (await getPitRecords(season, round, read)).map(row => {
     const result = drivers.find(item => item.Driver?.driverId === row.driverId);
     return { ...row, driverNumber: Number(result?.number || result?.Driver?.permanentNumber), driver: result ? `${result.Driver.givenName} ${result.Driver.familyName}` : row.driverId, code: result?.Driver?.code || '', team: result?.Constructor?.name || '', constructorId: result?.Constructor?.constructorId || '' };
   });
   let open = []; let partial = false;
   if (Number(season) >= 2024 && lane.length) {
     try {
-      const sessions = await readRemote(`https://api.openf1.org/v1/sessions?year=${season}&session_name=Race`);
+      const sessions = await read(`https://api.openf1.org/v1/sessions?year=${season}&session_name=Race`);
       if (!Array.isArray(sessions)) throw Error('Invalid sessions');
       const session = matchOpenSession(sessions, race, season);
       if (!session || !positiveInt(session.session_key)) throw Error('Ambiguous session');
-      open = await readRemote(`https://api.openf1.org/v1/pit?session_key=${session.session_key}`);
+      open = await read(`https://api.openf1.org/v1/pit?session_key=${session.session_key}`);
       if (!Array.isArray(open) || open.some(item => !item || !positiveInt(item.driver_number) || !positiveInt(item.lap_number))) throw Error('Invalid pit data');
     } catch { open = []; partial = true; }
   }

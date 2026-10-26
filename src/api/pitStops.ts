@@ -19,7 +19,7 @@ const raceSchema = z.object({
 async function request(kind: string, season: string, round: string, signal: AbortSignal): Promise<unknown> {
   const query = new URLSearchParams({ kind, season });
   if (round) query.set('round', round);
-  const response = await fetch(`/api/pit-stops?${query}`, { signal: AbortSignal.any([signal, AbortSignal.timeout(35_000)]) });
+  const response = await fetch(`/api/pit-stops?${query}`, { cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(35_000)]) });
   if (!response.ok) throw Error('Pit stop data unavailable');
   return response.json();
 }

@@ -9,6 +9,7 @@ import { useAppStore } from '@/store';
 import type { Circuit, CircuitRouteState, Race } from '@/types';
 import { useRaceSchedule } from '@/hooks/useRaceSchedule';
 import { formatCircuitDirection, getCircuitEnhancement } from '@/utils/circuitEnhancements';
+import { hasCircuitValue } from '@/utils/circuitValues';
 import ProductMasthead from '@/components/product/ProductMasthead';
 import ProductSectionHeader from '@/components/product/ProductSectionHeader';
 import { TimingBeacon } from '@/components/loading/TimingBeacon';
@@ -56,7 +57,7 @@ function getCircuitRouteState(value: unknown): CircuitRouteState | null {
 }
 
 function hasDisplayValue(value: unknown): boolean {
-  return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '-';
+  return hasCircuitValue(value);
 }
 
 function formatStatValue(value: unknown, suffix = '', isLoading = false): string {
@@ -109,10 +110,10 @@ const CircuitDetail = () => {
   const detailedMap = getCircuitDetailedMap(circuit.circuitId);
   const leftRightTurns = enhancement.leftTurns !== undefined && enhancement.rightTurns !== undefined
     ? `${enhancement.leftTurns}L / ${enhancement.rightTurns}R`
-    : TEXT.pendingData;
+    : null;
   const elevation = enhancement.elevationChangeM !== undefined
     ? `${enhancement.elevationChangeM} m`
-    : TEXT.pendingData;
+    : enhancement.elevationDescription || null;
   const currentSeasonRace = circuitRaces[0] as CircuitRaceWithMetadata | undefined;
   const waitingForDetails = detailsLoading && !circuitDetails;
   const direction = waitingForDetails ? TEXT.loadingStat : formatCircuitDirection(circuitDetails?.direction);
@@ -170,14 +171,14 @@ const CircuitDetail = () => {
             </div>
           </Card>
 
-          <Card className="stat-card">
+          {leftRightTurns && <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.leftRightTurns}
             </div>
             <div className="stat-value">
               {leftRightTurns}
             </div>
-          </Card>
+          </Card>}
 
           <Card className="stat-card">
             <div className="stat-label">
@@ -197,14 +198,14 @@ const CircuitDetail = () => {
             </div>
           </Card>
 
-          <Card className="stat-card">
+          {elevation && <Card className="stat-card">
             <div className="stat-label">
               <FlagOutlined /> {TEXT.elevation}
             </div>
             <div className="stat-value">
               {elevation}
             </div>
-          </Card>
+          </Card>}
 
           <Card className="stat-card">
             <div className="stat-label">

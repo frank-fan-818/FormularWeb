@@ -6,6 +6,7 @@ import { useRaceData } from './RaceContext';
 import { isFeatureEnabled } from '@/utils/featureFlags';
 import { getCircuitEnhancement } from '@/utils/circuitEnhancements';
 import { useRaceSchedule } from '@/hooks/useRaceSchedule';
+import { useRaceWeatherSummary } from '@/hooks/useRaceWeatherSummary';
 import { TEXT } from '@/pages/Race/shared/constants';
 import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { RaceWeekendOverview } from '@/pages/Race/shared/components/RaceWeekendOverview';
@@ -45,6 +46,11 @@ const RaceInfo = () => {
     fp3Results,
     availableDbSessions,
   } = useRaceData();
+  const weather = useRaceWeatherSummary({
+    season: raceInfo?.season || '', round: raceInfo?.round || '', enabled: Boolean(session && raceInfo), memberId: session?.user.id || '',
+    primarySummary: fastF1Analytics?.weather?.summary || null, primaryLoading: fastF1AnalyticsLoading,
+    primaryError: fastF1AnalyticsError, retryPrimary: retryFastF1Analytics,
+  });
   const weekendSchedule = getRaceWeekendTimeline(raceInfo, TEXT);
   const scheduleGroups = getRaceWeekendScheduleGroups(weekendSchedule);
   const circuitEnhancement = useMemo(
@@ -111,10 +117,11 @@ const RaceInfo = () => {
         resultSessionKeys={resultSessionKeys}
       />
       {session ? <RaceWeatherOverview
-        summary={fastF1Analytics?.weather?.summary || null}
-        loading={fastF1AnalyticsLoading}
-        error={fastF1AnalyticsError}
-        onRetry={retryFastF1Analytics}
+        summary={weather.summary}
+        source={weather.source}
+        loading={weather.loading}
+        error={weather.error}
+        onRetry={weather.retry}
       /> : null}
       {isFeatureEnabled('race-predictions') ? (
         <MemberAccess feature="赛事预测"><RaceWinnerPredictionPanel season={raceInfo.season} round={raceInfo.round} /></MemberAccess>
