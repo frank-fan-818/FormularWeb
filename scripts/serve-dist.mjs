@@ -1,5 +1,7 @@
 import newsFeedHandler from '../api/news-feed.mjs';
 import pitStopsHandler from '../api/pit-stops.mjs';
+import { createRaceWeatherHandler } from '../api/race-weather.mjs';
+import { loadEnv } from 'vite';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
@@ -10,6 +12,7 @@ const host = '127.0.0.1';
 const port = 4173;
 const mockF1Api = process.env.F1_API_MOCK_EMPTY === '1';
 const mockCanonicalF1Api = process.env.F1_API_MOCK_CANONICAL === '1';
+const raceWeatherHandler = createRaceWeatherHandler({ env: { ...loadEnv('production', process.cwd(), ''), ...process.env } });
 const newsFeeds = JSON.parse(readFileSync(new URL('../config/news-feeds.json', import.meta.url), 'utf8'));
 const buildManifest = JSON.parse(
   readFileSync(resolve(distRoot, '.vite', 'manifest.json'), 'utf8'),
@@ -45,6 +48,10 @@ if (!existsSync(resolve(distRoot, 'index.html'))) {
 
 const server = createServer(async (request, response) => {
   const pathname = decodeURIComponent(new URL(request.url || '/', `http://${host}`).pathname);
+  if (pathname === '/api/race-weather') {
+    await raceWeatherHandler(request, response);
+    return;
+  }
   if (pathname === '/api/pit-stops') {
     await pitStopsHandler(request, response);
     return;

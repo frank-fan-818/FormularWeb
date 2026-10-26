@@ -14,15 +14,16 @@ interface RaceWeatherOverviewProps {
   loading: boolean;
   error: Error | null;
   onRetry: () => void;
+  source?: 'fastf1' | 'openf1';
 }
 
-export function RaceWeatherOverview({ summary, loading, error, onRetry }: RaceWeatherOverviewProps) {
+export function RaceWeatherOverview({ summary, loading, error, onRetry, source = 'fastf1' }: RaceWeatherOverviewProps) {
   const { t } = useTranslation();
   return (
     <section className="race-info-section weather-brief" aria-labelledby="race-weather-heading">
       <div className="race-info-section-heading">
         <span id="race-weather-heading">{RACE_INFO_TEXT.weatherOverview}</span>
-        <small>FastF1 session data</small>
+        <small>{source === 'openf1' ? 'OpenF1 · 正赛实测' : 'FastF1 session data'}</small>
       </div>
       {summary ? (
         <dl className="weather-brief-metrics">
@@ -35,7 +36,7 @@ export function RaceWeatherOverview({ summary, loading, error, onRetry }: RaceWe
             <dd>{formatTemperature(summary.airTempC.min)}<span className="weather-range-separator">–</span>{formatTemperature(summary.airTempC.max)}</dd>
           </div>
           <div><dt>{t('humidity')}</dt><dd>{formatPercent(summary.humidityPct.average)}</dd></div>
-          <div><dt>{RACE_INFO_TEXT.rainfall}</dt><dd>{summary.rainPointCount > 0 ? '有' : '无'}</dd>{summary.rainPointCount > 0 ? <span className="weather-brief-note">{summary.rainLapRanges.length} 段降雨区间</span> : null}</div>
+          <div><dt>{RACE_INFO_TEXT.rainfall}</dt><dd>{summary.rainPointCount > 0 ? '有' : '无'}</dd>{summary.rainLapRanges.length > 0 ? <span className="weather-brief-note">{summary.rainLapRanges.length} 段降雨区间</span> : null}</div>
           <div><dt>{RACE_INFO_TEXT.windSpeed}</dt><dd>{formatWindSpeed(summary.maxWindSpeedMps)}</dd></div>
         </dl>
       ) : error ? (

@@ -64,7 +64,7 @@ export function RaceWeekendOverview({
         <span className="weekend-circuit-label">赛道特性</span>
         <dl>
           <div><dt>{RACE_INFO_TEXT.direction}</dt><dd>{circuitEnhancement.direction ? formatCircuitDirection(circuitEnhancement.direction) : '-'}</dd></div>
-          <div><dt>{RACE_INFO_TEXT.turns}</dt><dd>{circuitEnhancement.leftTurns !== undefined && circuitEnhancement.rightTurns !== undefined ? `${circuitEnhancement.leftTurns}L / ${circuitEnhancement.rightTurns}R` : '-'}</dd></div>
+          <div><dt>{RACE_INFO_TEXT.turns}</dt><dd>{circuitEnhancement.turns ?? '-'}</dd></div>
         </dl>
         {isSprintWeekend ? <Tag color="red">{t('sprintWeekend')}</Tag> : null}
       </div>

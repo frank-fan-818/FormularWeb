@@ -33,6 +33,11 @@ export async function mockAuth(page: Page) {
 // Existing route fixtures must not start live timing-provider requests.
 // Pit-stop-specific tests register their populated/error fixtures afterward.
 async function mockPitStopData(page: Page) {
+  await page.route('**/api/race-weather?**', route => {
+    const query = new URL(route.request().url()).searchParams;
+    return route.fulfill({ json: { season: query.get('season'), round: query.get('round'), source: 'openf1', sessionKey: null,
+      summary: null, updatedAt: new Date().toISOString() } });
+  });
   await page.route('**/api/pit-stops?**', route => {
     const query = new URL(route.request().url()).searchParams;
     const season = query.get('season') || '2026';

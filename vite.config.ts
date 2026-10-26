@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin, type ViteDevServer } from 'vite'
+import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite'
 import type { OutputBundle, OutputChunk } from 'rollup'
 import react from '@vitejs/plugin-react'
 import path from 'path'
@@ -6,6 +6,18 @@ import { createHash } from 'node:crypto'
 import { Agent as HttpsAgent } from 'node:https'
 import { existsSync, readFileSync } from 'node:fs'
 import pitStopsHandler from './api/pit-stops.mjs'
+import { createRaceWeatherHandler } from './api/race-weather.mjs'
+
+function raceWeatherApi(): Plugin {
+  const configure = (server: Pick<ViteDevServer, 'middlewares' | 'config'>) => {
+    const handler = createRaceWeatherHandler({ env: { ...loadEnv(server.config.mode, process.cwd(), ''), ...process.env } });
+    server.middlewares.use((req, res, next) => {
+      if ((req.url || '').split('?')[0] !== '/api/race-weather') return next();
+      void handler(req, res);
+    });
+  };
+  return { name: 'race-weather-api', configureServer: configure, configurePreviewServer: configure };
+}
 
 function pitStopsApi(): Plugin {
   const configure = (server: Pick<ViteDevServer, 'middlewares'>) => {
@@ -334,6 +346,7 @@ function createReleaseIdentityPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
+    raceWeatherApi(),
     react(),
     pitStopsApi(),
     privateDataGuard(),

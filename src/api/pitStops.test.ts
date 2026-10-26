@@ -7,8 +7,10 @@ describe('pit stop API contract', () => {
   it('validates season fastest records and accepts older cached envelopes without them', async () => {
     const fastest = { id: '1', rank: 1, driver: 'Oscar Piastri', team: 'McLaren', event: 'Monza', eventAbbreviation: 'ITA', duration: '1.91' };
     const payload: Record<string, unknown> = { ...envelope, seasons: [2025], source: 'https://inmotion.dhl', standings: [], stops: [], seasonFastest: [fastest] };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => payload }));
+    const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => payload });
+    vi.stubGlobal('fetch', fetch);
     expect((await getAwardData('2025', '', new AbortController().signal)).seasonFastest[0]).toEqual(fastest);
+    expect(fetch.mock.calls[0][1].cache).toBe('no-store');
     payload.seasonFastest = [{ ...fastest, duration: '0' }];
     await expect(getAwardData('2025', '', new AbortController().signal)).rejects.toThrow();
     delete payload.seasonFastest;

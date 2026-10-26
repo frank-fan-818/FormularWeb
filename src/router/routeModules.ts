@@ -17,10 +17,8 @@ export const routeModules = {
   circuits: () => import('@/pages/Circuits'),
   circuitDetail: () => import('@/pages/CircuitDetail'),
   settings: () => import('@/pages/Settings'),
-  authShell: () => Promise.all([
-    import('@/components/auth/AuthShell'),
-    import('@/components/auth/AuthCard'),
-  ]).then(([shell]) => shell),
+  // Login/register modules already preload their AuthCard dependency.
+  authShell: () => import('@/components/auth/AuthShell'),
   login: () => import('@/pages/Login'),
   register: () => import('@/pages/Register'),
   forgotPassword: () => import('@/pages/ForgotPassword'),

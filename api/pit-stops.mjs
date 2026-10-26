@@ -1,9 +1,11 @@
 import { loadPitData } from './_lib/pit-stops.mjs';
 
+export function createPitStopsHandler({ load = loadPitData, now = Date.now } = {}) {
 const snapshots = new Map();
 const pending = new Map();
-export default async function handler(req, res) {
+return async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Vercel-CDN-Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   const send = (status, body) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -13,22 +15,23 @@ export default async function handler(req, res) {
   const query = new URL(req.url, 'https://localhost').searchParams;
   const kind = query.get('kind') || 'award';
   const season = query.get('season'); const round = query.get('round') || '';
-  if (!['race', 'award'].includes(kind) || !/^20\d{2}$/.test(season || '') || Number(season) > new Date().getUTCFullYear() + 1 || (round && !/^[1-9]\d?$/.test(round)) || (kind === 'race' && !round)) return send(400, { code: 'INVALID_PARAMETERS', message: 'Invalid parameters' });
+  if (!['race', 'award'].includes(kind) || !/^20\d{2}$/.test(season || '') || Number(season) > new Date(now()).getUTCFullYear() + 1 || (round && !/^[1-9]\d?$/.test(round)) || (kind === 'race' && !round)) return send(400, { code: 'INVALID_PARAMETERS', message: 'Invalid parameters' });
   const key = `${kind}:${season}:${round}`;
   const saved = snapshots.get(key);
-  if (saved && Date.now() - saved.at < 600_000) return send(200, saved.value);
+  if (saved && now() - saved.at < 60_000) return send(200, saved.value);
   try {
-    if (!pending.has(key)) pending.set(key, loadPitData(kind, season, round).finally(() => pending.delete(key)));
+    if (!pending.has(key)) pending.set(key, load(kind, season, round).finally(() => pending.delete(key)));
     const result = await pending.get(key);
     const hasData = result.records?.length || result.standings?.length || result.stops?.length || result.seasonFastest?.length;
     if (!hasData && saved) throw Error('Empty update');
     if (snapshots.size > 100) snapshots.delete(snapshots.keys().next().value);
-    if (hasData) snapshots.set(key, { value: result, at: Date.now() });
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    res.setHeader('Vercel-CDN-Cache-Control', 'public, s-maxage=600, stale-while-revalidate=86400');
+    if (hasData) snapshots.set(key, { value: result, at: now() });
     return send(200, result);
   } catch {
-    if (saved && Date.now()-saved.at < 7*86400_000) return send(200, { ...saved.value, stale: true });
+    if (saved && now()-saved.at < 7*86400_000) return send(200, { ...saved.value, stale: true });
     return send(502, { code: 'UPSTREAM_ERROR', message: 'Pit stop source unavailable' });
   }
+};
 }
+
+export default createPitStopsHandler();
