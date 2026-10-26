@@ -70,4 +70,3 @@
 # Release regression follow-up
 
 The complete release matrix caught a loss of the existing left/right corner split in the shared weekend panel. The panel now shows the total and preserves a known split (`20 · 11L / 9R` at COTA; `11 · 4L / 7R` at Monza), with a total-only fallback when no reliable split exists. The unchanged Monza regression and strengthened COTA assertion passed together with weather/history checks: 27 tests across desktop, mobile and tablet Chromium. Strict lint, type checking, production build and unchanged performance budgets passed after the repair. Final protected CI evidence is attached to release PR #91.
-
