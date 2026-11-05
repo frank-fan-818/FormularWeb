@@ -121,7 +121,6 @@ function createCriticalCssPlugin() {
           if (accountDependencies.has(chunk.fileName)) return
           accountDependencies.add(chunk.fileName)
           const metadata = (chunk as OutputChunk & { viteMetadata?: { importedCss: Set<string> } }).viteMetadata
-          if (metadata?.importedCss.size) accountScripts.add(chunk.fileName)
           metadata?.importedCss.forEach(file => accountStyles.add(file))
           chunk.imports.forEach(file => {
             const dependency = bundle[file]
