@@ -10,7 +10,7 @@ const seasonFastest = [
 ];
 const award = { ...base, seasons: [2026, 2025, 2024], source: 'https://inmotion.dhl/en/formula-1/fastest-pit-stop-award', standings: [{ rank: 1, team: 'Ferrari', points: 559 }, { rank: 2, team: 'McLaren', points: 410 }], stops: [], seasonFastest };
 const event = { ...award, standings: [], stops: [{ id: '7362', rank: 1, driver: 'Lewis Hamilton', code: 'HAM', team: 'Ferrari', duration: '2.16', lap: 32, points: 25, irregular: false, notes: '' }] };
-const records = [{ driverId: 'hamilton', driver: 'Lewis Hamilton', code: 'HAM', team: 'Ferrari', constructorId: 'ferrari', lap: 32, stop: 1, laneDuration: '24.229', stopDuration: '2.16', laneSource: 'Jolpica', stopSource: 'OpenF1' }, { driverId: 'norris', driver: 'Lando Norris', code: 'NOR', team: 'McLaren', constructorId: 'mclaren', lap: 34, stop: 1, laneDuration: '25.265', stopDuration: null, laneSource: 'Jolpica', stopSource: null }];
+const records = [{ driverId: 'hamilton', driver: 'Lewis Hamilton', code: 'HAM', team: 'Ferrari', constructorId: 'ferrari', lap: 32, stop: 1, laneDuration: '24.229', stopDuration: '2.16', laneSource: 'Jolpica', stopSource: 'OpenF1' }, { driverId: 'norris', driver: 'Lando Norris', code: 'NOR', team: 'McLaren', constructorId: 'mclaren', lap: 34, stop: 1, laneDuration: '2314.937', stopDuration: null, laneSource: 'Jolpica', stopSource: null }];
 
 test.beforeEach(async ({ page }) => {
   await enterAsGuest(page);
@@ -54,12 +54,27 @@ test('pit stops support guest standings, deep links, precise timing and compact 
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-fastest-${info.project.name}.png`, fullPage: true, animations: 'disabled' });
   await page.getByRole('button', { name: '单站最快进站' }).click();
   await expect(page.locator('.pit-award-table')).toContainText('2.16 s');
+  const eventSelect = page.getByRole('combobox', { name: '分站赛事', exact: true });
+  if (await page.evaluate(() => CSS.supports('appearance', 'base-select'))) {
+    await expect(eventSelect).toHaveCSS('appearance', 'base-select');
+    await eventSelect.press('Space');
+    await expect(page.locator('.pit-event-toolbar select:open')).toBeVisible();
+    await expect(eventSelect.locator('option:checked')).toHaveText('4 · Bahrain Grand Prix');
+    await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-event-picker-${info.project.name}.png` });
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.pit-event-toolbar select:open')).toHaveCount(0);
+    await expect(eventSelect).toHaveValue('4');
+  }
+  await expect(page.locator('.pit-award-table .pit-driver-name')).toHaveText('Lewis Hamilton');
+  await expect(page.locator('.pit-award-table .pit-driver img')).toHaveAttribute('src', /hamilton/);
   await page.screenshot({ path: `artifacts/browser-qa/screenshots/pit-event-${info.project.name}.png`, fullPage: true });
   await page.getByRole('link', { name: '进站明细 →', exact: true }).click();
   const module = page.locator('.pit-module');
   await expect(module.locator('tbody tr')).toHaveCount(2);
   await expect(page.locator('#race-pit-title')).toBeInViewport();
   await expect(module).toContainText('24.229 s');
+  await expect(module).toContainText('38:34.937');
+  await expect(module.locator('.pit-quickest')).toContainText('Lewis Hamilton');
   await expect(module).toContainText('—');
   await expect(module.getByText(/已收录|记录数|中位数/)).toHaveCount(0);
   await module.getByRole('combobox', { name: '车手', exact: true }).selectOption('hamilton');

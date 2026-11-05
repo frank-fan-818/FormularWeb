@@ -98,6 +98,18 @@ test('Jolpica reads all pages and rejects incomplete pagination', async () => {
   assert.equal(rows.length,2);
   await assert.rejects(()=>getPitRecords('2025','4',async()=>({MRData:{total:'2',RaceTable:{Races:[]}}})));
 });
+test('Jolpica mixed seconds and elapsed times retain precision without dropping the race', async () => {
+  const durations = ['24.229', '1:00.513', '38:34.937', '1:02:03.045'];
+  const PitStops = durations.map((duration, index) => ({
+    driverId: 'albon', lap: String(index + 1), stop: String(index + 1), duration,
+  }));
+  const read = async () => ({ MRData: { total: '4', RaceTable: { Races: [{ PitStops }] } } });
+  const records = await getPitRecords('2026', '19', read);
+  assert.deepEqual(records.map(row => row.laneDuration), ['24.229', '60.513', '2314.937', '3723.045']);
+  PitStops[0].duration = '1:60.000';
+  await assert.rejects(() => getPitRecords('2026', '19', read), /Invalid pit record/);
+});
+
 test('OpenF1 session matching validates year, date and venue, not session key versus round', () => {
   const race = {date:'2025-05-04',Circuit:{Location:{country:'USA',locality:'Miami'}}};
   const session={year:2025,session_name:'Race',date_start:'2025-05-04T19:00:00Z',country_name:'United States',location:'Miami',session_key:999};

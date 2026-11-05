@@ -69,7 +69,7 @@ const Login = () => {
         <AuthNotice
           type="warning"
           message="身份服务尚未配置"
-          description="公开赛事数据仍可浏览；配置 Supabase 环境变量后即可启用登录。"
+          description="公开数据可游客浏览。"
         />
       ) : null}
       {sessionError ? <AuthNotice type="warning" message={sessionError} action={<button type="button" className="auth-card__button" onClick={retry}>重试</button>} /> : null}

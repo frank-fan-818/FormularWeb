@@ -6,6 +6,7 @@ import { useRacesByStatus } from '@/hooks/useRaceStatus';
 import { useAppStore } from '@/store';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { buildRaceSeasonLocation, getRaceSeasonFromSearch } from '@/utils/raceRoute';
+import SiteCredit from '@/components/SiteCredit';
 import './Layout.css';
 
 const preloadRoute = (pathname: string) => {
@@ -489,6 +490,7 @@ const LayoutComponent = () => {
             </div>
           </div>
         </main>
+        <footer className="site-footer"><SiteCredit /></footer>
       </div>
     </div>
   );

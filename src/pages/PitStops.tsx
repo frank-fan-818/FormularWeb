@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import DocumentHead from '@/components/DocumentHead';
 import { PitDataState } from '@/components/pitStops/PitDataState';
+import { PitDriver } from '@/components/pitStops/PitDriver';
 import { usePitAward } from '@/hooks/usePitStops';
 import { useSeasonRacesCached } from '@/hooks/useSeasonDataCached';
 import { useAppStore } from '@/store';
@@ -39,9 +40,9 @@ export default function PitStops() {
     </select>{round && <Link className="pit-link" to={`/races/${round}/results?season=${season}#race-pit-title`}>{t('pitDetails')} →</Link>}</div>}
     {eventView && racesError && !races.length ? <PitDataState loading={racesLoading} error empty onRetry={refetch} /> : <PitDataState loading={loading || (eventView && racesLoading && !round)} error={error} stale={data?.stale} empty={!rows.length} onRetry={retry} />}
     {!!rows.length && (fastestView ? <table className="pit-table pit-fastest-table"><thead><tr><th className="pit-rank">{t('rank')}</th><th>{t('driver')}</th><th>{t('pitEvent')}</th><th className="pit-number">{t('pitOfficialTime')}</th></tr></thead><tbody>{data!.seasonFastest.map(row => <tr key={row.id}>
-      <td>{row.rank}</td><td><span className="pit-driver-name">{row.driver}</span><span className="pit-secondary">{row.team}</span></td><td title={row.event}><span className="pit-desktop">{row.event}</span><span className="pit-mobile">{row.eventAbbreviation}</span></td><td className="pit-number pit-emphasis">{row.duration} s</td>
+      <td>{row.rank}</td><td><PitDriver name={row.driver} team={row.team} /></td><td title={row.event}><span className="pit-desktop">{row.event}</span><span className="pit-mobile">{row.eventAbbreviation}</span></td><td className="pit-number pit-emphasis">{row.duration} s</td>
     </tr>)}</tbody></table> : eventView ? <table className="pit-table pit-award-table"><thead><tr><th className="pit-rank">{t('rank')}</th><th>{t('driver')}</th><th className="pit-desktop">{t('pitLap')}</th><th className="pit-number">{t('pitOfficialTime')}</th><th className="pit-number pit-desktop">{t('points')}</th></tr></thead><tbody>{data!.stops.map(row => <tr key={row.id}>
-      <td>{row.rank}</td><td><span className="pit-driver-name">{row.code || row.driver}</span><span className="pit-secondary">{row.team}</span>
+      <td>{row.rank}</td><td><PitDriver name={row.driver} team={row.team} />
         <details className="pit-row-details"><summary>{t('pitDetails')}</summary><span>{t('pitLap')}: {row.lap ?? '—'} · {t('points')}: {row.points}</span>{(row.irregular || row.notes) && <p>{row.notes || t('pitFlagged')}</p>}</details>
         {(row.irregular || row.notes) && <span className="pit-desktop pit-secondary">{row.notes || t('pitFlagged')}</span>}</td>
       <td className="pit-desktop">{row.lap ?? '—'}</td><td className="pit-number pit-emphasis">{row.duration} s</td><td className="pit-number pit-desktop">{row.points}</td>

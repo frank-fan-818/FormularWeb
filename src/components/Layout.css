@@ -1,3 +1,5 @@
+@import '../styles/selects.css';
+
 .app-layout {
   min-height: 100vh;
 }
@@ -296,22 +298,10 @@
 .season-select-native {
   width: 120px;
   height: 40px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  min-block-size: 40px;
+  background-color: var(--bg-tertiary);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  padding: 0 var(--space-3);
-  cursor: pointer;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.season-select-native:hover,
-.season-select-native:focus-visible {
-  border-color: var(--f1-red);
-  box-shadow: 0 0 0 2px var(--f1-red-glow);
-  outline: none;
 }
 
 .header-search-slot {

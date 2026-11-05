@@ -80,8 +80,11 @@ for (const kind of ['driver', 'constructor'] as const) {
       await expect(page.getByRole('option', { name: own, exact: true })).toHaveCount(0);
       if (kind === 'driver' && theme === 'light') {
         const selector = card.getByRole('combobox', { name: '选择对比车手' });
+        const enhanced = await selector.evaluate(element => getComputedStyle(element).appearance === 'base-select');
         await selector.focus();
-        await selector.press('ArrowDown');
+        if (enhanced) await page.keyboard.press('Space');
+        await page.keyboard.press('ArrowDown');
+        if (enhanced) await page.keyboard.press('Enter');
         await expect(selector).toHaveValue('antonelli');
       } else await choose(page, opponent, kind);
       const summary = card.getByRole('status', { name: '当前积分对比' });

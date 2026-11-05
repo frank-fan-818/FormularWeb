@@ -79,6 +79,7 @@ test('time zone setting updates race times and session dates across navigation a
 });
 
 test('time zone selector supports fractional and negative offsets in English', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/settings');
   const language = page.locator('.setting-row').filter({ hasText: '语言' }).getByRole('combobox');
   await language.focus();
