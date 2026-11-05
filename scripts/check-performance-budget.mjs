@@ -18,7 +18,7 @@ const criticalCssBytes = [...html.matchAll(/<style\b[^>]*data-critical-css[^>]*>
 if (criticalCssBytes > 48 * 1024) {
   throw new Error(`Inlined critical CSS exceeds 48 KiB raw: ${criticalCssBytes} bytes`);
 }
-const assetPaths = [...html.matchAll(/(?:src|href)="\/(assets\/[^"?]+\.js)"/g)]
+const assetPaths = [...html.matchAll(/(?:src|href)="\/(assets\/[^"?]+\.js|account-preloads\.js)"/g)]
   .map((match) => match[1]);
 const uniqueAssets = [...new Set(assetPaths)];
 let initialJsGzipBytes = 0;

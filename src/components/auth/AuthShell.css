@@ -291,14 +291,6 @@
   .auth-center__mobile-brand > span { display: none; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .auth-center__panel { animation: auth-panel-enter var(--motion-duration-data) var(--motion-ease-enter) both; }
-}
-@keyframes auth-panel-enter {
-  from { transform: translateY(var(--motion-distance-component)); }
-  to { transform: translateY(0); }
-}
-
 .auth-card__access-options { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-primary); }
 .auth-card__access-comparison { display: grid; gap: 12px; margin-bottom: 20px; }
 .auth-card__access-comparison > div { display: grid; gap: 4px; }

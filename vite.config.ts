@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto'
 import { Agent as HttpsAgent } from 'node:https'
 import { existsSync, readFileSync } from 'node:fs'
 import pitStopsHandler from './api/pit-stops.mjs'
+import { GUEST_ACCESS_KEY } from './src/utils/accessPolicy'
 import { createRaceWeatherHandler } from './api/race-weather.mjs'
 
 function raceWeatherApi(): Plugin {
@@ -114,29 +115,35 @@ function createCriticalCssPlugin() {
           .filter((entry): entry is OutputChunk => entry.type === 'chunk'
             && /\/src\/(?:pages\/Login|components\/auth\/AuthShell)\.tsx$/.test(entry.facadeModuleId?.replace(/\\/g, '/') || ''))
         const accountScripts = new Set(accountEntries.map(entry => entry.fileName))
+        const accountDependencies = new Set<string>()
         const accountStyles = new Set<string>()
-        const visited = new Set<string>()
-        const collectAccountStyles = (chunk: OutputChunk) => {
-          if (visited.has(chunk.fileName)) return
-          visited.add(chunk.fileName)
+        const collectAccountPreloads = (chunk: OutputChunk) => {
+          if (accountDependencies.has(chunk.fileName)) return
+          accountDependencies.add(chunk.fileName)
           const metadata = (chunk as OutputChunk & { viteMetadata?: { importedCss: Set<string> } }).viteMetadata
           if (metadata?.importedCss.size) accountScripts.add(chunk.fileName)
           metadata?.importedCss.forEach(file => accountStyles.add(file))
           chunk.imports.forEach(file => {
             const dependency = bundle[file]
-            if (dependency?.type === 'chunk') collectAccountStyles(dependency)
+            if (dependency?.type === 'chunk') collectAccountPreloads(dependency)
           })
         }
-        accountEntries.forEach(collectAccountStyles)
+        accountEntries.forEach(collectAccountPreloads)
         const accountEntryPreloads = [...accountScripts]
           .filter(file => !transformedHtml.includes(`href="/${file}"`))
           .map(file => `<link rel="modulepreload" crossorigin href="/${file}">`).join('\n')
         const stylePreload = [...accountStyles]
           .filter(file => !transformedHtml.includes(`data-critical-css="${path.basename(file)}"`))
           .map(file => `<link rel="preload" as="style" crossorigin href="/${file}">`).join('\n')
-        const fontPreloads = ['F1UIAccountTitle-400']
+        const fontPreloads = ['F1UIAccountTitle-400', 'F1UIHanzi-400-core', 'F1UISans-400']
           .map(name => `<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/${name}.woff2">`).join('\n')
-        return transformedHtml.replace('</head>', `${accountEntryPreloads}\n${stylePreload}\n${fontPreloads}\n</head>`)
+        const deferredPreloads = [...accountDependencies]
+          .filter(file => !accountScripts.has(file) && !transformedHtml.includes(`href="/${file}"`))
+          .map(file => `/${file}`)
+        const firstVisitPreload = deferredPreloads.length
+          ? `<script async src="/account-preloads.js" data-guest-key="${GUEST_ACCESS_KEY}" data-modules="${deferredPreloads.join(' ')}"></script>`
+          : ''
+        return transformedHtml.replace('</head>', `${accountEntryPreloads}\n${stylePreload}\n${fontPreloads}\n${firstVisitPreload}\n</head>`)
       },
     },
   }
@@ -149,6 +156,7 @@ function createServiceWorkerPlugin() {
     generateBundle(_options: unknown, bundle: OutputBundle) {
       const shellFiles = new Set([
         '/index.html',
+        '/account-preloads.js',
         '/manifest.webmanifest',
         '/favicon.svg',
         '/favicon-192.png',

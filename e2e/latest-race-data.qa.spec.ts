@@ -119,7 +119,7 @@ test('DHL current event without event_id renders official ranks and time precisi
     updatedAt: '2026-10-26T05:18:54.840Z', stale: false, standings: [], stops, seasonFastest: [], event: 'Circuit of The Americas' } }));
   await page.goto('/pit-stops?season=2026&round=18&view=event');
   await expect(page.locator('.pit-award-table tbody tr')).toHaveCount(10);
-  await expect(page.locator('.pit-award-table tbody tr').first()).toContainText('PIA');
+  await expect(page.locator('.pit-award-table tbody tr').first()).toContainText('Oscar Piastri');
   await expect(page.locator('.pit-award-table tbody tr').first()).toContainText('2.11 s');
   await expect(page.locator('.pit-award-table tbody tr').nth(1)).toContainText('2.30 s');
   await expect(page.getByText('进站数据加载失败', { exact: true })).toHaveCount(0);
