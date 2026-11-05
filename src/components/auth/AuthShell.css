@@ -85,47 +85,21 @@
   transform: skewX(-8deg);
 }
 .auth-center__mark strong { font: 700 12px/1 var(--font-mono); letter-spacing: 0.13em; }
-.auth-center__system-status {
-  display: inline-flex;
+.auth-center__brand-copy {
+  display: flex;
+  flex: 1;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.5);
-  font: 700 10px/1 var(--font-mono);
-  letter-spacing: 0.12em;
-}
-.auth-center__system-status i {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: #5bd17c;
-  box-shadow: 0 0 12px rgba(91, 209, 124, 0.8);
-}
-
-.auth-center__brand-copy { max-width: 660px; margin: auto 0; padding: 80px 0; }
-.auth-center__eyebrow {
-  display: block;
-  color: var(--f1-red-light);
-  font: var(--font-semibold) var(--text-xs)/var(--leading-normal) var(--font-family);
-  letter-spacing: var(--tracking-wide);
+  max-width: 660px;
+  padding: var(--space-8) 0;
 }
 .auth-center__brand-copy h1 {
-  margin: 22px 0 26px;
+  margin: 0;
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(52px, 6.2vw, 92px);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-normal);
 }
-.auth-center__brand-copy p { max-width: 520px; color: #aab1bd; font-size: 16px; line-height: 1.8; }
-.auth-center__signals {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 560px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-}
-.auth-center__signals div { display: grid; gap: 7px; padding: 18px 18px 0 0; }
-.auth-center__signals strong { color: #fff; font: 700 17px/1 var(--font-mono); }
-.auth-center__signals span { color: rgba(255, 255, 255, 0.45); font: 600 11px/1 var(--font-mono); letter-spacing: 0.08em; }
 
 .auth-center__stage {
   min-width: 0;
@@ -272,6 +246,7 @@
 }
 
 .auth-center__footer {
+  flex-wrap: wrap;
   width: min(100%, 480px);
   margin: 36px auto 0;
   gap: 16px;
@@ -279,14 +254,12 @@
   font-size: 11px;
 }
 .auth-center__footer a { color: var(--text-secondary); font-size: 11px; }
+.auth-center__footer .site-credit { flex-basis: 100%; }
 
 @media (max-width: 960px) {
   .auth-center { grid-template-columns: minmax(300px, 0.82fr) minmax(430px, 1.18fr); }
   .auth-center__brand { padding: 34px; }
   .auth-center__brand-copy h1 { font-size: clamp(48px, 7vw, 70px); }
-  .auth-center__system-status,
-  .auth-center__signals div:nth-child(3) { display: none; }
-  .auth-center__signals { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 720px) {

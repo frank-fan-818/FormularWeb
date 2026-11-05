@@ -150,6 +150,7 @@ function createServiceWorkerPlugin() {
       const shellFiles = new Set([
         '/index.html',
         '/manifest.webmanifest',
+        '/favicon.svg',
         '/favicon-192.png',
         '/favicon-512.png',
       ])

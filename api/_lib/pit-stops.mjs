@@ -137,6 +137,16 @@ export function matchEvent(events, race) {
   return matches.length === 1 ? matches[0] : null;
 }
 
+function jolpicaDuration(value) {
+  // Jolpica switches to M:SS.sss (or H:MM:SS.sss) for longer stops.
+  const elapsed = typeof value === 'string' && value.match(/^(?:(\d+):)?(\d+):([0-5]\d)(\.\d+)?$/);
+  if (!elapsed) return seconds(value);
+  const [, hours, minutes, wholeSeconds, fraction = ''] = elapsed;
+  if (hours !== undefined && !/^[0-5]\d$/.test(minutes)) return null;
+  const total = Number(hours ?? 0) * 3600 + Number(minutes) * 60 + Number(wholeSeconds);
+  return Number.isSafeInteger(total) ? seconds(`${total}${fraction}`) : null;
+}
+
 export async function getPitRecords(season, round, read = readRemote) {
   const rows = []; let total = null;
   for (let page = 0; page < 20; page++) {
@@ -147,8 +157,9 @@ export async function getPitRecords(season, round, read = readRemote) {
     const entries = data.MRData?.RaceTable?.Races?.[0]?.PitStops || [];
     if (!Array.isArray(entries) || (!entries.length && rows.length < total)) throw Error('Incomplete pit records');
     for (const row of entries) {
-      if (!row.driverId || !positiveInt(row.lap) || !positiveInt(row.stop) || !seconds(row.duration)) throw Error('Invalid pit record');
-      rows.push({ driverId: row.driverId, lap: Number(row.lap), stop: Number(row.stop), laneDuration: String(row.duration), laneSource: 'Jolpica' });
+      const laneDuration = jolpicaDuration(row.duration);
+      if (!row.driverId || !positiveInt(row.lap) || !positiveInt(row.stop) || !laneDuration) throw Error('Invalid pit record');
+      rows.push({ driverId: row.driverId, lap: Number(row.lap), stop: Number(row.stop), laneDuration, laneSource: 'Jolpica' });
     }
     if (rows.length === total) {
       if (new Set(rows.map(row => `${row.driverId}:${row.stop}`)).size !== rows.length) throw Error('Duplicate pit records');

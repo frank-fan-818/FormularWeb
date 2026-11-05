@@ -1,5 +1,6 @@
 @import './styles/design-tokens.css';
 @import './styles/fonts.css';
+@import './styles/selects.css';
 
 * {
   margin: 0;
@@ -243,14 +244,6 @@ code {
 .ant-input:focus {
   border-color: var(--f1-red);
   box-shadow: 0 0 0 2px var(--f1-red-glow);
-}
-
-/* Select */
-.ant-select-selector {
-  background-color: var(--bg-tertiary) !important;
-  border-color: var(--border-primary) !important;
-  color: var(--text-primary) !important;
-  border-radius: var(--radius-lg) !important;
 }
 
 /* Dropdown */

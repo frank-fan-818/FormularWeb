@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, Typography } from 'antd';
 import DocumentHead from '@/components/DocumentHead';
+import SiteCredit from '@/components/SiteCredit';
 import './Privacy.css';
 
 const { Paragraph, Title } = Typography;
@@ -52,6 +53,7 @@ const Privacy = () => (
         </Paragraph>
       </Card>
     </article>
+    <footer className="site-footer"><SiteCredit /></footer>
   </>
 );
 

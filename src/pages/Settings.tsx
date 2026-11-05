@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useAppStore } from '@/store';
 import { useSeasons } from '@/hooks';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { version } from '../../package.json';
 import type { ThemeMode } from '@/store';
 import { TIME_ZONE_OPTIONS } from '@/utils/timeZone';
@@ -22,6 +23,7 @@ const Settings = () => {
   const { t, i18n } = useTranslation();
   const { theme, setTheme, currentSeason, setCurrentSeason, timeZoneOffsetMinutes, setTimeZoneOffsetMinutes } = useAppStore();
   const { seasons } = useSeasons();
+  const popupTransition = useReducedMotion() ? '' : undefined;
 
   const themeOptions: Array<{ label: string; value: ThemeMode }> = [
     { label: t('settingsSystem'), value: 'system' },
@@ -87,6 +89,8 @@ const Settings = () => {
               <Text strong>{t('settingsLanguage')}</Text>
             </div>
             <Select
+              aria-label={t('settingsLanguage')}
+              transitionName={popupTransition}
               value={i18n.language}
               onChange={(lang) => {
                 void i18n.changeLanguage(lang);
@@ -102,6 +106,7 @@ const Settings = () => {
             </div>
             <Select
               aria-label={t('settingsTimeZone')}
+              transitionName={popupTransition}
               showSearch
               optionFilterProp="label"
               value={timeZoneOffsetMinutes}
@@ -126,6 +131,8 @@ const Settings = () => {
               <Text strong>{t('settingsDefaultSeason')}</Text>
             </div>
             <Select
+              aria-label={t('settingsDefaultSeason')}
+              transitionName={popupTransition}
               value={currentSeason}
               onChange={setCurrentSeason}
               options={seasonOptions}

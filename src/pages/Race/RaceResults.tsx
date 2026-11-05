@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button, Empty, Table, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -9,7 +9,8 @@ import { RacePageIntro } from '@/pages/Race/shared/components/RacePageIntro';
 import { SessionDriverCell } from '@/pages/Race/shared/components/SessionDriverCell';
 import { buildRaceOverviewInsights } from '@/utils/raceOverviewInsights';
 import { useRaceData } from './RaceContext';
-import RacePitStops from '@/components/pitStops/RacePitStops';
+
+const RacePitStops = lazy(() => import('@/components/pitStops/RacePitStops'));
 
 interface TabItem {
   key: RaceClassificationSessionKey;
@@ -331,7 +332,9 @@ const RaceResults = () => {
           }))}
         />
       </section>
-      <RacePitStops key={`${season}:${round}`} season={season} round={round} pending={!raceResults.length && Boolean(raceInfo && Date.parse(`${raceInfo.date}T${raceInfo.time || '00:00:00Z'}`) > Date.now())} />
+      <Suspense fallback={null}>
+        <RacePitStops key={`${season}:${round}`} season={season} round={round} pending={!raceResults.length && Boolean(raceInfo && Date.parse(`${raceInfo.date}T${raceInfo.time || '00:00:00Z'}`) > Date.now())} />
+      </Suspense>
     </div>
   );
 };

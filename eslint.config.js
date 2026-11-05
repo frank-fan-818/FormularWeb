@@ -9,6 +9,7 @@ export default [
   {
     ignores: [
       'android/**',
+      'native-android/**/build/**',
       'artifacts/**',
       'coverage/**',
       'data/**',
@@ -27,6 +28,12 @@ export default [
   },
   js.configs.recommended,
   { files: ['api/**/*.mjs'], languageOptions: { globals: { ...globals.node, ...globals.es2020 } } },
+  { files: ['docs/design/native-app/prototype.mjs'], languageOptions: { globals: globals.browser } },
+  {
+    files: ['docs/design/native-app/**/*.mjs'],
+    ignores: ['docs/design/native-app/prototype.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
   {
     files: [
       'src/**/*.{ts,tsx}',
